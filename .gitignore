@@ -1,0 +1,77 @@
+# IDE
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Build outputs
+target/
+build/
+dist/
+out/
+*.class
+*.jar
+!gradle-wrapper.jar
+
+# Dependencies
+node_modules/
+package-lock.json.backup
+yarn.lock
+
+# Environment
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+coverage/
+.nyc_output
+*.test.js.snap
+
+# Database
+*.db
+*.sqlite
+h2/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.cache
+
+# Spring Boot
+application-local.yml
+application-*.yml
+!application.yml
+
+# Maven
+.mvn/wrapper/maven-wrapper.jar
+.flattened-pom.xml
+
+# React
+.react-app-env.d.ts
+
+# Docker
+.dockerignore.backup
+
+# Secrets
+secrets/
+*.p12
+credentials.json
