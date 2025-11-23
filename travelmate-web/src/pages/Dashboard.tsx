@@ -3,7 +3,6 @@ import './Dashboard.css';
 import { locationService, TravelMate, Location } from '../services/locationService';
 import { chatService } from '../services/chatService';
 import { useNavigate } from 'react-router-dom';
-import { LocationDebugger } from '../services/debugLocationService';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -27,8 +26,6 @@ const Dashboard: React.FC = () => {
   const initializeLocation = async () => {
     console.log('🌍 위치 정보를 가져오는 중...');
 
-    // 위치 디버깅 정보 표시
-    await LocationDebugger.testLocationAccess();
 
     const location = await locationService.getCurrentLocation();
     console.log('✅ 위치 정보 가져오기 완료:', location);
