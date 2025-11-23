@@ -438,6 +438,114 @@ const HomeNew: React.FC = () => {
         </div>
       </section>
 
+      {/* Active Travel Groups Section */}
+      <section className="section bg-gray-50 dark:bg-gray-800/50">
+        <div className="container-custom">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-full text-sm font-semibold mb-4">
+              Browse Active Groups
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              Join <span className="gradient-text">Travel Groups</span>
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+              Discover and join active travel groups heading to amazing destinations
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {[
+              {
+                name: 'Southeast Asia Backpackers',
+                destination: 'Thailand → Vietnam → Cambodia',
+                dates: 'Dec 2024 - Jan 2025',
+                members: 5,
+                maxMembers: 8,
+                interests: ['Adventure', 'Culture', 'Budget Travel'],
+                description: 'Join us for an epic backpacking adventure through Southeast Asia!',
+                gradient: 'from-green-400 to-cyan-400'
+              },
+              {
+                name: 'European Art & Culture Tour',
+                destination: 'Paris → Rome → Barcelona',
+                dates: 'Jan 2025',
+                members: 3,
+                maxMembers: 6,
+                interests: ['Art', 'Museums', 'History'],
+                description: 'Explore the finest museums and galleries across Europe.',
+                gradient: 'from-purple-400 to-pink-400'
+              },
+              {
+                name: 'Japan Cherry Blossom',
+                destination: 'Tokyo → Kyoto → Osaka',
+                dates: 'Mar 2025',
+                members: 6,
+                maxMembers: 10,
+                interests: ['Photography', 'Nature', 'Culture'],
+                description: 'Experience the magical cherry blossom season in Japan!',
+                gradient: 'from-pink-400 to-rose-400'
+              }
+            ].map((group, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.05 }}
+                className="card group hover:shadow-xl transition-shadow"
+              >
+                <div className="flex items-start gap-3 mb-3">
+                  <div className={cn("w-12 h-12 rounded-lg bg-gradient-to-br flex items-center justify-center text-white font-bold", group.gradient)}>
+                    <UserGroupIcon className="h-6 w-6" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-lg mb-1">{group.name}</h3>
+                    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                      <MapPinIcon className="h-4 w-4" />
+                      <span>{group.destination}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
+                  {group.description}
+                </p>
+
+                <div className="flex flex-wrap gap-1.5 mb-3">
+                  {group.interests.map((interest, j) => (
+                    <span key={j} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-xs">
+                      {interest}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
+                  <div className="text-sm">
+                    <span className="font-semibold text-primary-600 dark:text-primary-400">{group.members}/{group.maxMembers}</span>
+                    <span className="text-gray-600 dark:text-gray-400 ml-1">members</span>
+                  </div>
+                  <Link to="/register" className="btn btn-primary btn-sm">
+                    Join Group
+                  </Link>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="text-center">
+            <Link to="/register" className="btn btn-primary btn-lg group">
+              <span>View All Groups</span>
+              <ArrowRightIcon className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Stats Section */}
       <section className="section gradient-bg text-white">
         <div className="container-custom">
