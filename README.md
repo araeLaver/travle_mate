@@ -283,14 +283,6 @@ npm run build
 - `test`: 테스트 추가
 - `chore`: 빌드 업무, 패키지 매니저 수정
 
-## 라이선스
-
-이 프로젝트는 MIT 라이선스를 따릅니다.
-
-## 지원
-
-문제가 발생하면 [GitHub Issues](https://github.com/araeLaver/travle_mate/issues)를 통해 문의해주세요.
-
 ---
 
 Made by TravelMate Team
