@@ -1,14 +1,13 @@
 version: '3.8'
 
 services:
-  # TravelMate 통합 애플리케이션 (백엔드 + 프론트엔드)
   travelmate:
     build: .
     container_name: travelmate-app
     restart: unless-stopped
     ports:
-      - "80:80"      # 웹 프론트엔드
-      - "8080:8080"  # API 백엔드
+      - "80:80"
+      - "8080:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-dev}
       - SERVER_PORT=8080
@@ -32,7 +31,6 @@ services:
       retries: 3
       start_period: 40s
 
-  # PostgreSQL (운영용 - 선택사항)
   postgres:
     image: postgres:15-alpine
     container_name: travelmate-postgres
@@ -48,7 +46,6 @@ services:
     profiles:
       - production
 
-  # Redis (캐시 - 선택사항)
   redis:
     image: redis:7-alpine
     container_name: travelmate-redis

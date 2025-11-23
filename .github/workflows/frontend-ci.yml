@@ -1,0 +1,46 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'travelmate-web/**'
+      - '.github/workflows/frontend-ci.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'travelmate-web/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: travelmate-web/package-lock.json
+        
+    - name: Install dependencies
+      working-directory: ./travelmate-web
+      run: npm ci
+      
+    - name: Run lint
+      working-directory: ./travelmate-web
+      run: npm run lint --if-present
+      
+    - name: Build
+      working-directory: ./travelmate-web
+      run: npm run build
+      
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: frontend-build
+        path: travelmate-web/build
+        retention-days: 7
