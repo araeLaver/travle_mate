@@ -33,7 +33,7 @@ const Home: React.FC = () => {
 
           {/* Subtitle */}
           <p className="hero-subtitle">
-            AI-powered matching connects you with compatible travel companions.
+            Advanced matching connects you with compatible travel companions.
             Real-time chat, group management, and location-based services all in one app.
           </p>
 
@@ -126,7 +126,7 @@ const Home: React.FC = () => {
                   <path d="M9.5 2C5.91 2 3 4.91 3 8.5C3 12.09 5.91 15 9.5 15C13.09 15 16 12.09 16 8.5C16 4.91 13.09 2 9.5 2ZM9.5 13C7.01 13 5 10.99 5 8.5C5 6.01 7.01 4 9.5 4C11.99 4 14 6.01 14 8.5C14 10.99 11.99 13 9.5 13ZM17.4 14.8C18.87 13.33 19.8 11.35 19.8 9.1C19.8 4.64 16.16 1 11.7 1C10.45 1 9.26 1.28 8.19 1.78C8.93 1.28 9.8 1 10.73 1C14.32 1 17.23 3.91 17.23 7.5C17.23 9.75 16.08 11.71 14.35 12.88C15.43 13.32 16.47 13.96 17.4 14.8ZM20 17.5C20 14.46 16.13 12 11.5 12C6.87 12 3 14.46 3 17.5V19H20V17.5Z" fill="currentColor"/>
                 </svg>
               </div>
-              <h3>AI Smart Matching</h3>
+              <h3>Smart Matching</h3>
               <p>Our algorithm analyzes travel styles, interests, and schedules to find your perfect match</p>
               <div className="feature-stat">
                 <strong>92%</strong>

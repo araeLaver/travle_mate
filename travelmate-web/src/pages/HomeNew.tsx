@@ -89,7 +89,7 @@ const HomeNew: React.FC = () => {
             >
               <motion.div variants={fadeInUp} className="inline-flex items-center gap-2 px-4 py-2 bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-full text-sm font-semibold mb-6">
                 <SparklesIcon className="h-4 w-4" />
-                <span>AI-Powered Travel Companion Matching</span>
+                <span>Smart Travel Companion Matching</span>
               </motion.div>
 
               <motion.h1 variants={fadeInUp} className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 text-balance">
@@ -98,7 +98,7 @@ const HomeNew: React.FC = () => {
               </motion.h1>
 
               <motion.p variants={fadeInUp} className="text-xl text-gray-600 dark:text-gray-400 mb-8 text-balance">
-                Connect with compatible travelers worldwide using our advanced AI matching algorithm.
+                Connect with compatible travelers worldwide using our advanced matching algorithm.
                 Real-time chat, location-based discovery, and smart group management.
               </motion.p>
 
@@ -263,7 +263,7 @@ const HomeNew: React.FC = () => {
             {[
               {
                 icon: SparklesIcon,
-                title: 'AI Smart Matching',
+                title: 'Smart Matching',
                 description: 'Advanced algorithm analyzes travel styles, interests, and schedules for perfect matches',
                 stat: '92% accuracy'
               },

@@ -55,12 +55,12 @@ const Portfolio: React.FC = () => {
               Full-Stack Project Portfolio
             </div>
             <h1 className="text-5xl md:text-6xl font-bold mb-6">
-              TravelMate: AI-Powered
+              TravelMate: Advanced
               <span className="gradient-text"> Travel Companion Platform</span>
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
               A comprehensive full-stack application featuring Spring Boot backend, React frontend,
-              real-time WebSocket communication, and intelligent AI matching algorithms
+              real-time WebSocket communication, and intelligent matching algorithms
             </p>
             <div className="flex gap-4 justify-center flex-wrap">
               <a href="https://github.com/araeLaver/TravelMate" target="_blank" rel="noopener noreferrer" className="btn btn-primary group">
@@ -94,7 +94,7 @@ const Portfolio: React.FC = () => {
               },
               {
                 icon: CpuChipIcon,
-                title: 'AI-Powered Matching',
+                title: 'Advanced Matching',
                 description: 'Hybrid recommendation algorithm with 8 weighted factors'
               },
               {
@@ -243,7 +243,7 @@ const Portfolio: React.FC = () => {
           <div className="space-y-12">
             {[
               {
-                title: 'AI-Powered Matching Algorithm',
+                title: 'Advanced Matching Algorithm',
                 description: 'Hybrid recommendation system combining content-based filtering (70%) and collaborative filtering (30%) with 8 weighted factors',
                 details: [
                   'Travel Style Compatibility (25%)',

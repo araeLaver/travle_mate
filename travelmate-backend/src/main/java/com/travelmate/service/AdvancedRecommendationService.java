@@ -27,7 +27,7 @@ public class AdvancedRecommendationService {
     private final NotificationService notificationService;
     
     /**
-     * AI 기반 사용자 추천 시스템
+     * 고급 사용자 추천 시스템
      */
     public List<UserDto.Response> getPersonalizedRecommendations(Long userId) {
         User currentUser = userRepository.findById(userId)
