@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 import com.travelmate.entity.UserReview;
+import com.travelmate.entity.Report;
 import com.travelmate.repository.UserReviewRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.Authentication;
@@ -28,6 +29,7 @@ public class UserService {
     private final JwtService jwtService;
     private final UserReviewRepository userReviewRepository;
     private final EmailService emailService;
+    private final ReportService reportService;
     
     public UserDto.Response registerUser(UserDto.RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -277,17 +279,31 @@ public class UserService {
         log.info("사용자 계정 비활성화: {}", userId);
     }
     
-    public void reportUser(Long reporterId, UserDto.ReportRequest request) {
-        User reporter = userRepository.findById(reporterId)
-            .orElseThrow(() -> new RuntimeException("신고자를 찾을 수 없습니다."));
-        
-        User reported = userRepository.findById(request.getReportedUserId())
-            .orElseThrow(() -> new RuntimeException("신고 대상자를 찾을 수 없습니다."));
-        
-        // 신고 로그 생성 (실제로는 별도 Report Entity 필요)
-        log.warn("사용자 신고: {} -> {} (사유: {})", reporterId, request.getReportedUserId(), request.getReason());
-        
-        // TODO: 관리자 알림 및 신고 처리 로직 구현
+    public UserDto.ReportResponse reportUser(Long reporterId, UserDto.ReportRequest request) {
+        Report.ReportType reportType;
+        try {
+            reportType = Report.ReportType.valueOf(request.getReportType().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            reportType = Report.ReportType.OTHER;
+        }
+
+        Report report = reportService.createReport(
+            reporterId,
+            request.getReportedUserId(),
+            reportType,
+            request.getReason(),
+            request.getDescription()
+        );
+
+        return UserDto.ReportResponse.builder()
+            .id(report.getId())
+            .reporterId(reporterId)
+            .reportedUserId(request.getReportedUserId())
+            .reportType(report.getReportType().name())
+            .reason(report.getReason())
+            .status(report.getStatus().name())
+            .createdAt(report.getCreatedAt())
+            .build();
     }
     
     @Transactional(readOnly = true)

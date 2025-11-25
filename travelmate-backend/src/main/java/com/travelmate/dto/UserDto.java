@@ -143,12 +143,30 @@ public class UserDto {
         @Min(value = 1, message = "올바른 사용자 ID를 입력해주세요")
         private Long reportedUserId;
 
+        @NotBlank(message = "신고 유형은 필수 입력 항목입니다")
+        private String reportType;
+
         @NotBlank(message = "신고 사유는 필수 입력 항목입니다")
-        @Length(min = 2, max = 50, message = "신고 사유는 2-50자 사이여야 합니다")
+        @Length(min = 2, max = 500, message = "신고 사유는 2-500자 사이여야 합니다")
         private String reason;
 
-        @Length(max = 1000, message = "신고 내용은 1000자를 초과할 수 없습니다")
+        @Length(max = 2000, message = "신고 내용은 2000자를 초과할 수 없습니다")
         private String description;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ReportResponse {
+        private Long id;
+        private Long reporterId;
+        private Long reportedUserId;
+        private String reportType;
+        private String reason;
+        private String status;
+        private LocalDateTime createdAt;
+        private LocalDateTime processedAt;
     }
     
     @Data

@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { realSocialLoginService } from '../services/realSocialLoginService';
 
 const AuthCallback: React.FC = () => {
   const navigate = useNavigate();
@@ -14,10 +13,7 @@ const AuthCallback: React.FC = () => {
       const error = urlParams.get('error');
       const provider = urlParams.get('provider') || state; // state에서 provider 정보 추출
 
-      console.log('OAuth 콜백 처리 시작:', { code, state, error, provider });
-
       if (error) {
-        console.error('OAuth 에러:', error);
         alert(`로그인 중 오류가 발생했습니다: ${error}`);
         navigate('/login');
         return;
@@ -25,10 +21,6 @@ const AuthCallback: React.FC = () => {
 
       if (code) {
         try {
-          // OAuth 코드를 사용하여 토큰 교환 및 사용자 정보 가져오기
-          console.log('OAuth 코드 수신:', code);
-          console.log('Provider:', provider);
-
           // 실제 구현에서는 백엔드 API를 호출하여 토큰을 교환해야 합니다
           // 예시: POST /api/auth/oauth/callback
           const response = await fetch('/api/auth/oauth/callback', {
@@ -45,7 +37,6 @@ const AuthCallback: React.FC = () => {
 
           if (response.ok) {
             const userData = await response.json();
-            console.log('백엔드에서 받은 사용자 정보:', userData);
 
             // 로컬 저장소에 사용자 정보 저장
             localStorage.setItem('socialUser', JSON.stringify(userData.user));
@@ -59,10 +50,7 @@ const AuthCallback: React.FC = () => {
             throw new Error('백엔드 인증 처리 실패');
           }
         } catch (error) {
-          console.error('OAuth 콜백 처리 오류:', error);
-
           // 백엔드 연결 실패 시 임시로 성공 처리 (개발용)
-          console.warn('백엔드 API 연결 실패 - 개발 모드로 처리');
           const mockUser = {
             id: 'oauth_' + Date.now(),
             email: 'oauth.user@example.com',
@@ -87,7 +75,6 @@ const AuthCallback: React.FC = () => {
           const tokenType = hashParams.get('token_type');
 
           if (accessToken) {
-            console.log('네이버 액세스 토큰 수신:', accessToken);
             // 네이버 사용자 정보 API 호출
             try {
               const userResponse = await fetch('https://openapi.naver.com/v1/nid/me', {
@@ -115,13 +102,12 @@ const AuthCallback: React.FC = () => {
                 return;
               }
             } catch (error) {
-              console.error('네이버 사용자 정보 조회 실패:', error);
+              // 네이버 사용자 정보 조회 실패
             }
           }
         }
 
         // 콜백 파라미터가 없는 경우 로그인 페이지로 리다이렉트
-        console.log('OAuth 콜백 파라미터 없음 - 로그인 페이지로 이동');
         navigate('/login');
       }
     };

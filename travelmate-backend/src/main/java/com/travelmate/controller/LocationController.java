@@ -14,11 +14,10 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/location")
-@CrossOrigin(origins = "*")
 @Slf4j
 public class LocationController {
 
-    @Value("${kakao.api.key:74dc0b60497e6e6f4ffdee77182d796e}")
+    @Value("${kakao.api.key}")
     private String kakaoApiKey;
 
     @GetMapping("/address")

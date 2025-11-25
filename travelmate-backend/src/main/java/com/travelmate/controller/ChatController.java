@@ -16,7 +16,6 @@ import org.springframework.http.HttpStatus;
 
 @Controller
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class ChatController {
     
     private final ChatService chatService;

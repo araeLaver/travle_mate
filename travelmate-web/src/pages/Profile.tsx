@@ -25,7 +25,6 @@ const Profile: React.FC = () => {
         setProfile(userProfile);
       }
     } catch (error) {
-      console.error('Failed to load profile:', error);
       const tempProfile = profileService.createTempProfile('여행러');
       setProfile(tempProfile);
     } finally {
@@ -61,7 +60,6 @@ const Profile: React.FC = () => {
       setIsEditing(false);
       setEditForm({});
     } catch (error) {
-      console.error('Failed to update profile:', error);
       alert('프로필 업데이트에 실패했습니다.');
     }
   };
