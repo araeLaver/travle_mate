@@ -249,6 +249,26 @@ public class NotificationService {
     }
 
     // Helper methods
+
+    /**
+     * 간단한 시스템 알림 생성
+     */
+    public void createNotification(Long userId, String title, String message, String type) {
+        try {
+            createAndSendNotification(
+                userId,
+                Notification.NotificationType.SYSTEM,
+                title,
+                message,
+                null,
+                null,
+                type
+            );
+        } catch (Exception e) {
+            log.error("시스템 알림 생성 실패: userId={}, title={}", userId, title, e);
+        }
+    }
+
     public void notifyGroupInvite(Long userId, Long groupId, String groupName, String inviterName) {
         createAndSendNotification(
                 userId,

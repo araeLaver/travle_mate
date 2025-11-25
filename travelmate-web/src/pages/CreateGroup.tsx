@@ -105,7 +105,6 @@ const CreateGroup: React.FC = () => {
       alert('🎉 그룹이 성공적으로 생성되었습니다!');
       navigate(`/groups`);
     } catch (error) {
-      console.error('Failed to create group:', error);
       alert('그룹 생성 중 오류가 발생했습니다. 다시 시도해주세요.');
     } finally {
       setIsLoading(false);

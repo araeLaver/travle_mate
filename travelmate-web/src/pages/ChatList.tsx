@@ -25,7 +25,7 @@ const ChatList: React.FC = () => {
       const rooms = chatService.getChatRooms();
       setChatRooms(rooms);
     } catch (error) {
-      console.error('Failed to load chat rooms:', error);
+      // 채팅방 로드 실패
     } finally {
       setIsLoading(false);
     }

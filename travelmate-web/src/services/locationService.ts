@@ -28,10 +28,7 @@ class LocationService {
 
   // 현재 위치 가져오기
   async getCurrentLocation(): Promise<Location> {
-    console.log('🔍 위치 서비스 시작...');
-
     if (!navigator.geolocation) {
-      console.log('❌ 이 브라우저는 위치 서비스를 지원하지 않습니다.');
       const defaultLocation: Location = {
         latitude: 37.5665,
         longitude: 126.9780,
@@ -43,11 +40,6 @@ class LocationService {
 
     try {
       const position = await this.getGeolocationPosition();
-      console.log('✅ 실제 위치 정보 획득 성공!', {
-        lat: position.coords.latitude,
-        lng: position.coords.longitude,
-        accuracy: position.coords.accuracy
-      });
 
       const location: Location = {
         latitude: position.coords.latitude,
@@ -59,16 +51,12 @@ class LocationService {
         const address = await this.getAddressFromCoords(location.latitude, location.longitude);
         location.address = address;
       } catch (error) {
-        console.warn('주소 변환 실패:', error);
         location.address = `위도 ${location.latitude.toFixed(4)}, 경도 ${location.longitude.toFixed(4)}`;
       }
 
       this.currentLocation = location;
       return location;
     } catch (error: any) {
-      console.log('⚠️ 실제 위치 접근 실패 - 기본 위치 사용');
-      console.log('오류 상세:', error.message);
-
       // 위치를 가져올 수 없는 경우 서울 시청 기본값 사용
       const defaultLocation: Location = {
         latitude: 37.5665,
@@ -83,15 +71,13 @@ class LocationService {
   // 지오로케이션 헬퍼 메서드
   private getGeolocationPosition(): Promise<GeolocationPosition> {
     return new Promise((resolve, reject) => {
-      console.log('📍 브라우저에서 위치 정보를 요청합니다...');
-
       navigator.geolocation.getCurrentPosition(
         resolve,
         reject,
         {
-          enableHighAccuracy: true,   // GPS 사용
-          timeout: 15000,             // 15초 대기
-          maximumAge: 60000           // 1분간 캐시 사용
+          enableHighAccuracy: true,
+          timeout: 15000,
+          maximumAge: 60000
         }
       );
     });
@@ -100,12 +86,9 @@ class LocationService {
   // 백엔드 API를 통해 좌표를 주소로 변환
   private async getAddressFromCoords(lat: number, lng: number): Promise<string> {
     try {
-      console.log('🔍 좌표를 주소로 변환 시작:', { lat, lng });
-
       // 먼저 좌표 범위로 대략적인 지역 판단
       const estimatedLocation = this.getEstimatedLocationByCoords(lat, lng);
       if (estimatedLocation) {
-        console.log('✅ 좌표 기반 지역 추정:', estimatedLocation);
         return estimatedLocation;
       }
 
@@ -114,7 +97,6 @@ class LocationService {
         // 먼저 백엔드 API를 시도
         try {
           const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8080/api';
-          // AbortController를 사용한 timeout 구현
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 3000);
 
@@ -127,32 +109,24 @@ class LocationService {
 
           if (response.ok) {
             const data = await response.json();
-            console.log('📍 백엔드 응답:', data);
 
-            if (data.error) {
-              console.warn('백엔드에서 주소 변환 실패:', data.message);
-            } else if (data && data.documents && data.documents.length > 0) {
+            if (!data.error && data && data.documents && data.documents.length > 0) {
               const doc = data.documents[0];
 
-              // 도로명 주소가 있으면 우선 사용
               if (doc.road_address && doc.road_address.address_name) {
-                console.log('✅ 도로명 주소 (백엔드):', doc.road_address.address_name);
                 return doc.road_address.address_name;
               }
 
-              // 지번 주소 사용
               if (doc.address && doc.address.address_name) {
-                console.log('✅ 지번 주소 (백엔드):', doc.address.address_name);
                 return doc.address.address_name;
               }
             }
           }
         } catch (backendError) {
-          console.warn('백엔드 연결 실패, 직접 API 호출로 전환:', backendError);
+          // 백엔드 연결 실패, 직접 API 호출로 전환
         }
 
         // 백엔드가 실패하면 직접 Kakao API 호출
-        console.log('🔄 직접 Kakao API 호출 시도');
         const kakaoApiKey = process.env.REACT_APP_KAKAO_MAP_API_KEY;
 
         if (kakaoApiKey) {
@@ -168,36 +142,28 @@ class LocationService {
 
             if (directResponse.ok) {
               const directData = await directResponse.json();
-              console.log('📍 직접 Kakao API 응답:', directData);
 
               if (directData.documents && directData.documents.length > 0) {
                 const doc = directData.documents[0];
 
-                // 도로명 주소가 있으면 우선 사용
                 if (doc.road_address && doc.road_address.address_name) {
-                  console.log('✅ 도로명 주소 (직접):', doc.road_address.address_name);
                   return doc.road_address.address_name;
                 }
 
-                // 지번 주소 사용
                 if (doc.address && doc.address.address_name) {
-                  console.log('✅ 지번 주소 (직접):', doc.address.address_name);
                   return doc.address.address_name;
                 }
               }
             }
           } catch (kakaoError) {
-            console.warn('Kakao API 호출 실패:', kakaoError);
+            // Kakao API 호출 실패
           }
         }
       }
 
-      // 모든 시도가 실패한 경우
-      console.warn('모든 주소 변환 시도 실패');
       return `위도 ${lat.toFixed(4)}, 경도 ${lng.toFixed(4)}`;
 
     } catch (error) {
-      console.error('주소 변환 전체 실패:', error);
       return `위도 ${lat.toFixed(4)}, 경도 ${lng.toFixed(4)}`;
     }
   }
@@ -209,7 +175,6 @@ class LocationService {
 
   // 좌표 범위로 대략적인 지역 추정
   private getEstimatedLocationByCoords(lat: number, lng: number): string | null {
-    // 한국 주요 도시들 먼저 체크
     if (this.isKoreaCoords(lat, lng)) {
       const koreaCities = [
         { name: '경기도 광주시', lat: 37.4138, lng: 127.2557, range: 0.05 },
@@ -229,12 +194,10 @@ class LocationService {
           Math.pow(lat - city.lat, 2) + Math.pow(lng - city.lng, 2)
         );
         if (distance <= city.range) {
-          console.log(`✅ 한국 도시 매칭: ${city.name} (거리: ${distance.toFixed(4)})`);
           return city.name;
         }
       }
 
-      // 한국이지만 특정 도시가 아닌 경우
       if (lat >= 37.35 && lat <= 37.50 && lng >= 127.20 && lng <= 127.30) {
         return '경기도 광주시 인근';
       }
@@ -247,9 +210,8 @@ class LocationService {
 
       return '대한민국';
     }
-    // 미국 좌표 범위 확인
+
     if (lat >= 24 && lat <= 49 && lng >= -125 && lng <= -66) {
-      // 특정 유명 도시들 체크
       const usaCities = [
         { name: '워싱턴 D.C.', lat: 38.9072, lng: -77.0369, range: 0.5 },
         { name: '뉴욕', lat: 40.7128, lng: -74.0060, range: 0.8 },
@@ -272,7 +234,6 @@ class LocationService {
         }
       }
 
-      // 주별 대략적 구분
       if (lat >= 38.5 && lat <= 39.5 && lng >= -77.5 && lng <= -76.5) {
         return '워싱턴 D.C. 메트로 지역, 미국';
       }
@@ -289,7 +250,6 @@ class LocationService {
       return '미국';
     }
 
-    // 유럽 좌표 범위
     if (lat >= 35 && lat <= 71 && lng >= -10 && lng <= 40) {
       if (lat >= 48.5 && lat <= 49.5 && lng >= 2 && lng <= 3) {
         return '파리, 프랑스';
@@ -303,7 +263,6 @@ class LocationService {
       return '유럽';
     }
 
-    // 일본 좌표 범위
     if (lat >= 30 && lat <= 46 && lng >= 129 && lng <= 146) {
       if (lat >= 35.5 && lat <= 35.8 && lng >= 139.5 && lng <= 140) {
         return '도쿄, 일본';
@@ -314,7 +273,6 @@ class LocationService {
       return '일본';
     }
 
-    // 중국 좌표 범위
     if (lat >= 18 && lat <= 54 && lng >= 73 && lng <= 135) {
       if (lat >= 39.7 && lat <= 40.1 && lng >= 116.2 && lng <= 116.6) {
         return '베이징, 중국';
@@ -330,7 +288,7 @@ class LocationService {
 
   // 두 좌표 간 거리 계산 (km)
   calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-    const R = 6371; // 지구의 반지름 (km)
+    const R = 6371;
     const dLat = this.deg2rad(lat2 - lat1);
     const dLon = this.deg2rad(lon2 - lon1);
     const a =
@@ -339,7 +297,7 @@ class LocationService {
       Math.sin(dLon / 2) * Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     const d = R * c;
-    return Math.round(d * 10) / 10; // 소수점 1자리
+    return Math.round(d * 10) / 10;
   }
 
   private deg2rad(deg: number): number {
@@ -349,17 +307,10 @@ class LocationService {
   // 근처 여행 메이트 찾기
   async findNearbyTravelMates(radius: number = 5): Promise<TravelMate[]> {
     try {
-      console.log('Finding nearby travel mates with radius:', radius);
       const currentLoc = this.currentLocation || await this.getCurrentLocation();
-      console.log('Current location:', currentLoc);
-      
-      // 실제 앱에서는 서버 API를 호출하지만, 여기서는 시뮬레이션
       const mates = this.generateMockTravelMates(currentLoc, radius);
-      console.log('Generated mates:', mates);
       return mates;
     } catch (error) {
-      console.error('Error in findNearbyTravelMates:', error);
-      // 에러가 발생해도 기본 위치로 메이트를 생성
       const defaultLocation: Location = {
         latitude: 37.5665,
         longitude: 126.9780,
@@ -378,7 +329,7 @@ class LocationService {
     ];
 
     const moods = [
-      '🌟 여행 중', '🍜 맛집 탐방', '🏔️ 산 좋아', '📸 인생샷 찍기', '☕ 카페 투어', 
+      '🌟 여행 중', '🍜 맛집 탐방', '🏔️ 산 좋아', '📸 인생샷 찍기', '☕ 카페 투어',
       '🎨 문화 체험', '🏖️ 휴양지 선호', '🎭 공연 관람', '🛍️ 쇼핑 러버', '🌃 야경 덕후',
       '🚶‍♀️ 도보 탐험', '🎵 음악 투어', '🍷 와이너리 투어', '🏛️ 역사 탐방', '🌸 꽃 구경',
       '⛩️ 사찰 순례', '🎪 축제 참가', '🏄‍♂️ 액티비티', '🧘‍♀️ 명상 여행', '📚 도서관 투어'
@@ -419,13 +370,12 @@ class LocationService {
     ];
 
     const mockMates: TravelMate[] = [];
-    const count = Math.floor(Math.random() * 8) + 3; // 3-10명
+    const count = Math.floor(Math.random() * 8) + 3;
 
     for (let i = 0; i < count; i++) {
-      // 반경 내 랜덤 위치 생성
       const angle = Math.random() * 2 * Math.PI;
       const distance = Math.random() * radius;
-      const deltaLat = (distance * Math.cos(angle)) / 111; // 1도 ≈ 111km
+      const deltaLat = (distance * Math.cos(angle)) / 111;
       const deltaLng = (distance * Math.sin(angle)) / (111 * Math.cos(currentLoc.latitude * Math.PI / 180));
 
       const mateLoc: Location = {
@@ -441,7 +391,7 @@ class LocationService {
       mockMates.push({
         id: `mate_${i + 1}_${Date.now()}`,
         name: names[Math.floor(Math.random() * names.length)],
-        age: Math.floor(Math.random() * 25) + 20, // 20-44세
+        age: Math.floor(Math.random() * 25) + 20,
         gender: Math.random() > 0.5 ? 'female' : 'male',
         location: mateLoc,
         distance: actualDistance,
@@ -450,9 +400,9 @@ class LocationService {
         interests: this.getRandomItems(interests, 2, 4),
         languages: languages[Math.floor(Math.random() * languages.length)],
         bio: bios[Math.floor(Math.random() * bios.length)],
-        isOnline: Math.random() > 0.3, // 70% 온라인
-        lastSeen: new Date(Date.now() - Math.random() * 3600000), // 최근 1시간 내
-        matchScore: Math.floor(Math.random() * 30) + 70, // 70-99%
+        isOnline: Math.random() > 0.3,
+        lastSeen: new Date(Date.now() - Math.random() * 3600000),
+        matchScore: Math.floor(Math.random() * 30) + 70,
         profileImage: `https://picsum.photos/150/150?random=${i + 1}`
       });
     }
@@ -476,22 +426,24 @@ class LocationService {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
         };
-        
+
         try {
           const address = await this.getAddressFromCoords(location.latitude, location.longitude);
           location.address = address;
         } catch (error) {
-          console.warn('Failed to get address:', error);
+          // 주소 변환 실패
         }
 
         this.currentLocation = location;
         callback(location);
       },
-      (error) => console.warn('Location watch error:', error),
+      (error) => {
+        // 위치 감지 에러
+      },
       {
         enableHighAccuracy: true,
         timeout: 20000,
-        maximumAge: 300000 // 5분
+        maximumAge: 300000
       }
     );
   }

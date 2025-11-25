@@ -1,224 +1,631 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import './Home.css';
+import { motion } from 'framer-motion';
+import {
+  UserGroupIcon,
+  ChatBubbleLeftRightIcon,
+  MapPinIcon,
+  ShieldCheckIcon,
+  SparklesIcon,
+  ChartBarIcon,
+  ClockIcon,
+  GlobeAltIcon,
+  ArrowRightIcon
+} from '@heroicons/react/24/outline';
+import Logo from '../components/Logo';
+import ThemeToggle from '../components/ThemeToggle';
+import { cn } from '../lib/utils';
 
 const Home: React.FC = () => {
+  const fadeInUp = {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.5 }
+  };
+
+  const staggerContainer = {
+    animate: {
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
   return (
-    <div className="home">
+    <div className="min-h-screen bg-white dark:bg-gray-900">
+      {/* Navigation */}
+      <nav className="fixed top-0 w-full z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800">
+        <div className="container-custom">
+          <div className="flex items-center justify-between h-16">
+            <Link to="/" className="flex items-center gap-3 group">
+              <Logo variant="gradient" size="md" className="group-hover:scale-110 transition-transform" />
+              <span className="text-2xl font-bold gradient-text">TravelMate</span>
+            </Link>
+
+            <div className="hidden md:flex items-center gap-8">
+              <Link to="/portfolio" className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium">
+                Portfolio
+              </Link>
+              <Link to="/dashboard" className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium">
+                Features
+              </Link>
+              <Link to="/groups" className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium">
+                Groups
+              </Link>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <ThemeToggle />
+              <Link to="/login" className="btn btn-ghost btn-sm hidden md:inline-flex">
+                Login
+              </Link>
+              <Link to="/register" className="btn btn-primary btn-sm">
+                Get Started
+              </Link>
+            </div>
+          </div>
+        </div>
+      </nav>
+
       {/* Hero Section */}
-      <section className="hero">
-        {/* Decorative Elements */}
-        <div className="hero-decoration">
-          <div className="decoration-circle circle-1"></div>
-          <div className="decoration-circle circle-2"></div>
-          <div className="decoration-circle circle-3"></div>
-          <div className="floating-icon floating-1">✈️</div>
-          <div className="floating-icon floating-2">🌴</div>
-          <div className="floating-icon floating-3">🎒</div>
-          <div className="floating-icon floating-4">🗺️</div>
+      <section className="relative pt-32 pb-20 md:pt-40 md:pb-32 overflow-hidden">
+        {/* Background Gradient */}
+        <div className="absolute inset-0 gradient-bg opacity-5 dark:opacity-10"></div>
+
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary-400/20 dark:bg-primary-600/20 rounded-full blur-3xl animate-float"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-400/20 dark:bg-purple-600/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
         </div>
 
-        <div className="hero-content">
-          {/* Live Badge */}
-          <div className="live-badge">
-            <span className="live-dot"></span>
-            <span>10,000+ travelers online now</span>
-          </div>
+        <div className="container-custom relative z-10">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left Content */}
+            <motion.div
+              initial="initial"
+              animate="animate"
+              variants={staggerContainer}
+              className="text-center lg:text-left"
+            >
+              <motion.div variants={fadeInUp} className="inline-flex items-center gap-2 px-4 py-2 bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-full text-sm font-semibold mb-6">
+                <SparklesIcon className="h-4 w-4" />
+                <span>Smart Travel Companion Matching</span>
+              </motion.div>
 
-          {/* Main Title */}
-          <h1 className="hero-title">
-            Find Your Perfect
-            <span className="gradient-text"> Travel Buddy</span>
-          </h1>
+              <motion.h1 variants={fadeInUp} className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 text-balance">
+                Find Your Perfect
+                <span className="gradient-text"> Travel Buddy</span>
+              </motion.h1>
 
-          {/* Subtitle */}
-          <p className="hero-subtitle">
-            Advanced matching connects you with compatible travel companions.
-            Real-time chat, group management, and location-based services all in one app.
-          </p>
+              <motion.p variants={fadeInUp} className="text-xl text-gray-600 dark:text-gray-400 mb-8 text-balance">
+                Connect with compatible travelers worldwide using our advanced matching algorithm.
+                Real-time chat, location-based discovery, and smart group management.
+              </motion.p>
 
-          {/* CTA Buttons */}
-          <div className="hero-buttons">
-            <Link to="/register" className="btn-primary-hero">
-              <span>Get Started Free</span>
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M6 10H14M14 10L10 6M14 10L10 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </Link>
-            <Link to="/dashboard" className="btn-secondary-hero">
-              <span>Explore Now</span>
-            </Link>
-          </div>
+              <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
+                <Link to="/register" className="btn btn-primary btn-lg group">
+                  <span>Start Exploring</span>
+                  <ArrowRightIcon className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+                <Link to="/dashboard" className="btn btn-secondary btn-lg">
+                  비회원으로 둘러보기
+                </Link>
+              </motion.div>
 
-          {/* Trust Indicators */}
-          <div className="trust-indicators">
-            <div className="trust-item">
-              <div className="trust-avatars">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User" />
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka" alt="User" />
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Bailey" alt="User" />
-                <span className="avatar-count">+2k</span>
-              </div>
-              <span className="trust-text">Joined this week</span>
-            </div>
-            <div className="trust-divider"></div>
-            <div className="trust-item">
-              <div className="trust-rating">
-                <span>⭐</span>
-                <strong>4.9</strong>
-              </div>
-              <span className="trust-text">App Rating</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Hero Visual */}
-        <div className="hero-visual">
-          <div className="phone-mockup">
-            <div className="phone-screen">
-              <div className="app-header">
-                <span className="app-title">TravelMate</span>
-                <span className="notification-dot"></span>
-              </div>
-              <div className="app-content">
-                <div className="match-card">
-                  <div className="match-avatar">
-                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah" alt="Match" />
-                    <span className="online-badge"></span>
+              <motion.div variants={fadeInUp} className="flex items-center justify-center lg:justify-start gap-8 text-sm">
+                <div className="flex items-center gap-2">
+                  <div className="flex -space-x-2">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-400 to-purple-400 border-2 border-white dark:border-gray-900"></div>
+                    ))}
                   </div>
-                  <div className="match-info">
-                    <h4>Sarah K.</h4>
-                    <p>Adventure • Photography</p>
-                  </div>
-                  <div className="match-score">92%</div>
+                  <span className="text-gray-600 dark:text-gray-400">10K+ Active Users</span>
                 </div>
-                <div className="match-card">
-                  <div className="match-avatar">
-                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Mike" alt="Match" />
-                    <span className="online-badge"></span>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center text-yellow-500">
+                    {'★'.repeat(5)}
                   </div>
-                  <div className="match-info">
-                    <h4>Mike L.</h4>
-                    <p>Culture • Food</p>
-                  </div>
-                  <div className="match-score">88%</div>
+                  <span className="text-gray-600 dark:text-gray-400">4.9/5 Rating</span>
                 </div>
-                <div className="app-cta">Find More</div>
+              </motion.div>
+            </motion.div>
+
+            {/* Right Visual */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="relative"
+            >
+              {/* Phone Mockup */}
+              <div className="relative mx-auto w-full max-w-md">
+                <div className="absolute inset-0 gradient-bg rounded-3xl blur-2xl opacity-30"></div>
+                <div className="relative bg-gray-900 rounded-3xl p-3 shadow-2xl">
+                  <div className="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden">
+                    {/* App Header */}
+                    <div className="gradient-bg p-4 text-white">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                          <Logo variant="white" size="sm" />
+                          <span className="font-bold">TravelMate</span>
+                        </div>
+                        <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                      </div>
+                      <div className="text-sm opacity-90">Find travelers near you</div>
+                    </div>
+
+                    {/* Match Cards */}
+                    <div className="p-4 space-y-3">
+                      {[
+                        { name: 'Sarah K.', tags: 'Adventure • Photography', match: 92, online: true },
+                        { name: 'Mike L.', tags: 'Culture • Food', match: 88, online: true },
+                        { name: 'Emma T.', tags: 'Nature • Hiking', match: 85, online: false }
+                      ].map((user, i) => (
+                        <motion.div
+                          key={i}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.5 + i * 0.1 }}
+                          className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-xl hover:shadow-md transition-shadow"
+                        >
+                          <div className="relative">
+                            <div className={cn(
+                              "w-12 h-12 rounded-full bg-gradient-to-br",
+                              i === 0 && "from-pink-400 to-purple-400",
+                              i === 1 && "from-blue-400 to-cyan-400",
+                              i === 2 && "from-green-400 to-emerald-400"
+                            )}></div>
+                            {user.online && (
+                              <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-white rounded-full"></div>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{user.name}</div>
+                            <div className="text-xs text-gray-600 dark:text-gray-400 truncate">{user.tags}</div>
+                          </div>
+                          <div className="text-xs font-bold gradient-text">{user.match}%</div>
+                        </motion.div>
+                      ))}
+                    </div>
+
+                    {/* CTA Button */}
+                    <div className="p-4 pt-0">
+                      <div className="gradient-bg text-white text-center py-3 rounded-lg font-semibold text-sm">
+                        Discover More Matches
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
+
+              {/* Floating Stats */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8 }}
+                className="absolute -left-4 top-1/4 card-glass p-4 shadow-lg hidden lg:block"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center">
+                    <UserGroupIcon className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold gradient-text">500+</div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400">Active Groups</div>
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1 }}
+                className="absolute -right-4 bottom-1/4 card-glass p-4 shadow-lg hidden lg:block"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center">
+                    <ChatBubbleLeftRightIcon className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold gradient-text">10K+</div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400">Messages Daily</div>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="features-section">
-        <div className="features-container">
-          <div className="section-header">
-            <span className="section-tag">Features</span>
-            <h2>Everything You Need for the Perfect Trip</h2>
-            <p>Discover powerful tools designed to make finding travel companions effortless</p>
-          </div>
-
-          <div className="features-grid">
-            <div className="feature-card feature-primary">
-              <div className="feature-icon">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-                  <path d="M9.5 2C5.91 2 3 4.91 3 8.5C3 12.09 5.91 15 9.5 15C13.09 15 16 12.09 16 8.5C16 4.91 13.09 2 9.5 2ZM9.5 13C7.01 13 5 10.99 5 8.5C5 6.01 7.01 4 9.5 4C11.99 4 14 6.01 14 8.5C14 10.99 11.99 13 9.5 13ZM17.4 14.8C18.87 13.33 19.8 11.35 19.8 9.1C19.8 4.64 16.16 1 11.7 1C10.45 1 9.26 1.28 8.19 1.78C8.93 1.28 9.8 1 10.73 1C14.32 1 17.23 3.91 17.23 7.5C17.23 9.75 16.08 11.71 14.35 12.88C15.43 13.32 16.47 13.96 17.4 14.8ZM20 17.5C20 14.46 16.13 12 11.5 12C6.87 12 3 14.46 3 17.5V19H20V17.5Z" fill="currentColor"/>
-                </svg>
-              </div>
-              <h3>Smart Matching</h3>
-              <p>Our algorithm analyzes travel styles, interests, and schedules to find your perfect match</p>
-              <div className="feature-stat">
-                <strong>92%</strong>
-                <span>Match Accuracy</span>
-              </div>
+      <section className="section bg-gray-50 dark:bg-gray-800/50">
+        <div className="container-custom">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="text-center mb-16"
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-full text-sm font-semibold mb-4">
+              Features
             </div>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              Everything You Need for the
+              <span className="gradient-text"> Perfect Trip</span>
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+              Discover powerful tools designed to make finding travel companions effortless and enjoyable
+            </p>
+          </motion.div>
 
-            <div className="feature-card">
-              <div className="feature-icon">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-                  <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H5.17L4 17.17V4H20V16ZM7 9H9V11H7V9ZM11 9H13V11H11V9ZM15 9H17V11H15V9Z" fill="currentColor"/>
-                </svg>
-              </div>
-              <h3>Real-time Chat</h3>
-              <p>WebSocket-based messaging for instant, reliable communication anywhere</p>
-            </div>
-
-            <div className="feature-card">
-              <div className="feature-icon">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2ZM12 11.5C10.62 11.5 9.5 10.38 9.5 9C9.5 7.62 10.62 6.5 12 6.5C13.38 6.5 14.5 7.62 14.5 9C14.5 10.38 13.38 11.5 12 11.5Z" fill="currentColor"/>
-                </svg>
-              </div>
-              <h3>Location Services</h3>
-              <p>Find nearby travelers and share meetup locations in real-time</p>
-            </div>
-
-            <div className="feature-card">
-              <div className="feature-icon">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 1L3 5V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V5L12 1ZM12 11.99H19C18.47 16.11 15.72 19.78 12 20.93V12H5V6.3L12 3.19V11.99Z" fill="currentColor"/>
-                </svg>
-              </div>
-              <h3>Safe & Verified</h3>
-              <p>Verified user system and reporting features for safe travel groups</p>
-            </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              {
+                icon: SparklesIcon,
+                title: 'Smart Matching',
+                description: 'Advanced algorithm analyzes travel styles, interests, and schedules for perfect matches',
+                stat: '92% accuracy'
+              },
+              {
+                icon: ChatBubbleLeftRightIcon,
+                title: 'Real-time Chat',
+                description: 'WebSocket-based messaging for instant, reliable communication anywhere',
+                stat: 'Instant delivery'
+              },
+              {
+                icon: MapPinIcon,
+                title: 'Location Services',
+                description: 'Find nearby travelers and share meetup locations in real-time with GPS',
+                stat: '5km radius'
+              },
+              {
+                icon: ShieldCheckIcon,
+                title: 'Safe & Verified',
+                description: 'Verified user system and comprehensive reporting for secure travel groups',
+                stat: '99% trusted'
+              }
+            ].map((feature, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="card group cursor-pointer"
+              >
+                <div className="mb-4 w-12 h-12 gradient-bg rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <feature.icon className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
+                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">{feature.description}</p>
+                <div className="inline-flex px-3 py-1 bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-full text-xs font-semibold">
+                  {feature.stat}
+                </div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="stats-section">
-        <div className="stats-container">
-          <div className="stat-card">
-            <div className="stat-value">10K+</div>
-            <div className="stat-label">Active Users</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-value">500+</div>
-            <div className="stat-label">Active Trips</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-value">50+</div>
-            <div className="stat-label">Countries</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-value">99%</div>
-            <div className="stat-label">Satisfaction</div>
-          </div>
-        </div>
-      </section>
+      {/* Demo Users Section - Browse without login */}
+      <section className="section">
+        <div className="container-custom">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-full text-sm font-semibold mb-4">
+              Explore Without Signup
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              Meet Your Future <span className="gradient-text">Travel Companions</span>
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+              Browse active travelers looking for companions. No signup required to explore!
+            </p>
+          </motion.div>
 
-      {/* CTA Section */}
-      <section className="cta-section">
-        <div className="cta-container">
-          <div className="cta-content">
-            <h2>Ready to Start Your Adventure?</h2>
-            <p>Join thousands of travelers finding their perfect companions every day</p>
-            <Link to="/register" className="cta-button">
-              Start Free Today
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M6 10H14M14 10L10 6M14 10L10 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {[
+              {
+                name: 'Sophie Anderson',
+                age: 28,
+                location: 'Tokyo, Japan',
+                interests: ['Photography', 'Culture', 'Food'],
+                bio: 'Looking for travel buddies to explore hidden gems in Tokyo! Love trying local food and taking photos.',
+                online: true,
+                gradient: 'from-pink-400 to-rose-400'
+              },
+              {
+                name: 'Alex Chen',
+                age: 32,
+                location: 'Seoul, South Korea',
+                interests: ['Hiking', 'Adventure', 'History'],
+                bio: 'Adventure seeker planning a trek through Southeast Asia. Join me for an unforgettable journey!',
+                online: true,
+                gradient: 'from-blue-400 to-cyan-400'
+              },
+              {
+                name: 'Maria Santos',
+                age: 25,
+                location: 'Barcelona, Spain',
+                interests: ['Art', 'Music', 'Nightlife'],
+                bio: 'Art enthusiast exploring European cities. Looking for culture-loving travel companions.',
+                online: false,
+                gradient: 'from-purple-400 to-pink-400'
+              },
+              {
+                name: 'David Kim',
+                age: 30,
+                location: 'Bangkok, Thailand',
+                interests: ['Food', 'Markets', 'Street Art'],
+                bio: 'Foodie on a quest to find the best street food in Asia. Let\'s eat our way through the continent!',
+                online: true,
+                gradient: 'from-orange-400 to-red-400'
+              },
+              {
+                name: 'Emma Wilson',
+                age: 27,
+                location: 'Paris, France',
+                interests: ['Museums', 'Wine', 'Fashion'],
+                bio: 'Paris-based traveler planning trips to wine regions. Looking for sophisticated travel partners.',
+                online: true,
+                gradient: 'from-green-400 to-emerald-400'
+              },
+              {
+                name: 'Lucas Silva',
+                age: 29,
+                location: 'Rio de Janeiro, Brazil',
+                interests: ['Beach', 'Sports', 'Music'],
+                bio: 'Beach volleyball player exploring coastal cities. Join me for sun, sand, and great vibes!',
+                online: false,
+                gradient: 'from-yellow-400 to-orange-400'
+              }
+            ].map((user, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.05 }}
+                className="card group"
+              >
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="relative flex-shrink-0">
+                    <div className={cn("w-16 h-16 rounded-full bg-gradient-to-br", user.gradient)}></div>
+                    {user.online && (
+                      <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full"></div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-lg mb-1">{user.name}, {user.age}</h3>
+                    <div className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400">
+                      <MapPinIcon className="h-4 w-4" />
+                      <span className="truncate">{user.location}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 italic">"{user.bio}"</p>
+
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {user.interests.map((interest, j) => (
+                    <span key={j} className="px-3 py-1 bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-full text-xs font-semibold">
+                      {interest}
+                    </span>
+                  ))}
+                </div>
+
+                <Link
+                  to="/register"
+                  className="btn btn-primary w-full btn-sm group-hover:shadow-md"
+                >
+                  Connect Now
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="text-center">
+            <Link to="/register" className="btn btn-primary btn-lg group">
+              <span>View All Travelers</span>
+              <ArrowRightIcon className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
         </div>
       </section>
 
+      {/* Active Travel Groups Section */}
+      <section className="section bg-gray-50 dark:bg-gray-800/50">
+        <div className="container-custom">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-full text-sm font-semibold mb-4">
+              Browse Active Groups
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              Join <span className="gradient-text">Travel Groups</span>
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+              Discover and join active travel groups heading to amazing destinations
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {[
+              {
+                name: 'Southeast Asia Backpackers',
+                destination: 'Thailand → Vietnam → Cambodia',
+                dates: 'Dec 2024 - Jan 2025',
+                members: 5,
+                maxMembers: 8,
+                interests: ['Adventure', 'Culture', 'Budget Travel'],
+                description: 'Join us for an epic backpacking adventure through Southeast Asia!',
+                gradient: 'from-green-400 to-cyan-400'
+              },
+              {
+                name: 'European Art & Culture Tour',
+                destination: 'Paris → Rome → Barcelona',
+                dates: 'Jan 2025',
+                members: 3,
+                maxMembers: 6,
+                interests: ['Art', 'Museums', 'History'],
+                description: 'Explore the finest museums and galleries across Europe.',
+                gradient: 'from-purple-400 to-pink-400'
+              },
+              {
+                name: 'Japan Cherry Blossom',
+                destination: 'Tokyo → Kyoto → Osaka',
+                dates: 'Mar 2025',
+                members: 6,
+                maxMembers: 10,
+                interests: ['Photography', 'Nature', 'Culture'],
+                description: 'Experience the magical cherry blossom season in Japan!',
+                gradient: 'from-pink-400 to-rose-400'
+              }
+            ].map((group, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.05 }}
+                className="card group hover:shadow-xl transition-shadow"
+              >
+                <div className="flex items-start gap-3 mb-3">
+                  <div className={cn("w-12 h-12 rounded-lg bg-gradient-to-br flex items-center justify-center text-white font-bold", group.gradient)}>
+                    <UserGroupIcon className="h-6 w-6" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-lg mb-1">{group.name}</h3>
+                    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                      <MapPinIcon className="h-4 w-4" />
+                      <span>{group.destination}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
+                  {group.description}
+                </p>
+
+                <div className="flex flex-wrap gap-1.5 mb-3">
+                  {group.interests.map((interest, j) => (
+                    <span key={j} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-xs">
+                      {interest}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
+                  <div className="text-sm">
+                    <span className="font-semibold text-primary-600 dark:text-primary-400">{group.members}/{group.maxMembers}</span>
+                    <span className="text-gray-600 dark:text-gray-400 ml-1">members</span>
+                  </div>
+                  <Link to="/register" className="btn btn-primary btn-sm">
+                    Join Group
+                  </Link>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="text-center">
+            <Link to="/register" className="btn btn-primary btn-lg group">
+              <span>View All Groups</span>
+              <ArrowRightIcon className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="section gradient-bg text-white">
+        <div className="container-custom">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {[
+              { icon: UserGroupIcon, value: '10K+', label: 'Active Users' },
+              { icon: GlobeAltIcon, value: '50+', label: 'Countries' },
+              { icon: ChartBarIcon, value: '500+', label: 'Active Trips' },
+              { icon: ClockIcon, value: '<1s', label: 'Match Speed' }
+            ].map((stat, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="text-center"
+              >
+                <stat.icon className="h-8 w-8 mx-auto mb-3 opacity-80" />
+                <div className="text-4xl md:text-5xl font-bold mb-2">{stat.value}</div>
+                <div className="text-sm opacity-80">{stat.label}</div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="section">
+        <div className="container-custom">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="relative overflow-hidden rounded-3xl gradient-bg p-12 md:p-16 text-center text-white"
+          >
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjEiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-20"></div>
+            <div className="relative z-10">
+              <h2 className="text-4xl md:text-5xl font-bold mb-4">
+                Ready to Start Your Adventure?
+              </h2>
+              <p className="text-xl opacity-90 mb-8 max-w-2xl mx-auto">
+                Join thousands of travelers finding their perfect companions every day
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link to="/register" className="btn bg-white text-primary-600 hover:bg-gray-100 btn-lg group">
+                  <span>Get Started Free</span>
+                  <ArrowRightIcon className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+                <Link to="/groups" className="btn bg-white/20 text-white hover:bg-white/30 btn-lg border border-white/30">
+                  비회원으로 그룹 둘러보기
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Footer */}
-      <footer className="footer">
-        <div className="footer-content">
-          <div className="footer-brand">
-            <span className="footer-logo">TravelMate</span>
-            <p>Find your perfect travel companion</p>
-          </div>
-          <div className="footer-links">
-            <Link to="/login">Login</Link>
-            <Link to="/register">Register</Link>
-            <Link to="/dashboard">Dashboard</Link>
-          </div>
-          <div className="footer-copyright">
-            © 2024 TravelMate. All rights reserved.
+      <footer className="bg-gray-900 text-gray-400 py-12">
+        <div className="container-custom">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-3">
+              <Logo variant="white" size="md" />
+              <div>
+                <div className="text-white font-bold text-xl">TravelMate</div>
+                <div className="text-sm">Find your perfect travel companion</div>
+              </div>
+            </div>
+
+            <div className="flex gap-8">
+              <Link to="/login" className="hover:text-white transition-colors">Login</Link>
+              <Link to="/register" className="hover:text-white transition-colors">Register</Link>
+              <Link to="/dashboard" className="hover:text-white transition-colors">Dashboard</Link>
+              <Link to="/portfolio" className="hover:text-white transition-colors">Portfolio</Link>
+            </div>
+
+            <div className="text-sm">
+              © 2024 TravelMate. All rights reserved.
+            </div>
           </div>
         </div>
       </footer>

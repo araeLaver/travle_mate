@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { realSocialLoginService } from '../services/realSocialLoginService';
 import { authService } from '../services/authService';
 import './Auth.css';
 
@@ -14,8 +13,6 @@ const Register: React.FC = () => {
     name: ''
   });
   const [loading, setLoading] = useState(false);
-  const [socialLoading, setSocialLoading] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [duplicateCheck, setDuplicateCheck] = useState({
     email: { checked: false, available: false, loading: false },
     username: { checked: false, available: false, loading: false }
@@ -66,7 +63,6 @@ const Register: React.FC = () => {
         alert('✅ 사용 가능한 이메일입니다.');
       }
     } catch (error) {
-      console.error('Email duplicate check failed:', error);
       setDuplicateCheck(prev => ({
         ...prev,
         email: { checked: false, available: false, loading: false }
@@ -99,7 +95,6 @@ const Register: React.FC = () => {
         alert('✅ 사용 가능한 사용자명입니다.');
       }
     } catch (error) {
-      console.error('Username duplicate check failed:', error);
       setDuplicateCheck(prev => ({
         ...prev,
         username: { checked: false, available: false, loading: false }
@@ -110,10 +105,8 @@ const Register: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
 
     if (formData.password !== formData.confirmPassword) {
-      setError('비밀번호가 일치하지 않습니다.');
       alert('비밀번호가 일치하지 않습니다.');
       return;
     }
@@ -132,77 +125,19 @@ const Register: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await authService.register({
+      await authService.register({
         email: formData.email,
         password: formData.password,
         nickname: formData.username,
         fullName: formData.name
       });
 
-      console.log('Registration successful:', response);
       alert('✅ 회원가입이 완료되었습니다! 로그인해주세요.');
       navigate('/login');
-    } catch (error: any) {
-      console.error('Registration failed:', error);
-      setError(error.message || '회원가입에 실패했습니다.');
-      alert(`❌ ${error.message || '회원가입에 실패했습니다.'}`);
+    } catch (err: any) {
+      alert(`❌ ${err.message || '회원가입에 실패했습니다.'}`);
     } finally {
       setLoading(false);
-    }
-  };
-
-  // 소셜 로그인 핸들러들
-  const handleGoogleLogin = async () => {
-    setSocialLoading('google');
-    try {
-      const result = await realSocialLoginService.loginWithGoogle();
-      if (result.success) {
-        alert(`✅ 구글 로그인 성공! 환영합니다, ${result.user?.name}님!`);
-        navigate('/dashboard');
-      } else {
-        console.log('구글 로그인 실패:', result.error);
-      }
-    } catch (error) {
-      console.error('구글 로그인 에러:', error);
-      alert('구글 로그인 중 오류가 발생했습니다.');
-    } finally {
-      setSocialLoading(null);
-    }
-  };
-
-  const handleKakaoLogin = async () => {
-    setSocialLoading('kakao');
-    try {
-      const result = await realSocialLoginService.loginWithKakao();
-      if (result.success) {
-        alert(`✅ 카카오 로그인 성공! 환영합니다, ${result.user?.name}님!`);
-        navigate('/dashboard');
-      } else {
-        console.log('카카오 로그인 실패:', result.error);
-      }
-    } catch (error) {
-      console.error('카카오 로그인 에러:', error);
-      alert('카카오 로그인 중 오류가 발생했습니다.');
-    } finally {
-      setSocialLoading(null);
-    }
-  };
-
-  const handleNaverLogin = async () => {
-    setSocialLoading('naver');
-    try {
-      const result = await realSocialLoginService.loginWithNaver();
-      if (result.success) {
-        alert(`✅ 네이버 로그인 성공! 환영합니다, ${result.user?.name}님!`);
-        navigate('/dashboard');
-      } else {
-        console.log('네이버 로그인 실패:', result.error);
-      }
-    } catch (error) {
-      console.error('네이버 로그인 에러:', error);
-      alert('네이버 로그인 중 오류가 발생했습니다.');
-    } finally {
-      setSocialLoading(null);
     }
   };
 
@@ -338,38 +273,6 @@ const Register: React.FC = () => {
             {loading ? '가입 중...' : '회원가입'}
           </button>
         </form>
-
-        {/* 소셜 로그인 - 백엔드 구현 완료 후 활성화 예정 */}
-        {/* <div className="auth-divider">
-          <span>또는</span>
-        </div>
-
-        <div className="social-login">
-          <button
-            className="social-btn google"
-            onClick={handleGoogleLogin}
-            disabled={socialLoading !== null}
-          >
-            <span>🔵</span>
-            {socialLoading === 'google' ? '구글 로그인 중...' : 'Google로 가입'}
-          </button>
-          <button
-            className="social-btn kakao"
-            onClick={handleKakaoLogin}
-            disabled={socialLoading !== null}
-          >
-            <span>🟡</span>
-            {socialLoading === 'kakao' ? '카카오 로그인 중...' : 'KakaoTalk으로 가입'}
-          </button>
-          <button
-            className="social-btn naver"
-            onClick={handleNaverLogin}
-            disabled={socialLoading !== null}
-          >
-            <span>🟢</span>
-            {socialLoading === 'naver' ? '네이버 로그인 중...' : 'Naver로 가입'}
-          </button>
-        </div> */}
 
         <div className="auth-footer">
           <p>

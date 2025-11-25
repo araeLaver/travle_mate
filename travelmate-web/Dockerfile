@@ -1,8 +1,9 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 
-ARG REACT_APP_API_URL=https://various-belva-untab-1a59bee2.koyeb.app/api
-ARG REACT_APP_WS_URL=wss://various-belva-untab-1a59bee2.koyeb.app/ws
+# 빌드 시 --build-arg로 전달 필요
+ARG REACT_APP_API_URL
+ARG REACT_APP_WS_URL
 ARG REACT_APP_GOOGLE_CLIENT_ID=""
 ARG REACT_APP_KAKAO_APP_KEY=""
 ARG REACT_APP_NAVER_CLIENT_ID=""

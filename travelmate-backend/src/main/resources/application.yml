@@ -87,19 +87,47 @@ spring:
         order_updates: true
     database-platform: org.hibernate.dialect.PostgreSQLDialect
 
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+
 logging:
   level:
     com.travelmate: DEBUG
     org.springframework.security: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-    
+
+spring:
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
 app:
   jwt:
-    secret: ${JWT_SECRET:dev-only-secret-key-replace-in-production-environment}
-    expiration: ${JWT_EXPIRATION:86400000}  # 24 hours (환경변수로 설정 가능)
+    secret: ${JWT_SECRET:dev-local-secret-key-minimum-32-characters-long}
+    expiration: ${JWT_EXPIRATION:86400000}  # 24 hours
     refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000}  # 7 days
-  
+
+  mail:
+    enabled: ${MAIL_ENABLED:false}  # 개발환경에서는 비활성화
+
+  frontend:
+    url: ${FRONTEND_URL:http://localhost:3000}
+
   file:
     upload:
       path: ./uploads/
@@ -135,7 +163,7 @@ spring:
       
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate  # 운영환경: 스키마 검증만 (변경 X)
     show-sql: false
     properties:
       hibernate:
@@ -187,20 +215,40 @@ logging:
     max-size: 100MB
     max-history: 30
     
+spring:
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+
 app:
   jwt:
-    secret: ${JWT_SECRET:CHANGE_ME_IN_KOYEB_THIS_IS_NOT_SECURE}
-    expiration: 3600000    # 1 hour (운영환경에서는 짧게)
-    refresh-expiration: 604800000  # 7 days
-    
+    secret: ${JWT_SECRET}  # 필수! 운영환경에서 반드시 설정 (최소 32자)
+    expiration: ${JWT_EXPIRATION:3600000}  # 1 hour
+    refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000}  # 7 days
+
+  mail:
+    enabled: ${MAIL_ENABLED:true}  # 운영환경에서는 활성화
+
+  frontend:
+    url: ${FRONTEND_URL:https://travelmate.app}
+
   file:
     upload:
       path: ${FILE_UPLOAD_PATH:/app/uploads/}
       max-size: 5242880  # 5MB in bytes
-      
+
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:https://travelmate.app,https://admin.travelmate.app}
-    
+
   security:
     rate-limit:
       enabled: true

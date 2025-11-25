@@ -56,7 +56,6 @@ const Groups: React.FC = () => {
 
       setGroups(loadedGroups);
     } catch (error) {
-      console.error('Failed to load groups:', error);
       alert('그룹 목록을 불러오는데 실패했습니다.');
     } finally {
       setIsLoading(false);
@@ -75,7 +74,6 @@ const Groups: React.FC = () => {
           status: filters.status || undefined,
         });
       } catch (error) {
-        console.error('Failed to search groups:', error);
         // 에러 발생 시 로컬 필터링 사용
       }
     } else {

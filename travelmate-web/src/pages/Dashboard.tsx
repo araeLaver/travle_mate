@@ -24,12 +24,7 @@ const Dashboard: React.FC = () => {
   }, []);
 
   const initializeLocation = async () => {
-    console.log('🌍 위치 정보를 가져오는 중...');
-
-
     const location = await locationService.getCurrentLocation();
-    console.log('✅ 위치 정보 가져오기 완료:', location);
-
     setCurrentLocation(location);
 
     // 실제 GPS 위치인지 기본 위치인지 확인 (부동소수점 오차 고려)
@@ -42,8 +37,6 @@ const Dashboard: React.FC = () => {
       Math.abs(location.longitude - DEFAULT_LNG) < EPSILON;
 
     setIsLocationEnabled(!isDefaultLocation);
-
-    console.log(!isDefaultLocation ? '🟢 실제 GPS 위치 사용' : '🟡 기본 위치 사용');
   };
 
   const discoverNearbyMates = async () => {
@@ -53,9 +46,7 @@ const Dashboard: React.FC = () => {
     setDiscoveryCount(prev => prev + 1);
     
     try {
-      console.log('Starting discovery with radius:', searchRadius);
       const mates = await locationService.findNearbyTravelMates(searchRadius);
-      console.log('Received mates:', mates);
       
       // 사용자가 선택한 기분에 맞는 사람들에게 보너스 점수
       const enhancedMates = mates.map(mate => {
@@ -66,9 +57,7 @@ const Dashboard: React.FC = () => {
       });
       
       setNearbyUsers(enhancedMates.sort((a, b) => b.matchScore - a.matchScore));
-      console.log('Updated nearby users');
     } catch (error) {
-      console.error('Failed to discover travel mates:', error);
       alert('여행 메이트를 찾는 중 오류가 발생했습니다. 다시 시도해주세요.');
     } finally {
       setTimeout(() => {
@@ -88,12 +77,10 @@ const Dashboard: React.FC = () => {
   };
 
   const requestLocationPermission = async () => {
-    console.log('🔄 위치 권한 재요청...');
     await initializeLocation();
   };
 
   const setManualLocation = async () => {
-    console.log('🎯 경기광주 위치로 수동 설정');
 
     // 경기도 광주시의 정확한 좌표
     const gwangjuLocation = {
@@ -104,11 +91,6 @@ const Dashboard: React.FC = () => {
 
     // 카카오맵 API로 정확한 주소 가져오기 시도
     try {
-      const addressResult = await locationService.getCurrentLocation();
-      // 임시로 좌표를 교체하여 주소를 가져옴
-      const originalLat = addressResult.latitude;
-      const originalLng = addressResult.longitude;
-
       // locationService의 getAddressFromCoords를 직접 호출할 수 없으므로
       // 백엔드 API를 직접 호출
       const response = await fetch(
@@ -127,13 +109,11 @@ const Dashboard: React.FC = () => {
         }
       }
     } catch (error) {
-      console.warn('주소 조회 실패, 기본 주소 사용:', error);
+      // 주소 조회 실패시 기본 주소 사용
     }
 
     setCurrentLocation(gwangjuLocation);
     setIsLocationEnabled(true);
-
-    console.log('✅ 경기광주 위치로 설정 완료:', gwangjuLocation);
     alert('✅ 위치가 경기도 광주시로 설정되었습니다!');
   };
 
