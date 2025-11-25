@@ -104,7 +104,7 @@ public class PostService {
 
         // 작성자 검증
         if (!post.getAuthor().getId().equals(userId)) {
-            throw BusinessException.accessDenied("게시글을 수정할 권한이 없습니다.");
+            throw BusinessException.forbidden("게시글을 수정할 권한이 없습니다.");
         }
 
         post.setTitle(request.getTitle());
@@ -126,7 +126,7 @@ public class PostService {
 
         // 작성자 검증
         if (!post.getAuthor().getId().equals(userId)) {
-            throw BusinessException.accessDenied("게시글을 삭제할 권한이 없습니다.");
+            throw BusinessException.forbidden("게시글을 삭제할 권한이 없습니다.");
         }
 
         postRepository.delete(post);
@@ -176,7 +176,7 @@ public class PostService {
 
         // 작성자 검증
         if (!post.getAuthor().getId().equals(userId)) {
-            throw BusinessException.accessDenied("게시글 이미지를 업로드할 권한이 없습니다.");
+            throw BusinessException.forbidden("게시글 이미지를 업로드할 권한이 없습니다.");
         }
 
         List<String> imageUrls = new ArrayList<>();
