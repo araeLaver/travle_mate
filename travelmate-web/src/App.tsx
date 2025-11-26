@@ -16,6 +16,7 @@ import Groups from './pages/Groups';
 import CreateGroup from './pages/CreateGroup';
 import Profile from './pages/Profile';
 import AuthCallback from './components/AuthCallback';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
 
 function App() {
   return (
@@ -30,44 +31,56 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/dashboard" element={
-            <Layout>
-              <Dashboard />
-            </Layout>
+            <ProtectedRoute>
+              <Layout>
+                <Dashboard />
+              </Layout>
+            </ProtectedRoute>
           } />
 
           {/* 채팅 목록 페이지 */}
           <Route path="/chat" element={
-            <Layout>
-              <ChatList />
-            </Layout>
+            <ProtectedRoute>
+              <Layout>
+                <ChatList />
+              </Layout>
+            </ProtectedRoute>
           } />
 
           {/* 개별 채팅 페이지 */}
           <Route path="/chat/:roomId" element={
-            <Layout>
-              <Chat />
-            </Layout>
+            <ProtectedRoute>
+              <Layout>
+                <Chat />
+              </Layout>
+            </ProtectedRoute>
           } />
 
           {/* 그룹 목록 페이지 */}
           <Route path="/groups" element={
-            <Layout>
-              <Groups />
-            </Layout>
+            <ProtectedRoute>
+              <Layout>
+                <Groups />
+              </Layout>
+            </ProtectedRoute>
           } />
 
           {/* 그룹 생성 페이지 */}
           <Route path="/groups/create" element={
-            <Layout>
-              <CreateGroup />
-            </Layout>
+            <ProtectedRoute>
+              <Layout>
+                <CreateGroup />
+              </Layout>
+            </ProtectedRoute>
           } />
 
           {/* 프로필 페이지 */}
           <Route path="/profile" element={
-            <Layout>
-              <Profile />
-            </Layout>
+            <ProtectedRoute>
+              <Layout>
+                <Profile />
+              </Layout>
+            </ProtectedRoute>
           } />
           </Routes>
         </Router>

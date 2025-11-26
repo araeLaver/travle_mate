@@ -93,8 +93,9 @@ const Dashboard: React.FC = () => {
     try {
       // locationService의 getAddressFromCoords를 직접 호출할 수 없으므로
       // 백엔드 API를 직접 호출
+      const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
       const response = await fetch(
-        `http://localhost:8080/api/location/address?lat=${gwangjuLocation.latitude}&lng=${gwangjuLocation.longitude}`
+        `${API_BASE_URL}/location/address?lat=${gwangjuLocation.latitude}&lng=${gwangjuLocation.longitude}`
       );
 
       if (response.ok) {
