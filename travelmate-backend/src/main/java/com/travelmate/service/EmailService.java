@@ -2,23 +2,30 @@ package com.travelmate.service;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class EmailService {
 
-    private final JavaMailSender mailSender;
+    private final Optional<JavaMailSender> mailSender;
     private final TokenStorageService tokenStorageService;
+
+    @Autowired
+    public EmailService(@Autowired(required = false) JavaMailSender mailSender,
+                        TokenStorageService tokenStorageService) {
+        this.mailSender = Optional.ofNullable(mailSender);
+        this.tokenStorageService = tokenStorageService;
+    }
 
     @Value("${app.frontend.url:http://localhost:3000}")
     private String frontendUrl;
@@ -35,7 +42,7 @@ public class EmailService {
         tokenStorageService.saveEmailVerificationToken(token, email);
         String verificationLink = frontendUrl + "/verify-email?token=" + token;
 
-        if (mailEnabled && !mailFrom.isEmpty()) {
+        if (mailEnabled && mailSender.isPresent() && !mailFrom.isEmpty()) {
             sendEmailAsync(email, "TravelMate 이메일 인증", buildVerificationEmailHtml(fullName, verificationLink));
         } else {
             log.info("=================================================");
@@ -54,7 +61,7 @@ public class EmailService {
         tokenStorageService.savePasswordResetToken(token, email);
         String resetLink = frontendUrl + "/reset-password?token=" + token;
 
-        if (mailEnabled && !mailFrom.isEmpty()) {
+        if (mailEnabled && mailSender.isPresent() && !mailFrom.isEmpty()) {
             sendEmailAsync(email, "TravelMate 비밀번호 재설정", buildPasswordResetEmailHtml(resetLink));
         } else {
             log.info("=================================================");
@@ -69,8 +76,14 @@ public class EmailService {
 
     @Async
     public void sendEmailAsync(String to, String subject, String htmlContent) {
+        if (mailSender.isEmpty()) {
+            log.warn("JavaMailSender가 구성되지 않았습니다. 이메일을 발송할 수 없습니다: {}", to);
+            return;
+        }
+
         try {
-            MimeMessage message = mailSender.createMimeMessage();
+            JavaMailSender sender = mailSender.get();
+            MimeMessage message = sender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
             helper.setFrom(mailFrom);
@@ -78,7 +91,7 @@ public class EmailService {
             helper.setSubject(subject);
             helper.setText(htmlContent, true);
 
-            mailSender.send(message);
+            sender.send(message);
             log.info("이메일 발송 완료: {}", to);
         } catch (MessagingException e) {
             log.error("이메일 발송 실패: {} - {}", to, e.getMessage());
