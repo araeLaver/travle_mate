@@ -162,7 +162,7 @@ spring:
       
   jpa:
     hibernate:
-      ddl-auto: validate  # 운영환경: 스키마 검증만 (변경 X)
+      ddl-auto: update  # 스키마 자동 업데이트
     show-sql: false
     properties:
       hibernate:
