@@ -24,70 +24,84 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <Router>
           <Routes>
-          {/* 인증이 필요 없는 페이지 */}
-          <Route path="/" element={<Home />} />
-          <Route path="/portfolio" element={<Portfolio />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/auth/callback" element={<AuthCallback />} />
-          <Route path="/dashboard" element={
-            <ProtectedRoute>
-              <Layout>
-                <Dashboard />
-              </Layout>
-            </ProtectedRoute>
-          } />
+            {/* 인증이 필요 없는 페이지 */}
+            <Route path="/" element={<Home />} />
+            <Route path="/portfolio" element={<Portfolio />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Dashboard />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
 
-          {/* 채팅 목록 페이지 */}
-          <Route path="/chat" element={
-            <ProtectedRoute>
-              <Layout>
-                <ChatList />
-              </Layout>
-            </ProtectedRoute>
-          } />
+            {/* 채팅 목록 페이지 */}
+            <Route
+              path="/chat"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ChatList />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
 
-          {/* 개별 채팅 페이지 */}
-          <Route path="/chat/:roomId" element={
-            <ProtectedRoute>
-              <Layout>
-                <Chat />
-              </Layout>
-            </ProtectedRoute>
-          } />
+            {/* 개별 채팅 페이지 */}
+            <Route
+              path="/chat/:roomId"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Chat />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
 
-          {/* 그룹 목록 페이지 */}
-          <Route path="/groups" element={
-            <ProtectedRoute>
-              <Layout>
-                <Groups />
-              </Layout>
-            </ProtectedRoute>
-          } />
+            {/* 그룹 목록 페이지 (비회원 접근 가능) */}
+            <Route
+              path="/groups"
+              element={
+                <Layout>
+                  <Groups />
+                </Layout>
+              }
+            />
 
-          {/* 그룹 생성 페이지 */}
-          <Route path="/groups/create" element={
-            <ProtectedRoute>
-              <Layout>
-                <CreateGroup />
-              </Layout>
-            </ProtectedRoute>
-          } />
+            {/* 그룹 생성 페이지 */}
+            <Route
+              path="/groups/create"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <CreateGroup />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
 
-          {/* 프로필 페이지 */}
-          <Route path="/profile" element={
-            <ProtectedRoute>
-              <Layout>
-                <Profile />
-              </Layout>
-            </ProtectedRoute>
-          } />
+            {/* 프로필 페이지 */}
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Profile />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
           </Routes>
         </Router>
         {/* React Query DevTools (개발 환경에서만 표시) */}
-        {process.env.NODE_ENV === 'development' && (
-          <ReactQueryDevtools initialIsOpen={false} />
-        )}
+        {process.env.NODE_ENV === 'development' && <ReactQueryDevtools initialIsOpen={false} />}
       </QueryClientProvider>
     </ErrorBoundary>
   );
