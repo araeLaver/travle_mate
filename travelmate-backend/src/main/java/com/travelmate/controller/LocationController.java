@@ -17,7 +17,7 @@ import java.util.Map;
 @Slf4j
 public class LocationController {
 
-    @Value("${kakao.api.key}")
+    @Value("${kakao.api.key:}")
     private String kakaoApiKey;
 
     @GetMapping("/address")
