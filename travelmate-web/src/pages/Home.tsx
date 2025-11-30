@@ -10,7 +10,7 @@ import {
   ChartBarIcon,
   ClockIcon,
   GlobeAltIcon,
-  ArrowRightIcon
+  ArrowRightIcon,
 } from '@heroicons/react/24/outline';
 import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
@@ -20,15 +20,15 @@ const Home: React.FC = () => {
   const fadeInUp = {
     initial: { opacity: 0, y: 20 },
     animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.5 }
+    transition: { duration: 0.5 },
   };
 
   const staggerContainer = {
     animate: {
       transition: {
-        staggerChildren: 0.1
-      }
-    }
+        staggerChildren: 0.1,
+      },
+    },
   };
 
   return (
@@ -38,18 +38,31 @@ const Home: React.FC = () => {
         <div className="container-custom">
           <div className="flex items-center justify-between h-16">
             <Link to="/" className="flex items-center gap-3 group">
-              <Logo variant="gradient" size="md" className="group-hover:scale-110 transition-transform" />
+              <Logo
+                variant="gradient"
+                size="md"
+                className="group-hover:scale-110 transition-transform"
+              />
               <span className="text-2xl font-bold gradient-text">TravelMate</span>
             </Link>
 
             <div className="hidden md:flex items-center gap-8">
-              <Link to="/portfolio" className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium">
+              <Link
+                to="/portfolio"
+                className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium"
+              >
                 Portfolio
               </Link>
-              <Link to="/dashboard" className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium">
+              <Link
+                to="/dashboard"
+                className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium"
+              >
                 Features
               </Link>
-              <Link to="/groups" className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium">
+              <Link
+                to="/groups"
+                className="text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium"
+              >
                 Groups
               </Link>
             </div>
@@ -75,7 +88,10 @@ const Home: React.FC = () => {
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary-400/20 dark:bg-primary-600/20 rounded-full blur-3xl animate-float"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-400/20 dark:bg-purple-600/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
+          <div
+            className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-400/20 dark:bg-purple-600/20 rounded-full blur-3xl animate-float"
+            style={{ animationDelay: '1s' }}
+          ></div>
         </div>
 
         <div className="container-custom relative z-10">
@@ -87,44 +103,60 @@ const Home: React.FC = () => {
               variants={staggerContainer}
               className="text-center lg:text-left"
             >
-              <motion.div variants={fadeInUp} className="inline-flex items-center gap-2 px-4 py-2 bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-full text-sm font-semibold mb-6">
+              <motion.div
+                variants={fadeInUp}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-full text-sm font-semibold mb-6"
+              >
                 <SparklesIcon className="h-4 w-4" />
                 <span>Smart Travel Companion Matching</span>
               </motion.div>
 
-              <motion.h1 variants={fadeInUp} className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 text-balance">
+              <motion.h1
+                variants={fadeInUp}
+                className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 text-balance"
+              >
                 Find Your Perfect
                 <span className="gradient-text"> Travel Buddy</span>
               </motion.h1>
 
-              <motion.p variants={fadeInUp} className="text-xl text-gray-600 dark:text-gray-400 mb-8 text-balance">
+              <motion.p
+                variants={fadeInUp}
+                className="text-xl text-gray-600 dark:text-gray-400 mb-8 text-balance"
+              >
                 Connect with compatible travelers worldwide using our advanced matching algorithm.
                 Real-time chat, location-based discovery, and smart group management.
               </motion.p>
 
-              <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
+              <motion.div
+                variants={fadeInUp}
+                className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8"
+              >
                 <Link to="/register" className="btn btn-primary btn-lg group">
                   <span>Start Exploring</span>
                   <ArrowRightIcon className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
-                <Link to="/dashboard" className="btn btn-secondary btn-lg">
+                <Link to="/groups" className="btn btn-secondary btn-lg">
                   비회원으로 둘러보기
                 </Link>
               </motion.div>
 
-              <motion.div variants={fadeInUp} className="flex items-center justify-center lg:justify-start gap-8 text-sm">
+              <motion.div
+                variants={fadeInUp}
+                className="flex items-center justify-center lg:justify-start gap-8 text-sm"
+              >
                 <div className="flex items-center gap-2">
                   <div className="flex -space-x-2">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-400 to-purple-400 border-2 border-white dark:border-gray-900"></div>
+                    {[1, 2, 3].map(i => (
+                      <div
+                        key={i}
+                        className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-400 to-purple-400 border-2 border-white dark:border-gray-900"
+                      ></div>
                     ))}
                   </div>
                   <span className="text-gray-600 dark:text-gray-400">10K+ Active Users</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="flex items-center text-yellow-500">
-                    {'★'.repeat(5)}
-                  </div>
+                  <div className="flex items-center text-yellow-500">{'★'.repeat(5)}</div>
                   <span className="text-gray-600 dark:text-gray-400">4.9/5 Rating</span>
                 </div>
               </motion.div>
@@ -157,9 +189,14 @@ const Home: React.FC = () => {
                     {/* Match Cards */}
                     <div className="p-4 space-y-3">
                       {[
-                        { name: 'Sarah K.', tags: 'Adventure • Photography', match: 92, online: true },
+                        {
+                          name: 'Sarah K.',
+                          tags: 'Adventure • Photography',
+                          match: 92,
+                          online: true,
+                        },
                         { name: 'Mike L.', tags: 'Culture • Food', match: 88, online: true },
-                        { name: 'Emma T.', tags: 'Nature • Hiking', match: 85, online: false }
+                        { name: 'Emma T.', tags: 'Nature • Hiking', match: 85, online: false },
                       ].map((user, i) => (
                         <motion.div
                           key={i}
@@ -169,19 +206,25 @@ const Home: React.FC = () => {
                           className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-xl hover:shadow-md transition-shadow"
                         >
                           <div className="relative">
-                            <div className={cn(
-                              "w-12 h-12 rounded-full bg-gradient-to-br",
-                              i === 0 && "from-pink-400 to-purple-400",
-                              i === 1 && "from-blue-400 to-cyan-400",
-                              i === 2 && "from-green-400 to-emerald-400"
-                            )}></div>
+                            <div
+                              className={cn(
+                                'w-12 h-12 rounded-full bg-gradient-to-br',
+                                i === 0 && 'from-pink-400 to-purple-400',
+                                i === 1 && 'from-blue-400 to-cyan-400',
+                                i === 2 && 'from-green-400 to-emerald-400'
+                              )}
+                            ></div>
                             {user.online && (
                               <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-white rounded-full"></div>
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="font-semibold text-gray-900 dark:text-gray-100 text-sm">{user.name}</div>
-                            <div className="text-xs text-gray-600 dark:text-gray-400 truncate">{user.tags}</div>
+                            <div className="font-semibold text-gray-900 dark:text-gray-100 text-sm">
+                              {user.name}
+                            </div>
+                            <div className="text-xs text-gray-600 dark:text-gray-400 truncate">
+                              {user.tags}
+                            </div>
                           </div>
                           <div className="text-xs font-bold gradient-text">{user.match}%</div>
                         </motion.div>
@@ -255,7 +298,8 @@ const Home: React.FC = () => {
               <span className="gradient-text"> Perfect Trip</span>
             </h2>
             <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-              Discover powerful tools designed to make finding travel companions effortless and enjoyable
+              Discover powerful tools designed to make finding travel companions effortless and
+              enjoyable
             </p>
           </motion.div>
 
@@ -264,27 +308,31 @@ const Home: React.FC = () => {
               {
                 icon: SparklesIcon,
                 title: 'Smart Matching',
-                description: 'Advanced algorithm analyzes travel styles, interests, and schedules for perfect matches',
-                stat: '92% accuracy'
+                description:
+                  'Advanced algorithm analyzes travel styles, interests, and schedules for perfect matches',
+                stat: '92% accuracy',
               },
               {
                 icon: ChatBubbleLeftRightIcon,
                 title: 'Real-time Chat',
-                description: 'WebSocket-based messaging for instant, reliable communication anywhere',
-                stat: 'Instant delivery'
+                description:
+                  'WebSocket-based messaging for instant, reliable communication anywhere',
+                stat: 'Instant delivery',
               },
               {
                 icon: MapPinIcon,
                 title: 'Location Services',
-                description: 'Find nearby travelers and share meetup locations in real-time with GPS',
-                stat: '5km radius'
+                description:
+                  'Find nearby travelers and share meetup locations in real-time with GPS',
+                stat: '5km radius',
               },
               {
                 icon: ShieldCheckIcon,
                 title: 'Safe & Verified',
-                description: 'Verified user system and comprehensive reporting for secure travel groups',
-                stat: '99% trusted'
-              }
+                description:
+                  'Verified user system and comprehensive reporting for secure travel groups',
+                stat: '99% trusted',
+              },
             ].map((feature, i) => (
               <motion.div
                 key={i}
@@ -298,7 +346,9 @@ const Home: React.FC = () => {
                   <feature.icon className="h-6 w-6 text-white" />
                 </div>
                 <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">{feature.description}</p>
+                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
+                  {feature.description}
+                </p>
                 <div className="inline-flex px-3 py-1 bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-full text-xs font-semibold">
                   {feature.stat}
                 </div>
@@ -337,7 +387,7 @@ const Home: React.FC = () => {
                 interests: ['Photography', 'Culture', 'Food'],
                 bio: 'Looking for travel buddies to explore hidden gems in Tokyo! Love trying local food and taking photos.',
                 online: true,
-                gradient: 'from-pink-400 to-rose-400'
+                gradient: 'from-pink-400 to-rose-400',
               },
               {
                 name: 'Alex Chen',
@@ -346,7 +396,7 @@ const Home: React.FC = () => {
                 interests: ['Hiking', 'Adventure', 'History'],
                 bio: 'Adventure seeker planning a trek through Southeast Asia. Join me for an unforgettable journey!',
                 online: true,
-                gradient: 'from-blue-400 to-cyan-400'
+                gradient: 'from-blue-400 to-cyan-400',
               },
               {
                 name: 'Maria Santos',
@@ -355,16 +405,16 @@ const Home: React.FC = () => {
                 interests: ['Art', 'Music', 'Nightlife'],
                 bio: 'Art enthusiast exploring European cities. Looking for culture-loving travel companions.',
                 online: false,
-                gradient: 'from-purple-400 to-pink-400'
+                gradient: 'from-purple-400 to-pink-400',
               },
               {
                 name: 'David Kim',
                 age: 30,
                 location: 'Bangkok, Thailand',
                 interests: ['Food', 'Markets', 'Street Art'],
-                bio: 'Foodie on a quest to find the best street food in Asia. Let\'s eat our way through the continent!',
+                bio: "Foodie on a quest to find the best street food in Asia. Let's eat our way through the continent!",
                 online: true,
-                gradient: 'from-orange-400 to-red-400'
+                gradient: 'from-orange-400 to-red-400',
               },
               {
                 name: 'Emma Wilson',
@@ -373,7 +423,7 @@ const Home: React.FC = () => {
                 interests: ['Museums', 'Wine', 'Fashion'],
                 bio: 'Paris-based traveler planning trips to wine regions. Looking for sophisticated travel partners.',
                 online: true,
-                gradient: 'from-green-400 to-emerald-400'
+                gradient: 'from-green-400 to-emerald-400',
               },
               {
                 name: 'Lucas Silva',
@@ -382,8 +432,8 @@ const Home: React.FC = () => {
                 interests: ['Beach', 'Sports', 'Music'],
                 bio: 'Beach volleyball player exploring coastal cities. Join me for sun, sand, and great vibes!',
                 online: false,
-                gradient: 'from-yellow-400 to-orange-400'
-              }
+                gradient: 'from-yellow-400 to-orange-400',
+              },
             ].map((user, i) => (
               <motion.div
                 key={i}
@@ -395,13 +445,17 @@ const Home: React.FC = () => {
               >
                 <div className="flex items-start gap-4 mb-4">
                   <div className="relative flex-shrink-0">
-                    <div className={cn("w-16 h-16 rounded-full bg-gradient-to-br", user.gradient)}></div>
+                    <div
+                      className={cn('w-16 h-16 rounded-full bg-gradient-to-br', user.gradient)}
+                    ></div>
                     {user.online && (
                       <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full"></div>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-lg mb-1">{user.name}, {user.age}</h3>
+                    <h3 className="font-bold text-lg mb-1">
+                      {user.name}, {user.age}
+                    </h3>
                     <div className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400">
                       <MapPinIcon className="h-4 w-4" />
                       <span className="truncate">{user.location}</span>
@@ -413,7 +467,10 @@ const Home: React.FC = () => {
 
                 <div className="flex flex-wrap gap-2 mb-4">
                   {user.interests.map((interest, j) => (
-                    <span key={j} className="px-3 py-1 bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-full text-xs font-semibold">
+                    <span
+                      key={j}
+                      className="px-3 py-1 bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-full text-xs font-semibold"
+                    >
                       {interest}
                     </span>
                   ))}
@@ -468,7 +525,7 @@ const Home: React.FC = () => {
                 maxMembers: 8,
                 interests: ['Adventure', 'Culture', 'Budget Travel'],
                 description: 'Join us for an epic backpacking adventure through Southeast Asia!',
-                gradient: 'from-green-400 to-cyan-400'
+                gradient: 'from-green-400 to-cyan-400',
               },
               {
                 name: 'European Art & Culture Tour',
@@ -478,7 +535,7 @@ const Home: React.FC = () => {
                 maxMembers: 6,
                 interests: ['Art', 'Museums', 'History'],
                 description: 'Explore the finest museums and galleries across Europe.',
-                gradient: 'from-purple-400 to-pink-400'
+                gradient: 'from-purple-400 to-pink-400',
               },
               {
                 name: 'Japan Cherry Blossom',
@@ -488,8 +545,8 @@ const Home: React.FC = () => {
                 maxMembers: 10,
                 interests: ['Photography', 'Nature', 'Culture'],
                 description: 'Experience the magical cherry blossom season in Japan!',
-                gradient: 'from-pink-400 to-rose-400'
-              }
+                gradient: 'from-pink-400 to-rose-400',
+              },
             ].map((group, i) => (
               <motion.div
                 key={i}
@@ -500,7 +557,12 @@ const Home: React.FC = () => {
                 className="card group hover:shadow-xl transition-shadow"
               >
                 <div className="flex items-start gap-3 mb-3">
-                  <div className={cn("w-12 h-12 rounded-lg bg-gradient-to-br flex items-center justify-center text-white font-bold", group.gradient)}>
+                  <div
+                    className={cn(
+                      'w-12 h-12 rounded-lg bg-gradient-to-br flex items-center justify-center text-white font-bold',
+                      group.gradient
+                    )}
+                  >
                     <UserGroupIcon className="h-6 w-6" />
                   </div>
                   <div className="flex-1">
@@ -518,7 +580,10 @@ const Home: React.FC = () => {
 
                 <div className="flex flex-wrap gap-1.5 mb-3">
                   {group.interests.map((interest, j) => (
-                    <span key={j} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-xs">
+                    <span
+                      key={j}
+                      className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-xs"
+                    >
                       {interest}
                     </span>
                   ))}
@@ -526,7 +591,9 @@ const Home: React.FC = () => {
 
                 <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
                   <div className="text-sm">
-                    <span className="font-semibold text-primary-600 dark:text-primary-400">{group.members}/{group.maxMembers}</span>
+                    <span className="font-semibold text-primary-600 dark:text-primary-400">
+                      {group.members}/{group.maxMembers}
+                    </span>
                     <span className="text-gray-600 dark:text-gray-400 ml-1">members</span>
                   </div>
                   <Link to="/register" className="btn btn-primary btn-sm">
@@ -554,7 +621,7 @@ const Home: React.FC = () => {
               { icon: UserGroupIcon, value: '10K+', label: 'Active Users' },
               { icon: GlobeAltIcon, value: '50+', label: 'Countries' },
               { icon: ChartBarIcon, value: '500+', label: 'Active Trips' },
-              { icon: ClockIcon, value: '<1s', label: 'Match Speed' }
+              { icon: ClockIcon, value: '<1s', label: 'Match Speed' },
             ].map((stat, i) => (
               <motion.div
                 key={i}
@@ -591,11 +658,17 @@ const Home: React.FC = () => {
                 Join thousands of travelers finding their perfect companions every day
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link to="/register" className="btn bg-white text-primary-600 hover:bg-gray-100 btn-lg group">
+                <Link
+                  to="/register"
+                  className="btn bg-white text-primary-600 hover:bg-gray-100 btn-lg group"
+                >
                   <span>Get Started Free</span>
                   <ArrowRightIcon className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
-                <Link to="/groups" className="btn bg-white/20 text-white hover:bg-white/30 btn-lg border border-white/30">
+                <Link
+                  to="/groups"
+                  className="btn bg-white/20 text-white hover:bg-white/30 btn-lg border border-white/30"
+                >
                   비회원으로 그룹 둘러보기
                 </Link>
               </div>
@@ -617,15 +690,21 @@ const Home: React.FC = () => {
             </div>
 
             <div className="flex gap-8">
-              <Link to="/login" className="hover:text-white transition-colors">Login</Link>
-              <Link to="/register" className="hover:text-white transition-colors">Register</Link>
-              <Link to="/dashboard" className="hover:text-white transition-colors">Dashboard</Link>
-              <Link to="/portfolio" className="hover:text-white transition-colors">Portfolio</Link>
+              <Link to="/login" className="hover:text-white transition-colors">
+                Login
+              </Link>
+              <Link to="/register" className="hover:text-white transition-colors">
+                Register
+              </Link>
+              <Link to="/dashboard" className="hover:text-white transition-colors">
+                Dashboard
+              </Link>
+              <Link to="/portfolio" className="hover:text-white transition-colors">
+                Portfolio
+              </Link>
             </div>
 
-            <div className="text-sm">
-              © 2024 TravelMate. All rights reserved.
-            </div>
+            <div className="text-sm">© 2024 TravelMate. All rights reserved.</div>
           </div>
         </div>
       </footer>
