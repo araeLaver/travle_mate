@@ -10,6 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import com.travelmate.entity.UserReview;
@@ -49,6 +50,7 @@ public class UserService {
         user.setIsActive(true);
         user.setIsLocationEnabled(false);
         user.setIsMatchingEnabled(false);
+        user.setPasswordChangedAt(LocalDateTime.now());
         
         User savedUser = userRepository.save(user);
         log.info("새로운 사용자 등록: {}", savedUser.getEmail());
@@ -99,6 +101,7 @@ public class UserService {
             .orElseThrow(() -> new UserException("사용자를 찾을 수 없습니다."));
 
         user.setPassword(passwordEncoder.encode(newPassword));
+        user.setPasswordChangedAt(LocalDateTime.now());
         userRepository.save(user);
         log.info("비밀번호 재설정 완료: {}", email);
     }
