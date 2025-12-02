@@ -23,6 +23,7 @@ COPY tsconfig.json ./
 COPY tailwind.config.js ./
 COPY postcss.config.js ./
 COPY craco.config.js ./
+COPY .eslintrc.js ./
 
 COPY public ./public
 COPY src ./src
