@@ -16,7 +16,7 @@ import Groups from './pages/Groups';
 import CreateGroup from './pages/CreateGroup';
 import Profile from './pages/Profile';
 import AuthCallback from './components/AuthCallback';
-import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { ProtectedRoute, AuthRequiredRoute } from './components/auth/ProtectedRoute';
 
 function App() {
   return (
@@ -75,15 +75,15 @@ function App() {
               }
             />
 
-            {/* 그룹 생성 페이지 */}
+            {/* 그룹 생성 페이지 (로그인 필수) */}
             <Route
               path="/groups/create"
               element={
-                <ProtectedRoute>
+                <AuthRequiredRoute>
                   <Layout>
                     <CreateGroup />
                   </Layout>
-                </ProtectedRoute>
+                </AuthRequiredRoute>
               }
             />
 
