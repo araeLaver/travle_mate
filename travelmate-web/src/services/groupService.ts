@@ -57,6 +57,7 @@ class GroupService {
   private useMock: boolean = false; // Mock 데이터 사용 여부 (개발/테스트용)
   private groups: Map<string, TravelGroup> = new Map();
   private currentUserId: string;
+  private mockInitialized: boolean = false;
 
   constructor() {
     this.currentUserId = localStorage.getItem('tempUserId') || this.generateUserId();
@@ -66,6 +67,21 @@ class GroupService {
     if (this.useMock) {
       this.initializeMockData();
     }
+  }
+
+  // Mock 데이터 초기화 확인 (fallback용)
+  private ensureMockData(): void {
+    if (!this.mockInitialized) {
+      this.initializeMockData();
+      this.mockInitialized = true;
+    }
+  }
+
+  // Mock 데이터 가져오기 (fallback용)
+  private getMockGroups(): TravelGroup[] {
+    this.ensureMockData();
+    return Array.from(this.groups.values())
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 
   private generateUserId(): string {
@@ -434,8 +450,9 @@ class GroupService {
       const response = await apiClient.get<any[]>('/groups');
       return response.map(this.mapToTravelGroup);
     } catch (error) {
-      console.error('Failed to fetch groups:', error);
-      throw error;
+      console.error('Failed to fetch groups, using mock data:', error);
+      // API 실패 시 (비회원 등) mock 데이터 반환
+      return this.getMockGroups();
     }
   }
 
@@ -664,7 +681,8 @@ class GroupService {
       return response.map(this.mapToTravelGroup);
     } catch (error) {
       console.error('Failed to fetch my groups:', error);
-      throw error;
+      // 비회원이면 빈 배열 반환
+      return [];
     }
   }
 
@@ -692,8 +710,13 @@ class GroupService {
         .sort(() => Math.random() - 0.5)
         .slice(0, 6);
     } catch (error) {
-      console.error('Failed to fetch recommended groups:', error);
-      return [];
+      console.error('Failed to fetch recommended groups, using mock data:', error);
+      // API 실패 시 mock 데이터에서 추천
+      this.ensureMockData();
+      return Array.from(this.groups.values())
+        .filter(group => group.status === 'recruiting')
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 6);
     }
   }
 
