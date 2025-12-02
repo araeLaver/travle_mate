@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -14,9 +14,20 @@ import {
 } from '@heroicons/react/24/outline';
 import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
+import Tutorial from '../components/Tutorial';
 import { cn } from '../lib/utils';
 
 const Home: React.FC = () => {
+  const [showTutorial, setShowTutorial] = useState(false);
+
+  const handleStartTutorial = () => {
+    setShowTutorial(true);
+  };
+
+  const handleCompleteTutorial = () => {
+    setShowTutorial(false);
+    localStorage.setItem('tutorialCompleted', 'true');
+  };
   const fadeInUp = {
     initial: { opacity: 0, y: 20 },
     animate: { opacity: 1, y: 0 },
@@ -135,9 +146,9 @@ const Home: React.FC = () => {
                   <span>Start Exploring</span>
                   <ArrowRightIcon className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
-                <Link to="/groups" className="btn btn-secondary btn-lg">
+                <button onClick={handleStartTutorial} className="btn btn-secondary btn-lg">
                   비회원으로 둘러보기
-                </Link>
+                </button>
               </motion.div>
 
               <motion.div
@@ -665,12 +676,12 @@ const Home: React.FC = () => {
                   <span>Get Started Free</span>
                   <ArrowRightIcon className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
-                <Link
-                  to="/groups"
+                <button
+                  onClick={handleStartTutorial}
                   className="btn bg-white/20 text-white hover:bg-white/30 btn-lg border border-white/30"
                 >
-                  비회원으로 그룹 둘러보기
-                </Link>
+                  비회원으로 둘러보기
+                </button>
               </div>
             </div>
           </motion.div>
@@ -708,6 +719,9 @@ const Home: React.FC = () => {
           </div>
         </div>
       </footer>
+
+      {/* Tutorial Modal */}
+      <Tutorial isOpen={showTutorial} onComplete={handleCompleteTutorial} />
     </div>
   );
 };
