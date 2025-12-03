@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -14,20 +14,11 @@ import {
 } from '@heroicons/react/24/outline';
 import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
-import Tutorial from '../components/Tutorial';
+import { useTutorial } from '../contexts/TutorialContext';
 import { cn } from '../lib/utils';
 
 const Home: React.FC = () => {
-  const [showTutorial, setShowTutorial] = useState(false);
-
-  const handleStartTutorial = () => {
-    setShowTutorial(true);
-  };
-
-  const handleCompleteTutorial = () => {
-    setShowTutorial(false);
-    localStorage.setItem('tutorialCompleted', 'true');
-  };
+  const { startTutorial } = useTutorial();
   const fadeInUp = {
     initial: { opacity: 0, y: 20 },
     animate: { opacity: 1, y: 0 },
@@ -146,7 +137,10 @@ const Home: React.FC = () => {
                   <span>Start Exploring</span>
                   <ArrowRightIcon className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
-                <button onClick={handleStartTutorial} className="btn btn-secondary btn-lg">
+                <button
+                  onClick={startTutorial}
+                  className="btn btn-secondary btn-lg tutorial-guest-mode-btn"
+                >
                   비회원으로 둘러보기
                 </button>
               </motion.div>
@@ -677,8 +671,8 @@ const Home: React.FC = () => {
                   <ArrowRightIcon className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
                 <button
-                  onClick={handleStartTutorial}
-                  className="btn bg-white/20 text-white hover:bg-white/30 btn-lg border border-white/30"
+                  onClick={startTutorial}
+                  className="btn bg-white/20 text-white hover:bg-white/30 btn-lg border border-white/30 tutorial-guest-mode-btn"
                 >
                   비회원으로 둘러보기
                 </button>
@@ -720,8 +714,6 @@ const Home: React.FC = () => {
         </div>
       </footer>
 
-      {/* Tutorial Modal */}
-      <Tutorial isOpen={showTutorial} onComplete={handleCompleteTutorial} />
     </div>
   );
 };

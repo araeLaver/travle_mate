@@ -17,13 +17,23 @@ import CreateGroup from './pages/CreateGroup';
 import Profile from './pages/Profile';
 import AuthCallback from './components/AuthCallback';
 import { ProtectedRoute, AuthRequiredRoute } from './components/auth/ProtectedRoute';
+import { TutorialProvider, useTutorial } from './contexts/TutorialContext';
+import Tutorial from './components/Tutorial';
+
+// 전역 튜토리얼 컴포넌트 (Router 내부에서 사용)
+const GlobalTutorial: React.FC = () => {
+  const { isOpen, completeTutorial } = useTutorial();
+  return <Tutorial isOpen={isOpen} onComplete={completeTutorial} />;
+};
 
 function App() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <Router>
-          <Routes>
+        <TutorialProvider>
+          <Router>
+            <GlobalTutorial />
+            <Routes>
             {/* 인증이 필요 없는 페이지 */}
             <Route path="/" element={<Home />} />
             <Route path="/portfolio" element={<Portfolio />} />
@@ -99,7 +109,8 @@ function App() {
               }
             />
           </Routes>
-        </Router>
+          </Router>
+        </TutorialProvider>
         {/* React Query DevTools (개발 환경에서만 표시) */}
         {process.env.NODE_ENV === 'development' && <ReactQueryDevtools initialIsOpen={false} />}
       </QueryClientProvider>
