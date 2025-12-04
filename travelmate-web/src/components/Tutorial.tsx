@@ -26,8 +26,8 @@ const tutorialSteps: TutorialStep[] = [
     title: '대시보드',
     description: '여기서 주변 여행 메이트를 발견하고 매칭할 수 있어요. 주변 메이트 발견 버튼을 확인해보세요!',
     path: '/dashboard',
-    targetSelector: '.card, .btn-primary, [class*="gradient-bg"]',
-    position: 'bottom',
+    targetSelector: '.discovery-btn',
+    position: 'top',
   },
   {
     id: 3,
