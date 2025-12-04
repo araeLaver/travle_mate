@@ -55,7 +55,6 @@ const AuthCallback: React.FC = () => {
             id: 'oauth_' + Date.now(),
             email: 'oauth.user@example.com',
             name: `${provider?.toUpperCase()} 사용자`,
-            profileImage: 'https://picsum.photos/150/150?random=oauth',
             provider: provider || 'unknown'
           };
 

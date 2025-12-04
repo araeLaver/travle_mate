@@ -402,8 +402,7 @@ class LocationService {
         bio: bios[Math.floor(Math.random() * bios.length)],
         isOnline: Math.random() > 0.3,
         lastSeen: new Date(Date.now() - Math.random() * 3600000),
-        matchScore: Math.floor(Math.random() * 30) + 70,
-        profileImage: `https://picsum.photos/150/150?random=${i + 1}`
+        matchScore: Math.floor(Math.random() * 30) + 70
       });
     }
 
