@@ -111,7 +111,6 @@ class GroupService {
           {
             id: 'leader_1',
             name: '벚꽃러버',
-            profileImage: 'https://picsum.photos/60/60?random=101',
             joinedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
             role: 'leader',
             status: 'active',
@@ -121,7 +120,6 @@ class GroupService {
           {
             id: 'member_1',
             name: '봄나들이',
-            profileImage: 'https://picsum.photos/60/60?random=102',
             joinedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
             role: 'member',
             status: 'active',
@@ -131,7 +129,6 @@ class GroupService {
           {
             id: 'member_2',
             name: '꽃구경왔어요',
-            profileImage: 'https://picsum.photos/60/60?random=103',
             joinedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
             role: 'member',
             status: 'active',
@@ -141,7 +138,6 @@ class GroupService {
           {
             id: 'member_3',
             name: '카메라맨',
-            profileImage: 'https://picsum.photos/60/60?random=104',
             joinedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
             role: 'member',
             status: 'active',
@@ -150,7 +146,6 @@ class GroupService {
           }
         ],
         tags: ['벚꽃', '봄여행', '사진촬영', '자연관광'],
-        coverImage: 'https://picsum.photos/300/200?random=201',
         createdBy: 'leader_1',
         createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
         status: 'recruiting',
@@ -175,7 +170,6 @@ class GroupService {
           {
             id: 'leader_2',
             name: '부산맛집러',
-            profileImage: 'https://picsum.photos/60/60?random=105',
             joinedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
             role: 'leader',
             status: 'active',
@@ -185,7 +179,6 @@ class GroupService {
           {
             id: 'member_4',
             name: '음식탐험가',
-            profileImage: 'https://picsum.photos/60/60?random=106',
             joinedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
             role: 'member',
             status: 'active',
@@ -194,7 +187,6 @@ class GroupService {
           }
         ],
         tags: ['맛집', '부산', '미식투어', '현지맛집'],
-        coverImage: 'https://picsum.photos/300/200?random=202',
         createdBy: 'leader_2',
         createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
         status: 'recruiting',
@@ -219,7 +211,6 @@ class GroupService {
           {
             id: 'leader_3',
             name: '산악대장',
-            profileImage: 'https://picsum.photos/60/60?random=107',
             joinedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
             role: 'leader',
             status: 'active',
@@ -229,7 +220,6 @@ class GroupService {
           // 다른 멤버들...
         ],
         tags: ['등산', '지리산', '천왕봉', '자연관광'],
-        coverImage: 'https://picsum.photos/300/200?random=203',
         createdBy: 'leader_3',
         createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
         status: 'recruiting',
@@ -254,7 +244,6 @@ class GroupService {
           {
             id: 'leader_4',
             name: '문화애호가',
-            profileImage: 'https://picsum.photos/60/60?random=108',
             joinedAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000),
             role: 'leader',
             status: 'active',
@@ -264,7 +253,6 @@ class GroupService {
           // 다른 멤버들...
         ],
         tags: ['문화', '박물관', '미술관', '전통체험'],
-        coverImage: 'https://picsum.photos/300/200?random=204',
         createdBy: 'leader_4',
         createdAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000),
         status: 'full',
@@ -289,7 +277,6 @@ class GroupService {
           {
             id: 'leader_5',
             name: '제주러버',
-            profileImage: 'https://picsum.photos/60/60?random=109',
             joinedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
             role: 'leader',
             status: 'active',
@@ -299,7 +286,6 @@ class GroupService {
           {
             id: 'member_5',
             name: '휴식이필요해',
-            profileImage: 'https://picsum.photos/60/60?random=110',
             joinedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
             role: 'member',
             status: 'active',
@@ -309,7 +295,6 @@ class GroupService {
           {
             id: 'member_6',
             name: '카페순례자',
-            profileImage: 'https://picsum.photos/60/60?random=111',
             joinedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
             role: 'member',
             status: 'active',
@@ -318,7 +303,6 @@ class GroupService {
           }
         ],
         tags: ['제주도', '힐링', '카페투어', '해변산책', '자연관광'],
-        coverImage: 'https://picsum.photos/300/200?random=205',
         createdBy: 'leader_5',
         createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
         status: 'recruiting',
@@ -343,7 +327,6 @@ class GroupService {
           {
             id: 'leader_6',
             name: 'K팝덕후',
-            profileImage: 'https://picsum.photos/60/60?random=112',
             joinedAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
             role: 'leader',
             status: 'active',
@@ -352,7 +335,6 @@ class GroupService {
           }
         ],
         tags: ['K-POP', '한류', '성지순례', '아이돌', '뮤직비디오'],
-        coverImage: 'https://picsum.photos/300/200?random=206',
         createdBy: 'leader_6',
         createdAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
         status: 'recruiting',
@@ -377,7 +359,6 @@ class GroupService {
           {
             id: 'leader_7',
             name: '야경사진가',
-            profileImage: 'https://picsum.photos/60/60?random=113',
             joinedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
             role: 'leader',
             status: 'active',
@@ -386,7 +367,6 @@ class GroupService {
           }
         ],
         tags: ['강릉', '야경', '일출', '바다', '사진촬영'],
-        coverImage: 'https://picsum.photos/300/200?random=207',
         createdBy: 'leader_7',
         createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
         status: 'recruiting',
@@ -411,7 +391,6 @@ class GroupService {
           {
             id: 'leader_8',
             name: '패션피플',
-            profileImage: 'https://picsum.photos/60/60?random=114',
             joinedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
             role: 'leader',
             status: 'active',
@@ -420,7 +399,6 @@ class GroupService {
           }
         ],
         tags: ['홍대', '쇼핑', '빈티지', '패션', '스타일링'],
-        coverImage: 'https://picsum.photos/300/200?random=208',
         createdBy: 'leader_8',
         createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
         status: 'recruiting',

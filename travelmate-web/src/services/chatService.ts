@@ -61,7 +61,6 @@ class ChatService {
         {
           id: 'mate_1',
           name: '김탐험가',
-          profileImage: 'https://picsum.photos/50/50?random=1',
           isOnline: true,
           lastSeen: new Date()
         }
@@ -84,14 +83,12 @@ class ChatService {
         {
           id: 'mate_2',
           name: '박여행러',
-          profileImage: 'https://picsum.photos/50/50?random=2',
           isOnline: false,
           lastSeen: new Date(Date.now() - 1800000)
         },
         {
           id: 'mate_3',
           name: '이모험가',
-          profileImage: 'https://picsum.photos/50/50?random=3',
           isOnline: true,
           lastSeen: new Date()
         }
@@ -114,7 +111,6 @@ class ChatService {
         {
           id: 'mate_4',
           name: '이서연',
-          profileImage: 'https://picsum.photos/50/50?random=4',
           isOnline: false,
           lastSeen: new Date(Date.now() - 3600000)
         }
@@ -137,21 +133,18 @@ class ChatService {
         {
           id: 'mate_5',
           name: '제주러버',
-          profileImage: 'https://picsum.photos/50/50?random=5',
           isOnline: true,
           lastSeen: new Date()
         },
         {
           id: 'mate_6',
           name: '휴식이필요해',
-          profileImage: 'https://picsum.photos/50/50?random=6',
           isOnline: false,
           lastSeen: new Date(Date.now() - 1800000)
         },
         {
           id: 'mate_7',
           name: '카페순례자',
-          profileImage: 'https://picsum.photos/50/50?random=7',
           isOnline: true,
           lastSeen: new Date()
         }
@@ -174,7 +167,6 @@ class ChatService {
         {
           id: 'mate_8',
           name: '박민준',
-          profileImage: 'https://picsum.photos/50/50?random=8',
           isOnline: true,
           lastSeen: new Date()
         }
@@ -369,7 +361,6 @@ class ChatService {
         {
           id: participantId,
           name: participantName,
-          profileImage: `https://picsum.photos/50/50?random=${Math.floor(Math.random() * 100)}`,
           isOnline: Math.random() > 0.3,
           lastSeen: new Date(Date.now() - Math.random() * 3600000)
         }
