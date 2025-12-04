@@ -50,8 +50,8 @@ const tutorialSteps: TutorialStep[] = [
     title: '내 프로필',
     description: '프로필을 등록하면 더 정확한 매칭을 받을 수 있어요. 여행 스타일과 관심사를 설정해보세요!',
     path: '/profile',
-    targetSelector: '.card, [class*="profile"], [class*="avatar"]',
-    position: 'bottom',
+    targetSelector: '.edit-btn',
+    position: 'left',
   },
 ];
 
