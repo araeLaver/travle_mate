@@ -7,9 +7,10 @@ import {
   MapPinIcon,
   ShieldCheckIcon,
   SparklesIcon,
-  ChartBarIcon,
-  ClockIcon,
-  GlobeAltIcon,
+  // 실제 서비스 시 활성화 - Stats Section용 아이콘
+  // ChartBarIcon,
+  // ClockIcon,
+  // GlobeAltIcon,
   ArrowRightIcon,
 } from '@heroicons/react/24/outline';
 import Logo from '../components/Logo';
@@ -145,6 +146,7 @@ const Home: React.FC = () => {
                 </button>
               </motion.div>
 
+              {/* 실제 서비스 시 활성화 - 사용자 수/평점 통계
               <motion.div
                 variants={fadeInUp}
                 className="flex items-center justify-center lg:justify-start gap-8 text-sm"
@@ -165,6 +167,7 @@ const Home: React.FC = () => {
                   <span className="text-gray-600 dark:text-gray-400">4.9/5 Rating</span>
                 </div>
               </motion.div>
+              */}
             </motion.div>
 
             {/* Right Visual */}
@@ -246,7 +249,7 @@ const Home: React.FC = () => {
                 </div>
               </div>
 
-              {/* Floating Stats */}
+              {/* 실제 서비스 시 활성화 - Floating Stats
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -280,6 +283,7 @@ const Home: React.FC = () => {
                   </div>
                 </div>
               </motion.div>
+              */}
             </motion.div>
           </div>
         </div>
@@ -618,7 +622,7 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Stats Section */}
+      {/* 실제 서비스 시 활성화 - Stats Section
       <section className="section gradient-bg text-white">
         <div className="container-custom">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
@@ -644,6 +648,7 @@ const Home: React.FC = () => {
           </div>
         </div>
       </section>
+      */}
 
       {/* CTA Section */}
       <section className="section">
@@ -713,7 +718,6 @@ const Home: React.FC = () => {
           </div>
         </div>
       </footer>
-
     </div>
   );
 };
