@@ -75,5 +75,3 @@ application-*.yml
 secrets/
 *.p12
 credentials.json
-
-# AI Tools
