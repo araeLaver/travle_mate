@@ -5,13 +5,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.annotation.PostConstruct;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -24,9 +28,34 @@ public class FileUploadService {
     @Value("${app.file.upload.max-size:10485760}") // 10MB default
     private Long maxFileSize;
 
+    private Path uploadDir;
+
     private static final List<String> ALLOWED_IMAGE_EXTENSIONS = Arrays.asList("jpg", "jpeg", "png", "gif", "webp", "bmp");
     private static final List<String> ALLOWED_DOCUMENT_EXTENSIONS = Arrays.asList("pdf", "doc", "docx");
     private static final List<String> DANGEROUS_EXTENSIONS = Arrays.asList("exe", "bat", "sh", "dll", "com", "cmd", "vbs", "js");
+
+    private static final Map<String, byte[]> FILE_SIGNATURES = new HashMap<>();
+    static {
+        FILE_SIGNATURES.put("jpg", new byte[]{(byte) 0xFF, (byte) 0xD8, (byte) 0xFF});
+        FILE_SIGNATURES.put("jpeg", new byte[]{(byte) 0xFF, (byte) 0xD8, (byte) 0xFF});
+        FILE_SIGNATURES.put("png", new byte[]{(byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A});
+        FILE_SIGNATURES.put("gif", new byte[]{0x47, 0x49, 0x46, 0x38});
+        FILE_SIGNATURES.put("webp", new byte[]{0x52, 0x49, 0x46, 0x46});
+        FILE_SIGNATURES.put("bmp", new byte[]{0x42, 0x4D});
+        FILE_SIGNATURES.put("pdf", new byte[]{0x25, 0x50, 0x44, 0x46});
+    }
+
+    @PostConstruct
+    public void init() {
+        try {
+            this.uploadDir = Paths.get(uploadPath).toAbsolutePath().normalize();
+            if (!Files.exists(uploadDir)) {
+                Files.createDirectories(uploadDir);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Could not initialize upload directory", e);
+        }
+    }
     
     public String uploadImage(MultipartFile file) {
         validateFile(file, ALLOWED_IMAGE_EXTENSIONS);
@@ -73,6 +102,26 @@ public class FileUploadService {
                 "허용되지 않은 파일 형식입니다. 허용되는 형식: " + allowedExtensions
             );
         }
+
+        if (!validateMimeType(file, extension)) {
+            log.warn("MIME 타입 불일치 - 파일: {}, 확장자: {}", originalFilename, extension);
+            throw new IllegalArgumentException("파일 내용이 확장자와 일치하지 않습니다.");
+        }
+    }
+
+    private boolean validateMimeType(MultipartFile file, String extension) {
+        byte[] signature = FILE_SIGNATURES.get(extension);
+        if (signature == null) return true;
+        try (InputStream is = file.getInputStream()) {
+            byte[] header = new byte[signature.length];
+            if (is.read(header) < signature.length) return false;
+            for (int i = 0; i < signature.length; i++) {
+                if (header[i] != signature[i]) return false;
+            }
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     private String saveFile(MultipartFile file, String subfolder) {
@@ -109,14 +158,18 @@ public class FileUploadService {
 
         try {
             String filePath = fileUrl.replace("/uploads/", "");
-            Path targetPath = Paths.get(uploadPath, filePath);
+            Path targetPath = uploadDir.resolve(filePath).normalize();
+            if (!targetPath.startsWith(uploadDir)) {
+                log.warn("경로 순회 공격 시도: {}", fileUrl);
+                throw new SecurityException("잘못된 파일 경로입니다.");
+            }
 
             if (Files.exists(targetPath)) {
                 Files.delete(targetPath);
                 log.info("파일 삭제 완료: {}", fileUrl);
-            } else {
-                log.warn("삭제할 파일이 존재하지 않습니다: {}", fileUrl);
             }
+        } catch (SecurityException e) {
+            throw e;
         } catch (IOException e) {
             log.error("파일 삭제 실패: {}", fileUrl, e);
         }
@@ -146,7 +199,10 @@ public class FileUploadService {
 
         if (url.startsWith("/uploads/")) {
             String filePath = url.replace("/uploads/", "");
-            Path targetPath = Paths.get(uploadPath, filePath);
+            Path targetPath = uploadDir.resolve(filePath).normalize();
+            if (!targetPath.startsWith(uploadDir)) {
+                return false;
+            }
             return Files.exists(targetPath);
         }
 

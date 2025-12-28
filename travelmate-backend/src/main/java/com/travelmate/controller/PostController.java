@@ -98,6 +98,15 @@ public class PostController {
             @RequestParam Double latitude,
             @RequestParam Double longitude,
             @RequestParam(defaultValue = "10.0") Double radiusKm) {
+        if (latitude == null || latitude < -90 || latitude > 90) {
+            throw new IllegalArgumentException("위도는 -90에서 90 사이여야 합니다.");
+        }
+        if (longitude == null || longitude < -180 || longitude > 180) {
+            throw new IllegalArgumentException("경도는 -180에서 180 사이여야 합니다.");
+        }
+        if (radiusKm == null || radiusKm <= 0 || radiusKm > 100) {
+            throw new IllegalArgumentException("반경은 0~100km 이내여야 합니다.");
+        }
         List<PostDto.Response> nearbyPosts = postService.getNearbyPosts(latitude, longitude, radiusKm);
         return ResponseEntity.ok(nearbyPosts);
     }

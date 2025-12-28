@@ -25,6 +25,13 @@ public class LocationController {
             @RequestParam Double lat,
             @RequestParam Double lng) {
 
+        if (lat == null || lat < -90 || lat > 90) {
+            return ResponseEntity.badRequest().body(Map.of("error", true, "message", "위도는 -90에서 90 사이여야 합니다."));
+        }
+        if (lng == null || lng < -180 || lng > 180) {
+            return ResponseEntity.badRequest().body(Map.of("error", true, "message", "경도는 -180에서 180 사이여야 합니다."));
+        }
+
         try {
             log.info("좌표를 주소로 변환: lat={}, lng={}", lat, lng);
 

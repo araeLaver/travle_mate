@@ -165,7 +165,6 @@ public class AuthService {
 
     private AuthDto.OAuthUserInfo getGoogleUserInfo(String accessToken) {
         String url = "https://www.googleapis.com/oauth2/v2/userinfo";
-
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
         HttpEntity<String> entity = new HttpEntity<>(headers);
@@ -173,23 +172,24 @@ public class AuthService {
         try {
             ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, entity, Map.class);
             Map<String, Object> body = response.getBody();
+            if (body == null) throw new UserException("Google 응답이 비어있습니다.");
+            String id = (String) body.get("id");
+            String email = (String) body.get("email");
+            if (id == null || email == null) throw new UserException("Google 필수 정보가 없습니다.");
 
             return AuthDto.OAuthUserInfo.builder()
-                .provider("google")
-                .providerId((String) body.get("id"))
-                .email((String) body.get("email"))
-                .name((String) body.get("name"))
-                .profileImageUrl((String) body.get("picture"))
-                .build();
+                .provider("google").providerId(id).email(email)
+                .name((String) body.get("name")).profileImageUrl((String) body.get("picture")).build();
+        } catch (UserException e) { throw e;
         } catch (Exception e) {
-            log.error("Google OAuth 사용자 정보 가져오기 실패", e);
+            log.error("Google OAuth 실패", e);
             throw new UserException("Google 인증에 실패했습니다.");
         }
     }
 
+    @SuppressWarnings("unchecked")
     private AuthDto.OAuthUserInfo getKakaoUserInfo(String accessToken) {
         String url = "https://kapi.kakao.com/v2/user/me";
-
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
         HttpEntity<String> entity = new HttpEntity<>(headers);
@@ -197,26 +197,27 @@ public class AuthService {
         try {
             ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, entity, Map.class);
             Map<String, Object> body = response.getBody();
-
-            Map<String, Object> kakaoAccount = (Map<String, Object>) body.get("kakao_account");
-            Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
+            if (body == null) throw new UserException("카카오 응답이 비어있습니다.");
+            Map<String, Object> account = (Map<String, Object>) body.get("kakao_account");
+            if (account == null) throw new UserException("카카오 계정 정보가 없습니다.");
+            String email = (String) account.get("email");
+            if (email == null) throw new UserException("카카오 이메일이 없습니다.");
+            Map<String, Object> profile = (Map<String, Object>) account.get("profile");
 
             return AuthDto.OAuthUserInfo.builder()
-                .provider("kakao")
-                .providerId(String.valueOf(body.get("id")))
-                .email((String) kakaoAccount.get("email"))
-                .name((String) profile.get("nickname"))
-                .profileImageUrl((String) profile.get("profile_image_url"))
-                .build();
+                .provider("kakao").providerId(String.valueOf(body.get("id"))).email(email)
+                .name(profile != null ? (String) profile.get("nickname") : null)
+                .profileImageUrl(profile != null ? (String) profile.get("profile_image_url") : null).build();
+        } catch (UserException e) { throw e;
         } catch (Exception e) {
-            log.error("Kakao OAuth 사용자 정보 가져오기 실패", e);
+            log.error("Kakao OAuth 실패", e);
             throw new UserException("카카오 인증에 실패했습니다.");
         }
     }
 
+    @SuppressWarnings("unchecked")
     private AuthDto.OAuthUserInfo getNaverUserInfo(String accessToken) {
         String url = "https://openapi.naver.com/v1/nid/me";
-
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
         HttpEntity<String> entity = new HttpEntity<>(headers);
@@ -224,17 +225,19 @@ public class AuthService {
         try {
             ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, entity, Map.class);
             Map<String, Object> body = response.getBody();
-            Map<String, Object> responseData = (Map<String, Object>) body.get("response");
+            if (body == null) throw new UserException("네이버 응답이 비어있습니다.");
+            Map<String, Object> data = (Map<String, Object>) body.get("response");
+            if (data == null) throw new UserException("네이버 사용자 정보가 없습니다.");
+            String id = (String) data.get("id");
+            String email = (String) data.get("email");
+            if (id == null || email == null) throw new UserException("네이버 필수 정보가 없습니다.");
 
             return AuthDto.OAuthUserInfo.builder()
-                .provider("naver")
-                .providerId((String) responseData.get("id"))
-                .email((String) responseData.get("email"))
-                .name((String) responseData.get("name"))
-                .profileImageUrl((String) responseData.get("profile_image"))
-                .build();
+                .provider("naver").providerId(id).email(email)
+                .name((String) data.get("name")).profileImageUrl((String) data.get("profile_image")).build();
+        } catch (UserException e) { throw e;
         } catch (Exception e) {
-            log.error("Naver OAuth 사용자 정보 가져오기 실패", e);
+            log.error("Naver OAuth 실패", e);
             throw new UserException("네이버 인증에 실패했습니다.");
         }
     }
