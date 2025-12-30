@@ -1,162 +1,252 @@
+/* ===================================
+   Groups - Modern Glassmorphism Design
+   =================================== */
+
 .groups-container {
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%);
+  position: relative;
+  overflow-x: hidden;
 }
 
-/* 로딩 상태 */
+/* Animated Mesh Background */
+.groups-container::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(at 20% 30%, rgba(139, 92, 246, 0.3) 0px, transparent 50%),
+    radial-gradient(at 80% 20%, rgba(236, 72, 153, 0.25) 0px, transparent 50%),
+    radial-gradient(at 40% 80%, rgba(59, 130, 246, 0.25) 0px, transparent 50%),
+    radial-gradient(at 90% 70%, rgba(167, 139, 250, 0.2) 0px, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.groups-content {
+  position: relative;
+  z-index: 1;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+/* Loading State */
 .groups-loading {
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 50vh;
-  text-align: center;
-  color: #666;
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%);
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .loading-spinner {
-  font-size: 3rem;
-  animation: spin 2s linear infinite;
-  margin-bottom: 1rem;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* 헤더 */
-.groups-header {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-.groups-header h1 {
-  font-size: 2.5rem;
-  color: #333;
-  margin-bottom: 0.5rem;
-}
-
-.groups-header p {
-  color: #666;
-  font-size: 1.1rem;
+  font-size: 4rem;
+  animation: pulse 2s ease-in-out infinite;
   margin-bottom: 1.5rem;
 }
 
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.7;
+  }
+}
+
+/* Header */
+.groups-header {
+  text-align: center;
+  margin-bottom: 48px;
+  padding-top: 20px;
+  animation: slideDown 0.6s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.groups-header h1 {
+  font-size: 48px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #fff 0%, #c4b5fd 50%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 12px;
+}
+
+.groups-header p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 18px;
+  margin-bottom: 28px;
+}
+
 .create-group-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
   color: white;
   border: none;
-  padding: 1rem 2rem;
-  border-radius: 2rem;
-  font-size: 1.1rem;
+  padding: 16px 36px;
+  border-radius: 50px;
+  font-size: 17px;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.3s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 12px 30px rgba(139, 92, 246, 0.4);
 }
 
 .create-group-btn:hover {
-  transform: translateY(-2px);
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(139, 92, 246, 0.5);
 }
 
-/* 탭 네비게이션 */
+/* Tabs */
 .groups-tabs {
   display: flex;
   justify-content: center;
-  gap: 0.5rem;
-  margin-bottom: 2rem;
-  background: white;
-  padding: 0.5rem;
-  border-radius: 1rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  gap: 8px;
+  margin-bottom: 32px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 8px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: fadeUp 0.6s ease-out 0.1s both;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .tab-btn {
   background: transparent;
   border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.75rem;
+  padding: 14px 28px;
+  border-radius: 14px;
   cursor: pointer;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  color: #666;
+  font-weight: 600;
+  font-size: 15px;
+  transition: all 0.2s ease;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .tab-btn:hover {
-  background: #f8f9fa;
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .tab-btn.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
   color: white;
+  box-shadow: 0 8px 20px rgba(139, 92, 246, 0.35);
 }
 
-/* 필터 영역 */
+/* Filters */
 .groups-filters {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 1rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  margin-bottom: 2rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 28px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  margin-bottom: 32px;
+  animation: fadeUp 0.6s ease-out 0.2s both;
 }
 
 .search-bar {
   position: relative;
-  margin-bottom: 1rem;
+  margin-bottom: 20px;
 }
 
 .search-input {
   width: 100%;
-  padding: 1rem 1rem 1rem 3rem;
-  border: 1px solid #e9ecef;
-  border-radius: 0.75rem;
-  font-size: 1rem;
-  background: #f8f9fa;
-  transition: all 0.3s ease;
+  padding: 16px 20px 16px 52px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  font-size: 16px;
+  color: #fff;
+  transition: all 0.2s ease;
+}
+
+.search-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
 }
 
 .search-input:focus {
   outline: none;
-  border-color: #667eea;
-  background: white;
-  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
 }
 
 .search-icon {
   position: absolute;
-  left: 1rem;
+  left: 18px;
   top: 50%;
   transform: translateY(-50%);
-  color: #666;
-  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 18px;
 }
 
 .filter-row {
   display: flex;
-  gap: 1rem;
+  gap: 16px;
   flex-wrap: wrap;
 }
 
 .filter-select {
-  padding: 0.75rem 1rem;
-  border: 1px solid #e9ecef;
-  border-radius: 0.5rem;
-  background: white;
+  flex: 1;
+  min-width: 160px;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  color: #fff;
+  font-size: 15px;
   cursor: pointer;
-  transition: border-color 0.3s ease;
-  min-width: 150px;
+  transition: all 0.2s ease;
 }
 
 .filter-select:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
 }
 
-/* 그룹 목록 */
+.filter-select option {
+  background: #1e1b4b;
+  color: #fff;
+}
+
+/* Groups List */
 .groups-list {
-  margin-top: 2rem;
+  margin-top: 24px;
+  animation: fadeUp 0.6s ease-out 0.3s both;
 }
 
 .empty-groups {
@@ -164,45 +254,49 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 4rem 2rem;
+  padding: 80px 32px;
   text-align: center;
-  color: #666;
 }
 
 .empty-icon {
-  font-size: 4rem;
-  margin-bottom: 1rem;
-  opacity: 0.5;
+  font-size: 5rem;
+  margin-bottom: 24px;
+  opacity: 0.4;
 }
 
 .empty-groups h3 {
-  margin-bottom: 0.5rem;
-  color: #333;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 24px;
+  margin-bottom: 12px;
 }
 
 .empty-groups p {
+  color: rgba(255, 255, 255, 0.5);
   margin: 0;
-  opacity: 0.8;
 }
 
 .groups-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 24px;
 }
 
-/* 그룹 카드 */
+/* Group Card */
 .group-card {
-  background: white;
-  border-radius: 1rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.06) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 28px;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  transition: all 0.3s ease;
 }
 
 .group-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  transform: translateY(-8px);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.1) 100%);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.25);
 }
 
 .group-image {
@@ -215,67 +309,70 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.3s ease;
+  transition: transform 0.4s ease;
 }
 
 .group-card:hover .group-image img {
-  transform: scale(1.05);
+  transform: scale(1.08);
 }
 
 .group-status {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
+  top: 16px;
+  right: 16px;
   color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 1rem;
-  font-size: 0.85rem;
+  padding: 8px 16px;
+  border-radius: 50px;
+  font-size: 13px;
   font-weight: 600;
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background: rgba(0, 0, 0, 0.3);
 }
 
 .group-content {
-  padding: 1.5rem;
+  padding: 28px;
 }
 
 .group-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 1rem;
+  margin-bottom: 16px;
 }
 
 .group-name {
   margin: 0;
-  color: #333;
-  font-size: 1.2rem;
+  color: #fff;
+  font-size: 22px;
   font-weight: 700;
   line-height: 1.3;
 }
 
 .group-members {
-  background: #f8f9fa;
-  color: #667eea;
-  padding: 0.25rem 0.75rem;
-  border-radius: 1rem;
-  font-size: 0.85rem;
+  background: rgba(139, 92, 246, 0.25);
+  color: #c4b5fd;
+  padding: 6px 14px;
+  border-radius: 50px;
+  font-size: 13px;
   font-weight: 600;
   white-space: nowrap;
+  border: 1px solid rgba(139, 92, 246, 0.3);
 }
 
 .group-destination,
 .group-dates,
 .group-budget {
-  margin: 0.5rem 0;
-  font-size: 0.9rem;
-  color: #666;
+  margin: 10px 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .group-description {
-  color: #555;
-  font-size: 0.9rem;
-  line-height: 1.5;
-  margin: 1rem 0;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 16px 0;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
@@ -285,115 +382,121 @@
 .group-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  margin: 1rem 0;
+  gap: 8px;
+  margin: 16px 0;
 }
 
 .group-tag {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 0.25rem 0.75rem;
-  border-radius: 1rem;
-  font-size: 0.8rem;
-  font-weight: 500;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(236, 72, 153, 0.3) 100%);
+  color: #c4b5fd;
+  padding: 6px 14px;
+  border-radius: 50px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid rgba(139, 92, 246, 0.25);
 }
 
 .group-leader {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #f1f3f4;
-  font-size: 0.9rem;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 14px;
 }
 
 .leader-label {
-  color: #666;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .leader-name {
-  color: #333;
+  color: #fff;
   font-weight: 600;
 }
 
-/* 그룹 액션 */
+/* Group Actions */
 .group-actions {
-  padding: 1rem 1.5rem;
-  border-top: 1px solid #f1f3f4;
-  background: #fafbfc;
+  padding: 20px 28px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.1);
 }
 
 .my-group-actions,
 .join-group-actions {
   display: flex;
-  gap: 0.5rem;
+  gap: 12px;
   justify-content: flex-end;
 }
 
 .btn-small {
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
+  padding: 12px 24px;
+  border-radius: 14px;
   border: none;
   cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 500;
-  transition: all 0.3s ease;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
   flex: 1;
-  max-width: 120px;
+  max-width: 140px;
 }
 
 .btn-small.primary {
-  background: #667eea;
+  background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
   color: white;
+  box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
 }
 
 .btn-small.primary:hover {
-  background: #5a6fd8;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(139, 92, 246, 0.45);
 }
 
 .btn-small.secondary {
-  background: #f8f9fa;
-  color: #667eea;
-  border: 1px solid #e9ecef;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .btn-small.secondary:hover {
-  background: #e9ecef;
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .btn-small.danger {
-  background: #dc3545;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
   color: white;
+  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
 }
 
 .btn-small.danger:hover {
-  background: #c82333;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(239, 68, 68, 0.45);
 }
 
-/* 반응형 디자인 */
-@media (max-width: 768px) {
-  .groups-container {
-    padding: 1rem;
+/* Responsive */
+@media (max-width: 1024px) {
+  .groups-content {
+    padding: 24px;
   }
+}
 
+@media (max-width: 768px) {
   .groups-header h1 {
-    font-size: 2rem;
+    font-size: 36px;
   }
 
   .groups-tabs {
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 6px;
   }
 
   .tab-btn {
-    padding: 0.75rem;
+    padding: 14px;
   }
 
   .groups-filters {
-    padding: 1rem;
+    padding: 20px;
   }
 
   .filter-row {
@@ -407,12 +510,12 @@
 
   .groups-grid {
     grid-template-columns: 1fr;
-    gap: 1rem;
+    gap: 20px;
   }
 
   .group-header {
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 10px;
   }
 
   .group-members {
@@ -430,28 +533,29 @@
 }
 
 @media (max-width: 576px) {
-  .groups-container {
-    padding: 0.5rem;
+  .groups-content {
+    padding: 16px;
   }
 
   .groups-header {
-    margin-bottom: 1rem;
+    margin-bottom: 32px;
   }
 
   .create-group-btn {
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
+    padding: 14px 28px;
+    font-size: 15px;
   }
 
   .groups-filters {
-    margin-bottom: 1rem;
+    padding: 16px;
+    margin-bottom: 24px;
   }
 
   .group-content {
-    padding: 1rem;
+    padding: 20px;
   }
 
   .group-actions {
-    padding: 1rem;
+    padding: 16px 20px;
   }
 }

@@ -10,115 +10,105 @@ const Register: React.FC = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    name: ''
+    name: '',
   });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const [duplicateCheck, setDuplicateCheck] = useState({
     email: { checked: false, available: false, loading: false },
-    username: { checked: false, available: false, loading: false }
+    username: { checked: false, available: false, loading: false },
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: value
+      [name]: value,
     });
 
-    // Reset duplicate check when field changes
     if (name === 'email') {
       setDuplicateCheck(prev => ({
         ...prev,
-        email: { checked: false, available: false, loading: false }
+        email: { checked: false, available: false, loading: false },
       }));
     } else if (name === 'username') {
       setDuplicateCheck(prev => ({
         ...prev,
-        username: { checked: false, available: false, loading: false }
+        username: { checked: false, available: false, loading: false },
       }));
     }
   };
 
   const checkEmailDuplicate = async () => {
     if (!formData.email) {
-      alert('이메일을 먼저 입력해주세요.');
+      setError('이메일을 먼저 입력해주세요.');
       return;
     }
 
     setDuplicateCheck(prev => ({
       ...prev,
-      email: { ...prev.email, loading: true }
+      email: { ...prev.email, loading: true },
     }));
 
     try {
       const exists = await authService.checkEmailDuplicate(formData.email);
       setDuplicateCheck(prev => ({
         ...prev,
-        email: { checked: true, available: !exists, loading: false }
+        email: { checked: true, available: !exists, loading: false },
       }));
-
-      if (exists) {
-        alert('❌ 이미 사용중인 이메일입니다.');
-      } else {
-        alert('✅ 사용 가능한 이메일입니다.');
-      }
+      setError(exists ? '이미 사용중인 이메일입니다.' : '');
     } catch (error) {
       setDuplicateCheck(prev => ({
         ...prev,
-        email: { checked: false, available: false, loading: false }
+        email: { checked: false, available: false, loading: false },
       }));
-      alert('이메일 중복 확인 중 오류가 발생했습니다.');
+      setError('이메일 중복 확인 중 오류가 발생했습니다.');
     }
   };
 
   const checkUsernameDuplicate = async () => {
     if (!formData.username) {
-      alert('사용자명을 먼저 입력해주세요.');
+      setError('사용자명을 먼저 입력해주세요.');
       return;
     }
 
     setDuplicateCheck(prev => ({
       ...prev,
-      username: { ...prev.username, loading: true }
+      username: { ...prev.username, loading: true },
     }));
 
     try {
       const exists = await authService.checkNicknameDuplicate(formData.username);
       setDuplicateCheck(prev => ({
         ...prev,
-        username: { checked: true, available: !exists, loading: false }
+        username: { checked: true, available: !exists, loading: false },
       }));
-
-      if (exists) {
-        alert('❌ 이미 사용중인 사용자명입니다.');
-      } else {
-        alert('✅ 사용 가능한 사용자명입니다.');
-      }
+      setError(exists ? '이미 사용중인 사용자명입니다.' : '');
     } catch (error) {
       setDuplicateCheck(prev => ({
         ...prev,
-        username: { checked: false, available: false, loading: false }
+        username: { checked: false, available: false, loading: false },
       }));
-      alert('사용자명 중복 확인 중 오류가 발생했습니다.');
+      setError('사용자명 중복 확인 중 오류가 발생했습니다.');
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
 
     if (formData.password !== formData.confirmPassword) {
-      alert('비밀번호가 일치하지 않습니다.');
+      setError('비밀번호가 일치하지 않습니다.');
       return;
     }
 
-    // Check if duplicate checks have been performed and passed
     if (!duplicateCheck.email.checked || !duplicateCheck.email.available) {
-      alert('이메일 중복 확인을 해주세요.');
+      setError('이메일 중복 확인을 해주세요.');
       return;
     }
 
     if (!duplicateCheck.username.checked || !duplicateCheck.username.available) {
-      alert('사용자명 중복 확인을 해주세요.');
+      setError('사용자명 중복 확인을 해주세요.');
       return;
     }
 
@@ -129,26 +119,46 @@ const Register: React.FC = () => {
         email: formData.email,
         password: formData.password,
         nickname: formData.username,
-        fullName: formData.name
+        fullName: formData.name,
       });
-
-      alert('✅ 회원가입이 완료되었습니다! 로그인해주세요.');
       navigate('/login');
-    } catch (err: any) {
-      alert(`❌ ${err.message || '회원가입에 실패했습니다.'}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '회원가입에 실패했습니다.');
     } finally {
       setLoading(false);
     }
   };
 
+  const getCheckButtonClass = (field: 'email' | 'username') => {
+    const state = duplicateCheck[field];
+    if (state.checked) {
+      return state.available ? 'check-btn available' : 'check-btn unavailable';
+    }
+    return 'check-btn';
+  };
+
+  const getCheckButtonText = (field: 'email' | 'username') => {
+    const state = duplicateCheck[field];
+    if (state.loading) return '확인 중...';
+    if (state.checked) return state.available ? '사용가능' : '중복됨';
+    return '중복확인';
+  };
+
   return (
     <div className="auth-container">
+      {/* Animated Background Blobs */}
+      <div className="blob-1" />
+      <div className="blob-2" />
+      <div className="blob-3" />
+
       <div className="auth-card">
         <div className="auth-header">
-          <h1>🌍 TravelMate</h1>
-          <h2>회원가입</h2>
+          <h1>TravelMate</h1>
+          <h2>Join Us</h2>
           <p>여행 동반자와 함께할 모험을 시작하세요</p>
         </div>
+
+        {error && <div className="auth-error">{error}</div>}
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
@@ -161,12 +171,13 @@ const Register: React.FC = () => {
               onChange={handleChange}
               placeholder="실명을 입력하세요"
               required
+              autoComplete="name"
             />
           </div>
 
           <div className="form-group">
             <label htmlFor="username">사용자명</label>
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <div className="input-with-button">
               <input
                 type="text"
                 id="username"
@@ -175,37 +186,22 @@ const Register: React.FC = () => {
                 onChange={handleChange}
                 placeholder="사용자명을 입력하세요"
                 required
-                style={{ flex: 1 }}
+                autoComplete="username"
               />
               <button
                 type="button"
+                className={getCheckButtonClass('username')}
                 onClick={checkUsernameDuplicate}
                 disabled={!formData.username || duplicateCheck.username.loading}
-                style={{
-                  padding: '8px 16px',
-                  backgroundColor: duplicateCheck.username.checked
-                    ? (duplicateCheck.username.available ? '#28a745' : '#dc3545')
-                    : '#007bff',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: duplicateCheck.username.loading ? 'not-allowed' : 'pointer',
-                  whiteSpace: 'nowrap',
-                  fontSize: '12px'
-                }}
               >
-                {duplicateCheck.username.loading
-                  ? '확인 중...'
-                  : duplicateCheck.username.checked
-                    ? (duplicateCheck.username.available ? '✅ 사용가능' : '❌ 중복됨')
-                    : '중복확인'}
+                {getCheckButtonText('username')}
               </button>
             </div>
           </div>
 
           <div className="form-group">
             <label htmlFor="email">이메일</label>
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <div className="input-with-button">
               <input
                 type="email"
                 id="email"
@@ -214,30 +210,15 @@ const Register: React.FC = () => {
                 onChange={handleChange}
                 placeholder="your@email.com"
                 required
-                style={{ flex: 1 }}
+                autoComplete="email"
               />
               <button
                 type="button"
+                className={getCheckButtonClass('email')}
                 onClick={checkEmailDuplicate}
                 disabled={!formData.email || duplicateCheck.email.loading}
-                style={{
-                  padding: '8px 16px',
-                  backgroundColor: duplicateCheck.email.checked
-                    ? (duplicateCheck.email.available ? '#28a745' : '#dc3545')
-                    : '#007bff',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: duplicateCheck.email.loading ? 'not-allowed' : 'pointer',
-                  whiteSpace: 'nowrap',
-                  fontSize: '12px'
-                }}
               >
-                {duplicateCheck.email.loading
-                  ? '확인 중...'
-                  : duplicateCheck.email.checked
-                    ? (duplicateCheck.email.available ? '✅ 사용가능' : '❌ 중복됨')
-                    : '중복확인'}
+                {getCheckButtonText('email')}
               </button>
             </div>
           </div>
@@ -253,6 +234,7 @@ const Register: React.FC = () => {
               placeholder="8자 이상의 비밀번호"
               required
               minLength={8}
+              autoComplete="new-password"
             />
           </div>
 
@@ -266,6 +248,7 @@ const Register: React.FC = () => {
               onChange={handleChange}
               placeholder="비밀번호를 다시 입력하세요"
               required
+              autoComplete="new-password"
             />
           </div>
 
