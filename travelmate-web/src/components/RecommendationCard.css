@@ -1,105 +1,119 @@
+/* ===================================
+   RecommendationCard - Modern Glassmorphism Design
+   =================================== */
+
 .recommendation-card {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 22px;
   margin-bottom: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .recommendation-card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(139, 92, 246, 0.4);
+  transform: translateY(-4px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
 }
 
 .recommendation-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .recommendation-title {
   margin: 0;
   font-size: 20px;
-  font-weight: 600;
-  color: #333;
+  font-weight: 700;
+  color: white;
   flex: 1;
 }
 
 .recommendation-score {
-  min-width: 50px;
-  height: 50px;
+  min-width: 52px;
+  height: 52px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  font-weight: bold;
+  font-weight: 700;
   font-size: 16px;
-  margin-left: 12px;
+  margin-left: 14px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .recommendation-destination {
   font-size: 16px;
-  color: #666;
-  margin-bottom: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 14px;
   display: flex;
   align-items: center;
 }
 
 .recommendation-destination::before {
-  content: "📍";
-  margin-right: 6px;
+  content: '📍';
+  margin-right: 8px;
 }
 
 .recommendation-meta {
   display: flex;
   gap: 12px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .travel-style-badge {
-  background: #e8f4fd;
-  color: #007bff;
-  padding: 4px 12px;
-  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(236, 72, 153, 0.2) 100%);
+  color: #c4b5fd;
+  padding: 6px 14px;
+  border-radius: 20px;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
+  border: 1px solid rgba(139, 92, 246, 0.3);
 }
 
 .members-info {
-  color: #666;
+  color: rgba(255, 255, 255, 0.6);
   font-size: 14px;
+  display: flex;
+  align-items: center;
 }
 
 .recommendation-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 12px;
+  gap: 8px;
+  margin-bottom: 14px;
 }
 
 .tag {
-  background: #f0f0f0;
-  color: #555;
-  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+  padding: 5px 12px;
   border-radius: 12px;
   font-size: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .tag.highlight {
-  background: #fff3cd;
-  color: #856404;
-  font-weight: 500;
+  background: linear-gradient(135deg, rgba(250, 204, 21, 0.2) 0%, rgba(251, 191, 36, 0.15) 100%);
+  color: #fcd34d;
+  font-weight: 600;
+  border-color: rgba(250, 204, 21, 0.3);
 }
 
 .recommendation-description {
-  color: #666;
+  color: rgba(255, 255, 255, 0.6);
   font-size: 14px;
-  line-height: 1.5;
-  margin-bottom: 12px;
+  line-height: 1.6;
+  margin-bottom: 14px;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
@@ -108,40 +122,45 @@
 }
 
 .recommendation-reasons {
-  background: #f8f9fa;
-  padding: 12px;
-  border-radius: 8px;
-  margin-bottom: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 14px;
+  border-radius: 12px;
+  margin-bottom: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .recommendation-reasons strong {
-  color: #333;
+  color: rgba(255, 255, 255, 0.9);
   font-size: 13px;
 }
 
 .recommendation-reasons ul {
-  margin: 8px 0 0 0;
+  margin: 10px 0 0 0;
   padding-left: 20px;
 }
 
 .recommendation-reasons li {
-  color: #555;
+  color: rgba(255, 255, 255, 0.7);
   font-size: 13px;
   line-height: 1.6;
-  margin-bottom: 4px;
+  margin-bottom: 5px;
+}
+
+.recommendation-reasons li::marker {
+  color: #a78bfa;
 }
 
 .score-breakdown {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 12px;
-  border-top: 1px solid #e0e0e0;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .score-label {
   font-weight: 600;
-  color: #333;
+  color: white;
   font-size: 14px;
 }
 
@@ -151,7 +170,7 @@
 }
 
 .score-bar-container {
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .score-bar-container:last-child {
@@ -162,13 +181,13 @@
   display: flex;
   justify-content: space-between;
   font-size: 12px;
-  color: #666;
-  margin-bottom: 4px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 5px;
 }
 
 .score-bar-track {
   height: 6px;
-  background: #e0e0e0;
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 3px;
   overflow: hidden;
 }
@@ -176,68 +195,71 @@
 .score-bar-fill {
   height: 100%;
   border-radius: 3px;
-  transition: width 0.3s ease;
+  transition: width 0.5s ease;
+  background: linear-gradient(90deg, #8b5cf6 0%, #ec4899 100%);
 }
 
 /* User Card 스타일 */
 .user-card .user-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   flex: 1;
 }
 
 .user-avatar {
-  width: 50px;
-  height: 50px;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #e0e0e0;
+  border: 2px solid rgba(139, 92, 246, 0.4);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .age-group {
   font-size: 13px;
-  color: #999;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .travel-styles {
   display: flex;
   gap: 8px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .interests {
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .interests strong {
-  color: #333;
+  color: rgba(255, 255, 255, 0.9);
   font-size: 13px;
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .common-interests {
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .common-interests strong {
-  color: #333;
+  color: rgba(255, 255, 255, 0.9);
   font-size: 13px;
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .similarity-score {
   font-size: 12px;
-  color: #666;
+  color: rgba(255, 255, 255, 0.5);
   text-align: right;
 }
 
 /* 반응형 */
 @media (max-width: 768px) {
   .recommendation-card {
-    padding: 16px;
+    padding: 18px;
+    border-radius: 16px;
   }
 
   .recommendation-title {
@@ -245,15 +267,15 @@
   }
 
   .recommendation-score {
-    min-width: 40px;
-    height: 40px;
+    min-width: 44px;
+    height: 44px;
     font-size: 14px;
   }
 
   .score-breakdown {
     flex-direction: column;
     align-items: flex-start;
-    gap: 12px;
+    gap: 14px;
   }
 
   .score-bars {
@@ -262,7 +284,28 @@
   }
 
   .user-avatar {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  .recommendation-card {
+    padding: 16px;
+  }
+
+  .recommendation-header {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .recommendation-score {
+    align-self: flex-end;
+    margin-left: 0;
+    margin-top: -50px;
+  }
+
+  .recommendation-meta {
+    flex-wrap: wrap;
   }
 }

@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { chatService, ChatMessage, ChatRoom } from '../services/chatService';
+import { useToast } from '../components/Toast';
 import './Chat.css';
 
 const Chat: React.FC = () => {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
+  const toast = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  
+
   const [room, setRoom] = useState<ChatRoom | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
@@ -21,33 +23,33 @@ const Chat: React.FC = () => {
 
     const rooms = chatService.getChatRooms();
     const currentRoom = rooms.find(r => r.id === roomId);
-    
+
     if (!currentRoom) {
-      alert('채팅방을 찾을 수 없습니다.');
+      toast.error('채팅방을 찾을 수 없습니다.');
       navigate('/dashboard');
       return;
     }
 
     setRoom(currentRoom);
-    
+
     const roomMessages = chatService.getMessages(roomId);
     setMessages(roomMessages);
-    
+
     chatService.markMessagesAsRead(roomId);
-    
+
     const messageListener = (updatedMessages: ChatMessage[]) => {
       setMessages(updatedMessages);
       chatService.markMessagesAsRead(roomId);
     };
-    
+
     chatService.addMessageListener(roomId, messageListener);
-    
+
     setIsLoading(false);
 
     return () => {
       chatService.removeMessageListener(roomId, messageListener);
     };
-  }, [roomId, navigate]);
+  }, [roomId, navigate, toast]);
 
   useEffect(() => {
     scrollToBottom();
@@ -59,7 +61,7 @@ const Chat: React.FC = () => {
 
   const handleSendMessage = () => {
     if (!newMessage.trim() || !roomId) return;
-    
+
     chatService.sendMessage(roomId, newMessage.trim());
     setNewMessage('');
   };
@@ -75,28 +77,28 @@ const Chat: React.FC = () => {
     return new Intl.DateTimeFormat('ko-KR', {
       hour: '2-digit',
       minute: '2-digit',
-      hour12: false
+      hour12: false,
     }).format(date);
   };
 
   const formatDate = (date: Date) => {
     const today = new Date();
     const messageDate = new Date(date);
-    
+
     if (messageDate.toDateString() === today.toDateString()) {
       return '오늘';
     }
-    
+
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
-    
+
     if (messageDate.toDateString() === yesterday.toDateString()) {
       return '어제';
     }
-    
+
     return messageDate.toLocaleDateString('ko-KR', {
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     });
   };
 
@@ -126,10 +128,7 @@ const Chat: React.FC = () => {
     <div className="chat-container">
       {/* 채팅 헤더 */}
       <div className="chat-header">
-        <button 
-          className="back-btn" 
-          onClick={() => navigate('/dashboard')}
-        >
+        <button className="back-btn" onClick={() => navigate('/dashboard')}>
           ←
         </button>
         <div className="chat-info">
@@ -138,7 +137,9 @@ const Chat: React.FC = () => {
               <>
                 <span className="chat-name">{room.name}</span>
                 {otherParticipants[0] && (
-                  <span className={`online-indicator ${otherParticipants[0].isOnline ? 'online' : 'offline'}`}>
+                  <span
+                    className={`online-indicator ${otherParticipants[0].isOnline ? 'online' : 'offline'}`}
+                  >
                     {otherParticipants[0].isOnline ? '🟢 온라인' : '⚪ 오프라인'}
                   </span>
                 )}
@@ -147,9 +148,7 @@ const Chat: React.FC = () => {
               <span className="chat-name">{room.name}</span>
             )}
           </div>
-          <div className="participant-count">
-            👥 {room.participants.length}명
-          </div>
+          <div className="participant-count">👥 {room.participants.length}명</div>
         </div>
       </div>
 
@@ -165,11 +164,15 @@ const Chat: React.FC = () => {
           <>
             {messages.map((message, index) => {
               const prevMessage = messages[index - 1];
-              const showDate = !prevMessage || 
-                new Date(message.timestamp).toDateString() !== new Date(prevMessage.timestamp).toDateString();
-              
+              const showDate =
+                !prevMessage ||
+                new Date(message.timestamp).toDateString() !==
+                  new Date(prevMessage.timestamp).toDateString();
+
               const isMyMessage = message.senderId === chatService.getCurrentUserId();
-              const showSenderName = !isMyMessage && room.type === 'group' && 
+              const showSenderName =
+                !isMyMessage &&
+                room.type === 'group' &&
                 (!prevMessage || prevMessage.senderId !== message.senderId);
 
               return (
@@ -179,12 +182,10 @@ const Chat: React.FC = () => {
                       <span>{formatDate(message.timestamp)}</span>
                     </div>
                   )}
-                  
+
                   <div className={`message ${isMyMessage ? 'my-message' : 'other-message'}`}>
-                    {showSenderName && (
-                      <div className="sender-name">{message.senderName}</div>
-                    )}
-                    
+                    {showSenderName && <div className="sender-name">{message.senderName}</div>}
+
                     <div className="message-content">
                       {message.type === 'text' ? (
                         <div className="message-text">{message.content}</div>
@@ -193,13 +194,11 @@ const Chat: React.FC = () => {
                       ) : (
                         <div className="message-text">{message.content}</div>
                       )}
-                      
+
                       <div className="message-time">
                         {formatTime(message.timestamp)}
                         {isMyMessage && (
-                          <span className="read-status">
-                            {message.isRead ? '읽음' : '안읽음'}
-                          </span>
+                          <span className="read-status">{message.isRead ? '읽음' : '안읽음'}</span>
                         )}
                       </div>
                     </div>
@@ -217,22 +216,18 @@ const Chat: React.FC = () => {
         <div className="message-input-wrapper">
           <textarea
             value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
+            onChange={e => setNewMessage(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="메시지를 입력하세요..."
             className="message-input"
             rows={1}
             maxLength={1000}
           />
-          <button
-            onClick={handleSendMessage}
-            disabled={!newMessage.trim()}
-            className="send-btn"
-          >
+          <button onClick={handleSendMessage} disabled={!newMessage.trim()} className="send-btn">
             <span className="send-icon">📤</span>
           </button>
         </div>
-        
+
         <div className="input-actions">
           <button className="action-btn" title="이미지 전송">
             📷

@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { profileService, UserProfile, UpdateProfileRequest } from '../services/profileService';
+import { useToast } from '../components/Toast';
+import { getErrorMessage, logError } from '../utils/errorHandler';
 import './Profile.css';
 
 const Profile: React.FC = () => {
+  const toast = useToast();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<UpdateProfileRequest>({});
   const [activeTab, setActiveTab] = useState<'info' | 'travel' | 'preferences'>('info');
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     loadProfile();
@@ -54,13 +58,18 @@ const Profile: React.FC = () => {
   };
 
   const handleEditSave = async () => {
+    setIsSaving(true);
     try {
       const updatedProfile = await profileService.updateProfile(editForm);
       setProfile(updatedProfile);
       setIsEditing(false);
       setEditForm({});
+      toast.success('프로필이 성공적으로 업데이트되었습니다.');
     } catch (error) {
-      alert('프로필 업데이트에 실패했습니다.');
+      logError('Profile.handleEditSave', error);
+      toast.error(getErrorMessage(error));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -175,10 +184,10 @@ const Profile: React.FC = () => {
                 </button>
               ) : (
                 <div className="edit-actions">
-                  <button className="save-btn" onClick={handleEditSave}>
-                    💾 저장
+                  <button className="save-btn" onClick={handleEditSave} disabled={isSaving}>
+                    {isSaving ? '저장 중...' : '💾 저장'}
                   </button>
-                  <button className="cancel-btn" onClick={handleEditCancel}>
+                  <button className="cancel-btn" onClick={handleEditCancel} disabled={isSaving}>
                     ❌ 취소
                   </button>
                 </div>

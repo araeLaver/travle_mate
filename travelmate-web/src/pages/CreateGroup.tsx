@@ -1,11 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { groupService, CreateGroupRequest } from '../services/groupService';
+import { useToast } from '../components/Toast';
+import { getErrorMessage, logError } from '../utils/errorHandler';
 import './CreateGroup.css';
 
 const CreateGroup: React.FC = () => {
   const navigate = useNavigate();
+  const toast = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [touched, setTouched] = useState({
+    name: false,
+    destination: false,
+    startDate: false,
+    endDate: false,
+  });
   const [formData, setFormData] = useState<CreateGroupRequest>({
     name: '',
     description: '',
@@ -19,27 +28,68 @@ const CreateGroup: React.FC = () => {
     budget: {
       min: 100000,
       max: 300000,
-      currency: 'KRW'
-    }
+      currency: 'KRW',
+    },
   });
 
   const [newTag, setNewTag] = useState('');
   const [newRequirement, setNewRequirement] = useState('');
 
+  // 실시간 유효성 검사
+  const validation = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return {
+      name: formData.name.trim().length >= 2 && formData.name.trim().length <= 50,
+      destination: formData.destination.trim().length >= 2,
+      startDate: formData.startDate >= today,
+      endDate: formData.endDate > formData.startDate,
+      budget: !formData.budget || formData.budget.min <= formData.budget.max,
+    };
+  }, [formData]);
+
+  const handleBlur = (field: keyof typeof touched) => {
+    setTouched(prev => ({ ...prev, [field]: true }));
+  };
+
   const travelStyles = [
-    '문화탐방', '자연관광', '미식투어', '모험가', '힐링여행', 
-    '사진가', '배낭여행', '럭셔리 여행', '등산/트레킹', '도시탐험'
+    '문화탐방',
+    '자연관광',
+    '미식투어',
+    '모험가',
+    '힐링여행',
+    '사진가',
+    '배낭여행',
+    '럭셔리 여행',
+    '등산/트레킹',
+    '도시탐험',
   ];
 
   const popularTags = [
-    '맛집', '사진촬영', '박물관', '자연관광', '쇼핑', '카페투어',
-    '야경', '축제', '해변', '산악', '역사', '예술', '음악', '스포츠'
+    '맛집',
+    '사진촬영',
+    '박물관',
+    '자연관광',
+    '쇼핑',
+    '카페투어',
+    '야경',
+    '축제',
+    '해변',
+    '산악',
+    '역사',
+    '예술',
+    '음악',
+    '스포츠',
   ];
 
-  const handleInputChange = (field: keyof CreateGroupRequest, value: any) => {
+  const handleInputChange = (
+    field: keyof CreateGroupRequest,
+    value: CreateGroupRequest[keyof CreateGroupRequest]
+  ) => {
     setFormData(prev => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
@@ -48,8 +98,8 @@ const CreateGroup: React.FC = () => {
       ...prev,
       budget: {
         ...prev.budget!,
-        [field]: value
-      }
+        [field]: value,
+      },
     }));
   };
 
@@ -61,7 +111,10 @@ const CreateGroup: React.FC = () => {
   };
 
   const removeTag = (tagToRemove: string) => {
-    handleInputChange('tags', formData.tags.filter(tag => tag !== tagToRemove));
+    handleInputChange(
+      'tags',
+      formData.tags.filter(tag => tag !== tagToRemove)
+    );
   };
 
   const addPopularTag = (tag: string) => {
@@ -78,19 +131,40 @@ const CreateGroup: React.FC = () => {
   };
 
   const removeRequirement = (reqToRemove: string) => {
-    handleInputChange('requirements', formData.requirements.filter(req => req !== reqToRemove));
+    handleInputChange(
+      'requirements',
+      formData.requirements.filter(req => req !== reqToRemove)
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.name.trim() || !formData.destination.trim()) {
-      alert('그룹명과 목적지는 필수 입력 사항입니다.');
+
+    // 모든 필드 터치 처리
+    setTouched({
+      name: true,
+      destination: true,
+      startDate: true,
+      endDate: true,
+    });
+
+    if (!validation.name) {
+      toast.warning('그룹명은 2~50자로 입력해주세요.');
       return;
     }
 
-    if (formData.startDate >= formData.endDate) {
-      alert('종료일은 시작일보다 늦어야 합니다.');
+    if (!validation.destination) {
+      toast.warning('목적지는 2자 이상 입력해주세요.');
+      return;
+    }
+
+    if (!validation.endDate) {
+      toast.warning('종료일은 시작일보다 늦어야 합니다.');
+      return;
+    }
+
+    if (!validation.budget) {
+      toast.warning('최대 예산이 최소 예산보다 크거나 같아야 합니다.');
       return;
     }
 
@@ -99,13 +173,14 @@ const CreateGroup: React.FC = () => {
     try {
       groupService.createGroup({
         ...formData,
-        description: formData.description || '함께 여행할 메이트를 찾습니다!'
+        description: formData.description || '함께 여행할 메이트를 찾습니다!',
       });
-      
-      alert('🎉 그룹이 성공적으로 생성되었습니다!');
+
+      toast.success('그룹이 성공적으로 생성되었습니다!');
       navigate(`/groups`);
     } catch (error) {
-      alert('그룹 생성 중 오류가 발생했습니다. 다시 시도해주세요.');
+      logError('CreateGroup.handleSubmit', error);
+      toast.error(getErrorMessage(error));
     } finally {
       setIsLoading(false);
     }
@@ -132,19 +207,23 @@ const CreateGroup: React.FC = () => {
       <form onSubmit={handleSubmit} className="create-group-form">
         <div className="form-section">
           <h3>📝 기본 정보</h3>
-          
+
           <div className="form-group">
             <label htmlFor="name">그룹명 *</label>
             <input
               type="text"
               id="name"
               value={formData.name}
-              onChange={(e) => handleInputChange('name', e.target.value)}
+              onChange={e => handleInputChange('name', e.target.value)}
+              onBlur={() => handleBlur('name')}
               placeholder="예: 🌸 봄 벚꽃 여행"
-              className="form-input"
+              className={`form-input ${touched.name ? (validation.name ? 'valid' : 'invalid') : ''}`}
               maxLength={50}
               required
             />
+            {touched.name && !validation.name && (
+              <span className="validation-message error">그룹명은 2~50자로 입력해주세요</span>
+            )}
           </div>
 
           <div className="form-group">
@@ -153,11 +232,15 @@ const CreateGroup: React.FC = () => {
               type="text"
               id="destination"
               value={formData.destination}
-              onChange={(e) => handleInputChange('destination', e.target.value)}
+              onChange={e => handleInputChange('destination', e.target.value)}
+              onBlur={() => handleBlur('destination')}
               placeholder="예: 제주도, 부산, 경주"
-              className="form-input"
+              className={`form-input ${touched.destination ? (validation.destination ? 'valid' : 'invalid') : ''}`}
               required
             />
+            {touched.destination && !validation.destination && (
+              <span className="validation-message error">목적지는 2자 이상 입력해주세요</span>
+            )}
           </div>
 
           <div className="form-group">
@@ -165,7 +248,7 @@ const CreateGroup: React.FC = () => {
             <textarea
               id="description"
               value={formData.description}
-              onChange={(e) => handleInputChange('description', e.target.value)}
+              onChange={e => handleInputChange('description', e.target.value)}
               placeholder="어떤 여행을 계획하고 있는지 자세히 설명해주세요..."
               className="form-textarea"
               rows={4}
@@ -176,7 +259,7 @@ const CreateGroup: React.FC = () => {
 
         <div className="form-section">
           <h3>📅 여행 일정</h3>
-          
+
           <div className="date-group">
             <div className="form-group">
               <label htmlFor="startDate">시작일</label>
@@ -184,20 +267,20 @@ const CreateGroup: React.FC = () => {
                 type="date"
                 id="startDate"
                 value={formatDate(formData.startDate)}
-                onChange={(e) => handleInputChange('startDate', parseDate(e.target.value))}
+                onChange={e => handleInputChange('startDate', parseDate(e.target.value))}
                 className="form-input"
                 min={formatDate(new Date())}
                 required
               />
             </div>
-            
+
             <div className="form-group">
               <label htmlFor="endDate">종료일</label>
               <input
                 type="date"
                 id="endDate"
                 value={formatDate(formData.endDate)}
-                onChange={(e) => handleInputChange('endDate', parseDate(e.target.value))}
+                onChange={e => handleInputChange('endDate', parseDate(e.target.value))}
                 className="form-input"
                 min={formatDate(formData.startDate)}
                 required
@@ -208,17 +291,19 @@ const CreateGroup: React.FC = () => {
 
         <div className="form-section">
           <h3>👥 그룹 설정</h3>
-          
+
           <div className="form-group">
             <label htmlFor="maxMembers">최대 인원</label>
             <select
               id="maxMembers"
               value={formData.maxMembers}
-              onChange={(e) => handleInputChange('maxMembers', parseInt(e.target.value))}
+              onChange={e => handleInputChange('maxMembers', parseInt(e.target.value))}
               className="form-select"
             >
               {[2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
-                <option key={num} value={num}>{num}명</option>
+                <option key={num} value={num}>
+                  {num}명
+                </option>
               ))}
             </select>
           </div>
@@ -228,11 +313,13 @@ const CreateGroup: React.FC = () => {
             <select
               id="travelStyle"
               value={formData.travelStyle}
-              onChange={(e) => handleInputChange('travelStyle', e.target.value)}
+              onChange={e => handleInputChange('travelStyle', e.target.value)}
               className="form-select"
             >
               {travelStyles.map(style => (
-                <option key={style} value={style}>{style}</option>
+                <option key={style} value={style}>
+                  {style}
+                </option>
               ))}
             </select>
           </div>
@@ -240,7 +327,7 @@ const CreateGroup: React.FC = () => {
 
         <div className="form-section">
           <h3>💰 예산</h3>
-          
+
           <div className="budget-group">
             <div className="form-group">
               <label htmlFor="minBudget">최소 예산 (원)</label>
@@ -248,20 +335,20 @@ const CreateGroup: React.FC = () => {
                 type="number"
                 id="minBudget"
                 value={formData.budget?.min || 0}
-                onChange={(e) => handleBudgetChange('min', parseInt(e.target.value) || 0)}
+                onChange={e => handleBudgetChange('min', parseInt(e.target.value) || 0)}
                 className="form-input"
                 min="0"
                 step="10000"
               />
             </div>
-            
+
             <div className="form-group">
               <label htmlFor="maxBudget">최대 예산 (원)</label>
               <input
                 type="number"
                 id="maxBudget"
                 value={formData.budget?.max || 0}
-                onChange={(e) => handleBudgetChange('max', parseInt(e.target.value) || 0)}
+                onChange={e => handleBudgetChange('max', parseInt(e.target.value) || 0)}
                 className="form-input"
                 min="0"
                 step="10000"
@@ -273,18 +360,20 @@ const CreateGroup: React.FC = () => {
         <div className="form-section">
           <h3>🏷️ 태그</h3>
           <p className="section-description">여행의 특징을 나타내는 태그를 추가해주세요.</p>
-          
+
           <div className="tag-input-group">
             <input
               type="text"
               value={newTag}
-              onChange={(e) => setNewTag(e.target.value)}
+              onChange={e => setNewTag(e.target.value)}
               placeholder="태그 입력..."
               className="form-input"
               maxLength={20}
-              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
+              onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addTag())}
             />
-            <button type="button" onClick={addTag} className="add-btn">추가</button>
+            <button type="button" onClick={addTag} className="add-btn">
+              추가
+            </button>
           </div>
 
           <div className="popular-tags">
@@ -308,7 +397,9 @@ const CreateGroup: React.FC = () => {
             {formData.tags.map(tag => (
               <span key={tag} className="selected-tag">
                 #{tag}
-                <button type="button" onClick={() => removeTag(tag)} className="remove-tag">×</button>
+                <button type="button" onClick={() => removeTag(tag)} className="remove-tag">
+                  ×
+                </button>
               </span>
             ))}
           </div>
@@ -316,26 +407,32 @@ const CreateGroup: React.FC = () => {
 
         <div className="form-section">
           <h3>📋 참가 조건</h3>
-          <p className="section-description">그룹 참가자에게 요구하는 조건이 있다면 추가해주세요.</p>
-          
+          <p className="section-description">
+            그룹 참가자에게 요구하는 조건이 있다면 추가해주세요.
+          </p>
+
           <div className="tag-input-group">
             <input
               type="text"
               value={newRequirement}
-              onChange={(e) => setNewRequirement(e.target.value)}
+              onChange={e => setNewRequirement(e.target.value)}
               placeholder="예: 금연자, 새벽 일찍 출발 가능한 분"
               className="form-input"
               maxLength={100}
-              onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addRequirement())}
+              onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addRequirement())}
             />
-            <button type="button" onClick={addRequirement} className="add-btn">추가</button>
+            <button type="button" onClick={addRequirement} className="add-btn">
+              추가
+            </button>
           </div>
 
           <div className="requirements-list">
             {formData.requirements.map((req, index) => (
               <div key={index} className="requirement-item">
                 <span>• {req}</span>
-                <button type="button" onClick={() => removeRequirement(req)} className="remove-req">×</button>
+                <button type="button" onClick={() => removeRequirement(req)} className="remove-req">
+                  ×
+                </button>
               </div>
             ))}
           </div>

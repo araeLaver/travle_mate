@@ -1,3 +1,7 @@
+/* ===================================
+   Tutorial - Modern Glassmorphism Design
+   =================================== */
+
 /* Tutorial Overlay - 반투명 배경 */
 .tutorial-overlay {
   position: fixed;
@@ -5,25 +9,33 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
   z-index: 9990;
   pointer-events: none;
   animation: fadeIn 0.3s ease;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Inline Tooltip - 타겟 요소 근처에 표시 */
 .tutorial-tooltip-inline {
-  background: white;
-  border-radius: 16px;
-  padding: 20px;
-  width: 320px;
+  background: linear-gradient(135deg, rgba(30, 27, 75, 0.98) 0%, rgba(49, 46, 129, 0.98) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 22px;
+  width: 340px;
   max-width: calc(100vw - 32px);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   z-index: 10001;
   animation: tooltipAppear 0.3s ease;
 }
@@ -44,74 +56,88 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .tutorial-step-badge {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
   color: white;
-  padding: 4px 12px;
+  padding: 5px 14px;
   border-radius: 20px;
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
 }
 
 .tutorial-close {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  color: #999;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.6);
   cursor: pointer;
   padding: 0;
   line-height: 1;
-  transition: color 0.2s;
+  transition: all 0.3s ease;
 }
 
 .tutorial-close:hover {
-  color: #333;
+  background: rgba(244, 63, 94, 0.2);
+  border-color: rgba(244, 63, 94, 0.3);
+  color: #f87171;
 }
 
 /* Body */
 .tutorial-body {
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 .tutorial-title {
-  font-size: 1.2rem;
+  font-size: 1.25rem;
   font-weight: 700;
-  color: #333;
-  margin-bottom: 8px;
+  color: white;
+  margin-bottom: 10px;
 }
 
 .tutorial-description {
   font-size: 0.95rem;
-  color: #666;
-  line-height: 1.5;
-  margin-bottom: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.6;
+  margin-bottom: 14px;
 }
 
 .tutorial-click-hint {
   display: flex;
   align-items: center;
-  gap: 8px;
-  background: linear-gradient(135deg, #f0f7ff 0%, #e8f0fe 100%);
-  padding: 10px 14px;
-  border-radius: 10px;
-  font-size: 0.85rem;
-  color: #667eea;
-  font-weight: 500;
-  border: 1px dashed #667eea;
+  gap: 10px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(236, 72, 153, 0.15) 100%);
+  border: 1px dashed rgba(139, 92, 246, 0.5);
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  color: #c4b5fd;
+  font-weight: 600;
 }
 
 .tutorial-click-hint::before {
-  content: "👆";
-  font-size: 1.1rem;
+  content: '👆';
+  font-size: 1.2rem;
   animation: bounce 1s ease infinite;
 }
 
 @keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
 }
 
 /* Footer */
@@ -119,26 +145,27 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: 14px;
+  margin-bottom: 14px;
 }
 
 .tutorial-dots {
   display: flex;
-  gap: 6px;
+  gap: 8px;
 }
 
 .tutorial-dots .dot {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
-  background: #ddd;
+  background: rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease;
 }
 
 .tutorial-dots .dot.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
   transform: scale(1.3);
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.5);
 }
 
 .tutorial-dots .dot.completed {
@@ -146,37 +173,40 @@
 }
 
 .tutorial-btn {
-  padding: 10px 20px;
-  border-radius: 10px;
-  font-size: 0.9rem;
+  padding: 12px 22px;
+  border-radius: 12px;
+  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   border: none;
 }
 
 .tutorial-btn.primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
   color: white;
 }
 
 .tutorial-btn.primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 8px 25px rgba(139, 92, 246, 0.5);
 }
 
 .tutorial-btn.secondary {
-  background: #f0f0f0;
-  color: #666;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .tutorial-btn.secondary:hover:not(:disabled) {
-  background: #e0e0e0;
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
 }
 
 .tutorial-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
+  transform: none;
 }
 
 /* Skip Button */
@@ -184,15 +214,15 @@
   width: 100%;
   background: none;
   border: none;
-  color: #999;
+  color: rgba(255, 255, 255, 0.5);
   font-size: 0.85rem;
   cursor: pointer;
-  padding: 8px;
-  transition: color 0.2s;
+  padding: 10px;
+  transition: color 0.3s;
 }
 
 .tutorial-skip:hover {
-  color: #666;
+  color: rgba(255, 255, 255, 0.8);
   text-decoration: underline;
 }
 
@@ -200,58 +230,58 @@
 .tutorial-highlight {
   position: relative;
   z-index: 9995 !important;
-  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.6),
-              0 0 0 8px rgba(102, 126, 234, 0.3),
-              0 0 30px rgba(102, 126, 234, 0.4) !important;
-  border-radius: 8px;
+  box-shadow:
+    0 0 0 4px rgba(139, 92, 246, 0.6),
+    0 0 0 8px rgba(139, 92, 246, 0.3),
+    0 0 40px rgba(139, 92, 246, 0.5) !important;
+  border-radius: 12px;
   animation: highlightPulse 2s ease infinite;
   cursor: pointer !important;
-  background: rgba(255, 255, 255, 0.95) !important;
+  background: rgba(30, 27, 75, 0.95) !important;
   pointer-events: auto !important;
 }
 
 /* 하이라이트된 요소 위에 클릭 유도 아이콘 */
 .tutorial-highlight::after {
-  content: "👆 클릭";
+  content: '👆 클릭';
   position: absolute;
-  top: -35px;
+  top: -38px;
   left: 50%;
   transform: translateX(-50%);
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
   color: white;
-  padding: 4px 12px;
+  padding: 6px 14px;
   border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.8rem;
+  font-weight: 700;
   white-space: nowrap;
   z-index: 9996;
   animation: bounce 1s ease infinite;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.5);
 }
 
 @keyframes highlightPulse {
-  0%, 100% {
-    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.6),
-                0 0 0 8px rgba(102, 126, 234, 0.3),
-                0 0 30px rgba(102, 126, 234, 0.4);
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 4px rgba(139, 92, 246, 0.6),
+      0 0 0 8px rgba(139, 92, 246, 0.3),
+      0 0 40px rgba(139, 92, 246, 0.5);
   }
   50% {
-    box-shadow: 0 0 0 6px rgba(102, 126, 234, 0.8),
-                0 0 0 12px rgba(102, 126, 234, 0.4),
-                0 0 40px rgba(102, 126, 234, 0.5);
+    box-shadow:
+      0 0 0 6px rgba(139, 92, 246, 0.8),
+      0 0 0 12px rgba(139, 92, 246, 0.4),
+      0 0 50px rgba(139, 92, 246, 0.6);
   }
 }
 
 /* Mobile Responsive */
-/* @media (max-width: 480px) {
+@media (max-width: 480px) {
   .tutorial-tooltip-inline {
     width: calc(100vw - 32px);
-    padding: 16px;
-    left: 16px !important;
-    right: 16px !important;
-    bottom: 16px !important;
-    top: auto !important;
-    transform: none !important;
+    padding: 18px;
+    border-radius: 16px;
   }
 
   .tutorial-title {
@@ -263,102 +293,24 @@
   }
 
   .tutorial-btn {
-    padding: 8px 16px;
-    font-size: 0.85rem;
+    padding: 10px 18px;
+    font-size: 0.9rem;
   }
 
   .tutorial-click-hint {
-    font-size: 0.8rem;
-    padding: 8px 12px;
+    font-size: 0.85rem;
+    padding: 10px 14px;
   }
 
   .tutorial-highlight::after {
-    top: -30px;
-    font-size: 0.7rem;
-    padding: 3px 10px;
-  }
-} */
-
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-  .tutorial-tooltip-inline {
-    background: #1f2937;
-    color: #f3f4f6;
-  }
-
-  .tutorial-title {
-    color: #f3f4f6;
-  }
-
-  .tutorial-description {
-    color: #9ca3af;
+    top: -34px;
+    font-size: 0.75rem;
+    padding: 5px 12px;
   }
 
   .tutorial-close {
-    color: #9ca3af;
+    width: 28px;
+    height: 28px;
+    font-size: 1rem;
   }
-
-  .tutorial-close:hover {
-    color: #f3f4f6;
-  }
-
-  .tutorial-btn.secondary {
-    background: #374151;
-    color: #d1d5db;
-  }
-
-  .tutorial-btn.secondary:hover:not(:disabled) {
-    background: #4b5563;
-  }
-
-  .tutorial-click-hint {
-    background: linear-gradient(135deg, #1e3a5f 0%, #2d1f4f 100%);
-    color: #a5b4fc;
-    border-color: #667eea;
-  }
-
-  .tutorial-highlight {
-    background: rgba(31, 41, 55, 0.95) !important;
-  }
-}
-
-/* Dark Mode class-based */
-.dark .tutorial-tooltip-inline {
-  background: #1f2937;
-  color: #f3f4f6;
-}
-
-.dark .tutorial-title {
-  color: #f3f4f6;
-}
-
-.dark .tutorial-description {
-  color: #9ca3af;
-}
-
-.dark .tutorial-close {
-  color: #9ca3af;
-}
-
-.dark .tutorial-close:hover {
-  color: #f3f4f6;
-}
-
-.dark .tutorial-btn.secondary {
-  background: #374151;
-  color: #d1d5db;
-}
-
-.dark .tutorial-btn.secondary:hover:not(:disabled) {
-  background: #4b5563;
-}
-
-.dark .tutorial-click-hint {
-  background: linear-gradient(135deg, #1e3a5f 0%, #2d1f4f 100%);
-  color: #a5b4fc;
-  border-color: #667eea;
-}
-
-.dark .tutorial-highlight {
-  background: rgba(31, 41, 55, 0.95) !important;
 }

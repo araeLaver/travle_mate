@@ -3,9 +3,12 @@ import './Dashboard.css';
 import { locationService, TravelMate, Location } from '../services/locationService';
 import { chatService } from '../services/chatService';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../components/Toast';
+import { getErrorMessage, logError } from '../utils/errorHandler';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
+  const toast = useToast();
   const [nearbyUsers, setNearbyUsers] = useState<TravelMate[]>([]);
   const [isDiscovering, setIsDiscovering] = useState(false);
   const [currentMood, setCurrentMood] = useState('여행 중');
@@ -53,7 +56,8 @@ const Dashboard: React.FC = () => {
 
       setNearbyUsers(enhancedMates.sort((a, b) => b.matchScore - a.matchScore));
     } catch (error) {
-      alert('여행 메이트를 찾는 중 오류가 발생했습니다. 다시 시도해주세요.');
+      logError('Dashboard.discoverNearbyMates', error);
+      toast.error(getErrorMessage(error));
     } finally {
       setTimeout(() => {
         setIsDiscovering(false);
@@ -67,7 +71,7 @@ const Dashboard: React.FC = () => {
   };
 
   const sendGreeting = (mate: TravelMate) => {
-    alert(`${mate.name}님에게 인사를 보냈습니다!`);
+    toast.success(`${mate.name}님에게 인사를 보냈습니다!`);
   };
 
   const requestLocationPermission = async () => {

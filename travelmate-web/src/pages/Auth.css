@@ -436,41 +436,73 @@
 
 /* Password Strength Indicator */
 .password-strength {
-  margin-top: 8px;
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.strength-bars {
+  display: flex;
+  gap: 4px;
+  flex: 1;
 }
 
 .strength-bar {
   height: 4px;
+  flex: 1;
   background: #e5e7eb;
   border-radius: 100px;
   overflow: hidden;
-  margin-bottom: 4px;
-}
-
-.strength-fill {
-  height: 100%;
   transition: all 0.3s ease;
-  border-radius: 100px;
 }
 
-.strength-fill.weak {
-  width: 33%;
-  background: #ef4444;
-}
-
-.strength-fill.medium {
-  width: 66%;
-  background: #f59e0b;
-}
-
-.strength-fill.strong {
-  width: 100%;
-  background: #10b981;
+.strength-bar.active {
+  background: currentColor;
 }
 
 .strength-text {
   font-size: 12px;
-  color: #6b7280;
+  font-weight: 600;
+  min-width: 40px;
+  text-align: right;
+}
+
+/* Input Validation States */
+.form-group input.valid {
+  border-color: #10b981;
+  background: #f0fdf4;
+}
+
+.form-group input.valid:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.form-group input.invalid {
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+
+.form-group input.invalid:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+/* Validation Messages */
+.validation-message {
+  display: block;
+  font-size: 12px;
+  margin-top: 6px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.validation-message.error {
+  color: #ef4444;
+}
+
+.validation-message.success {
+  color: #10b981;
 }
 
 /* Remember Me & Forgot Password */

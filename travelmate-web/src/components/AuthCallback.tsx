@@ -1,9 +1,11 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useToast } from './Toast';
 
 const AuthCallback: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const toast = useToast();
 
   useEffect(() => {
     const handleAuthCallback = async () => {
@@ -14,7 +16,7 @@ const AuthCallback: React.FC = () => {
       const provider = urlParams.get('provider') || state; // state에서 provider 정보 추출
 
       if (error) {
-        alert(`로그인 중 오류가 발생했습니다: ${error}`);
+        toast.error(`로그인 중 오류가 발생했습니다: ${error}`);
         navigate('/login');
         return;
       }
@@ -31,8 +33,8 @@ const AuthCallback: React.FC = () => {
             body: JSON.stringify({
               code,
               provider,
-              redirectUri: process.env.REACT_APP_REDIRECT_URI
-            })
+              redirectUri: process.env.REACT_APP_REDIRECT_URI,
+            }),
           });
 
           if (response.ok) {
@@ -44,7 +46,9 @@ const AuthCallback: React.FC = () => {
             localStorage.setItem('loginProvider', provider || 'unknown');
             localStorage.setItem('accessToken', userData.accessToken);
 
-            alert(`✅ ${provider?.toUpperCase()} 로그인 성공! 환영합니다, ${userData.user?.name}님!`);
+            toast.success(
+              `${provider?.toUpperCase()} 로그인 성공! 환영합니다, ${userData.user?.name}님!`
+            );
             navigate('/dashboard');
           } else {
             throw new Error('백엔드 인증 처리 실패');
@@ -55,14 +59,14 @@ const AuthCallback: React.FC = () => {
             id: 'oauth_' + Date.now(),
             email: 'oauth.user@example.com',
             name: `${provider?.toUpperCase()} 사용자`,
-            provider: provider || 'unknown'
+            provider: provider || 'unknown',
           };
 
           localStorage.setItem('socialUser', JSON.stringify(mockUser));
           localStorage.setItem('isLoggedIn', 'true');
           localStorage.setItem('loginProvider', provider || 'unknown');
 
-          alert(`✅ ${provider?.toUpperCase()} 로그인 성공! (개발 모드)`);
+          toast.success(`${provider?.toUpperCase()} 로그인 성공! (개발 모드)`);
           navigate('/dashboard');
         }
       } else {
@@ -78,8 +82,8 @@ const AuthCallback: React.FC = () => {
             try {
               const userResponse = await fetch('https://openapi.naver.com/v1/nid/me', {
                 headers: {
-                  'Authorization': `${tokenType} ${accessToken}`
-                }
+                  Authorization: `${tokenType} ${accessToken}`,
+                },
               });
 
               if (userResponse.ok) {
@@ -89,14 +93,14 @@ const AuthCallback: React.FC = () => {
                   email: naverData.response.email,
                   name: naverData.response.nickname || naverData.response.name,
                   profileImage: naverData.response.profile_image,
-                  provider: 'naver'
+                  provider: 'naver',
                 };
 
                 localStorage.setItem('socialUser', JSON.stringify(user));
                 localStorage.setItem('isLoggedIn', 'true');
                 localStorage.setItem('loginProvider', 'naver');
 
-                alert(`✅ 네이버 로그인 성공! 환영합니다, ${user.name}님!`);
+                toast.success(`네이버 로그인 성공! 환영합니다, ${user.name}님!`);
                 navigate('/dashboard');
                 return;
               }
@@ -112,17 +116,19 @@ const AuthCallback: React.FC = () => {
     };
 
     handleAuthCallback();
-  }, [location, navigate]);
+  }, [location, navigate, toast]);
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      height: '100vh',
-      textAlign: 'center'
-    }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100vh',
+        textAlign: 'center',
+      }}
+    >
       <div style={{ marginBottom: '20px', fontSize: '24px' }}>🔄</div>
       <h2>로그인 처리 중...</h2>
       <p>잠시만 기다려주세요.</p>

@@ -1,0 +1,134 @@
+/* ===================================
+   LoadingSpinner - Modern Glassmorphism Design
+   =================================== */
+
+.loading-spinner-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.loading-spinner-container.full-page {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(30, 27, 75, 0.95) 0%, rgba(49, 46, 129, 0.95) 100%);
+  backdrop-filter: blur(10px);
+  z-index: 9999;
+}
+
+.loading-spinner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-spinner.small {
+  width: 24px;
+  height: 24px;
+}
+
+.loading-spinner.medium {
+  width: 48px;
+  height: 48px;
+}
+
+.loading-spinner.large {
+  width: 72px;
+  height: 72px;
+}
+
+.spinner-ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  animation: spinnerRotate 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+}
+
+.loading-spinner.small .spinner-ring {
+  border-width: 2px;
+}
+
+.loading-spinner.large .spinner-ring {
+  border-width: 4px;
+}
+
+.spinner-ring:nth-child(1) {
+  border-top-color: #8b5cf6;
+  animation-delay: -0.45s;
+}
+
+.spinner-ring:nth-child(2) {
+  border-right-color: #a78bfa;
+  animation-delay: -0.3s;
+}
+
+.spinner-ring:nth-child(3) {
+  border-bottom-color: #ec4899;
+  animation-delay: -0.15s;
+}
+
+@keyframes spinnerRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-text {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0;
+  animation: textPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes textPulse {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Button Spinner - Inline usage */
+.btn-spinner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-spinner .loading-spinner {
+  width: 16px;
+  height: 16px;
+}
+
+.btn-spinner .spinner-ring {
+  border-width: 2px;
+}
+
+.btn-spinner .spinner-ring:nth-child(1) {
+  border-top-color: currentColor;
+}
+
+.btn-spinner .spinner-ring:nth-child(2) {
+  border-right-color: currentColor;
+  opacity: 0.7;
+}
+
+.btn-spinner .spinner-ring:nth-child(3) {
+  border-bottom-color: currentColor;
+  opacity: 0.5;
+}

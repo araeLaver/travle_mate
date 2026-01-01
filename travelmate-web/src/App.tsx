@@ -19,6 +19,7 @@ import AuthCallback from './components/AuthCallback';
 import { ProtectedRoute, AuthRequiredRoute } from './components/auth/ProtectedRoute';
 import { TutorialProvider, useTutorial } from './contexts/TutorialContext';
 import Tutorial from './components/Tutorial';
+import { ToastProvider } from './components/Toast';
 
 // 전역 튜토리얼 컴포넌트 (Router 내부에서 사용)
 const GlobalTutorial: React.FC = () => {
@@ -30,87 +31,89 @@ function App() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <TutorialProvider>
-          <Router>
-            <GlobalTutorial />
-            <Routes>
-            {/* 인증이 필요 없는 페이지 */}
-            <Route path="/" element={<Home />} />
-            <Route path="/portfolio" element={<Portfolio />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Dashboard />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
+        <ToastProvider>
+          <TutorialProvider>
+            <Router>
+              <GlobalTutorial />
+              <Routes>
+                {/* 인증이 필요 없는 페이지 */}
+                <Route path="/" element={<Home />} />
+                <Route path="/portfolio" element={<Portfolio />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/auth/callback" element={<AuthCallback />} />
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <Dashboard />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
 
-            {/* 채팅 목록 페이지 */}
-            <Route
-              path="/chat"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <ChatList />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
+                {/* 채팅 목록 페이지 */}
+                <Route
+                  path="/chat"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <ChatList />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
 
-            {/* 개별 채팅 페이지 */}
-            <Route
-              path="/chat/:roomId"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Chat />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
+                {/* 개별 채팅 페이지 */}
+                <Route
+                  path="/chat/:roomId"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <Chat />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
 
-            {/* 그룹 목록 페이지 (비회원 접근 가능) */}
-            <Route
-              path="/groups"
-              element={
-                <Layout>
-                  <Groups />
-                </Layout>
-              }
-            />
+                {/* 그룹 목록 페이지 (비회원 접근 가능) */}
+                <Route
+                  path="/groups"
+                  element={
+                    <Layout>
+                      <Groups />
+                    </Layout>
+                  }
+                />
 
-            {/* 그룹 생성 페이지 (로그인 필수) */}
-            <Route
-              path="/groups/create"
-              element={
-                <AuthRequiredRoute>
-                  <Layout>
-                    <CreateGroup />
-                  </Layout>
-                </AuthRequiredRoute>
-              }
-            />
+                {/* 그룹 생성 페이지 (로그인 필수) */}
+                <Route
+                  path="/groups/create"
+                  element={
+                    <AuthRequiredRoute>
+                      <Layout>
+                        <CreateGroup />
+                      </Layout>
+                    </AuthRequiredRoute>
+                  }
+                />
 
-            {/* 프로필 페이지 */}
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Profile />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
-          </Router>
-        </TutorialProvider>
+                {/* 프로필 페이지 */}
+                <Route
+                  path="/profile"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <Profile />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+              </Routes>
+            </Router>
+          </TutorialProvider>
+        </ToastProvider>
         {/* React Query DevTools (개발 환경에서만 표시) */}
         {process.env.NODE_ENV === 'development' && <ReactQueryDevtools initialIsOpen={false} />}
       </QueryClientProvider>

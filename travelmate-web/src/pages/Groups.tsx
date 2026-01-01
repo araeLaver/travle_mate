@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { groupService, TravelGroup } from '../services/groupService';
+import { useToast } from '../components/Toast';
+import { getErrorMessage, logError } from '../utils/errorHandler';
 import './Groups.css';
 
 const Groups: React.FC = () => {
   const navigate = useNavigate();
+  const toast = useToast();
   const [groups, setGroups] = useState<TravelGroup[]>([]);
   const [filteredGroups, setFilteredGroups] = useState<TravelGroup[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -15,6 +18,7 @@ const Groups: React.FC = () => {
     status: 'recruiting',
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const travelStyles = [
     '전체',
@@ -64,7 +68,8 @@ const Groups: React.FC = () => {
 
       setGroups(loadedGroups);
     } catch (error) {
-      alert('그룹 목록을 불러오는데 실패했습니다.');
+      logError('Groups.loadGroups', error);
+      toast.error(getErrorMessage(error));
     } finally {
       setIsLoading(false);
     }
@@ -106,28 +111,36 @@ const Groups: React.FC = () => {
   };
 
   const handleJoinGroup = async (groupId: string) => {
+    setActionLoading(`join-${groupId}`);
     try {
       const success = await groupService.joinGroup(groupId);
       if (success) {
-        alert('그룹에 성공적으로 가입했습니다! 🎉');
-        await loadGroups(); // 목록 새로고침
+        toast.success('그룹에 성공적으로 가입했습니다!');
+        await loadGroups();
       }
     } catch (error) {
-      alert(`가입 실패: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
+      logError('Groups.handleJoinGroup', error);
+      toast.error(getErrorMessage(error));
+    } finally {
+      setActionLoading(null);
     }
   };
 
   const handleLeaveGroup = async (groupId: string) => {
     if (!window.confirm('정말 그룹에서 탈퇴하시겠습니까?')) return;
 
+    setActionLoading(`leave-${groupId}`);
     try {
       const success = await groupService.leaveGroup(groupId);
       if (success) {
-        alert('그룹에서 탈퇴했습니다.');
+        toast.info('그룹에서 탈퇴했습니다.');
         await loadGroups();
       }
     } catch (error) {
-      alert(`탈퇴 실패: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
+      logError('Groups.handleLeaveGroup', error);
+      toast.error(getErrorMessage(error));
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -332,8 +345,9 @@ const Groups: React.FC = () => {
                           <button
                             className="btn-small danger"
                             onClick={() => handleLeaveGroup(group.id)}
+                            disabled={actionLoading === `leave-${group.id}`}
                           >
-                            탈퇴하기
+                            {actionLoading === `leave-${group.id}` ? '처리중...' : '탈퇴하기'}
                           </button>
                         )}
                       </div>
@@ -349,8 +363,9 @@ const Groups: React.FC = () => {
                           <button
                             className="btn-small primary"
                             onClick={() => handleJoinGroup(group.id)}
+                            disabled={actionLoading === `join-${group.id}`}
                           >
-                            가입하기
+                            {actionLoading === `join-${group.id}` ? '가입중...' : '가입하기'}
                           </button>
                         )}
                       </div>

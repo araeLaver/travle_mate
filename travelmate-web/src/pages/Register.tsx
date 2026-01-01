@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
+import { useToast } from '../components/Toast';
+import { getErrorMessage, logError } from '../utils/errorHandler';
 import './Auth.css';
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
+  const toast = useToast();
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -18,6 +21,49 @@ const Register: React.FC = () => {
     email: { checked: false, available: false, loading: false },
     username: { checked: false, available: false, loading: false },
   });
+  const [touched, setTouched] = useState({
+    name: false,
+    username: false,
+    email: false,
+    password: false,
+    confirmPassword: false,
+  });
+
+  // 실시간 유효성 검사
+  const validation = useMemo(() => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+
+    return {
+      name: formData.name.length >= 2,
+      username: usernameRegex.test(formData.username),
+      email: emailRegex.test(formData.email),
+      password: formData.password.length >= 8,
+      confirmPassword:
+        formData.password === formData.confirmPassword && formData.confirmPassword.length > 0,
+    };
+  }, [formData]);
+
+  const passwordStrength = useMemo(() => {
+    const password = formData.password;
+    if (password.length === 0) return { level: 0, text: '', color: '' };
+
+    let strength = 0;
+    if (password.length >= 8) strength++;
+    if (password.length >= 12) strength++;
+    if (/[A-Z]/.test(password)) strength++;
+    if (/[a-z]/.test(password)) strength++;
+    if (/[0-9]/.test(password)) strength++;
+    if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+    if (strength <= 2) return { level: 1, text: '약함', color: '#ef4444' };
+    if (strength <= 4) return { level: 2, text: '보통', color: '#f59e0b' };
+    return { level: 3, text: '강함', color: '#22c55e' };
+  }, [formData.password]);
+
+  const handleBlur = (field: string) => {
+    setTouched(prev => ({ ...prev, [field]: true }));
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -97,18 +143,48 @@ const Register: React.FC = () => {
     e.preventDefault();
     setError('');
 
-    if (formData.password !== formData.confirmPassword) {
-      setError('비밀번호가 일치하지 않습니다.');
+    // 모든 필드 터치 처리
+    setTouched({
+      name: true,
+      username: true,
+      email: true,
+      password: true,
+      confirmPassword: true,
+    });
+
+    // 유효성 검사
+    if (!validation.name) {
+      toast.warning('이름은 2자 이상 입력해주세요.');
+      return;
+    }
+
+    if (!validation.username) {
+      toast.warning('사용자명은 영문, 숫자, 밑줄만 사용 가능합니다 (3-20자).');
+      return;
+    }
+
+    if (!validation.email) {
+      toast.warning('올바른 이메일 형식을 입력해주세요.');
+      return;
+    }
+
+    if (!validation.password) {
+      toast.warning('비밀번호는 8자 이상 입력해주세요.');
+      return;
+    }
+
+    if (!validation.confirmPassword) {
+      toast.warning('비밀번호가 일치하지 않습니다.');
       return;
     }
 
     if (!duplicateCheck.email.checked || !duplicateCheck.email.available) {
-      setError('이메일 중복 확인을 해주세요.');
+      toast.warning('이메일 중복 확인을 해주세요.');
       return;
     }
 
     if (!duplicateCheck.username.checked || !duplicateCheck.username.available) {
-      setError('사용자명 중복 확인을 해주세요.');
+      toast.warning('사용자명 중복 확인을 해주세요.');
       return;
     }
 
@@ -121,9 +197,13 @@ const Register: React.FC = () => {
         nickname: formData.username,
         fullName: formData.name,
       });
+      toast.success('회원가입이 완료되었습니다! 로그인해주세요.');
       navigate('/login');
     } catch (err) {
-      setError(err instanceof Error ? err.message : '회원가입에 실패했습니다.');
+      logError('Register.handleSubmit', err);
+      const errorMsg = getErrorMessage(err);
+      toast.error(errorMsg);
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -169,10 +249,15 @@ const Register: React.FC = () => {
               name="name"
               value={formData.name}
               onChange={handleChange}
+              onBlur={() => handleBlur('name')}
               placeholder="실명을 입력하세요"
               required
               autoComplete="name"
+              className={touched.name ? (validation.name ? 'valid' : 'invalid') : ''}
             />
+            {touched.name && !validation.name && (
+              <span className="validation-message error">이름은 2자 이상 입력해주세요</span>
+            )}
           </div>
 
           <div className="form-group">
@@ -184,9 +269,11 @@ const Register: React.FC = () => {
                 name="username"
                 value={formData.username}
                 onChange={handleChange}
+                onBlur={() => handleBlur('username')}
                 placeholder="사용자명을 입력하세요"
                 required
                 autoComplete="username"
+                className={touched.username ? (validation.username ? 'valid' : 'invalid') : ''}
               />
               <button
                 type="button"
@@ -197,6 +284,12 @@ const Register: React.FC = () => {
                 {getCheckButtonText('username')}
               </button>
             </div>
+            {touched.username && !validation.username && (
+              <span className="validation-message error">영문, 숫자, 밑줄만 사용 (3-20자)</span>
+            )}
+            {duplicateCheck.username.checked && duplicateCheck.username.available && (
+              <span className="validation-message success">사용 가능한 사용자명입니다</span>
+            )}
           </div>
 
           <div className="form-group">
@@ -208,9 +301,11 @@ const Register: React.FC = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
+                onBlur={() => handleBlur('email')}
                 placeholder="your@email.com"
                 required
                 autoComplete="email"
+                className={touched.email ? (validation.email ? 'valid' : 'invalid') : ''}
               />
               <button
                 type="button"
@@ -221,6 +316,12 @@ const Register: React.FC = () => {
                 {getCheckButtonText('email')}
               </button>
             </div>
+            {touched.email && !validation.email && (
+              <span className="validation-message error">올바른 이메일 형식을 입력해주세요</span>
+            )}
+            {duplicateCheck.email.checked && duplicateCheck.email.available && (
+              <span className="validation-message success">사용 가능한 이메일입니다</span>
+            )}
           </div>
 
           <div className="form-group">
@@ -231,11 +332,46 @@ const Register: React.FC = () => {
               name="password"
               value={formData.password}
               onChange={handleChange}
+              onBlur={() => handleBlur('password')}
               placeholder="8자 이상의 비밀번호"
               required
               minLength={8}
               autoComplete="new-password"
+              className={touched.password ? (validation.password ? 'valid' : 'invalid') : ''}
             />
+            {formData.password && (
+              <div className="password-strength">
+                <div className="strength-bars">
+                  <div
+                    className={`strength-bar ${passwordStrength.level >= 1 ? 'active' : ''}`}
+                    style={{
+                      backgroundColor:
+                        passwordStrength.level >= 1 ? passwordStrength.color : undefined,
+                    }}
+                  />
+                  <div
+                    className={`strength-bar ${passwordStrength.level >= 2 ? 'active' : ''}`}
+                    style={{
+                      backgroundColor:
+                        passwordStrength.level >= 2 ? passwordStrength.color : undefined,
+                    }}
+                  />
+                  <div
+                    className={`strength-bar ${passwordStrength.level >= 3 ? 'active' : ''}`}
+                    style={{
+                      backgroundColor:
+                        passwordStrength.level >= 3 ? passwordStrength.color : undefined,
+                    }}
+                  />
+                </div>
+                <span className="strength-text" style={{ color: passwordStrength.color }}>
+                  {passwordStrength.text}
+                </span>
+              </div>
+            )}
+            {touched.password && !validation.password && (
+              <span className="validation-message error">비밀번호는 8자 이상 입력해주세요</span>
+            )}
           </div>
 
           <div className="form-group">
@@ -246,10 +382,20 @@ const Register: React.FC = () => {
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleChange}
+              onBlur={() => handleBlur('confirmPassword')}
               placeholder="비밀번호를 다시 입력하세요"
               required
               autoComplete="new-password"
+              className={
+                touched.confirmPassword ? (validation.confirmPassword ? 'valid' : 'invalid') : ''
+              }
             />
+            {touched.confirmPassword && !validation.confirmPassword && formData.confirmPassword && (
+              <span className="validation-message error">비밀번호가 일치하지 않습니다</span>
+            )}
+            {validation.confirmPassword && formData.confirmPassword && (
+              <span className="validation-message success">비밀번호가 일치합니다</span>
+            )}
           </div>
 
           <button type="submit" className="auth-btn" disabled={loading}>

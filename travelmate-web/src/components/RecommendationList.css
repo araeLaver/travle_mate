@@ -1,58 +1,68 @@
+/* ===================================
+   RecommendationList - Modern Glassmorphism Design
+   =================================== */
+
 .recommendation-list-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 24px;
 }
 
 .recommendation-header {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 36px;
 }
 
 .recommendation-header h1 {
-  font-size: 32px;
-  font-weight: 700;
-  color: #333;
-  margin-bottom: 8px;
+  font-size: 34px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #fff 0%, #c4b5fd 50%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 10px;
 }
 
 .recommendation-header p {
   font-size: 16px;
-  color: #666;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .recommendation-tabs {
   display: flex;
   gap: 12px;
-  margin-bottom: 24px;
-  border-bottom: 2px solid #e0e0e0;
+  margin-bottom: 28px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 2px;
 }
 
 .tab-button {
   background: none;
   border: none;
-  padding: 12px 24px;
+  padding: 14px 26px;
   cursor: pointer;
   font-size: 16px;
-  font-weight: 500;
-  color: #666;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   border-bottom: 3px solid transparent;
   transition: all 0.3s ease;
   position: relative;
   bottom: -2px;
+  border-radius: 12px 12px 0 0;
 }
 
 .tab-button:hover {
-  color: #007bff;
-  background: rgba(0, 123, 255, 0.05);
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .tab-button.active {
-  color: #007bff;
-  border-bottom-color: #007bff;
+  color: white;
+  border-bottom-color: #8b5cf6;
+  background: linear-gradient(180deg, rgba(139, 92, 246, 0.15) 0%, transparent 100%);
 }
 
 .tab-icon {
@@ -60,13 +70,14 @@
 }
 
 .tab-count {
-  background: #007bff;
+  background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
   color: white;
-  padding: 2px 8px;
+  padding: 3px 10px;
   border-radius: 12px;
   font-size: 12px;
-  min-width: 24px;
+  min-width: 26px;
   text-align: center;
+  font-weight: 700;
 }
 
 .recommendation-content {
@@ -85,18 +96,18 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 60px 20px;
-  color: #666;
+  padding: 80px 20px;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #f0f0f0;
-  border-top: 4px solid #007bff;
+  width: 44px;
+  height: 44px;
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  border-top: 4px solid #8b5cf6;
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 @keyframes spin {
@@ -110,40 +121,51 @@
 
 .error-state {
   text-align: center;
-  padding: 60px 20px;
-  color: #dc3545;
+  padding: 80px 20px;
+  color: #fda4af;
 }
 
 .error-state button {
-  margin-top: 16px;
-  padding: 10px 24px;
-  background: #007bff;
+  margin-top: 18px;
+  padding: 12px 28px;
+  background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 12px;
   cursor: pointer;
-  font-size: 14px;
-  transition: background 0.3s ease;
+  font-size: 15px;
+  font-weight: 600;
+  transition: all 0.3s ease;
 }
 
 .error-state button:hover {
-  background: #0056b3;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
 }
 
 .empty-state {
   text-align: center;
-  padding: 60px 20px;
-  color: #999;
+  padding: 80px 20px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.empty-state::before {
+  content: '🔍';
+  display: block;
+  font-size: 4rem;
+  margin-bottom: 16px;
+  opacity: 0.5;
 }
 
 .empty-state p {
   font-size: 16px;
   margin-bottom: 8px;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .empty-state-hint {
   font-size: 14px;
-  color: #bbb;
+  color: rgba(255, 255, 255, 0.4);
 }
 
 .recommendation-info {
@@ -154,24 +176,26 @@
 }
 
 .info-card {
-  background: #f8f9fa;
-  padding: 24px;
-  border-radius: 12px;
-  border: 1px solid #e0e0e0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 26px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .info-card h3 {
   font-size: 18px;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 12px;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 14px;
 }
 
 .info-card p {
   font-size: 14px;
-  color: #666;
-  line-height: 1.6;
-  margin-bottom: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.7;
+  margin-bottom: 14px;
 }
 
 .info-card ul {
@@ -182,39 +206,40 @@
 
 .info-card ul li {
   font-size: 14px;
-  color: #555;
-  padding: 6px 0;
-  padding-left: 20px;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 8px 0;
+  padding-left: 24px;
   position: relative;
 }
 
 .info-card ul li::before {
-  content: "✓";
+  content: '✓';
   position: absolute;
   left: 0;
-  color: #28a745;
+  color: #4ade80;
   font-weight: bold;
 }
 
 .score-legend {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .legend-item {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   font-size: 14px;
-  color: #555;
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .legend-color {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* 반응형 */
@@ -224,7 +249,7 @@
   }
 
   .recommendation-header h1 {
-    font-size: 24px;
+    font-size: 26px;
   }
 
   .recommendation-header p {
@@ -234,10 +259,11 @@
   .recommendation-tabs {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    gap: 8px;
   }
 
   .tab-button {
-    padding: 10px 16px;
+    padding: 12px 18px;
     font-size: 14px;
     white-space: nowrap;
   }
@@ -249,5 +275,33 @@
 
   .recommendation-info {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .recommendation-header h1 {
+    font-size: 22px;
+  }
+
+  .tab-button {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  .tab-icon {
+    font-size: 18px;
+  }
+
+  .tab-count {
+    font-size: 11px;
+    padding: 2px 8px;
+  }
+
+  .info-card {
+    padding: 20px;
+  }
+
+  .info-card h3 {
+    font-size: 16px;
   }
 }
