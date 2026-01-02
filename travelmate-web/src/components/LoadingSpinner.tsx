@@ -12,18 +12,24 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   text,
   fullPage = false,
 }) => {
-  const spinner = (
-    <div className={`loading-spinner-container ${fullPage ? 'full-page' : ''}`}>
-      <div className={`loading-spinner ${size}`}>
+  const loadingLabel = text || '로딩 중';
+
+  return (
+    <div
+      className={`loading-spinner-container ${fullPage ? 'full-page' : ''}`}
+      role="status"
+      aria-live="polite"
+      aria-label={loadingLabel}
+    >
+      <div className={`loading-spinner ${size}`} aria-hidden="true">
         <div className="spinner-ring"></div>
         <div className="spinner-ring"></div>
         <div className="spinner-ring"></div>
       </div>
       {text && <p className="loading-text">{text}</p>}
+      {!text && <span className="sr-only">로딩 중</span>}
     </div>
   );
-
-  return spinner;
 };
 
 export default LoadingSpinner;

@@ -11,7 +11,7 @@ const ChatList: React.FC = () => {
 
   useEffect(() => {
     loadChatRooms();
-    
+
     // 주기적으로 채팅방 목록 업데이트
     const interval = setInterval(() => {
       loadChatRooms();
@@ -31,9 +31,10 @@ const ChatList: React.FC = () => {
     }
   };
 
-  const filteredRooms = chatRooms.filter(room =>
-    room.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    room.lastMessage?.content.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredRooms = chatRooms.filter(
+    room =>
+      room.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      room.lastMessage?.content.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const formatTime = (date: Date) => {
@@ -48,61 +49,85 @@ const ChatList: React.FC = () => {
     if (diffMins < 60) return `${diffMins}분 전`;
     if (diffHours < 24) return `${diffHours}시간 전`;
     if (diffDays < 7) return `${diffDays}일 전`;
-    
+
     return messageDate.toLocaleDateString('ko-KR', {
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
     });
   };
 
   const getOnlineParticipants = (room: ChatRoom) => {
-    return room.participants.filter(p => 
-      p.id !== chatService.getCurrentUserId() && p.isOnline
-    ).length;
+    return room.participants.filter(p => p.id !== chatService.getCurrentUserId() && p.isOnline)
+      .length;
   };
 
   const getTotalParticipants = (room: ChatRoom) => {
     return room.participants.length - 1; // 자신 제외
   };
 
+  const handleRoomKeyDown = (e: React.KeyboardEvent, roomId: string) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      navigate(`/chat/${roomId}`);
+    }
+  };
+
   if (isLoading) {
     return (
-      <div className="chat-list-loading">
-        <div className="loading-spinner">💬</div>
+      <div className="chat-list-loading" role="status" aria-live="polite">
+        <div className="loading-spinner" aria-hidden="true">
+          💬
+        </div>
         <p>채팅방을 불러오는 중...</p>
       </div>
     );
   }
 
   return (
-    <div className="chat-list-container">
-      <div className="chat-list-header">
-        <h1>💬 채팅</h1>
+    <div className="chat-list-container" role="main" aria-label="채팅 목록">
+      <header className="chat-list-header">
+        <h1>
+          <span aria-hidden="true">💬</span> 채팅
+        </h1>
         <p>여행 메이트들과의 대화를 확인해보세요</p>
-      </div>
+      </header>
 
-      <div className="search-section">
+      <search className="search-section" role="search" aria-label="채팅방 검색">
         <div className="search-bar">
+          <label htmlFor="chat-search" className="sr-only">
+            채팅방 검색
+          </label>
           <input
-            type="text"
+            id="chat-search"
+            type="search"
             placeholder="채팅방이나 메시지 검색..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={e => setSearchQuery(e.target.value)}
             className="search-input"
+            aria-describedby="search-results-count"
           />
-          <span className="search-icon">🔍</span>
+          <span className="search-icon" aria-hidden="true">
+            🔍
+          </span>
         </div>
-      </div>
+        <span id="search-results-count" className="sr-only" aria-live="polite">
+          {searchQuery ? `검색 결과: ${filteredRooms.length}개의 채팅방` : ''}
+        </span>
+      </search>
 
-      <div className="chat-rooms-section">
+      <section className="chat-rooms-section" aria-label="채팅방 목록">
         <div className="section-header">
-          <h3>활성 채팅방</h3>
-          <span className="room-count">{filteredRooms.length}개</span>
+          <h2>활성 채팅방</h2>
+          <span className="room-count" aria-label={`총 ${filteredRooms.length}개의 채팅방`}>
+            {filteredRooms.length}개
+          </span>
         </div>
 
         {filteredRooms.length === 0 ? (
-          <div className="empty-chats">
-            <div className="empty-icon">💬</div>
+          <div className="empty-chats" role="status">
+            <div className="empty-icon" aria-hidden="true">
+              💬
+            </div>
             {searchQuery ? (
               <>
                 <h3>검색 결과가 없습니다</h3>
@@ -112,132 +137,153 @@ const ChatList: React.FC = () => {
               <>
                 <h3>아직 채팅방이 없습니다</h3>
                 <p>여행 메이트를 찾아서 첫 대화를 시작해보세요!</p>
-                <button 
+                <button
                   className="find-mates-btn"
                   onClick={() => navigate('/dashboard')}
+                  aria-label="여행 메이트 찾기 페이지로 이동"
                 >
-                  🔍 여행 메이트 찾기
+                  <span aria-hidden="true">🔍</span> 여행 메이트 찾기
                 </button>
               </>
             )}
           </div>
         ) : (
-          <div className="chat-rooms-list">
-            {filteredRooms.map(room => (
-              <div
-                key={room.id}
-                className="chat-room-item"
-                onClick={() => navigate(`/chat/${room.id}`)}
-              >
-                <div className="room-avatar">
-                  {room.type === 'direct' ? (
-                    <>
-                      {room.participants.find(p => p.id !== chatService.getCurrentUserId())?.profileImage ? (
-                        <img 
-                          src={room.participants.find(p => p.id !== chatService.getCurrentUserId())?.profileImage} 
-                          alt={room.name}
-                          className="avatar-image"
-                        />
-                      ) : (
-                        <div className="avatar-placeholder">
-                          👤
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <div className="group-avatar">
-                      <span className="group-icon">👥</span>
-                      <span className="member-count">{room.participants.length}</span>
-                    </div>
-                  )}
-                </div>
+          <ul className="chat-rooms-list">
+            {filteredRooms.map(room => {
+              const otherParticipant = room.participants.find(
+                p => p.id !== chatService.getCurrentUserId()
+              );
+              const isOnline = room.type === 'direct' && otherParticipant?.isOnline;
+              const unreadText =
+                room.unreadCount > 0
+                  ? `, 읽지 않은 메시지 ${room.unreadCount > 99 ? '99개 이상' : room.unreadCount + '개'}`
+                  : '';
 
-                <div className="room-content">
-                  <div className="room-header">
-                    <div className="room-info">
-                      <h4 className="room-name">{room.name}</h4>
-                      {room.type === 'group' && (
-                        <span className="participant-info">
-                          👥 {getTotalParticipants(room)}명 
-                          {getOnlineParticipants(room) > 0 && (
-                            <span className="online-count">
-                              • 🟢 {getOnlineParticipants(room)}명 온라인
-                            </span>
-                          )}
-                        </span>
-                      )}
-                      {room.type === 'direct' && (
-                        <span className={`online-status ${
-                          room.participants.find(p => p.id !== chatService.getCurrentUserId())?.isOnline 
-                            ? 'online' : 'offline'
-                        }`}>
-                          {room.participants.find(p => p.id !== chatService.getCurrentUserId())?.isOnline 
-                            ? '🟢 온라인' : '⚪ 오프라인'
-                          }
-                        </span>
-                      )}
-                    </div>
-                    <div className="room-meta">
-                      {room.lastMessage && (
-                        <span className="last-time">
-                          {formatTime(room.lastMessage.timestamp)}
-                        </span>
-                      )}
-                      {room.unreadCount > 0 && (
-                        <span className="unread-badge">
-                          {room.unreadCount > 99 ? '99+' : room.unreadCount}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="last-message">
-                    {room.lastMessage ? (
+              return (
+                <li
+                  key={room.id}
+                  className="chat-room-item"
+                  onClick={() => navigate(`/chat/${room.id}`)}
+                  onKeyDown={e => handleRoomKeyDown(e, room.id)}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`${room.name} 채팅방${room.type === 'direct' ? (isOnline ? ', 온라인' : ', 오프라인') : `, 참여자 ${room.participants.length}명`}${unreadText}`}
+                >
+                  <div className="room-avatar" aria-hidden="true">
+                    {room.type === 'direct' ? (
                       <>
-                        <span className="message-sender">
-                          {room.lastMessage.senderId === chatService.getCurrentUserId() 
-                            ? '나' 
-                            : room.lastMessage.senderName
-                          }:
-                        </span>
-                        <span className="message-content">
-                          {room.lastMessage.type === 'text' 
-                            ? room.lastMessage.content
-                            : room.lastMessage.type === 'image' 
-                            ? '📷 이미지'
-                            : room.lastMessage.type === 'location'
-                            ? '📍 위치'
-                            : '💬 메시지'
-                          }
-                        </span>
+                        {otherParticipant?.profileImage ? (
+                          <img
+                            src={otherParticipant.profileImage}
+                            alt=""
+                            className="avatar-image"
+                          />
+                        ) : (
+                          <div className="avatar-placeholder">👤</div>
+                        )}
                       </>
                     ) : (
-                      <span className="no-messages">대화를 시작해보세요!</span>
+                      <div className="group-avatar">
+                        <span className="group-icon">👥</span>
+                        <span className="member-count">{room.participants.length}</span>
+                      </div>
                     )}
                   </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
 
-      <div className="quick-actions">
-        <button 
+                  <div className="room-content">
+                    <div className="room-header">
+                      <div className="room-info">
+                        <h3 className="room-name">{room.name}</h3>
+                        {room.type === 'group' && (
+                          <span className="participant-info" aria-hidden="true">
+                            <span aria-hidden="true">👥</span> {getTotalParticipants(room)}명
+                            {getOnlineParticipants(room) > 0 && (
+                              <span className="online-count">
+                                • <span aria-hidden="true">🟢</span> {getOnlineParticipants(room)}명
+                                온라인
+                              </span>
+                            )}
+                          </span>
+                        )}
+                        {room.type === 'direct' && (
+                          <span
+                            className={`online-status ${isOnline ? 'online' : 'offline'}`}
+                            aria-hidden="true"
+                          >
+                            {isOnline ? '🟢 온라인' : '⚪ 오프라인'}
+                          </span>
+                        )}
+                      </div>
+                      <div className="room-meta">
+                        {room.lastMessage && (
+                          <time
+                            className="last-time"
+                            dateTime={room.lastMessage.timestamp.toISOString()}
+                          >
+                            {formatTime(room.lastMessage.timestamp)}
+                          </time>
+                        )}
+                        {room.unreadCount > 0 && (
+                          <span className="unread-badge" aria-hidden="true">
+                            {room.unreadCount > 99 ? '99+' : room.unreadCount}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="last-message" aria-hidden="true">
+                      {room.lastMessage ? (
+                        <>
+                          <span className="message-sender">
+                            {room.lastMessage.senderId === chatService.getCurrentUserId()
+                              ? '나'
+                              : room.lastMessage.senderName}
+                            :
+                          </span>
+                          <span className="message-content">
+                            {room.lastMessage.type === 'text'
+                              ? room.lastMessage.content
+                              : room.lastMessage.type === 'image'
+                                ? '📷 이미지'
+                                : room.lastMessage.type === 'location'
+                                  ? '📍 위치'
+                                  : '💬 메시지'}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="no-messages">대화를 시작해보세요!</span>
+                      )}
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
+
+      <nav className="quick-actions" aria-label="빠른 액션">
+        <button
           className="action-btn primary"
           onClick={() => navigate('/dashboard')}
+          aria-label="새로운 여행 메이트 찾기"
         >
-          <span className="btn-icon">🔍</span>
+          <span className="btn-icon" aria-hidden="true">
+            🔍
+          </span>
           새로운 메이트 찾기
         </button>
-        <button 
+        <button
           className="action-btn secondary"
           onClick={() => navigate('/groups')}
+          aria-label="여행 그룹 목록 보기"
         >
-          <span className="btn-icon">🗺️</span>
+          <span className="btn-icon" aria-hidden="true">
+            🗺️
+          </span>
           여행 그룹 보기
         </button>
-      </div>
+      </nav>
     </div>
   );
 };

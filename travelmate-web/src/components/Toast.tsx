@@ -54,11 +54,40 @@ const ToastItem: React.FC<{ toast: Toast; onRemove: (id: string) => void }> = ({
     }
   };
 
+  const getTypeLabel = () => {
+    switch (toast.type) {
+      case 'success':
+        return '성공';
+      case 'error':
+        return '오류';
+      case 'warning':
+        return '경고';
+      case 'info':
+      default:
+        return '정보';
+    }
+  };
+
   return (
-    <div className={`toast-item toast-${toast.type}`} onClick={() => onRemove(toast.id)}>
-      <span className="toast-icon">{getIcon()}</span>
+    <div
+      className={`toast-item toast-${toast.type}`}
+      role={toast.type === 'error' ? 'alert' : 'status'}
+      aria-live={toast.type === 'error' ? 'assertive' : 'polite'}
+      aria-atomic="true"
+    >
+      <span className="toast-icon" aria-hidden="true">
+        {getIcon()}
+      </span>
+      <span className="sr-only">{getTypeLabel()}: </span>
       <span className="toast-message">{toast.message}</span>
-      <button className="toast-close" onClick={() => onRemove(toast.id)}>
+      <button
+        className="toast-close"
+        onClick={e => {
+          e.stopPropagation();
+          onRemove(toast.id);
+        }}
+        aria-label="알림 닫기"
+      >
         ×
       </button>
     </div>

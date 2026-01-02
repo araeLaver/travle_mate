@@ -23,12 +23,13 @@ const NotificationCenter: React.FC = () => {
   const { realtimeNotifications, clearRealtimeNotifications } = useRealtimeNotifications();
 
   // 모든 알림 (실시간 + 서버)
-  const allNotifications = [
-    ...realtimeNotifications,
-    ...(notifications?.content || []),
-  ];
+  const allNotifications = [...realtimeNotifications, ...(notifications?.content || [])];
 
-  const handleNotificationClick = (notification: any) => {
+  const handleNotificationClick = (notification: {
+    id: string;
+    isRead: boolean;
+    actionUrl?: string;
+  }) => {
     // 읽음 처리
     if (!notification.isRead) {
       markAsReadMutation.mutate([notification.id]);
@@ -89,49 +90,75 @@ const NotificationCenter: React.FC = () => {
       <button
         className="notification-bell"
         onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+        aria-haspopup="dialog"
+        aria-label={`알림 ${(unreadCount || 0) > 0 ? `(읽지 않은 알림 ${unreadCount}개)` : ''}`}
       >
-        🔔
+        <span aria-hidden="true">🔔</span>
         {(unreadCount || 0) > 0 && (
-          <span className="notification-badge">{unreadCount}</span>
+          <span className="notification-badge" aria-hidden="true">
+            {unreadCount}
+          </span>
         )}
       </button>
 
       {/* 알림 드롭다운 */}
       {isOpen && (
         <>
-          <div className="notification-overlay" onClick={() => setIsOpen(false)} />
-          <div className="notification-dropdown">
+          <div
+            className="notification-overlay"
+            onClick={() => setIsOpen(false)}
+            aria-hidden="true"
+          />
+          <div
+            className="notification-dropdown"
+            role="dialog"
+            aria-label="알림 목록"
+            aria-modal="true"
+          >
             <div className="notification-header">
-              <h3>알림</h3>
+              <h3 id="notification-title">알림</h3>
               {(unreadCount || 0) > 0 && (
                 <button
                   className="mark-all-read-btn"
                   onClick={handleMarkAllAsRead}
                   disabled={markAllAsReadMutation.isPending}
+                  aria-busy={markAllAsReadMutation.isPending}
                 >
                   모두 읽음
                 </button>
               )}
             </div>
 
-            <div className="notification-list">
-              {isLoading && <div className="loading">로딩 중...</div>}
+            <div className="notification-list" role="list" aria-labelledby="notification-title">
+              {isLoading && (
+                <div className="loading" role="status" aria-live="polite">
+                  로딩 중...
+                </div>
+              )}
 
               {!isLoading && allNotifications.length === 0 && (
-                <div className="empty-notifications">
+                <div className="empty-notifications" role="status">
                   <p>새로운 알림이 없습니다.</p>
                 </div>
               )}
 
-              {allNotifications.map((notification) => (
+              {allNotifications.map(notification => (
                 <div
                   key={notification.id}
-                  className={`notification-item ${
-                    notification.isRead ? 'read' : 'unread'
-                  }`}
+                  className={`notification-item ${notification.isRead ? 'read' : 'unread'}`}
+                  role="listitem"
+                  tabIndex={0}
                   onClick={() => handleNotificationClick(notification)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleNotificationClick(notification);
+                    }
+                  }}
+                  aria-label={`${notification.isRead ? '' : '읽지 않음: '}${notification.title} - ${notification.message}`}
                 >
-                  <div className="notification-icon">
+                  <div className="notification-icon" aria-hidden="true">
                     {getNotificationIcon(notification.type)}
                   </div>
 
@@ -145,33 +172,36 @@ const NotificationCenter: React.FC = () => {
 
                   <button
                     className="notification-delete"
-                    onClick={(e) => handleDeleteNotification(notification.id, e)}
+                    onClick={e => handleDeleteNotification(notification.id, e)}
                     disabled={deleteNotificationMutation.isPending}
+                    aria-label={`${notification.title} 알림 삭제`}
                   >
-                    ✕
+                    <span aria-hidden="true">✕</span>
                   </button>
                 </div>
               ))}
             </div>
 
             {notifications && notifications.totalPages > 1 && (
-              <div className="notification-pagination">
+              <nav className="notification-pagination" aria-label="알림 페이지 탐색">
                 <button
                   disabled={page === 0}
                   onClick={() => setPage(page - 1)}
+                  aria-label="이전 페이지"
                 >
                   이전
                 </button>
-                <span>
+                <span aria-current="page">
                   {page + 1} / {notifications.totalPages}
                 </span>
                 <button
                   disabled={page >= notifications.totalPages - 1}
                   onClick={() => setPage(page + 1)}
+                  aria-label="다음 페이지"
                 >
                   다음
                 </button>
-              </div>
+              </nav>
             )}
           </div>
         </>

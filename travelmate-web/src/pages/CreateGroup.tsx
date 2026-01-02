@@ -196,20 +196,36 @@ const CreateGroup: React.FC = () => {
 
   return (
     <div className="create-group-container">
-      <div className="create-group-header">
-        <button className="back-btn" onClick={() => navigate('/groups')}>
-          ← 뒤로가기
+      <header className="create-group-header">
+        <button
+          className="back-btn"
+          onClick={() => navigate('/groups')}
+          aria-label="그룹 목록으로 돌아가기"
+        >
+          <span aria-hidden="true">←</span> 뒤로가기
         </button>
-        <h1>🗺️ 새 여행 그룹 만들기</h1>
+        <h1>
+          <span aria-hidden="true">🗺️</span> 새 여행 그룹 만들기
+        </h1>
         <p>함께할 여행 메이트들을 모집해보세요!</p>
-      </div>
+      </header>
 
-      <form onSubmit={handleSubmit} className="create-group-form">
-        <div className="form-section">
-          <h3>📝 기본 정보</h3>
+      <form
+        onSubmit={handleSubmit}
+        className="create-group-form"
+        aria-label="여행 그룹 생성 양식"
+        noValidate
+      >
+        <fieldset className="form-section">
+          <legend>
+            <span aria-hidden="true">📝</span> 기본 정보
+          </legend>
 
           <div className="form-group">
-            <label htmlFor="name">그룹명 *</label>
+            <label htmlFor="name">
+              그룹명 <span aria-hidden="true">*</span>
+              <span className="sr-only">(필수)</span>
+            </label>
             <input
               type="text"
               id="name"
@@ -220,14 +236,22 @@ const CreateGroup: React.FC = () => {
               className={`form-input ${touched.name ? (validation.name ? 'valid' : 'invalid') : ''}`}
               maxLength={50}
               required
+              aria-required="true"
+              aria-invalid={touched.name && !validation.name}
+              aria-describedby={touched.name && !validation.name ? 'name-error' : undefined}
             />
             {touched.name && !validation.name && (
-              <span className="validation-message error">그룹명은 2~50자로 입력해주세요</span>
+              <span id="name-error" className="validation-message error" role="alert">
+                그룹명은 2~50자로 입력해주세요
+              </span>
             )}
           </div>
 
           <div className="form-group">
-            <label htmlFor="destination">목적지 *</label>
+            <label htmlFor="destination">
+              목적지 <span aria-hidden="true">*</span>
+              <span className="sr-only">(필수)</span>
+            </label>
             <input
               type="text"
               id="destination"
@@ -237,9 +261,16 @@ const CreateGroup: React.FC = () => {
               placeholder="예: 제주도, 부산, 경주"
               className={`form-input ${touched.destination ? (validation.destination ? 'valid' : 'invalid') : ''}`}
               required
+              aria-required="true"
+              aria-invalid={touched.destination && !validation.destination}
+              aria-describedby={
+                touched.destination && !validation.destination ? 'destination-error' : undefined
+              }
             />
             {touched.destination && !validation.destination && (
-              <span className="validation-message error">목적지는 2자 이상 입력해주세요</span>
+              <span id="destination-error" className="validation-message error" role="alert">
+                목적지는 2자 이상 입력해주세요
+              </span>
             )}
           </div>
 
@@ -253,16 +284,25 @@ const CreateGroup: React.FC = () => {
               className="form-textarea"
               rows={4}
               maxLength={500}
+              aria-describedby="description-hint"
             />
+            <span id="description-hint" className="sr-only">
+              최대 500자까지 입력 가능
+            </span>
           </div>
-        </div>
+        </fieldset>
 
-        <div className="form-section">
-          <h3>📅 여행 일정</h3>
+        <fieldset className="form-section">
+          <legend>
+            <span aria-hidden="true">📅</span> 여행 일정
+          </legend>
 
           <div className="date-group">
             <div className="form-group">
-              <label htmlFor="startDate">시작일</label>
+              <label htmlFor="startDate">
+                시작일 <span aria-hidden="true">*</span>
+                <span className="sr-only">(필수)</span>
+              </label>
               <input
                 type="date"
                 id="startDate"
@@ -271,11 +311,15 @@ const CreateGroup: React.FC = () => {
                 className="form-input"
                 min={formatDate(new Date())}
                 required
+                aria-required="true"
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="endDate">종료일</label>
+              <label htmlFor="endDate">
+                종료일 <span aria-hidden="true">*</span>
+                <span className="sr-only">(필수)</span>
+              </label>
               <input
                 type="date"
                 id="endDate"
@@ -284,13 +328,20 @@ const CreateGroup: React.FC = () => {
                 className="form-input"
                 min={formatDate(formData.startDate)}
                 required
+                aria-required="true"
+                aria-describedby="date-hint"
               />
+              <span id="date-hint" className="sr-only">
+                종료일은 시작일보다 나중이어야 합니다
+              </span>
             </div>
           </div>
-        </div>
+        </fieldset>
 
-        <div className="form-section">
-          <h3>👥 그룹 설정</h3>
+        <fieldset className="form-section">
+          <legend>
+            <span aria-hidden="true">👥</span> 그룹 설정
+          </legend>
 
           <div className="form-group">
             <label htmlFor="maxMembers">최대 인원</label>
@@ -299,6 +350,7 @@ const CreateGroup: React.FC = () => {
               value={formData.maxMembers}
               onChange={e => handleInputChange('maxMembers', parseInt(e.target.value))}
               className="form-select"
+              aria-describedby="members-hint"
             >
               {[2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
                 <option key={num} value={num}>
@@ -306,6 +358,9 @@ const CreateGroup: React.FC = () => {
                 </option>
               ))}
             </select>
+            <span id="members-hint" className="sr-only">
+              그룹에 참여할 수 있는 최대 인원 수
+            </span>
           </div>
 
           <div className="form-group">
@@ -323,10 +378,12 @@ const CreateGroup: React.FC = () => {
               ))}
             </select>
           </div>
-        </div>
+        </fieldset>
 
-        <div className="form-section">
-          <h3>💰 예산</h3>
+        <fieldset className="form-section">
+          <legend>
+            <span aria-hidden="true">💰</span> 예산
+          </legend>
 
           <div className="budget-group">
             <div className="form-group">
@@ -339,6 +396,7 @@ const CreateGroup: React.FC = () => {
                 className="form-input"
                 min="0"
                 step="10000"
+                aria-describedby="budget-hint"
               />
             </div>
 
@@ -355,30 +413,42 @@ const CreateGroup: React.FC = () => {
               />
             </div>
           </div>
-        </div>
+          <span id="budget-hint" className="sr-only">
+            1인당 예상 여행 경비
+          </span>
+        </fieldset>
 
-        <div className="form-section">
-          <h3>🏷️ 태그</h3>
-          <p className="section-description">여행의 특징을 나타내는 태그를 추가해주세요.</p>
+        <fieldset className="form-section">
+          <legend>
+            <span aria-hidden="true">🏷️</span> 태그
+          </legend>
+          <p className="section-description" id="tags-description">
+            여행의 특징을 나타내는 태그를 추가해주세요.
+          </p>
 
           <div className="tag-input-group">
+            <label htmlFor="new-tag" className="sr-only">
+              새 태그 입력
+            </label>
             <input
               type="text"
+              id="new-tag"
               value={newTag}
               onChange={e => setNewTag(e.target.value)}
               placeholder="태그 입력..."
               className="form-input"
               maxLength={20}
               onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addTag())}
+              aria-describedby="tags-description"
             />
-            <button type="button" onClick={addTag} className="add-btn">
+            <button type="button" onClick={addTag} className="add-btn" aria-label="태그 추가">
               추가
             </button>
           </div>
 
           <div className="popular-tags">
-            <p>인기 태그:</p>
-            <div className="popular-tags-grid">
+            <p id="popular-tags-label">인기 태그:</p>
+            <div className="popular-tags-grid" role="group" aria-labelledby="popular-tags-label">
               {popularTags.map(tag => (
                 <button
                   key={tag}
@@ -386,6 +456,8 @@ const CreateGroup: React.FC = () => {
                   onClick={() => addPopularTag(tag)}
                   className={`popular-tag ${formData.tags.includes(tag) ? 'selected' : ''}`}
                   disabled={formData.tags.includes(tag)}
+                  aria-pressed={formData.tags.includes(tag)}
+                  aria-label={formData.tags.includes(tag) ? `${tag} (선택됨)` : tag}
                 >
                   {tag}
                 </button>
@@ -393,56 +465,89 @@ const CreateGroup: React.FC = () => {
             </div>
           </div>
 
-          <div className="selected-tags">
+          <div className="selected-tags" role="list" aria-label="선택된 태그">
             {formData.tags.map(tag => (
-              <span key={tag} className="selected-tag">
+              <span key={tag} className="selected-tag" role="listitem">
                 #{tag}
-                <button type="button" onClick={() => removeTag(tag)} className="remove-tag">
-                  ×
+                <button
+                  type="button"
+                  onClick={() => removeTag(tag)}
+                  className="remove-tag"
+                  aria-label={`${tag} 태그 삭제`}
+                >
+                  <span aria-hidden="true">×</span>
                 </button>
               </span>
             ))}
           </div>
-        </div>
+        </fieldset>
 
-        <div className="form-section">
-          <h3>📋 참가 조건</h3>
-          <p className="section-description">
+        <fieldset className="form-section">
+          <legend>
+            <span aria-hidden="true">📋</span> 참가 조건
+          </legend>
+          <p className="section-description" id="requirements-description">
             그룹 참가자에게 요구하는 조건이 있다면 추가해주세요.
           </p>
 
           <div className="tag-input-group">
+            <label htmlFor="new-requirement" className="sr-only">
+              새 참가 조건 입력
+            </label>
             <input
               type="text"
+              id="new-requirement"
               value={newRequirement}
               onChange={e => setNewRequirement(e.target.value)}
               placeholder="예: 금연자, 새벽 일찍 출발 가능한 분"
               className="form-input"
               maxLength={100}
               onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addRequirement())}
+              aria-describedby="requirements-description"
             />
-            <button type="button" onClick={addRequirement} className="add-btn">
+            <button
+              type="button"
+              onClick={addRequirement}
+              className="add-btn"
+              aria-label="참가 조건 추가"
+            >
               추가
             </button>
           </div>
 
-          <div className="requirements-list">
+          <div className="requirements-list" role="list" aria-label="참가 조건 목록">
             {formData.requirements.map((req, index) => (
-              <div key={index} className="requirement-item">
+              <div key={index} className="requirement-item" role="listitem">
                 <span>• {req}</span>
-                <button type="button" onClick={() => removeRequirement(req)} className="remove-req">
-                  ×
+                <button
+                  type="button"
+                  onClick={() => removeRequirement(req)}
+                  className="remove-req"
+                  aria-label={`${req} 조건 삭제`}
+                >
+                  <span aria-hidden="true">×</span>
                 </button>
               </div>
             ))}
           </div>
-        </div>
+        </fieldset>
 
-        <div className="form-actions">
-          <button type="button" onClick={() => navigate('/groups')} className="cancel-btn">
+        <div className="form-actions" role="group" aria-label="양식 제출 버튼">
+          <button
+            type="button"
+            onClick={() => navigate('/groups')}
+            className="cancel-btn"
+            aria-label="그룹 생성 취소"
+          >
             취소
           </button>
-          <button type="submit" disabled={isLoading} className="submit-btn">
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="submit-btn"
+            aria-busy={isLoading}
+            aria-label={isLoading ? '그룹 생성 중' : '그룹 만들기'}
+          >
             {isLoading ? '생성 중...' : '✨ 그룹 만들기'}
           </button>
         </div>

@@ -15,15 +15,21 @@ const LoadingButton: React.FC<LoadingButtonProps> = ({
   ...props
 }) => {
   return (
-    <button {...props} disabled={disabled || isLoading}>
+    <button
+      {...props}
+      disabled={disabled || isLoading}
+      aria-busy={isLoading}
+      aria-disabled={disabled || isLoading}
+    >
       {isLoading ? (
         <span className="btn-spinner">
-          <span className="loading-spinner small">
+          <span className="loading-spinner small" aria-hidden="true">
             <span className="spinner-ring"></span>
             <span className="spinner-ring"></span>
             <span className="spinner-ring"></span>
           </span>
-          {loadingText || children}
+          <span>{loadingText || children}</span>
+          <span className="sr-only">처리 중</span>
         </span>
       ) : (
         children

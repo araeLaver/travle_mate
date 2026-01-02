@@ -179,8 +179,10 @@ const Groups: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="groups-loading">
-        <div className="loading-spinner">🗺️</div>
+      <div className="groups-loading" role="status" aria-live="polite">
+        <div className="loading-spinner" aria-hidden="true">
+          🗺️
+        </div>
         <p>여행 그룹을 불러오는 중...</p>
       </div>
     );
@@ -190,55 +192,89 @@ const Groups: React.FC = () => {
     <div className="groups-container">
       <div className="groups-content">
         {/* 헤더 */}
-        <div className="groups-header">
+        <header className="groups-header">
           <h1>Travel Groups</h1>
           <p>함께할 여행 메이트를 찾고 멋진 추억을 만들어보세요!</p>
 
-          <button className="create-group-btn" onClick={() => navigate('/groups/create')}>
-            ✨ 새 그룹 만들기
+          <button
+            className="create-group-btn"
+            onClick={() => navigate('/groups/create')}
+            aria-label="새 여행 그룹 만들기"
+          >
+            <span aria-hidden="true">✨</span> 새 그룹 만들기
           </button>
-        </div>
+        </header>
 
         {/* 탭 네비게이션 */}
-        <div className="groups-tabs">
+        <nav className="groups-tabs" role="tablist" aria-label="그룹 카테고리">
           <button
             className={`tab-btn ${selectedTab === 'all' ? 'active' : ''}`}
             onClick={() => setSelectedTab('all')}
+            role="tab"
+            id="tab-all"
+            aria-selected={selectedTab === 'all'}
+            aria-controls="tabpanel-groups"
+            tabIndex={selectedTab === 'all' ? 0 : -1}
           >
-            🌐 전체 그룹
+            <span aria-hidden="true">🌐</span> 전체 그룹
           </button>
           <button
             className={`tab-btn ${selectedTab === 'my' ? 'active' : ''}`}
             onClick={() => setSelectedTab('my')}
+            role="tab"
+            id="tab-my"
+            aria-selected={selectedTab === 'my'}
+            aria-controls="tabpanel-groups"
+            tabIndex={selectedTab === 'my' ? 0 : -1}
           >
-            👥 내 그룹
+            <span aria-hidden="true">👥</span> 내 그룹
           </button>
           <button
             className={`tab-btn ${selectedTab === 'recommended' ? 'active' : ''}`}
             onClick={() => setSelectedTab('recommended')}
+            role="tab"
+            id="tab-recommended"
+            aria-selected={selectedTab === 'recommended'}
+            aria-controls="tabpanel-groups"
+            tabIndex={selectedTab === 'recommended' ? 0 : -1}
           >
-            ⭐ 추천 그룹
+            <span aria-hidden="true">⭐</span> 추천 그룹
           </button>
-        </div>
+        </nav>
 
         {/* 검색 및 필터 */}
-        <div className="groups-filters">
+        <search className="groups-filters" role="search" aria-label="그룹 검색 및 필터">
           <div className="search-bar">
+            <label htmlFor="group-search" className="sr-only">
+              그룹 검색
+            </label>
             <input
-              type="text"
+              id="group-search"
+              type="search"
               placeholder="그룹명, 목적지, 태그로 검색..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               className="search-input"
+              aria-describedby="search-hint"
             />
-            <span className="search-icon">🔍</span>
+            <span className="search-icon" aria-hidden="true">
+              🔍
+            </span>
+            <span id="search-hint" className="sr-only">
+              엔터를 눌러 검색
+            </span>
           </div>
 
-          <div className="filter-row">
+          <div className="filter-row" role="group" aria-label="필터 옵션">
+            <label htmlFor="filter-destination" className="sr-only">
+              지역 필터
+            </label>
             <select
+              id="filter-destination"
               value={filters.destination}
               onChange={e => setFilters({ ...filters, destination: e.target.value })}
               className="filter-select"
+              aria-label="지역 선택"
             >
               <option value="">전체 지역</option>
               <option value="서울">서울</option>
@@ -250,10 +286,15 @@ const Groups: React.FC = () => {
               <option value="전주">전주</option>
             </select>
 
+            <label htmlFor="filter-style" className="sr-only">
+              여행 스타일 필터
+            </label>
             <select
+              id="filter-style"
               value={filters.travelStyle}
               onChange={e => setFilters({ ...filters, travelStyle: e.target.value })}
               className="filter-select"
+              aria-label="여행 스타일 선택"
             >
               {travelStyles.map(style => (
                 <option key={style} value={style}>
@@ -262,10 +303,15 @@ const Groups: React.FC = () => {
               ))}
             </select>
 
+            <label htmlFor="filter-status" className="sr-only">
+              상태 필터
+            </label>
             <select
+              id="filter-status"
               value={filters.status}
               onChange={e => setFilters({ ...filters, status: e.target.value })}
               className="filter-select"
+              aria-label="모집 상태 선택"
             >
               <option value="">전체 상태</option>
               <option value="recruiting">모집중</option>
@@ -273,26 +319,40 @@ const Groups: React.FC = () => {
               <option value="active">진행중</option>
             </select>
           </div>
-        </div>
+        </search>
 
         {/* 그룹 목록 */}
-        <div className="groups-list">
+        <section
+          id="tabpanel-groups"
+          className="groups-list"
+          role="tabpanel"
+          aria-labelledby={`tab-${selectedTab}`}
+          aria-label={`${selectedTab === 'all' ? '전체' : selectedTab === 'my' ? '내' : '추천'} 그룹 목록`}
+        >
           {filteredGroups.length === 0 ? (
-            <div className="empty-groups">
-              <div className="empty-icon">🗺️</div>
-              <h3>검색 결과가 없습니다</h3>
+            <div className="empty-groups" role="status">
+              <div className="empty-icon" aria-hidden="true">
+                🗺️
+              </div>
+              <h2>검색 결과가 없습니다</h2>
               <p>다른 검색어나 필터를 시도해보세요.</p>
             </div>
           ) : (
-            <div className="groups-grid">
+            <div className="groups-grid" role="list">
               {filteredGroups.map(group => (
-                <div key={group.id} className="group-card">
+                <article
+                  key={group.id}
+                  className="group-card"
+                  role="listitem"
+                  aria-label={`${group.name} - ${group.destination}, ${statusLabels[group.status]}`}
+                >
                   {group.coverImage && (
                     <div className="group-image">
-                      <img src={group.coverImage} alt={group.name} />
+                      <img src={group.coverImage} alt={`${group.name} 그룹 커버 이미지`} />
                       <div
                         className="group-status"
                         style={{ backgroundColor: getStatusColor(group.status) }}
+                        aria-label={`모집 상태: ${statusLabels[group.status]}`}
                       >
                         {statusLabels[group.status]}
                       </div>
@@ -302,20 +362,28 @@ const Groups: React.FC = () => {
                   <div className="group-content">
                     <div className="group-header">
                       <h3 className="group-name">{group.name}</h3>
-                      <div className="group-members">
+                      <div
+                        className="group-members"
+                        aria-label={`참여 인원 ${group.currentMembers}명 중 ${group.maxMembers}명`}
+                      >
                         {group.currentMembers}/{group.maxMembers}명
                       </div>
                     </div>
 
-                    <p className="group-destination">📍 {group.destination}</p>
-                    <p className="group-dates">
-                      🗓️ {formatDate(group.startDate)} - {formatDate(group.endDate)}
+                    <p className="group-destination">
+                      <span aria-hidden="true">📍</span> {group.destination}
                     </p>
-                    <p className="group-budget">💰 {formatBudget(group.budget)}</p>
+                    <p className="group-dates">
+                      <span aria-hidden="true">🗓️</span> {formatDate(group.startDate)} -{' '}
+                      {formatDate(group.endDate)}
+                    </p>
+                    <p className="group-budget">
+                      <span aria-hidden="true">💰</span> {formatBudget(group.budget)}
+                    </p>
 
                     <p className="group-description">{group.description}</p>
 
-                    <div className="group-tags">
+                    <div className="group-tags" aria-label="태그">
                       {group.tags.slice(0, 3).map((tag, index) => (
                         <span key={index} className="group-tag">
                           #{tag}
@@ -324,7 +392,9 @@ const Groups: React.FC = () => {
                     </div>
 
                     <div className="group-leader">
-                      <span className="leader-label">👑 리더:</span>
+                      <span className="leader-label">
+                        <span aria-hidden="true">👑</span> 리더:
+                      </span>
                       <span className="leader-name">
                         {group.members.find(m => m.role === 'leader')?.name || '알 수 없음'}
                       </span>
@@ -337,6 +407,7 @@ const Groups: React.FC = () => {
                         <button
                           className="btn-small secondary"
                           onClick={() => navigate(`/groups/${group.id}`)}
+                          aria-label={`${group.name} 그룹 보기`}
                         >
                           그룹 보기
                         </button>
@@ -346,6 +417,8 @@ const Groups: React.FC = () => {
                             className="btn-small danger"
                             onClick={() => handleLeaveGroup(group.id)}
                             disabled={actionLoading === `leave-${group.id}`}
+                            aria-busy={actionLoading === `leave-${group.id}`}
+                            aria-label={`${group.name} 그룹에서 탈퇴`}
                           >
                             {actionLoading === `leave-${group.id}` ? '처리중...' : '탈퇴하기'}
                           </button>
@@ -356,6 +429,7 @@ const Groups: React.FC = () => {
                         <button
                           className="btn-small secondary"
                           onClick={() => navigate(`/groups/${group.id}`)}
+                          aria-label={`${group.name} 그룹 상세보기`}
                         >
                           상세보기
                         </button>
@@ -364,6 +438,8 @@ const Groups: React.FC = () => {
                             className="btn-small primary"
                             onClick={() => handleJoinGroup(group.id)}
                             disabled={actionLoading === `join-${group.id}`}
+                            aria-busy={actionLoading === `join-${group.id}`}
+                            aria-label={`${group.name} 그룹 가입하기`}
                           >
                             {actionLoading === `join-${group.id}` ? '가입중...' : '가입하기'}
                           </button>
@@ -371,11 +447,11 @@ const Groups: React.FC = () => {
                       </div>
                     )}
                   </div>
-                </div>
+                </article>
               ))}
             </div>
           )}
-        </div>
+        </section>
       </div>
     </div>
   );

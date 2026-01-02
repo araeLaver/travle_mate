@@ -19,11 +19,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <div className="layout">
+      {/* 스킵 링크 */}
+      <a href="#main-content" className="skip-link">
+        본문으로 건너뛰기
+      </a>
+
       {/* 헤더 */}
       <header className="header">
         <div className="header-content">
-          <Link to="/dashboard" className="logo">
-            🌍 TravelMate
+          <Link to="/dashboard" className="logo" aria-label="TravelMate 홈으로 이동">
+            <span aria-hidden="true">🌍</span> TravelMate
           </Link>
           <div className="header-actions">
             <div className="guest-actions">
@@ -40,23 +45,31 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
       <div className="layout-body">
         {/* 사이드바 */}
-        <aside className="sidebar">
-          <nav className="nav">
-            {navItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
-              >
-                <span className="nav-icon">{item.icon}</span>
-                <span className="nav-label">{item.label}</span>
-              </Link>
-            ))}
+        <aside className="sidebar" aria-label="주요 네비게이션">
+          <nav className="nav" aria-label="메인 메뉴">
+            {navItems.map(item => {
+              const isActive = location.pathname === item.path;
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`nav-item ${isActive ? 'active' : ''}`}
+                  aria-current={isActive ? 'page' : undefined}
+                >
+                  <span className="nav-icon" aria-hidden="true">
+                    {item.icon}
+                  </span>
+                  <span className="nav-label">{item.label}</span>
+                </Link>
+              );
+            })}
           </nav>
-          
+
           <div className="sidebar-footer">
-            <div className="guest-notice">
-              <div className="notice-icon">ℹ️</div>
+            <div className="guest-notice" role="complementary" aria-label="회원가입 안내">
+              <div className="notice-icon" aria-hidden="true">
+                ℹ️
+              </div>
               <div className="notice-text">
                 <p>더 많은 기능을 원한다면</p>
                 <Link to="/register" className="register-link">
@@ -68,7 +81,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </aside>
 
         {/* 메인 콘텐츠 */}
-        <main className="main-content">
+        <main id="main-content" className="main-content" tabIndex={-1}>
           {children}
         </main>
       </div>

@@ -24,7 +24,8 @@ const tutorialSteps: TutorialStep[] = [
   {
     id: 2,
     title: '대시보드',
-    description: '여기서 주변 여행 메이트를 발견하고 매칭할 수 있어요. 주변 메이트 발견 버튼을 확인해보세요!',
+    description:
+      '여기서 주변 여행 메이트를 발견하고 매칭할 수 있어요. 주변 메이트 발견 버튼을 확인해보세요!',
     path: '/dashboard',
     targetSelector: '.discovery-btn',
     position: 'top',
@@ -48,7 +49,8 @@ const tutorialSteps: TutorialStep[] = [
   {
     id: 5,
     title: '내 프로필',
-    description: '프로필을 등록하면 더 정확한 매칭을 받을 수 있어요. 여행 스타일과 관심사를 설정해보세요!',
+    description:
+      '프로필을 등록하면 더 정확한 매칭을 받을 수 있어요. 여행 스타일과 관심사를 설정해보세요!',
     path: '/profile',
     targetSelector: '.edit-btn',
     position: 'left',
@@ -204,7 +206,10 @@ const Tutorial: React.FC<TutorialProps> = ({ onComplete, isOpen }) => {
 
     const handleHighlightClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      if (target.classList.contains('tutorial-highlight') || target.closest('.tutorial-highlight')) {
+      if (
+        target.classList.contains('tutorial-highlight') ||
+        target.closest('.tutorial-highlight')
+      ) {
         e.preventDefault();
         e.stopPropagation();
         goToNextStep();
@@ -216,6 +221,34 @@ const Tutorial: React.FC<TutorialProps> = ({ onComplete, isOpen }) => {
       document.removeEventListener('click', handleHighlightClick, true);
     };
   }, [isOpen, isReady, goToNextStep]);
+
+  // 키보드 네비게이션 (Escape로 닫기, 화살표로 이동)
+  useEffect(() => {
+    if (!isOpen || !isReady) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case 'Escape':
+          handleComplete();
+          break;
+        case 'ArrowRight':
+        case 'ArrowDown':
+          e.preventDefault();
+          goToNextStep();
+          break;
+        case 'ArrowLeft':
+        case 'ArrowUp':
+          e.preventDefault();
+          goToPrevStep();
+          break;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, isReady, handleComplete, goToNextStep, goToPrevStep]);
 
   // 컴포넌트 언마운트 시 하이라이트 제거
   useEffect(() => {
@@ -287,27 +320,45 @@ const Tutorial: React.FC<TutorialProps> = ({ onComplete, isOpen }) => {
   return (
     <>
       {/* 반투명 오버레이 */}
-      <div className="tutorial-overlay" />
+      <div className="tutorial-overlay" aria-hidden="true" />
 
       {/* 툴팁 */}
       <div
         ref={tooltipRef}
         className="tutorial-tooltip-inline"
         style={getTooltipStyle()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="tutorial-title"
+        aria-describedby="tutorial-description"
       >
         <div className="tutorial-header">
-          <span className="tutorial-step-badge">
+          <span
+            className="tutorial-step-badge"
+            role="status"
+            aria-live="polite"
+            aria-label={`${tutorialSteps.length}단계 중 ${currentStep + 1}단계`}
+          >
             {currentStep + 1} / {tutorialSteps.length}
           </span>
-          <button className="tutorial-close" onClick={handleComplete} type="button">
-            &times;
+          <button
+            className="tutorial-close"
+            onClick={handleComplete}
+            type="button"
+            aria-label="튜토리얼 닫기"
+          >
+            <span aria-hidden="true">&times;</span>
           </button>
         </div>
 
         <div className="tutorial-body">
-          <h3 className="tutorial-title">{step?.title}</h3>
-          <p className="tutorial-description">{step?.description}</p>
-          <div className="tutorial-click-hint">
+          <h3 id="tutorial-title" className="tutorial-title">
+            {step?.title}
+          </h3>
+          <p id="tutorial-description" className="tutorial-description">
+            {step?.description}
+          </p>
+          <div className="tutorial-click-hint" aria-hidden="true">
             하이라이트된 영역을 클릭하거나 '다음' 버튼을 눌러주세요
           </div>
         </div>
@@ -318,18 +369,32 @@ const Tutorial: React.FC<TutorialProps> = ({ onComplete, isOpen }) => {
             onClick={goToPrevStep}
             disabled={isFirstStep}
             type="button"
+            aria-label="이전 단계로 이동"
           >
             이전
           </button>
-          <div className="tutorial-dots">
+          <div
+            className="tutorial-dots"
+            role="progressbar"
+            aria-valuenow={currentStep + 1}
+            aria-valuemin={1}
+            aria-valuemax={tutorialSteps.length}
+            aria-label="튜토리얼 진행 상황"
+          >
             {tutorialSteps.map((_, idx) => (
               <span
                 key={idx}
                 className={`dot ${idx === currentStep ? 'active' : ''} ${idx < currentStep ? 'completed' : ''}`}
+                aria-hidden="true"
               />
             ))}
           </div>
-          <button className="tutorial-btn primary" onClick={goToNextStep} type="button">
+          <button
+            className="tutorial-btn primary"
+            onClick={goToNextStep}
+            type="button"
+            aria-label={isLastStep ? '튜토리얼 완료' : '다음 단계로 이동'}
+          >
             {isLastStep ? '완료' : '다음'}
           </button>
         </div>

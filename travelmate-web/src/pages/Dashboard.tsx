@@ -118,29 +118,35 @@ const Dashboard: React.FC = () => {
           <p>오늘도 멋진 여행을 만들어보세요!</p>
         </div>
 
-        <div className="dashboard-stats">
-          <div className="stat-card">
-            <div className="stat-icon">👥</div>
+        <section className="dashboard-stats" aria-label="통계 요약">
+          <div className="stat-card" role="group" aria-label="발견된 메이트 수">
+            <div className="stat-icon" aria-hidden="true">
+              👥
+            </div>
             <div className="stat-content">
               <div className="stat-number">{nearbyUsers.length}</div>
               <div className="stat-label">발견된 메이트</div>
             </div>
           </div>
-          <div className="stat-card">
-            <div className="stat-icon">🎆</div>
+          <div className="stat-card" role="group" aria-label="온라인 메이트 수">
+            <div className="stat-icon" aria-hidden="true">
+              🎆
+            </div>
             <div className="stat-content">
               <div className="stat-number">{nearbyUsers.filter(u => u.isOnline).length}</div>
               <div className="stat-label">온라인</div>
             </div>
           </div>
-          <div className="stat-card">
-            <div className="stat-icon">🌟</div>
+          <div className="stat-card" role="group" aria-label="탐색 횟수">
+            <div className="stat-icon" aria-hidden="true">
+              🌟
+            </div>
             <div className="stat-content">
               <div className="stat-number">{discoveryCount}</div>
               <div className="stat-label">탐색 횟수</div>
             </div>
           </div>
-        </div>
+        </section>
 
         {currentLocation && (
           <div className="location-info">
@@ -194,23 +200,27 @@ const Dashboard: React.FC = () => {
         <div className="discovery-section">
           <h2>여행 메이트 발견하기</h2>
 
-          <div className="mood-selector">
-            <h4>현재 나의 여행 기분</h4>
-            <div className="mood-options">
+          <fieldset className="mood-selector">
+            <legend>
+              <h4>현재 나의 여행 기분</h4>
+            </legend>
+            <div className="mood-options" role="radiogroup" aria-label="여행 기분 선택">
               {moods.map(mood => (
                 <button
                   key={mood}
                   className={`mood-btn ${currentMood === mood ? 'active' : ''}`}
                   onClick={() => setCurrentMood(mood)}
+                  role="radio"
+                  aria-checked={currentMood === mood}
                 >
                   {mood}
                 </button>
               ))}
             </div>
-          </div>
+          </fieldset>
 
           <div className="discovery-area">
-            <div className={`radar-container ${isDiscovering ? 'active' : ''}`}>
+            <div className={`radar-container ${isDiscovering ? 'active' : ''}`} aria-hidden="true">
               <div className="radar-circle">
                 <div className="radar-sweep"></div>
                 <div className="center-dot"></div>
@@ -221,6 +231,7 @@ const Dashboard: React.FC = () => {
               className={`discovery-btn ${isDiscovering ? 'discovering' : ''}`}
               onClick={discoverNearbyMates}
               disabled={isDiscovering}
+              aria-busy={isDiscovering}
             >
               {isDiscovering ? '탐색 중...' : '주변 메이트 발견하기'}
             </button>
@@ -230,28 +241,40 @@ const Dashboard: React.FC = () => {
         </div>
 
         {nearbyUsers.length > 0 && (
-          <div className="nearby-users-section">
+          <section className="nearby-users-section" aria-label="발견된 여행 메이트 목록">
             <h2>발견된 여행 메이트</h2>
-            <div className="nearby-users">
+            <div className="nearby-users" role="list">
               {nearbyUsers.map(user => (
-                <div key={user.id} className="user-card">
+                <article
+                  key={user.id}
+                  className="user-card"
+                  role="listitem"
+                  aria-label={`${user.name}, ${user.age}세, 매칭도 ${user.matchScore}%`}
+                >
                   <div className="user-profile">
                     {user.profileImage && (
-                      <img src={user.profileImage} alt={user.name} className="profile-image" />
+                      <img
+                        src={user.profileImage}
+                        alt={`${user.name}의 프로필 사진`}
+                        className="profile-image"
+                      />
                     )}
                     <div className="user-info">
                       <div className="user-header">
                         <h4>{user.name}</h4>
                         <span className="user-age">{user.age}세</span>
-                        <span className={`online-status ${user.isOnline ? 'online' : 'offline'}`}>
+                        <span
+                          className={`online-status ${user.isOnline ? 'online' : 'offline'}`}
+                          aria-label={user.isOnline ? '온라인' : '오프라인'}
+                        >
                           {user.isOnline ? '🟢' : '⚪'}
                         </span>
                       </div>
                       <p className="user-mood">{user.mood}</p>
                       <p className="user-details">
-                        📍 {user.distance}km · {user.travelStyle}
+                        <span aria-hidden="true">📍</span> {user.distance}km · {user.travelStyle}
                       </p>
-                      <div className="user-interests">
+                      <div className="user-interests" aria-label="관심사">
                         {user.interests.slice(0, 3).map((interest, idx) => (
                           <span key={idx} className="interest-tag">
                             #{interest}
@@ -259,46 +282,78 @@ const Dashboard: React.FC = () => {
                         ))}
                       </div>
                       <p className="user-bio">{user.bio}</p>
-                      <div className="match-score">
-                        매칭도: <strong>{user.matchScore}%</strong>
+                      <div className="match-score" aria-label={`매칭도 ${user.matchScore}퍼센트`}>
+                        매칭도: <strong aria-hidden="true">{user.matchScore}%</strong>
                       </div>
                     </div>
                   </div>
                   <div className="user-actions">
-                    <button className="btn-small primary" onClick={() => startChat(user)}>
+                    <button
+                      className="btn-small primary"
+                      onClick={() => startChat(user)}
+                      aria-label={`${user.name}님과 채팅 시작`}
+                    >
                       채팅 시작
                     </button>
-                    <button className="btn-small secondary" onClick={() => sendGreeting(user)}>
+                    <button
+                      className="btn-small secondary"
+                      onClick={() => sendGreeting(user)}
+                      aria-label={`${user.name}님에게 인사하기`}
+                    >
                       인사하기
                     </button>
                   </div>
-                </div>
+                </article>
               ))}
             </div>
-          </div>
+          </section>
         )}
 
-        <div className="quick-actions">
+        <nav className="quick-actions" aria-label="빠른 액션">
           <h2>빠른 액션</h2>
           <div className="actions-grid">
-            <button className="action-card" onClick={() => navigate('/groups/create')}>
-              <div className="action-icon">🗺️</div>
+            <button
+              className="action-card"
+              onClick={() => navigate('/groups/create')}
+              aria-label="여행 그룹 만들기"
+            >
+              <div className="action-icon" aria-hidden="true">
+                🗺️
+              </div>
               <div className="action-label">여행 그룹 만들기</div>
             </button>
-            <button className="action-card" onClick={() => navigate('/groups')}>
-              <div className="action-icon">🔎</div>
+            <button
+              className="action-card"
+              onClick={() => navigate('/groups')}
+              aria-label="그룹 찾기"
+            >
+              <div className="action-icon" aria-hidden="true">
+                🔎
+              </div>
               <div className="action-label">그룹 찾기</div>
             </button>
-            <button className="action-card" onClick={() => navigate('/chat')}>
-              <div className="action-icon">💬</div>
+            <button
+              className="action-card"
+              onClick={() => navigate('/chat')}
+              aria-label="채팅방으로 이동"
+            >
+              <div className="action-icon" aria-hidden="true">
+                💬
+              </div>
               <div className="action-label">채팅방</div>
             </button>
-            <button className="action-card" onClick={() => navigate('/profile')}>
-              <div className="action-icon">👤</div>
+            <button
+              className="action-card"
+              onClick={() => navigate('/profile')}
+              aria-label="내 프로필 보기"
+            >
+              <div className="action-icon" aria-hidden="true">
+                👤
+              </div>
               <div className="action-label">내 프로필</div>
             </button>
           </div>
-        </div>
+        </nav>
       </div>
     </div>
   );

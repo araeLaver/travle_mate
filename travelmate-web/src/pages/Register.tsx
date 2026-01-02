@@ -227,22 +227,28 @@ const Register: React.FC = () => {
   return (
     <div className="auth-container">
       {/* Animated Background Blobs */}
-      <div className="blob-1" />
-      <div className="blob-2" />
-      <div className="blob-3" />
+      <div className="blob-1" aria-hidden="true" />
+      <div className="blob-2" aria-hidden="true" />
+      <div className="blob-3" aria-hidden="true" />
 
-      <div className="auth-card">
-        <div className="auth-header">
+      <main className="auth-card">
+        <header className="auth-header">
           <h1>TravelMate</h1>
           <h2>Join Us</h2>
           <p>여행 동반자와 함께할 모험을 시작하세요</p>
-        </div>
+        </header>
 
-        {error && <div className="auth-error">{error}</div>}
+        {error && (
+          <div className="auth-error" role="alert" aria-live="assertive">
+            {error}
+          </div>
+        )}
 
-        <form onSubmit={handleSubmit} className="auth-form">
+        <form onSubmit={handleSubmit} className="auth-form" aria-label="회원가입 양식" noValidate>
           <div className="form-group">
-            <label htmlFor="name">이름</label>
+            <label htmlFor="name">
+              이름 <span className="sr-only">(필수)</span>
+            </label>
             <input
               type="text"
               id="name"
@@ -252,16 +258,23 @@ const Register: React.FC = () => {
               onBlur={() => handleBlur('name')}
               placeholder="실명을 입력하세요"
               required
+              aria-required="true"
               autoComplete="name"
               className={touched.name ? (validation.name ? 'valid' : 'invalid') : ''}
+              aria-invalid={touched.name && !validation.name}
+              aria-describedby={touched.name && !validation.name ? 'name-error' : undefined}
             />
             {touched.name && !validation.name && (
-              <span className="validation-message error">이름은 2자 이상 입력해주세요</span>
+              <span id="name-error" className="validation-message error" role="alert">
+                이름은 2자 이상 입력해주세요
+              </span>
             )}
           </div>
 
           <div className="form-group">
-            <label htmlFor="username">사용자명</label>
+            <label htmlFor="username">
+              사용자명 <span className="sr-only">(필수)</span>
+            </label>
             <div className="input-with-button">
               <input
                 type="text"
@@ -272,28 +285,47 @@ const Register: React.FC = () => {
                 onBlur={() => handleBlur('username')}
                 placeholder="사용자명을 입력하세요"
                 required
+                aria-required="true"
                 autoComplete="username"
                 className={touched.username ? (validation.username ? 'valid' : 'invalid') : ''}
+                aria-invalid={touched.username && !validation.username}
+                aria-describedby="username-hint username-status"
               />
               <button
                 type="button"
                 className={getCheckButtonClass('username')}
                 onClick={checkUsernameDuplicate}
                 disabled={!formData.username || duplicateCheck.username.loading}
+                aria-busy={duplicateCheck.username.loading}
+                aria-label={`사용자명 중복확인 ${duplicateCheck.username.checked ? (duplicateCheck.username.available ? '사용 가능' : '중복됨') : ''}`}
               >
                 {getCheckButtonText('username')}
               </button>
             </div>
+            <span id="username-hint" className="sr-only">
+              영문, 숫자, 밑줄만 사용 가능 (3-20자)
+            </span>
             {touched.username && !validation.username && (
-              <span className="validation-message error">영문, 숫자, 밑줄만 사용 (3-20자)</span>
+              <span id="username-status" className="validation-message error" role="alert">
+                영문, 숫자, 밑줄만 사용 (3-20자)
+              </span>
             )}
             {duplicateCheck.username.checked && duplicateCheck.username.available && (
-              <span className="validation-message success">사용 가능한 사용자명입니다</span>
+              <span
+                id="username-status"
+                className="validation-message success"
+                role="status"
+                aria-live="polite"
+              >
+                사용 가능한 사용자명입니다
+              </span>
             )}
           </div>
 
           <div className="form-group">
-            <label htmlFor="email">이메일</label>
+            <label htmlFor="email">
+              이메일 <span className="sr-only">(필수)</span>
+            </label>
             <div className="input-with-button">
               <input
                 type="email"
@@ -304,28 +336,44 @@ const Register: React.FC = () => {
                 onBlur={() => handleBlur('email')}
                 placeholder="your@email.com"
                 required
+                aria-required="true"
                 autoComplete="email"
                 className={touched.email ? (validation.email ? 'valid' : 'invalid') : ''}
+                aria-invalid={touched.email && !validation.email}
+                aria-describedby="email-status"
               />
               <button
                 type="button"
                 className={getCheckButtonClass('email')}
                 onClick={checkEmailDuplicate}
                 disabled={!formData.email || duplicateCheck.email.loading}
+                aria-busy={duplicateCheck.email.loading}
+                aria-label={`이메일 중복확인 ${duplicateCheck.email.checked ? (duplicateCheck.email.available ? '사용 가능' : '중복됨') : ''}`}
               >
                 {getCheckButtonText('email')}
               </button>
             </div>
             {touched.email && !validation.email && (
-              <span className="validation-message error">올바른 이메일 형식을 입력해주세요</span>
+              <span id="email-status" className="validation-message error" role="alert">
+                올바른 이메일 형식을 입력해주세요
+              </span>
             )}
             {duplicateCheck.email.checked && duplicateCheck.email.available && (
-              <span className="validation-message success">사용 가능한 이메일입니다</span>
+              <span
+                id="email-status"
+                className="validation-message success"
+                role="status"
+                aria-live="polite"
+              >
+                사용 가능한 이메일입니다
+              </span>
             )}
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">비밀번호</label>
+            <label htmlFor="password">
+              비밀번호 <span className="sr-only">(필수)</span>
+            </label>
             <input
               type="password"
               id="password"
@@ -335,13 +383,21 @@ const Register: React.FC = () => {
               onBlur={() => handleBlur('password')}
               placeholder="8자 이상의 비밀번호"
               required
+              aria-required="true"
               minLength={8}
               autoComplete="new-password"
               className={touched.password ? (validation.password ? 'valid' : 'invalid') : ''}
+              aria-invalid={touched.password && !validation.password}
+              aria-describedby="password-strength password-error"
             />
             {formData.password && (
-              <div className="password-strength">
-                <div className="strength-bars">
+              <div
+                className="password-strength"
+                id="password-strength"
+                role="status"
+                aria-live="polite"
+              >
+                <div className="strength-bars" aria-hidden="true">
                   <div
                     className={`strength-bar ${passwordStrength.level >= 1 ? 'active' : ''}`}
                     style={{
@@ -365,17 +421,21 @@ const Register: React.FC = () => {
                   />
                 </div>
                 <span className="strength-text" style={{ color: passwordStrength.color }}>
-                  {passwordStrength.text}
+                  비밀번호 강도: {passwordStrength.text}
                 </span>
               </div>
             )}
             {touched.password && !validation.password && (
-              <span className="validation-message error">비밀번호는 8자 이상 입력해주세요</span>
+              <span id="password-error" className="validation-message error" role="alert">
+                비밀번호는 8자 이상 입력해주세요
+              </span>
             )}
           </div>
 
           <div className="form-group">
-            <label htmlFor="confirmPassword">비밀번호 확인</label>
+            <label htmlFor="confirmPassword">
+              비밀번호 확인 <span className="sr-only">(필수)</span>
+            </label>
             <input
               type="password"
               id="confirmPassword"
@@ -385,20 +445,34 @@ const Register: React.FC = () => {
               onBlur={() => handleBlur('confirmPassword')}
               placeholder="비밀번호를 다시 입력하세요"
               required
+              aria-required="true"
               autoComplete="new-password"
               className={
                 touched.confirmPassword ? (validation.confirmPassword ? 'valid' : 'invalid') : ''
               }
+              aria-invalid={
+                touched.confirmPassword && !validation.confirmPassword && !!formData.confirmPassword
+              }
+              aria-describedby="confirm-password-status"
             />
             {touched.confirmPassword && !validation.confirmPassword && formData.confirmPassword && (
-              <span className="validation-message error">비밀번호가 일치하지 않습니다</span>
+              <span id="confirm-password-status" className="validation-message error" role="alert">
+                비밀번호가 일치하지 않습니다
+              </span>
             )}
             {validation.confirmPassword && formData.confirmPassword && (
-              <span className="validation-message success">비밀번호가 일치합니다</span>
+              <span
+                id="confirm-password-status"
+                className="validation-message success"
+                role="status"
+                aria-live="polite"
+              >
+                비밀번호가 일치합니다
+              </span>
             )}
           </div>
 
-          <button type="submit" className="auth-btn" disabled={loading}>
+          <button type="submit" className="auth-btn" disabled={loading} aria-busy={loading}>
             {loading ? '가입 중...' : '회원가입'}
           </button>
         </form>
@@ -408,7 +482,7 @@ const Register: React.FC = () => {
             이미 계정이 있으신가요? <Link to="/login">로그인</Link>
           </p>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

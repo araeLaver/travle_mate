@@ -104,8 +104,10 @@ const Chat: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="chat-loading">
-        <div className="loading-spinner">💬</div>
+      <div className="chat-loading" role="status" aria-live="polite">
+        <div className="loading-spinner" aria-hidden="true">
+          💬
+        </div>
         <p>채팅방을 불러오는 중...</p>
       </div>
     );
@@ -125,20 +127,25 @@ const Chat: React.FC = () => {
   const otherParticipants = room.participants.filter(p => p.id !== chatService.getCurrentUserId());
 
   return (
-    <div className="chat-container">
+    <div className="chat-container" role="main" aria-label={`${room.name} 채팅방`}>
       {/* 채팅 헤더 */}
-      <div className="chat-header">
-        <button className="back-btn" onClick={() => navigate('/dashboard')}>
-          ←
+      <header className="chat-header">
+        <button
+          className="back-btn"
+          onClick={() => navigate('/dashboard')}
+          aria-label="대시보드로 돌아가기"
+        >
+          <span aria-hidden="true">←</span>
         </button>
         <div className="chat-info">
-          <div className="chat-title">
+          <h1 className="chat-title">
             {room.type === 'direct' ? (
               <>
                 <span className="chat-name">{room.name}</span>
                 {otherParticipants[0] && (
                   <span
                     className={`online-indicator ${otherParticipants[0].isOnline ? 'online' : 'offline'}`}
+                    aria-label={otherParticipants[0].isOnline ? '온라인 상태' : '오프라인 상태'}
                   >
                     {otherParticipants[0].isOnline ? '🟢 온라인' : '⚪ 오프라인'}
                   </span>
@@ -147,17 +154,21 @@ const Chat: React.FC = () => {
             ) : (
               <span className="chat-name">{room.name}</span>
             )}
+          </h1>
+          <div className="participant-count" aria-label={`참여자 ${room.participants.length}명`}>
+            <span aria-hidden="true">👥</span> {room.participants.length}명
           </div>
-          <div className="participant-count">👥 {room.participants.length}명</div>
         </div>
-      </div>
+      </header>
 
       {/* 메시지 목록 */}
-      <div className="messages-container">
+      <div className="messages-container" role="log" aria-live="polite" aria-label="채팅 메시지">
         {messages.length === 0 ? (
-          <div className="empty-messages">
-            <div className="empty-icon">💬</div>
-            <h3>아직 메시지가 없습니다</h3>
+          <div className="empty-messages" role="status">
+            <div className="empty-icon" aria-hidden="true">
+              💬
+            </div>
+            <h2>아직 메시지가 없습니다</h2>
             <p>첫 번째 메시지를 보내서 대화를 시작해보세요!</p>
           </div>
         ) : (
@@ -176,34 +187,54 @@ const Chat: React.FC = () => {
                 (!prevMessage || prevMessage.senderId !== message.senderId);
 
               return (
-                <div key={message.id}>
+                <article
+                  key={message.id}
+                  aria-label={`${message.senderName}: ${message.content}, ${formatTime(message.timestamp)}`}
+                >
                   {showDate && (
-                    <div className="date-divider">
+                    <div
+                      className="date-divider"
+                      role="separator"
+                      aria-label={`${formatDate(message.timestamp)} 메시지`}
+                    >
                       <span>{formatDate(message.timestamp)}</span>
                     </div>
                   )}
 
                   <div className={`message ${isMyMessage ? 'my-message' : 'other-message'}`}>
-                    {showSenderName && <div className="sender-name">{message.senderName}</div>}
+                    {showSenderName && (
+                      <div className="sender-name" aria-hidden="true">
+                        {message.senderName}
+                      </div>
+                    )}
 
                     <div className="message-content">
                       {message.type === 'text' ? (
                         <div className="message-text">{message.content}</div>
                       ) : message.type === 'system' ? (
-                        <div className="system-message">{message.content}</div>
+                        <div className="system-message" role="status">
+                          {message.content}
+                        </div>
                       ) : (
                         <div className="message-text">{message.content}</div>
                       )}
 
                       <div className="message-time">
-                        {formatTime(message.timestamp)}
+                        <time dateTime={message.timestamp.toISOString()}>
+                          {formatTime(message.timestamp)}
+                        </time>
                         {isMyMessage && (
-                          <span className="read-status">{message.isRead ? '읽음' : '안읽음'}</span>
+                          <span
+                            className="read-status"
+                            aria-label={message.isRead ? '상대방이 읽음' : '아직 읽지 않음'}
+                          >
+                            {message.isRead ? '읽음' : '안읽음'}
+                          </span>
                         )}
                       </div>
                     </div>
                   </div>
-                </div>
+                </article>
               );
             })}
             <div ref={messagesEndRef} />
@@ -212,9 +243,20 @@ const Chat: React.FC = () => {
       </div>
 
       {/* 메시지 입력 */}
-      <div className="message-input-container">
+      <form
+        className="message-input-container"
+        onSubmit={e => {
+          e.preventDefault();
+          handleSendMessage();
+        }}
+        aria-label="메시지 입력"
+      >
         <div className="message-input-wrapper">
+          <label htmlFor="message-input" className="sr-only">
+            메시지 입력
+          </label>
           <textarea
+            id="message-input"
             value={newMessage}
             onChange={e => setNewMessage(e.target.value)}
             onKeyPress={handleKeyPress}
@@ -222,24 +264,37 @@ const Chat: React.FC = () => {
             className="message-input"
             rows={1}
             maxLength={1000}
+            aria-describedby="message-char-count"
           />
-          <button onClick={handleSendMessage} disabled={!newMessage.trim()} className="send-btn">
-            <span className="send-icon">📤</span>
+          <span id="message-char-count" className="sr-only">
+            {newMessage.length}/1000자
+          </span>
+          <button
+            type="submit"
+            onClick={handleSendMessage}
+            disabled={!newMessage.trim()}
+            className="send-btn"
+            aria-label="메시지 보내기"
+            aria-disabled={!newMessage.trim()}
+          >
+            <span className="send-icon" aria-hidden="true">
+              📤
+            </span>
           </button>
         </div>
 
-        <div className="input-actions">
-          <button className="action-btn" title="이미지 전송">
-            📷
+        <div className="input-actions" role="toolbar" aria-label="추가 옵션">
+          <button type="button" className="action-btn" aria-label="이미지 전송">
+            <span aria-hidden="true">📷</span>
           </button>
-          <button className="action-btn" title="위치 공유">
-            📍
+          <button type="button" className="action-btn" aria-label="위치 공유">
+            <span aria-hidden="true">📍</span>
           </button>
-          <button className="action-btn" title="이모티콘">
-            😊
+          <button type="button" className="action-btn" aria-label="이모티콘 선택">
+            <span aria-hidden="true">😊</span>
           </button>
         </div>
-      </div>
+      </form>
     </div>
   );
 };
