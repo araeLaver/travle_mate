@@ -1,5 +1,83 @@
 # TravelMate 변경 내역
 
+## 2026-01-02 - WCAG 2.1 AA 접근성(a11y) 전면 개선
+
+### 개요
+WCAG 2.1 AA 수준의 웹 접근성을 준수하여 스크린리더 사용자, 키보드 사용자 등 모든 사용자가 앱을 편리하게 이용할 수 있도록 개선했습니다.
+
+---
+
+### 변경사항
+
+#### 1. 공통 유틸리티 생성
+- **accessibility.css**: `.sr-only` 스크린리더 전용 클래스, 포커스 스타일
+- **a11y.ts**: 키보드 이벤트 핸들러, 포커스 트랩, 라이브 영역 알림 유틸리티
+
+#### 2. 컴포넌트 접근성 개선 (8개)
+
+| 컴포넌트 | 개선 내용 |
+|----------|-----------|
+| Toast | `role="status"`, `aria-live="polite"`, 닫기 버튼 `aria-label` |
+| LoadingSpinner | `role="status"`, `aria-label="로딩 중"` |
+| LoadingButton | `aria-busy={isLoading}` |
+| NotificationCenter | `aria-expanded`, `aria-haspopup`, 키보드 네비게이션, 삭제 버튼 `aria-label` |
+| SearchBar | combobox 패턴, `role="listbox"`, 화살표 키 네비게이션, `aria-activedescendant` |
+| RecommendationCard | `role="button"`, `tabIndex={0}`, Enter/Space 키 지원, 점수바 `role="progressbar"` |
+| RecommendationList | `role="tablist/tab/tabpanel"`, `aria-selected`, `aria-controls` |
+| Tutorial | `role="dialog"`, `aria-modal="true"`, Escape 키 닫기, 포커스 트랩 |
+
+#### 3. 페이지 접근성 개선 (8개)
+
+| 페이지 | 개선 내용 |
+|--------|-----------|
+| Layout | `aria-current="page"` 활성 네비게이션 표시 |
+| Dashboard | 시맨틱 `<section>`, `role="list"`, 버튼 `aria-label` |
+| Chat | `role="log"` 메시지 영역, `<form>` 시맨틱 태그, `<time>` 요소 |
+| Groups | `role="tablist/tabpanel"`, `role="search"`, 필터 라벨 연결 |
+| Profile | 탭 접근성, `<fieldset>/<legend>`, `aria-pressed` 토글 버튼 |
+| CreateGroup | `<fieldset>/<legend>` 폼 그룹화, `aria-required`, `role="alert"` 유효성 메시지 |
+| Register | `aria-live="polite"` 비밀번호 강도, `aria-invalid`, `aria-describedby` |
+| ChatList | `role="button"` 채팅방 항목, 키보드 클릭 지원, `<time>` 요소 |
+
+#### 4. 적용된 접근성 패턴
+
+**ARIA 속성**
+- `aria-label`: 요소 설명
+- `aria-live`: 동적 콘텐츠 알림 (polite/assertive)
+- `aria-expanded`: 펼침/접힘 상태
+- `aria-selected`: 선택 상태
+- `aria-current="page"`: 현재 페이지 표시
+- `aria-busy`: 로딩 상태
+- `aria-required`: 필수 입력 표시
+- `aria-invalid`: 유효성 오류 표시
+- `aria-describedby`: 설명 연결
+
+**시맨틱 HTML**
+- `<header>`, `<main>`, `<nav>`, `<section>`, `<article>`
+- `<form>`, `<fieldset>`, `<legend>`
+- `<time>`, `<search>`
+
+**키보드 접근성**
+- Enter/Space 키로 클릭 동작
+- 화살표 키로 목록 탐색
+- Escape 키로 모달/드롭다운 닫기
+- Tab 키 포커스 순서 최적화
+
+---
+
+### 수정 파일 (19개)
+- 신규: `styles/accessibility.css`, `utils/a11y.ts`
+- 컴포넌트: Toast, LoadingSpinner, LoadingButton, NotificationCenter, SearchBar, RecommendationCard, RecommendationList, Tutorial
+- 레이아웃: Layout
+- 페이지: Dashboard, Chat, ChatList, Groups, Profile, CreateGroup, Register, App
+
+---
+
+### 관련 커밋
+- `9e3a1a3` - feat: WCAG 2.1 AA 수준 접근성(a11y) 전면 개선
+
+---
+
 ## 2025-12-31 - 에러 핸들링 표준화
 
 ### 개요
