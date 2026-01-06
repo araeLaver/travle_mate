@@ -56,7 +56,7 @@ class LocationService {
 
       this.currentLocation = location;
       return location;
-    } catch (error: any) {
+    } catch {
       // 위치를 가져올 수 없는 경우 서울 시청 기본값 사용
       const defaultLocation: Location = {
         latitude: 37.5665,
@@ -436,7 +436,7 @@ class LocationService {
         this.currentLocation = location;
         callback(location);
       },
-      (error) => {
+      (_error) => {
         // 위치 감지 에러
       },
       {

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { useAdvancedSearch, usePopularTags, SearchRequest } from '../hooks/useSearch';
+import { useAdvancedSearch, usePopularTags, SearchRequest, SearchResult } from '../hooks/useSearch';
 import './AdvancedSearch.css';
 
 interface AdvancedSearchProps {
-  onResults?: (results: any) => void;
+  onResults?: (results: SearchResult) => void;
 }
 
 const AdvancedSearch: React.FC<AdvancedSearchProps> = ({ onResults }) => {

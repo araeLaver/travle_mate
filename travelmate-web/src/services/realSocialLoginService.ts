@@ -1,3 +1,5 @@
+import { GoogleUser, KakaoUser } from '../types';
+
 export interface SocialUserInfo {
   id: string;
   email: string;
@@ -17,12 +19,111 @@ interface GoogleCredentialResponse {
   select_by?: string;
 }
 
+// Google OAuth SDK 타입
+interface GoogleAccountsId {
+  initialize: (config: {
+    client_id: string;
+    callback: (response: GoogleCredentialResponse) => void;
+    auto_select?: boolean;
+    cancel_on_tap_outside?: boolean;
+  }) => void;
+  prompt: (callback: (notification: GoogleNotification) => void) => void;
+  disableAutoSelect: () => void;
+}
+
+interface GoogleNotification {
+  isNotDisplayed: () => boolean;
+  isSkippedMoment: () => boolean;
+}
+
+// Kakao SDK 타입
+interface KakaoAuth {
+  login: (config: {
+    success: (response: KakaoAuthResponse) => void;
+    fail: (error: KakaoError) => void;
+  }) => void;
+  logout: () => void;
+}
+
+interface KakaoAuthResponse {
+  access_token: string;
+  token_type: string;
+  refresh_token: string;
+  expires_in: number;
+  scope: string;
+}
+
+interface KakaoError {
+  error: string;
+  error_description: string;
+}
+
+interface KakaoAPI {
+  request: (config: {
+    url: string;
+    success: (response: KakaoUser) => void;
+    fail: (error: KakaoError) => void;
+  }) => void;
+}
+
+interface KakaoSDK {
+  isInitialized: () => boolean;
+  init: (key: string) => void;
+  Auth: KakaoAuth;
+  API: KakaoAPI;
+}
+
+// Naver SDK 타입
+interface NaverLoginInstance {
+  init: () => void;
+  login: () => void;
+  getLoginStatus: (callback: (status: boolean) => void) => void;
+  user: {
+    id: string;
+    email: string;
+    nickname?: string;
+    name?: string;
+    profile_image?: string;
+  };
+}
+
+interface NaverLoginWithNaverId {
+  new (config: {
+    clientId: string;
+    callbackUrl?: string;
+    isPopup?: boolean;
+    loginButton?: {
+      color: string;
+      type: number;
+      height: number;
+    };
+    callbackHandle?: boolean;
+  }): NaverLoginInstance;
+}
+
+interface NaverSDK {
+  LoginWithNaverId: NaverLoginWithNaverId;
+}
+
 declare global {
   interface Window {
-    google: any;
-    Kakao: any;
-    naver: any;
+    google?: {
+      accounts: {
+        id: GoogleAccountsId;
+      };
+    };
+    Kakao?: KakaoSDK;
+    naver?: NaverSDK;
   }
+}
+
+// JWT 페이로드 타입 (Google 토큰)
+interface GoogleJWTPayload extends GoogleUser {
+  iss: string;
+  azp: string;
+  aud: string;
+  iat: number;
+  exp: number;
 }
 
 class RealSocialLoginService {
@@ -87,12 +188,20 @@ class RealSocialLoginService {
 
   private initializeGoogleAuth(resolve: (value: SocialLoginResponse) => void): void {
     const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
-    
+
     if (!clientId) {
       console.error('Google Client ID가 설정되지 않았습니다.');
       resolve({
         success: false,
         error: 'Google 클라이언트 ID가 설정되지 않았습니다. 환경 변수를 확인해주세요.'
+      });
+      return;
+    }
+
+    if (!window.google) {
+      resolve({
+        success: false,
+        error: 'Google SDK가 로드되지 않았습니다.'
       });
       return;
     }
@@ -107,7 +216,7 @@ class RealSocialLoginService {
     });
 
     // 로그인 프롬프트 표시
-    window.google.accounts.id.prompt((notification: any) => {
+    window.google.accounts.id.prompt((notification: GoogleNotification) => {
       if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
         console.log('Google 로그인 프롬프트가 표시되지 않음');
         resolve({
@@ -147,15 +256,15 @@ class RealSocialLoginService {
     }
   }
 
-  private parseJWT(token: string): any {
+  private parseJWT(token: string): GoogleJWTPayload {
     try {
       const base64Url = token.split('.')[1];
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
       const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
       }).join(''));
-      return JSON.parse(jsonPayload);
-    } catch (error) {
+      return JSON.parse(jsonPayload) as GoogleJWTPayload;
+    } catch {
       throw new Error('JWT 파싱 실패');
     }
   }
@@ -209,7 +318,7 @@ class RealSocialLoginService {
 
   private initializeKakaoAuth(resolve: (value: SocialLoginResponse) => void): void {
     const clientId = process.env.REACT_APP_KAKAO_CLIENT_ID;
-    
+
     if (!clientId) {
       console.error('Kakao Client ID가 설정되지 않았습니다.');
       resolve({
@@ -219,16 +328,24 @@ class RealSocialLoginService {
       return;
     }
 
+    if (!window.Kakao) {
+      resolve({
+        success: false,
+        error: 'Kakao SDK가 로드되지 않았습니다.'
+      });
+      return;
+    }
+
     if (!window.Kakao.isInitialized()) {
       window.Kakao.init(clientId);
     }
 
     window.Kakao.Auth.login({
-      success: (response: any) => {
+      success: (response: KakaoAuthResponse) => {
         console.log('Kakao 로그인 토큰:', response);
         this.getKakaoUserInfo(resolve);
       },
-      fail: (error: any) => {
+      fail: (error: KakaoError) => {
         console.error('Kakao 로그인 실패:', error);
         resolve({
           success: false,
@@ -239,28 +356,28 @@ class RealSocialLoginService {
   }
 
   private getKakaoUserInfo(resolve: (value: SocialLoginResponse) => void): void {
-    window.Kakao.API.request({
+    window.Kakao!.API.request({
       url: '/v2/user/me',
-      success: (response: any) => {
+      success: (response: KakaoUser) => {
         console.log('Kakao 사용자 정보:', response);
-        
+
         const user: SocialUserInfo = {
           id: response.id.toString(),
-          email: response.kakao_account.email || '',
-          name: response.kakao_account.profile.nickname || '카카오사용자',
-          profileImage: response.kakao_account.profile.profile_image_url,
+          email: response.kakao_account?.email || '',
+          name: response.kakao_account?.profile?.nickname || '카카오사용자',
+          profileImage: response.kakao_account?.profile?.profile_image_url,
           provider: 'kakao'
         };
 
         this.saveSocialUser(user);
         console.log('✅ 카카오 로그인 성공:', user);
-        
+
         resolve({
           success: true,
           user: user
         });
       },
-      fail: (error: any) => {
+      fail: (error: KakaoError) => {
         console.error('Kakao 사용자 정보 가져오기 실패:', error);
         resolve({
           success: false,
@@ -318,12 +435,20 @@ class RealSocialLoginService {
   private initializeNaverAuth(resolve: (value: SocialLoginResponse) => void): void {
     const clientId = process.env.REACT_APP_NAVER_CLIENT_ID;
     const callbackUrl = process.env.REACT_APP_REDIRECT_URI;
-    
+
     if (!clientId) {
       console.error('Naver Client ID가 설정되지 않았습니다.');
       resolve({
         success: false,
         error: 'Naver 클라이언트 ID가 설정되지 않았습니다. 환경 변수를 확인해주세요.'
+      });
+      return;
+    }
+
+    if (!window.naver) {
+      resolve({
+        success: false,
+        error: 'Naver SDK가 로드되지 않았습니다.'
       });
       return;
     }

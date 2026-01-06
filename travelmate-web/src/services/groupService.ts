@@ -1,4 +1,5 @@
-import { apiClient } from './apiClient';
+import { apiClient, ApiError } from './apiClient';
+import { TravelGroupApiResponse, GroupMemberApiResponse } from '../types';
 
 export interface TravelGroup {
   id: string;
@@ -425,8 +426,8 @@ class GroupService {
     }
 
     try {
-      const response = await apiClient.get<any[]>('/groups');
-      return response.map(this.mapToTravelGroup);
+      const response = await apiClient.get<TravelGroupApiResponse[]>('/groups');
+      return response.map((group) => this.mapToTravelGroup(group));
     } catch (error) {
       console.error('Failed to fetch groups, using mock data:', error);
       // API 실패 시 (비회원 등) mock 데이터 반환
@@ -441,7 +442,7 @@ class GroupService {
     }
 
     try {
-      const response = await apiClient.get<any>(`/groups/${groupId}`);
+      const response = await apiClient.get<TravelGroupApiResponse>(`/groups/${groupId}`);
       return this.mapToTravelGroup(response);
     } catch (error) {
       console.error('Failed to fetch group:', error);
@@ -512,8 +513,8 @@ class GroupService {
       if (filters?.travelStyle) params.append('travelStyle', filters.travelStyle);
       if (filters?.status) params.append('status', filters.status);
 
-      const response = await apiClient.get<any[]>(`/groups?${params.toString()}`);
-      return response.map(this.mapToTravelGroup);
+      const response = await apiClient.get<TravelGroupApiResponse[]>(`/groups?${params.toString()}`);
+      return response.map((group) => this.mapToTravelGroup(group));
     } catch (error) {
       console.error('Failed to search groups:', error);
       throw error;
@@ -544,7 +545,7 @@ class GroupService {
     }
 
     try {
-      const response = await apiClient.post<any>('/groups', {
+      const response = await apiClient.post<TravelGroupApiResponse>('/groups', {
         title: request.name,
         description: request.description,
         destination: request.destination,
@@ -603,9 +604,10 @@ class GroupService {
     try {
       await apiClient.post(`/groups/${groupId}/join`, {});
       return true;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Failed to join group:', error);
-      throw new Error(error.message || '그룹 가입에 실패했습니다.');
+      const errorMessage = error instanceof Error ? error.message : (error as ApiError)?.message || '그룹 가입에 실패했습니다.';
+      throw new Error(errorMessage);
     }
   }
 
@@ -640,9 +642,10 @@ class GroupService {
     try {
       await apiClient.post(`/groups/${groupId}/leave`, {});
       return true;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Failed to leave group:', error);
-      throw new Error(error.message || '그룹 탈퇴에 실패했습니다.');
+      const errorMessage = error instanceof Error ? error.message : (error as ApiError)?.message || '그룹 탈퇴에 실패했습니다.';
+      throw new Error(errorMessage);
     }
   }
 
@@ -655,8 +658,8 @@ class GroupService {
     }
 
     try {
-      const response = await apiClient.get<any[]>('/groups/my-groups');
-      return response.map(this.mapToTravelGroup);
+      const response = await apiClient.get<TravelGroupApiResponse[]>('/groups/my-groups');
+      return response.map((group) => this.mapToTravelGroup(group));
     } catch (error) {
       console.error('Failed to fetch my groups:', error);
       // 비회원이면 빈 배열 반환
@@ -679,9 +682,9 @@ class GroupService {
     try {
       // 추천 API 엔드포인트가 구현되어 있다면 사용
       // 없다면 전체 그룹 중에서 랜덤 선택
-      const response = await apiClient.get<any[]>('/groups?status=recruiting');
+      const response = await apiClient.get<TravelGroupApiResponse[]>('/groups?status=recruiting');
       return response
-        .map(this.mapToTravelGroup)
+        .map((group) => this.mapToTravelGroup(group))
         .filter(group =>
           !group.members.some(member => member.id === this.currentUserId)
         )
@@ -699,7 +702,7 @@ class GroupService {
   }
 
   // 백엔드 응답을 TravelGroup으로 변환
-  private mapToTravelGroup(data: any): TravelGroup {
+  private mapToTravelGroup(data: TravelGroupApiResponse): TravelGroup {
     return {
       id: data.id?.toString() || '',
       name: data.title || data.name || '',
@@ -709,11 +712,11 @@ class GroupService {
       endDate: new Date(data.endDate),
       maxMembers: data.maxMembers || 10,
       currentMembers: data.currentMembers || 0,
-      members: (data.members || []).map((m: any) => ({
+      members: (data.members || []).map((m: GroupMemberApiResponse) => ({
         id: m.userId?.toString() || m.id?.toString() || '',
         name: m.nickname || m.name || '',
         profileImage: m.profileImageUrl || m.profileImage,
-        joinedAt: new Date(m.joinedAt || m.createdAt),
+        joinedAt: new Date(m.joinedAt || m.createdAt || Date.now()),
         role: m.role === 'CREATOR' ? 'leader' : 'member',
         status: m.status?.toLowerCase() === 'accepted' ? 'active' : 'pending',
         age: m.age,
@@ -723,7 +726,7 @@ class GroupService {
       coverImage: data.groupImageUrl || data.coverImage,
       createdBy: data.creatorId?.toString() || data.createdBy || '',
       createdAt: new Date(data.createdAt),
-      status: this.mapStatus(data.status),
+      status: this.mapStatus(data.status || ''),
       budget: data.budgetRange ? this.parseBudget(data.budgetRange) : undefined,
       travelStyle: data.travelStyle || '',
       requirements: data.requirements

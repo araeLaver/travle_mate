@@ -26,7 +26,7 @@ const NotificationCenter: React.FC = () => {
   const allNotifications = [...realtimeNotifications, ...(notifications?.content || [])];
 
   const handleNotificationClick = (notification: {
-    id: string;
+    id: number;
     isRead: boolean;
     actionUrl?: string;
   }) => {
@@ -68,8 +68,8 @@ const NotificationCenter: React.FC = () => {
     return icons[type] || '📢';
   };
 
-  const formatTimestamp = (dateString: string) => {
-    const date = new Date(dateString);
+  const formatTimestamp = (dateValue: string | Date) => {
+    const date = typeof dateValue === 'string' ? new Date(dateValue) : dateValue;
     const now = new Date();
     const diff = now.getTime() - date.getTime();
 

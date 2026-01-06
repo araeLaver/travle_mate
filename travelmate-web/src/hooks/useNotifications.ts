@@ -3,19 +3,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../services/apiClient';
 import { websocketService } from '../services/websocketService';
 import { useAuthStore } from '../store/authStore';
+import type { Notification, PaginatedResponse } from '../types';
 
-export interface Notification {
-  id: number;
-  type: string;
-  title: string;
-  message: string;
-  actionUrl?: string;
-  relatedId?: number;
-  relatedType?: string;
-  isRead: boolean;
-  createdAt: string;
-  readAt?: string;
-}
+export type { Notification };
 
 // Query Keys
 const notificationKeys = {
@@ -30,12 +20,12 @@ export function useNotifications(page = 0, size = 20) {
   return useQuery({
     queryKey: [...notificationKeys.list(), page, size],
     queryFn: async () => {
-      const response = await apiClient.get<any>(
+      const response = await apiClient.get<PaginatedResponse<Notification>>(
         `/notifications?page=${page}&size=${size}`
       );
       return {
         ...response,
-        content: response.content.map((n: any) => ({
+        content: response.content.map((n) => ({
           ...n,
           createdAt: new Date(n.createdAt),
           readAt: n.readAt ? new Date(n.readAt) : null,

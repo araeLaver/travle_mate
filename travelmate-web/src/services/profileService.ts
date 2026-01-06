@@ -1,4 +1,5 @@
 import { apiClient } from './apiClient';
+import { UserProfileApiResponse, TravelHistoryApiResponse, UserReviewApiResponse } from '../types';
 
 export interface UserProfile {
   id: string;
@@ -132,12 +133,12 @@ class ProfileService {
         // Date 객체 복원
         parsed.createdAt = new Date(parsed.createdAt);
         parsed.lastActive = new Date(parsed.lastActive);
-        parsed.travelHistory = parsed.travelHistory.map((trip: any) => ({
+        parsed.travelHistory = parsed.travelHistory.map((trip: TravelHistoryApiResponse) => ({
           ...trip,
           startDate: new Date(trip.startDate),
           endDate: new Date(trip.endDate)
         }));
-        parsed.stats.reviews = parsed.stats.reviews.map((review: any) => ({
+        parsed.stats.reviews = parsed.stats.reviews.map((review: UserReviewApiResponse) => ({
           ...review,
           createdAt: new Date(review.createdAt)
         }));
@@ -221,7 +222,7 @@ class ProfileService {
 
     try {
       const endpoint = userId ? `/users/profile/${userId}` : '/users/me';
-      const response = await apiClient.get<any>(endpoint);
+      const response = await apiClient.get<UserProfileApiResponse>(endpoint);
       return this.mapToUserProfile(response);
     } catch (error) {
       console.error('Failed to fetch profile:', error);
@@ -251,7 +252,9 @@ class ProfileService {
               ...updates.socialLinks
             };
           } else {
-            (this.profile as any)[updateKey] = updates[updateKey];
+            // Type-safe property assignment using a helper approach
+            const profile = this.profile as UserProfile;
+            Object.assign(profile, { [updateKey]: updates[updateKey] });
           }
         }
       });
@@ -263,7 +266,7 @@ class ProfileService {
     }
 
     try {
-      const response = await apiClient.put<any>('/users/profile', {
+      const response = await apiClient.put<UserProfileApiResponse>('/users/profile', {
         nickname: updates.name,
         fullName: updates.name,
         age: updates.age,
@@ -364,7 +367,7 @@ class ProfileService {
 
     try {
       const response = await apiClient.uploadFile('/upload/profile-image', file);
-      return response.url || response.imageUrl;
+      return response.url || response.imageUrl || '';
     } catch (error) {
       console.error('Failed to upload profile image:', error);
       throw error;
@@ -384,7 +387,7 @@ class ProfileService {
 
     try {
       const response = await apiClient.uploadFile('/upload/cover-image', file);
-      return response.url || response.imageUrl;
+      return response.url || response.imageUrl || '';
     } catch (error) {
       console.error('Failed to upload cover image:', error);
       throw error;
@@ -440,7 +443,7 @@ class ProfileService {
   }
 
   // 백엔드 응답을 UserProfile로 변환
-  private mapToUserProfile(data: any): UserProfile {
+  private mapToUserProfile(data: UserProfileApiResponse): UserProfile {
     return {
       id: data.id?.toString() || '',
       name: data.nickname || data.name || '',
@@ -449,7 +452,10 @@ class ProfileService {
       bio: data.bio || '',
       profileImage: data.profileImageUrl || data.profileImage,
       coverImage: data.coverImageUrl || data.coverImage,
-      location: data.location,
+      location: data.location ? {
+        city: data.location.city || '',
+        country: data.location.country || '',
+      } : undefined,
       interests: data.interests || [],
       languages: data.languages || [],
       travelStyle: data.travelStyle || '',
@@ -481,7 +487,7 @@ class ProfileService {
         foodPreferences: ['현지음식'],
         dietaryRestrictions: [],
       },
-      createdAt: new Date(data.createdAt),
+      createdAt: new Date(data.createdAt || Date.now()),
       lastActive: new Date(data.lastActivityAt || Date.now()),
     };
   }

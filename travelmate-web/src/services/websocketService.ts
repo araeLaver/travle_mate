@@ -1,6 +1,7 @@
-import { Client, IMessage, StompSubscription } from '@stomp/stompjs';
+import { Client, IMessage, StompSubscription, IFrame } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { authService } from './authService';
+import { WebSocketError, WebSocketErrorCallback } from '../types';
 
 export interface ChatMessage {
   id?: string;
@@ -19,7 +20,7 @@ export interface ChatMessage {
 type MessageCallback = (message: ChatMessage) => void;
 type ConnectCallback = () => void;
 type DisconnectCallback = () => void;
-type ErrorCallback = (error: any) => void;
+type ErrorCallback = WebSocketErrorCallback;
 
 class WebSocketService {
   private client: Client | null = null;
@@ -43,7 +44,7 @@ class WebSocketService {
     const wsUrl = process.env.REACT_APP_WS_URL || 'http://localhost:8081/ws';
     this.client = new Client({
       webSocketFactory: () => {
-        return new SockJS(wsUrl) as any;
+        return new SockJS(wsUrl) as WebSocket;
       },
       debug: (str) => {
         if (process.env.NODE_ENV === 'development') {
@@ -57,19 +58,28 @@ class WebSocketService {
       onConnect: () => {
         console.log('WebSocket Connected');
         this.reconnectAttempts = 0;
-        this.onConnectCallbacks.forEach(cb => cb());
+        this.onConnectCallbacks.forEach((cb) => cb());
       },
       onDisconnect: () => {
         console.log('WebSocket Disconnected');
-        this.onDisconnectCallbacks.forEach(cb => cb());
+        this.onDisconnectCallbacks.forEach((cb) => cb());
       },
-      onStompError: (frame) => {
+      onStompError: (frame: IFrame) => {
         console.error('STOMP Error:', frame);
-        this.onErrorCallbacks.forEach(cb => cb(frame));
+        const error: WebSocketError = {
+          message: frame.headers?.message || 'STOMP Error',
+          code: frame.command,
+          timestamp: new Date(),
+        };
+        this.onErrorCallbacks.forEach((cb) => cb(error));
       },
-      onWebSocketError: (error) => {
-        console.error('WebSocket Error:', error);
-        this.onErrorCallbacks.forEach(cb => cb(error));
+      onWebSocketError: (event: Event) => {
+        console.error('WebSocket Error:', event);
+        const error: WebSocketError = {
+          message: 'WebSocket connection error',
+          timestamp: new Date(),
+        };
+        this.onErrorCallbacks.forEach((cb) => cb(error));
       },
     });
   }
@@ -111,7 +121,7 @@ class WebSocketService {
         resolve();
       };
 
-      const onErrorHandler = (error: any) => {
+      const onErrorHandler = (error: WebSocketError) => {
         this.isConnecting = false;
         reject(error);
       };

@@ -245,7 +245,7 @@ app:
       max-size: 5242880  # 5MB in bytes
 
   cors:
-    allowed-origins: ${CORS_ALLOWED_ORIGINS:https://travelmate.app,https://admin.travelmate.app}
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:https://various-belva-untab-1a59bee2.koyeb.app,https://travelmate.app,https://admin.travelmate.app}
 
   security:
     rate-limit:

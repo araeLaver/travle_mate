@@ -1,11 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { groupService, TravelGroup, CreateGroupRequest } from '../services/groupService';
+import { groupService, CreateGroupRequest } from '../services/groupService';
+import { GroupFilters } from '../types';
 
 // Query Keys
 export const groupKeys = {
   all: ['groups'] as const,
   lists: () => [...groupKeys.all, 'list'] as const,
-  list: (filters?: any) => [...groupKeys.lists(), filters] as const,
+  list: (filters?: GroupFilters) => [...groupKeys.lists(), filters] as const,
   details: () => [...groupKeys.all, 'detail'] as const,
   detail: (id: string) => [...groupKeys.details(), id] as const,
   myGroups: () => [...groupKeys.all, 'my'] as const,
@@ -43,9 +44,9 @@ export function useRecommendedGroups() {
   });
 }
 
-export function useSearchGroups(query: string, filters?: any) {
+export function useSearchGroups(query: string, filters?: GroupFilters) {
   return useQuery({
-    queryKey: groupKeys.list({ query, ...filters }),
+    queryKey: groupKeys.list({ ...filters }),
     queryFn: () => groupService.searchGroups(query, filters),
     enabled: query.trim().length > 0,
   });
