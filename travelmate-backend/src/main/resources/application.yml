@@ -145,7 +145,15 @@ spring:
   config:
     activate:
       on-profile: prod
-  
+
+  # Redis/Elasticsearch 자동설정 비활성화 (Koyeb 무료 플랜에서 미사용)
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration
+      - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientAutoConfiguration
+
   datasource:
     url: ${DB_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:travelmate}?sslmode=prefer}
     username: ${DB_USERNAME:travelmate_user}
@@ -204,6 +212,15 @@ spring:
           starttls:
             enable: true
             required: true
+
+management:
+  health:
+    redis:
+      enabled: false
+    elasticsearch:
+      enabled: false
+    mail:
+      enabled: false
 
 logging:
   level:
