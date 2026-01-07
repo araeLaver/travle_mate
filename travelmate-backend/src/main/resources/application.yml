@@ -124,6 +124,9 @@ app:
   mail:
     enabled: ${MAIL_ENABLED:false}  # 개발환경에서는 비활성화
 
+  redis:
+    enabled: true  # 개발환경에서는 Redis 활성화
+
   frontend:
     url: ${FRONTEND_URL:http://localhost:3000}
 
@@ -131,14 +134,14 @@ app:
     upload:
       path: ./uploads/
       max-size: 10485760  # 10MB in bytes
-      
+
   cors:
     allowed-origins: http://localhost:3000,http://localhost:8081
 
   security:
     rate-limit:
       enabled: false  # 개발환경에서는 비활성화
-    
+
 ---
 # 운영 환경 설정 (PostgreSQL)
 spring:
@@ -253,6 +256,9 @@ app:
   mail:
     enabled: ${MAIL_ENABLED:true}  # 운영환경에서는 활성화
 
+  redis:
+    enabled: false  # Koyeb 무료 플랜에서 Redis 미사용
+
   frontend:
     url: ${FRONTEND_URL:https://travelmate.app}
 
@@ -269,7 +275,7 @@ app:
       enabled: true
       default-requests-per-minute: 60
       login-requests-per-minute: 5
-      
+
 ---
 # 테스트 환경 설정
 spring:

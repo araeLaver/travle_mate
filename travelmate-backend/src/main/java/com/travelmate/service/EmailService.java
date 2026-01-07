@@ -18,11 +18,11 @@ import java.util.UUID;
 public class EmailService {
 
     private final Optional<JavaMailSender> mailSender;
-    private final TokenStorageService tokenStorageService;
+    private final TokenStorageServiceInterface tokenStorageService;
 
     @Autowired
     public EmailService(@Autowired(required = false) JavaMailSender mailSender,
-                        TokenStorageService tokenStorageService) {
+                        TokenStorageServiceInterface tokenStorageService) {
         this.mailSender = Optional.ofNullable(mailSender);
         this.tokenStorageService = tokenStorageService;
     }
