@@ -35,8 +35,8 @@ ENV SPRING_PROFILES_ACTIVE=prod
 
 EXPOSE 8080
 
-HEALTHCHECK --interval=30s --timeout=15s --start-period=120s --retries=5 \
-    CMD curl -f http://localhost:8080/api/health || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=180s --retries=6 \
+    CMD curl -f http://localhost:8080/api/health/live || exit 1
 
 ENTRYPOINT ["tini", "--"]
 

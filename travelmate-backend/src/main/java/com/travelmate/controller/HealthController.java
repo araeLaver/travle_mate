@@ -43,4 +43,12 @@ public class HealthController {
     public ResponseEntity<String> ping() {
         return ResponseEntity.ok("pong");
     }
+
+    /**
+     * 컨테이너 liveness 체크용 - 데이터베이스 확인 없이 빠르게 응답
+     */
+    @GetMapping("/live")
+    public ResponseEntity<String> liveness() {
+        return ResponseEntity.ok("OK");
+    }
 }
