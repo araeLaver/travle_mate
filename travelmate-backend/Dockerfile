@@ -29,14 +29,14 @@ RUN chown travelmate:travelmate app.jar
 
 USER travelmate
 
-ENV JAVA_OPTS="-Xms256m -Xmx512m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseStringDeduplication"
+ENV JAVA_OPTS="-Xms256m -Xmx512m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseStringDeduplication -Dspring.jpa.open-in-view=false"
 
 ENV SPRING_PROFILES_ACTIVE=prod
 
 EXPOSE 8080
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:8080/api/management/health || exit 1
+HEALTHCHECK --interval=30s --timeout=15s --start-period=120s --retries=5 \
+    CMD curl -f http://localhost:8080/api/health || exit 1
 
 ENTRYPOINT ["tini", "--"]
 
