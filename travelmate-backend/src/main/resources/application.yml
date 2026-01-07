@@ -180,11 +180,11 @@ spring:
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 5
-      minimum-idle: 1
+      minimum-idle: 2
       idle-timeout: 300000
-      connection-timeout: 20000
+      connection-timeout: 30000
       max-lifetime: 1800000
-      initialization-fail-timeout: 0
+      validation-timeout: 5000
     continue-on-error: false
       
   jpa:
