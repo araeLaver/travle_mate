@@ -149,13 +149,26 @@ spring:
     activate:
       on-profile: prod
 
-  # Redis/Elasticsearch 자동설정 비활성화 (Koyeb 무료 플랜에서 미사용)
+  # Redis/Elasticsearch/Mail 자동설정 비활성화 (Koyeb 무료 플랜에서 미사용)
   autoconfigure:
     exclude:
       - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
       - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
       - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchRepositoriesAutoConfiguration
       - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientAutoConfiguration
+      - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchClientAutoConfiguration
+      - org.springframework.boot.autoconfigure.mail.MailSenderAutoConfiguration
+      - org.springframework.boot.autoconfigure.mail.MailSenderValidatorAutoConfiguration
+
+  # JPA 초기화 지연으로 시작 시간 단축
+  data:
+    jpa:
+      repositories:
+        bootstrap-mode: deferred
+
+  jmx:
+    enabled: false
 
   datasource:
     url: ${DB_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:travelmate}?sslmode=prefer}
