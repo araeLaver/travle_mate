@@ -98,19 +98,20 @@ describe('GroupService', () => {
       const groups = await groupService.getAllGroups();
       const recruitingGroup = groups.find(g => g.status === 'recruiting');
 
-      if (recruitingGroup) {
-        const result = await groupService.joinGroup(recruitingGroup.id);
-        expect(result).toBe(true);
-      }
+      expect(recruitingGroup).toBeDefined();
+      const result = await groupService.joinGroup(recruitingGroup!.id);
+      expect(result).toBe(true);
     });
 
     it('should throw error when joining full group', async () => {
       const groups = await groupService.getAllGroups();
       const fullGroup = groups.find(g => g.status === 'full');
 
-      if (fullGroup) {
-        await expect(groupService.joinGroup(fullGroup.id)).rejects.toThrow();
+      if (!fullGroup) {
+        // Skip test if no full group exists in mock data
+        return;
       }
+      await expect(groupService.joinGroup(fullGroup.id)).rejects.toThrow();
     });
   });
 
@@ -119,11 +120,10 @@ describe('GroupService', () => {
       const groups = await groupService.getAllGroups();
       const recruitingGroup = groups.find(g => g.status === 'recruiting');
 
-      if (recruitingGroup) {
-        await groupService.joinGroup(recruitingGroup.id);
-        const result = await groupService.leaveGroup(recruitingGroup.id);
-        expect(result).toBe(true);
-      }
+      expect(recruitingGroup).toBeDefined();
+      await groupService.joinGroup(recruitingGroup!.id);
+      const result = await groupService.leaveGroup(recruitingGroup!.id);
+      expect(result).toBe(true);
     });
   });
 
@@ -131,11 +131,10 @@ describe('GroupService', () => {
     it('should return group by id', async () => {
       const groups = await groupService.getAllGroups();
 
-      if (groups.length > 0) {
-        const group = await groupService.getGroup(groups[0].id);
-        expect(group).not.toBeNull();
-        expect(group?.id).toBe(groups[0].id);
-      }
+      expect(groups.length).toBeGreaterThan(0);
+      const group = await groupService.getGroup(groups[0].id);
+      expect(group).not.toBeNull();
+      expect(group?.id).toBe(groups[0].id);
     });
 
     it('should return null for non-existent group', async () => {
