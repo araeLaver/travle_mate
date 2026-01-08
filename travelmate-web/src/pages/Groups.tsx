@@ -5,6 +5,154 @@ import { useToast } from '../components/Toast';
 import { getErrorMessage, logError } from '../utils/errorHandler';
 import './Groups.css';
 
+// SVG Icons
+const MapIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
+    <line x1="8" y1="2" x2="8" y2="18" />
+    <line x1="16" y1="6" x2="16" y2="22" />
+  </svg>
+);
+
+const SparklesIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z" />
+    <path d="M5 19l.5 1.5L7 21l-1.5.5L5 23l-.5-1.5L3 21l1.5-.5L5 19z" />
+    <path d="M19 12l.5 1.5L21 14l-1.5.5L19 16l-.5-1.5L17 14l1.5-.5L19 12z" />
+  </svg>
+);
+
+const GlobeIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <circle cx="12" cy="12" r="10" />
+    <line x1="2" y1="12" x2="22" y2="12" />
+    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+  </svg>
+);
+
+const UsersIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+    <circle cx="9" cy="7" r="4" />
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+  </svg>
+);
+
+const StarIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+  </svg>
+);
+
+const SearchIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <circle cx="11" cy="11" r="8" />
+    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+  </svg>
+);
+
+const MapPinIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+    <circle cx="12" cy="10" r="3" />
+  </svg>
+);
+
+const CalendarIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+    <line x1="16" y1="2" x2="16" y2="6" />
+    <line x1="8" y1="2" x2="8" y2="6" />
+    <line x1="3" y1="10" x2="21" y2="10" />
+  </svg>
+);
+
+const WalletIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
+    <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
+    <path d="M18 12a2 2 0 0 0 0 4h4v-4h-4z" />
+  </svg>
+);
+
+const CrownIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7z" />
+    <path d="M3 20h18" />
+  </svg>
+);
+
 const Groups: React.FC = () => {
   const navigate = useNavigate();
   const toast = useToast();
@@ -181,7 +329,7 @@ const Groups: React.FC = () => {
     return (
       <div className="groups-loading" role="status" aria-live="polite">
         <div className="loading-spinner" aria-hidden="true">
-          🗺️
+          <MapIcon />
         </div>
         <p>여행 그룹을 불러오는 중...</p>
       </div>
@@ -201,7 +349,7 @@ const Groups: React.FC = () => {
             onClick={() => navigate('/groups/create')}
             aria-label="새 여행 그룹 만들기"
           >
-            <span aria-hidden="true">✨</span> 새 그룹 만들기
+            <SparklesIcon /> 새 그룹 만들기
           </button>
         </header>
 
@@ -216,7 +364,7 @@ const Groups: React.FC = () => {
             aria-controls="tabpanel-groups"
             tabIndex={selectedTab === 'all' ? 0 : -1}
           >
-            <span aria-hidden="true">🌐</span> 전체 그룹
+            <GlobeIcon /> 전체 그룹
           </button>
           <button
             className={`tab-btn ${selectedTab === 'my' ? 'active' : ''}`}
@@ -227,7 +375,7 @@ const Groups: React.FC = () => {
             aria-controls="tabpanel-groups"
             tabIndex={selectedTab === 'my' ? 0 : -1}
           >
-            <span aria-hidden="true">👥</span> 내 그룹
+            <UsersIcon /> 내 그룹
           </button>
           <button
             className={`tab-btn ${selectedTab === 'recommended' ? 'active' : ''}`}
@@ -238,7 +386,7 @@ const Groups: React.FC = () => {
             aria-controls="tabpanel-groups"
             tabIndex={selectedTab === 'recommended' ? 0 : -1}
           >
-            <span aria-hidden="true">⭐</span> 추천 그룹
+            <StarIcon /> 추천 그룹
           </button>
         </nav>
 
@@ -258,7 +406,7 @@ const Groups: React.FC = () => {
               aria-describedby="search-hint"
             />
             <span className="search-icon" aria-hidden="true">
-              🔍
+              <SearchIcon />
             </span>
             <span id="search-hint" className="sr-only">
               엔터를 눌러 검색
@@ -332,7 +480,7 @@ const Groups: React.FC = () => {
           {filteredGroups.length === 0 ? (
             <div className="empty-groups" role="status">
               <div className="empty-icon" aria-hidden="true">
-                🗺️
+                <MapIcon />
               </div>
               <h2>검색 결과가 없습니다</h2>
               <p>다른 검색어나 필터를 시도해보세요.</p>
@@ -371,14 +519,13 @@ const Groups: React.FC = () => {
                     </div>
 
                     <p className="group-destination">
-                      <span aria-hidden="true">📍</span> {group.destination}
+                      <MapPinIcon /> {group.destination}
                     </p>
                     <p className="group-dates">
-                      <span aria-hidden="true">🗓️</span> {formatDate(group.startDate)} -{' '}
-                      {formatDate(group.endDate)}
+                      <CalendarIcon /> {formatDate(group.startDate)} - {formatDate(group.endDate)}
                     </p>
                     <p className="group-budget">
-                      <span aria-hidden="true">💰</span> {formatBudget(group.budget)}
+                      <WalletIcon /> {formatBudget(group.budget)}
                     </p>
 
                     <p className="group-description">{group.description}</p>
@@ -393,7 +540,7 @@ const Groups: React.FC = () => {
 
                     <div className="group-leader">
                       <span className="leader-label">
-                        <span aria-hidden="true">👑</span> 리더:
+                        <CrownIcon /> 리더:
                       </span>
                       <span className="leader-name">
                         {group.members.find(m => m.role === 'leader')?.name || '알 수 없음'}

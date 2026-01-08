@@ -10,6 +10,176 @@ import {
 } from '../hooks/useNotifications';
 import './NotificationCenter.css';
 
+// SVG Icons
+const BellIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+  </svg>
+);
+
+const UsersIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+    <circle cx="9" cy="7" r="4" />
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+  </svg>
+);
+
+const UserPlusIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+    <circle cx="8.5" cy="7" r="4" />
+    <line x1="20" y1="8" x2="20" y2="14" />
+    <line x1="23" y1="11" x2="17" y2="11" />
+  </svg>
+);
+
+const UserMinusIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+    <circle cx="8.5" cy="7" r="4" />
+    <line x1="23" y1="11" x2="17" y2="11" />
+  </svg>
+);
+
+const EditIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+  </svg>
+);
+
+const MessageIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+  </svg>
+);
+
+const AtSignIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <circle cx="12" cy="12" r="4" />
+    <path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94" />
+  </svg>
+);
+
+const CommentIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+  </svg>
+);
+
+const HeartIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+  </svg>
+);
+
+const StarIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+  </svg>
+);
+
+const MegaphoneIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M3 11l18-5v12L3 13v-2z" />
+    <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6" />
+  </svg>
+);
+
+const XIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+);
+
 const NotificationCenter: React.FC = () => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
@@ -53,19 +223,19 @@ const NotificationCenter: React.FC = () => {
   };
 
   const getNotificationIcon = (type: string) => {
-    const icons: { [key: string]: string } = {
-      GROUP_INVITE: '👥',
-      GROUP_JOIN: '➕',
-      GROUP_LEAVE: '➖',
-      GROUP_UPDATE: '📝',
-      NEW_MESSAGE: '💬',
-      MENTION: '@',
-      COMMENT: '💭',
-      LIKE: '❤️',
-      REVIEW: '⭐',
-      SYSTEM: '🔔',
+    const icons: { [key: string]: React.ReactNode } = {
+      GROUP_INVITE: <UsersIcon />,
+      GROUP_JOIN: <UserPlusIcon />,
+      GROUP_LEAVE: <UserMinusIcon />,
+      GROUP_UPDATE: <EditIcon />,
+      NEW_MESSAGE: <MessageIcon />,
+      MENTION: <AtSignIcon />,
+      COMMENT: <CommentIcon />,
+      LIKE: <HeartIcon />,
+      REVIEW: <StarIcon />,
+      SYSTEM: <BellIcon />,
     };
-    return icons[type] || '📢';
+    return icons[type] || <MegaphoneIcon />;
   };
 
   const formatTimestamp = (dateValue: string | Date) => {
@@ -94,7 +264,9 @@ const NotificationCenter: React.FC = () => {
         aria-haspopup="dialog"
         aria-label={`알림 ${(unreadCount || 0) > 0 ? `(읽지 않은 알림 ${unreadCount}개)` : ''}`}
       >
-        <span aria-hidden="true">🔔</span>
+        <span className="bell-icon" aria-hidden="true">
+          <BellIcon />
+        </span>
         {(unreadCount || 0) > 0 && (
           <span className="notification-badge" aria-hidden="true">
             {unreadCount}
@@ -133,12 +305,16 @@ const NotificationCenter: React.FC = () => {
             <div className="notification-list" role="list" aria-labelledby="notification-title">
               {isLoading && (
                 <div className="loading" role="status" aria-live="polite">
-                  로딩 중...
+                  <div className="loading-spinner" aria-hidden="true" />
+                  <span>로딩 중...</span>
                 </div>
               )}
 
               {!isLoading && allNotifications.length === 0 && (
                 <div className="empty-notifications" role="status">
+                  <div className="empty-icon" aria-hidden="true">
+                    <BellIcon />
+                  </div>
                   <p>새로운 알림이 없습니다.</p>
                 </div>
               )}
@@ -176,7 +352,7 @@ const NotificationCenter: React.FC = () => {
                     disabled={deleteNotificationMutation.isPending}
                     aria-label={`${notification.title} 알림 삭제`}
                   >
-                    <span aria-hidden="true">✕</span>
+                    <XIcon />
                   </button>
                 </div>
               ))}

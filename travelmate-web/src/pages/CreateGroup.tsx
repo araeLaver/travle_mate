@@ -5,6 +5,140 @@ import { useToast } from '../components/Toast';
 import { getErrorMessage, logError } from '../utils/errorHandler';
 import './CreateGroup.css';
 
+// SVG Icons
+const MapIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
+    <line x1="8" y1="2" x2="8" y2="18" />
+    <line x1="16" y1="6" x2="16" y2="22" />
+  </svg>
+);
+
+const EditIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+  </svg>
+);
+
+const CalendarIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+    <line x1="16" y1="2" x2="16" y2="6" />
+    <line x1="8" y1="2" x2="8" y2="6" />
+    <line x1="3" y1="10" x2="21" y2="10" />
+  </svg>
+);
+
+const UsersIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+    <circle cx="9" cy="7" r="4" />
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+  </svg>
+);
+
+const WalletIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
+    <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
+    <path d="M18 12a2 2 0 0 0 0 4h4v-4h-4z" />
+  </svg>
+);
+
+const TagIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+    <line x1="7" y1="7" x2="7.01" y2="7" />
+  </svg>
+);
+
+const ClipboardIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+  </svg>
+);
+
+const SparklesIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z" />
+    <path d="M5 19l.5 1.5L7 21l-1.5.5L5 23l-.5-1.5L3 21l1.5-.5L5 19z" />
+    <path d="M19 12l.5 1.5L21 14l-1.5.5L19 16l-.5-1.5L17 14l1.5-.5L19 12z" />
+  </svg>
+);
+
+const ArrowLeftIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <line x1="19" y1="12" x2="5" y2="12" />
+    <polyline points="12 19 5 12 12 5" />
+  </svg>
+);
+
 const CreateGroup: React.FC = () => {
   const navigate = useNavigate();
   const toast = useToast();
@@ -202,10 +336,10 @@ const CreateGroup: React.FC = () => {
           onClick={() => navigate('/groups')}
           aria-label="그룹 목록으로 돌아가기"
         >
-          <span aria-hidden="true">←</span> 뒤로가기
+          <ArrowLeftIcon /> 뒤로가기
         </button>
         <h1>
-          <span aria-hidden="true">🗺️</span> 새 여행 그룹 만들기
+          <MapIcon /> 새 여행 그룹 만들기
         </h1>
         <p>함께할 여행 메이트들을 모집해보세요!</p>
       </header>
@@ -218,7 +352,7 @@ const CreateGroup: React.FC = () => {
       >
         <fieldset className="form-section">
           <legend>
-            <span aria-hidden="true">📝</span> 기본 정보
+            <EditIcon /> 기본 정보
           </legend>
 
           <div className="form-group">
@@ -294,7 +428,7 @@ const CreateGroup: React.FC = () => {
 
         <fieldset className="form-section">
           <legend>
-            <span aria-hidden="true">📅</span> 여행 일정
+            <CalendarIcon /> 여행 일정
           </legend>
 
           <div className="date-group">
@@ -340,7 +474,7 @@ const CreateGroup: React.FC = () => {
 
         <fieldset className="form-section">
           <legend>
-            <span aria-hidden="true">👥</span> 그룹 설정
+            <UsersIcon /> 그룹 설정
           </legend>
 
           <div className="form-group">
@@ -382,7 +516,7 @@ const CreateGroup: React.FC = () => {
 
         <fieldset className="form-section">
           <legend>
-            <span aria-hidden="true">💰</span> 예산
+            <WalletIcon /> 예산
           </legend>
 
           <div className="budget-group">
@@ -420,7 +554,7 @@ const CreateGroup: React.FC = () => {
 
         <fieldset className="form-section">
           <legend>
-            <span aria-hidden="true">🏷️</span> 태그
+            <TagIcon /> 태그
           </legend>
           <p className="section-description" id="tags-description">
             여행의 특징을 나타내는 태그를 추가해주세요.
@@ -484,7 +618,7 @@ const CreateGroup: React.FC = () => {
 
         <fieldset className="form-section">
           <legend>
-            <span aria-hidden="true">📋</span> 참가 조건
+            <ClipboardIcon /> 참가 조건
           </legend>
           <p className="section-description" id="requirements-description">
             그룹 참가자에게 요구하는 조건이 있다면 추가해주세요.
@@ -548,7 +682,13 @@ const CreateGroup: React.FC = () => {
             aria-busy={isLoading}
             aria-label={isLoading ? '그룹 생성 중' : '그룹 만들기'}
           >
-            {isLoading ? '생성 중...' : '✨ 그룹 만들기'}
+            {isLoading ? (
+              '생성 중...'
+            ) : (
+              <>
+                <SparklesIcon /> 그룹 만들기
+              </>
+            )}
           </button>
         </div>
       </form>

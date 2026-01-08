@@ -69,7 +69,18 @@
   transform: translateX(-4px);
 }
 
+.back-btn svg {
+  width: 18px;
+  height: 18px;
+  margin-right: 6px;
+  stroke: currentColor;
+}
+
 .create-group-header h1 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
   font-size: 2.75rem;
   font-weight: 800;
   background: linear-gradient(135deg, #fff 0%, #c4b5fd 50%, #a78bfa 100%);
@@ -77,6 +88,12 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
   margin-bottom: 0.75rem;
+}
+
+.create-group-header h1 svg {
+  width: 40px;
+  height: 40px;
+  stroke: #c4b5fd;
 }
 
 .create-group-header p {
@@ -124,6 +141,25 @@
   margin-bottom: 1.25rem;
   font-size: 1.35rem;
   font-weight: 700;
+}
+
+.form-section legend {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: white;
+  margin-bottom: 1.25rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  width: 100%;
+  padding: 0;
+  border: none;
+}
+
+.form-section legend svg {
+  width: 24px;
+  height: 24px;
+  stroke: #a78bfa;
 }
 
 .section-description {
@@ -440,6 +476,10 @@
 }
 
 .submit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
   color: white;
   border: none;
@@ -449,6 +489,12 @@
   font-weight: 600;
   transition: all 0.3s ease;
   font-size: 1rem;
+}
+
+.submit-btn svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
 }
 
 .submit-btn:hover:not(:disabled) {
