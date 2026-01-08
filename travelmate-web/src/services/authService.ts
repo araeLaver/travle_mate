@@ -1,3 +1,5 @@
+import { logger } from '../lib/utils';
+
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
 
 export interface LoginRequest {
@@ -86,7 +88,7 @@ class AuthService {
 
       return data;
     } catch (error) {
-      console.error('Login error:', error);
+      logger.error('Login error:', error);
       throw error;
     }
   }
@@ -115,7 +117,7 @@ class AuthService {
 
       return data;
     } catch (error) {
-      console.error('OAuth login error:', error);
+      logger.error('OAuth login error:', error);
       throw error;
     }
   }
@@ -152,7 +154,7 @@ class AuthService {
 
       return data;
     } catch (error) {
-      console.error('Token refresh error:', error);
+      logger.error('Token refresh error:', error);
       throw error;
     }
   }
@@ -217,7 +219,7 @@ class AuthService {
       const data: RegisterResponse = await response.json();
       return data;
     } catch (error) {
-      console.error('Register error:', error);
+      logger.error('Register error:', error);
       throw error;
     }
   }
@@ -229,7 +231,7 @@ class AuthService {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this.accessToken}`,
+            Authorization: `Bearer ${this.accessToken}`,
           },
           body: JSON.stringify({
             refreshToken: this.refreshToken,
@@ -238,7 +240,7 @@ class AuthService {
         });
       }
     } catch (error) {
-      console.error('Logout error:', error);
+      logger.error('Logout error:', error);
     } finally {
       this.clearTokens();
     }
@@ -264,12 +266,15 @@ class AuthService {
 
   async checkEmailDuplicate(email: string): Promise<boolean> {
     try {
-      const response = await fetch(`${API_BASE_URL}/users/check-email?email=${encodeURIComponent(email)}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/users/check-email?email=${encodeURIComponent(email)}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`이메일 중복 체크 실패: ${response.status}`);
@@ -278,19 +283,22 @@ class AuthService {
       const data: { exists: boolean } = await response.json();
       return data.exists;
     } catch (error) {
-      console.error('Email duplicate check error:', error);
+      logger.error('Email duplicate check error:', error);
       throw error;
     }
   }
 
   async checkNicknameDuplicate(nickname: string): Promise<boolean> {
     try {
-      const response = await fetch(`${API_BASE_URL}/users/check-nickname?nickname=${encodeURIComponent(nickname)}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/users/check-nickname?nickname=${encodeURIComponent(nickname)}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`닉네임 중복 체크 실패: ${response.status}`);
@@ -299,7 +307,7 @@ class AuthService {
       const data: { exists: boolean } = await response.json();
       return data.exists;
     } catch (error) {
-      console.error('Nickname duplicate check error:', error);
+      logger.error('Nickname duplicate check error:', error);
       throw error;
     }
   }

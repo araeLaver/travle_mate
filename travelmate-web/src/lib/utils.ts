@@ -1,5 +1,5 @@
-import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 /**
  * Utility function to merge Tailwind CSS classes
@@ -36,7 +36,8 @@ export function truncate(text: string, maxLength: number): string {
 /**
  * Debounce function
  */
-export function debounce<T extends (...args: any[]) => any>(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
@@ -59,3 +60,21 @@ export function isInViewport(element: HTMLElement): boolean {
     rect.right <= (window.innerWidth || document.documentElement.clientWidth)
   );
 }
+
+/**
+ * Logger utility - 프로덕션에서는 에러만 출력
+ */
+const isDev = process.env.NODE_ENV === 'development';
+
+export const logger = {
+  // eslint-disable-next-line no-console
+  log: (...args: unknown[]) => isDev && console.log(...args),
+  // eslint-disable-next-line no-console
+  info: (...args: unknown[]) => isDev && console.info(...args),
+  // eslint-disable-next-line no-console
+  warn: (...args: unknown[]) => console.warn(...args),
+  // eslint-disable-next-line no-console
+  error: (...args: unknown[]) => console.error(...args),
+  // eslint-disable-next-line no-console
+  debug: (...args: unknown[]) => isDev && console.debug(...args),
+};

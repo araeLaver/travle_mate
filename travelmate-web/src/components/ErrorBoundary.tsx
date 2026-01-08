@@ -20,11 +20,9 @@ class ErrorBoundary extends Component<Props, State> {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  componentDidCatch(_error: Error, _errorInfo: ErrorInfo) {
     // 프로덕션에서는 에러 로깅 서비스로 전송
-    if (process.env.NODE_ENV === 'production') {
-      // TODO: Sentry 등 에러 트래킹 서비스 연동
-    }
+    // TODO: Sentry 등 에러 트래킹 서비스 연동
   }
 
   handleRetry = () => {
@@ -58,9 +56,7 @@ class ErrorBoundary extends Component<Props, State> {
               </div>
             </div>
 
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">
-              문제가 발생했습니다
-            </h1>
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">문제가 발생했습니다</h1>
 
             <p className="text-gray-600 mb-8">
               예상치 못한 오류가 발생했습니다.
