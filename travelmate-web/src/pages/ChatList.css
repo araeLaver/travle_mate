@@ -41,9 +41,22 @@
 }
 
 .loading-spinner {
-  font-size: 4rem;
+  width: 4rem;
+  height: 4rem;
   animation: pulse 2s infinite;
   margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(236, 72, 153, 0.3) 100%);
+  border-radius: 50%;
+  padding: 1rem;
+}
+
+.loading-spinner svg {
+  width: 100%;
+  height: 100%;
+  stroke: rgba(255, 255, 255, 0.9);
 }
 
 @keyframes pulse {
@@ -92,6 +105,22 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
   margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.chat-list-header h1 .header-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat-list-header h1 .header-icon svg {
+  width: 2.5rem;
+  height: 2.5rem;
+  stroke: #a78bfa;
 }
 
 .chat-list-header p {
@@ -153,8 +182,16 @@
   left: 1.25rem;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   opacity: 0.7;
+}
+
+.search-icon svg {
+  width: 1.2rem;
+  height: 1.2rem;
+  stroke: rgba(255, 255, 255, 0.7);
 }
 
 /* Chat Rooms Section */
@@ -208,10 +245,23 @@
 }
 
 .empty-icon {
-  font-size: 5rem;
+  width: 5rem;
+  height: 5rem;
   margin-bottom: 1.5rem;
   opacity: 0.6;
   animation: float 3s ease-in-out infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(236, 72, 153, 0.3) 100%);
+  border-radius: 50%;
+  padding: 1rem;
+}
+
+.empty-icon svg {
+  width: 100%;
+  height: 100%;
+  stroke: rgba(255, 255, 255, 0.8);
 }
 
 @keyframes float {
@@ -246,6 +296,21 @@
   cursor: pointer;
   transition: all 0.3s ease;
   font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.find-mates-btn .btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.find-mates-btn .btn-icon svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  stroke: white;
 }
 
 .find-mates-btn:hover {
@@ -302,8 +367,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.8rem;
   border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.avatar-placeholder svg {
+  width: 1.8rem;
+  height: 1.8rem;
+  stroke: rgba(255, 255, 255, 0.7);
 }
 
 .group-avatar {
@@ -320,8 +390,15 @@
 }
 
 .group-icon {
-  font-size: 1.3rem;
-  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.group-icon svg {
+  width: 1.3rem;
+  height: 1.3rem;
+  stroke: white;
 }
 
 .member-count {
@@ -363,6 +440,49 @@
 .online-status {
   font-size: 0.8rem;
   color: rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.info-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.info-icon svg {
+  width: 0.85rem;
+  height: 0.85rem;
+  stroke: rgba(255, 255, 255, 0.5);
+}
+
+.status-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.status-icon svg {
+  width: 0.6rem;
+  height: 0.6rem;
+}
+
+.status-icon.online svg {
+  fill: #4ade80;
+}
+
+.online-status .status-icon svg {
+  width: 0.7rem;
+  height: 0.7rem;
+}
+
+.online-status.online .status-icon svg {
+  fill: #4ade80;
+}
+
+.online-status.offline .status-icon svg {
+  stroke: rgba(255, 255, 255, 0.5);
 }
 
 .online-count {
@@ -423,6 +543,18 @@
   white-space: nowrap;
 }
 
+.message-type-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.message-type-icon svg {
+  width: 0.9rem;
+  height: 0.9rem;
+  stroke: rgba(255, 255, 255, 0.6);
+}
+
 .no-messages {
   color: rgba(255, 255, 255, 0.4);
   font-style: italic;
@@ -473,7 +605,15 @@
 }
 
 .btn-icon {
-  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-icon svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  stroke: currentColor;
 }
 
 /* Responsive */
@@ -533,7 +673,11 @@
 
   .search-icon {
     left: 1rem;
-    font-size: 1.1rem;
+  }
+
+  .search-icon svg {
+    width: 1.1rem;
+    height: 1.1rem;
   }
 
   .section-header {
@@ -559,7 +703,8 @@
   }
 
   .empty-icon {
-    font-size: 4rem;
+    width: 4rem;
+    height: 4rem;
   }
 
   .action-btn {

@@ -4,6 +4,250 @@ import { useToast } from '../components/Toast';
 import { getErrorMessage, logError } from '../utils/errorHandler';
 import './Profile.css';
 
+// SVG Icons
+const UserIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
+  </svg>
+);
+
+const MapPinIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+    <circle cx="12" cy="10" r="3" />
+  </svg>
+);
+
+const EditIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+  </svg>
+);
+
+const SaveIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+    <polyline points="17 21 17 13 7 13 7 21" />
+    <polyline points="7 3 7 8 15 8" />
+  </svg>
+);
+
+const XIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+);
+
+const ClipboardIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+  </svg>
+);
+
+const PlaneIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M22 2L11 13" />
+    <path d="M22 2l-7 20-4-9-9-4 20-7z" />
+  </svg>
+);
+
+const SettingsIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <circle cx="12" cy="12" r="3" />
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+  </svg>
+);
+
+const TargetIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <circle cx="12" cy="12" r="10" />
+    <circle cx="12" cy="12" r="6" />
+    <circle cx="12" cy="12" r="2" />
+  </svg>
+);
+
+const SparklesIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M12 3l1.912 5.813L20 10l-6.088 1.187L12 17l-1.912-5.813L4 10l6.088-1.187L12 3z" />
+    <path d="M5 3v4M3 5h4M6 17v4M4 19h4M18 14v4M16 16h4" />
+  </svg>
+);
+
+const MessageCircleIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+  </svg>
+);
+
+const GlobeIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <circle cx="12" cy="12" r="10" />
+    <line x1="2" y1="12" x2="22" y2="12" />
+    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+  </svg>
+);
+
+const WalletIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
+    <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
+    <path d="M18 12a2 2 0 0 0 0 4h4v-4h-4z" />
+  </svg>
+);
+
+const HomeIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+    <polyline points="9 22 9 12 15 12 15 22" />
+  </svg>
+);
+
+const CarIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M14 16H9m10 0h3v-3.15a1 1 0 0 0-.84-.99L16 11l-2.7-3.6a1 1 0 0 0-.8-.4H5.24a2 2 0 0 0-1.8 1.1l-.8 1.63A6 6 0 0 0 2 12.42V16h2" />
+    <circle cx="6.5" cy="16.5" r="2.5" />
+    <circle cx="16.5" cy="16.5" r="2.5" />
+  </svg>
+);
+
+const UsersIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+    <circle cx="9" cy="7" r="4" />
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+  </svg>
+);
+
+const ZapIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+  </svg>
+);
+
 const Profile: React.FC = () => {
   const toast = useToast();
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -129,7 +373,7 @@ const Profile: React.FC = () => {
     return (
       <div className="profile-loading" role="status" aria-live="polite">
         <div className="loading-spinner" aria-hidden="true">
-          👤
+          <UserIcon />
         </div>
         <p>프로필을 불러오는 중...</p>
       </div>
@@ -165,7 +409,7 @@ const Profile: React.FC = () => {
                 <img src={profile.profileImage} alt={`${profile.name}의 프로필 사진`} />
               ) : (
                 <div className="avatar-placeholder" aria-label="기본 프로필 이미지">
-                  👤
+                  <UserIcon />
                 </div>
               )}
             </div>
@@ -179,8 +423,10 @@ const Profile: React.FC = () => {
               )}
               {profile.location && (
                 <p className="profile-location">
-                  <span aria-hidden="true">📍</span> {profile.location.city},{' '}
-                  {profile.location.country}
+                  <span className="location-icon" aria-hidden="true">
+                    <MapPinIcon />
+                  </span>{' '}
+                  {profile.location.city}, {profile.location.country}
                 </p>
               )}
               <p className="profile-bio">{profile.bio}</p>
@@ -193,7 +439,10 @@ const Profile: React.FC = () => {
                   onClick={handleEditStart}
                   aria-label="프로필 편집 시작"
                 >
-                  <span aria-hidden="true">✏️</span> 편집
+                  <span className="btn-icon" aria-hidden="true">
+                    <EditIcon />
+                  </span>{' '}
+                  편집
                 </button>
               ) : (
                 <div className="edit-actions" role="group" aria-label="편집 액션">
@@ -204,7 +453,16 @@ const Profile: React.FC = () => {
                     aria-busy={isSaving}
                     aria-label="프로필 저장"
                   >
-                    {isSaving ? '저장 중...' : '💾 저장'}
+                    {isSaving ? (
+                      '저장 중...'
+                    ) : (
+                      <>
+                        <span className="btn-icon" aria-hidden="true">
+                          <SaveIcon />
+                        </span>{' '}
+                        저장
+                      </>
+                    )}
                   </button>
                   <button
                     className="cancel-btn"
@@ -212,7 +470,10 @@ const Profile: React.FC = () => {
                     disabled={isSaving}
                     aria-label="편집 취소"
                   >
-                    <span aria-hidden="true">❌</span> 취소
+                    <span className="btn-icon" aria-hidden="true">
+                      <XIcon />
+                    </span>{' '}
+                    취소
                   </button>
                 </div>
               )}
@@ -263,7 +524,10 @@ const Profile: React.FC = () => {
             aria-controls="tabpanel-info"
             tabIndex={activeTab === 'info' ? 0 : -1}
           >
-            <span aria-hidden="true">📋</span> 기본 정보
+            <span className="tab-icon" aria-hidden="true">
+              <ClipboardIcon />
+            </span>{' '}
+            기본 정보
           </button>
           <button
             className={`tab-btn ${activeTab === 'travel' ? 'active' : ''}`}
@@ -274,7 +538,10 @@ const Profile: React.FC = () => {
             aria-controls="tabpanel-travel"
             tabIndex={activeTab === 'travel' ? 0 : -1}
           >
-            <span aria-hidden="true">✈️</span> 여행 기록
+            <span className="tab-icon" aria-hidden="true">
+              <PlaneIcon />
+            </span>{' '}
+            여행 기록
           </button>
           <button
             className={`tab-btn ${activeTab === 'preferences' ? 'active' : ''}`}
@@ -285,7 +552,10 @@ const Profile: React.FC = () => {
             aria-controls="tabpanel-preferences"
             tabIndex={activeTab === 'preferences' ? 0 : -1}
           >
-            <span aria-hidden="true">⚙️</span> 선호도
+            <span className="tab-icon" aria-hidden="true">
+              <SettingsIcon />
+            </span>{' '}
+            선호도
           </button>
         </nav>
 
@@ -420,14 +690,20 @@ const Profile: React.FC = () => {
                 <div className="info-display">
                   <section className="info-section">
                     <h2>
-                      <span aria-hidden="true">🎯</span> 여행 스타일
+                      <span className="section-icon" aria-hidden="true">
+                        <TargetIcon />
+                      </span>{' '}
+                      여행 스타일
                     </h2>
                     <div className="travel-style">{profile.travelStyle}</div>
                   </section>
 
                   <section className="info-section">
                     <h2>
-                      <span aria-hidden="true">💫</span> 관심사
+                      <span className="section-icon" aria-hidden="true">
+                        <SparklesIcon />
+                      </span>{' '}
+                      관심사
                     </h2>
                     <div className="interests" role="list" aria-label="관심사 목록">
                       {profile.interests.map((interest, index) => (
@@ -440,7 +716,10 @@ const Profile: React.FC = () => {
 
                   <section className="info-section">
                     <h2>
-                      <span aria-hidden="true">🗣️</span> 구사 언어
+                      <span className="section-icon" aria-hidden="true">
+                        <MessageCircleIcon />
+                      </span>{' '}
+                      구사 언어
                     </h2>
                     <div className="languages" role="list" aria-label="구사 언어 목록">
                       {profile.languages.map((language, index) => (
@@ -464,7 +743,10 @@ const Profile: React.FC = () => {
             >
               <div className="travel-header">
                 <h2>
-                  <span aria-hidden="true">✈️</span> 여행 기록
+                  <span className="section-icon" aria-hidden="true">
+                    <PlaneIcon />
+                  </span>{' '}
+                  여행 기록
                 </h2>
                 <button
                   className="add-travel-btn"
@@ -478,7 +760,7 @@ const Profile: React.FC = () => {
               {profile.travelHistory.length === 0 ? (
                 <div className="empty-travel" role="status">
                   <div className="empty-icon" aria-hidden="true">
-                    🌍
+                    <GlobeIcon />
                   </div>
                   <h3>아직 여행 기록이 없습니다</h3>
                   <p>첫 번째 여행을 추가해보세요!</p>
@@ -489,7 +771,10 @@ const Profile: React.FC = () => {
                     <article key={travel.id} className="travel-card" role="listitem">
                       <div className="travel-info">
                         <h3 className="travel-destination">
-                          <span aria-hidden="true">📍</span> {travel.destination}
+                          <span className="dest-icon" aria-hidden="true">
+                            <MapPinIcon />
+                          </span>{' '}
+                          {travel.destination}
                         </h3>
                         <p className="travel-dates">
                           <time dateTime={travel.startDate.toISOString()}>
@@ -525,7 +810,10 @@ const Profile: React.FC = () => {
             >
               <div className="pref-section">
                 <h2>
-                  <span aria-hidden="true">💰</span> 예산 선호도
+                  <span className="pref-icon" aria-hidden="true">
+                    <WalletIcon />
+                  </span>{' '}
+                  예산 선호도
                 </h2>
                 <p
                   aria-label={`예산 범위 ${(profile.preferences.budget.min / 10000).toFixed(0)}만원에서 ${(profile.preferences.budget.max / 10000).toFixed(0)}만원`}
@@ -537,7 +825,10 @@ const Profile: React.FC = () => {
 
               <div className="pref-section">
                 <h2>
-                  <span aria-hidden="true">🏠</span> 숙박 선호도
+                  <span className="pref-icon" aria-hidden="true">
+                    <HomeIcon />
+                  </span>{' '}
+                  숙박 선호도
                 </h2>
                 <div className="pref-tags" role="list" aria-label="선호 숙박 유형">
                   {profile.preferences.accommodationType.map((type, index) => (
@@ -550,7 +841,10 @@ const Profile: React.FC = () => {
 
               <div className="pref-section">
                 <h2>
-                  <span aria-hidden="true">🚗</span> 교통 선호도
+                  <span className="pref-icon" aria-hidden="true">
+                    <CarIcon />
+                  </span>{' '}
+                  교통 선호도
                 </h2>
                 <div className="pref-tags" role="list" aria-label="선호 교통수단">
                   {profile.preferences.transportPreference.map((transport, index) => (
@@ -563,7 +857,10 @@ const Profile: React.FC = () => {
 
               <div className="pref-section">
                 <h2>
-                  <span aria-hidden="true">👥</span> 그룹 크기
+                  <span className="pref-icon" aria-hidden="true">
+                    <UsersIcon />
+                  </span>{' '}
+                  그룹 크기
                 </h2>
                 <p
                   aria-label={`선호 그룹 크기 ${profile.preferences.groupSize.min}명에서 ${profile.preferences.groupSize.max}명`}
@@ -574,7 +871,10 @@ const Profile: React.FC = () => {
 
               <div className="pref-section">
                 <h2>
-                  <span aria-hidden="true">⚡</span> 여행 스타일
+                  <span className="pref-icon" aria-hidden="true">
+                    <ZapIcon />
+                  </span>{' '}
+                  여행 스타일
                 </h2>
                 <p>
                   여행 페이스: <span className="pref-value">{profile.preferences.travelPace}</span>{' '}

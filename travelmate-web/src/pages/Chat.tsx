@@ -4,6 +4,120 @@ import { chatService, ChatMessage, ChatRoom } from '../services/chatService';
 import { useToast } from '../components/Toast';
 import './Chat.css';
 
+// SVG Icons
+const MessageIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+  </svg>
+);
+
+const ArrowLeftIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <line x1="19" y1="12" x2="5" y2="12" />
+    <polyline points="12 19 5 12 12 5" />
+  </svg>
+);
+
+const UsersIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+    <circle cx="9" cy="7" r="4" />
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+  </svg>
+);
+
+const OnlineIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor">
+    <circle cx="12" cy="12" r="6" />
+  </svg>
+);
+
+const OfflineIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <circle cx="12" cy="12" r="6" />
+  </svg>
+);
+
+const SendIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <line x1="22" y1="2" x2="11" y2="13" />
+    <polygon points="22 2 15 22 11 13 2 9 22 2" />
+  </svg>
+);
+
+const CameraIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+    <circle cx="12" cy="13" r="4" />
+  </svg>
+);
+
+const MapPinIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+    <circle cx="12" cy="10" r="3" />
+  </svg>
+);
+
+const SmileIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <circle cx="12" cy="12" r="10" />
+    <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+    <line x1="9" y1="9" x2="9.01" y2="9" />
+    <line x1="15" y1="9" x2="15.01" y2="9" />
+  </svg>
+);
+
 const Chat: React.FC = () => {
   const { roomId } = useParams<{ roomId: string }>();
   const navigate = useNavigate();
@@ -106,7 +220,7 @@ const Chat: React.FC = () => {
     return (
       <div className="chat-loading" role="status" aria-live="polite">
         <div className="loading-spinner" aria-hidden="true">
-          💬
+          <MessageIcon />
         </div>
         <p>채팅방을 불러오는 중...</p>
       </div>
@@ -135,7 +249,9 @@ const Chat: React.FC = () => {
           onClick={() => navigate('/dashboard')}
           aria-label="대시보드로 돌아가기"
         >
-          <span aria-hidden="true">←</span>
+          <span className="back-icon" aria-hidden="true">
+            <ArrowLeftIcon />
+          </span>
         </button>
         <div className="chat-info">
           <h1 className="chat-title">
@@ -147,7 +263,10 @@ const Chat: React.FC = () => {
                     className={`online-indicator ${otherParticipants[0].isOnline ? 'online' : 'offline'}`}
                     aria-label={otherParticipants[0].isOnline ? '온라인 상태' : '오프라인 상태'}
                   >
-                    {otherParticipants[0].isOnline ? '🟢 온라인' : '⚪ 오프라인'}
+                    <span className="status-icon">
+                      {otherParticipants[0].isOnline ? <OnlineIcon /> : <OfflineIcon />}
+                    </span>{' '}
+                    {otherParticipants[0].isOnline ? '온라인' : '오프라인'}
                   </span>
                 )}
               </>
@@ -156,7 +275,10 @@ const Chat: React.FC = () => {
             )}
           </h1>
           <div className="participant-count" aria-label={`참여자 ${room.participants.length}명`}>
-            <span aria-hidden="true">👥</span> {room.participants.length}명
+            <span className="participant-icon" aria-hidden="true">
+              <UsersIcon />
+            </span>{' '}
+            {room.participants.length}명
           </div>
         </div>
       </header>
@@ -166,7 +288,7 @@ const Chat: React.FC = () => {
         {messages.length === 0 ? (
           <div className="empty-messages" role="status">
             <div className="empty-icon" aria-hidden="true">
-              💬
+              <MessageIcon />
             </div>
             <h2>아직 메시지가 없습니다</h2>
             <p>첫 번째 메시지를 보내서 대화를 시작해보세요!</p>
@@ -278,20 +400,26 @@ const Chat: React.FC = () => {
             aria-disabled={!newMessage.trim()}
           >
             <span className="send-icon" aria-hidden="true">
-              📤
+              <SendIcon />
             </span>
           </button>
         </div>
 
         <div className="input-actions" role="toolbar" aria-label="추가 옵션">
           <button type="button" className="action-btn" aria-label="이미지 전송">
-            <span aria-hidden="true">📷</span>
+            <span className="action-icon" aria-hidden="true">
+              <CameraIcon />
+            </span>
           </button>
           <button type="button" className="action-btn" aria-label="위치 공유">
-            <span aria-hidden="true">📍</span>
+            <span className="action-icon" aria-hidden="true">
+              <MapPinIcon />
+            </span>
           </button>
           <button type="button" className="action-btn" aria-label="이모티콘 선택">
-            <span aria-hidden="true">😊</span>
+            <span className="action-icon" aria-hidden="true">
+              <SmileIcon />
+            </span>
           </button>
         </div>
       </form>

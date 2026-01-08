@@ -3,6 +3,119 @@ import { useNavigate } from 'react-router-dom';
 import { chatService, ChatRoom } from '../services/chatService';
 import './ChatList.css';
 
+// SVG Icons
+const MessageIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+  </svg>
+);
+
+const SearchIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <circle cx="11" cy="11" r="8" />
+    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+  </svg>
+);
+
+const UserIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
+  </svg>
+);
+
+const UsersIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+    <circle cx="9" cy="7" r="4" />
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+  </svg>
+);
+
+const MapIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
+    <line x1="8" y1="2" x2="8" y2="18" />
+    <line x1="16" y1="6" x2="16" y2="22" />
+  </svg>
+);
+
+const CameraIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+    <circle cx="12" cy="13" r="4" />
+  </svg>
+);
+
+const MapPinIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+    <circle cx="12" cy="10" r="3" />
+  </svg>
+);
+
+const OnlineIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor">
+    <circle cx="12" cy="12" r="6" />
+  </svg>
+);
+
+const OfflineIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <circle cx="12" cy="12" r="6" />
+  </svg>
+);
+
 const ChatList: React.FC = () => {
   const navigate = useNavigate();
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
@@ -76,7 +189,7 @@ const ChatList: React.FC = () => {
     return (
       <div className="chat-list-loading" role="status" aria-live="polite">
         <div className="loading-spinner" aria-hidden="true">
-          💬
+          <MessageIcon />
         </div>
         <p>채팅방을 불러오는 중...</p>
       </div>
@@ -87,7 +200,10 @@ const ChatList: React.FC = () => {
     <div className="chat-list-container" role="main" aria-label="채팅 목록">
       <header className="chat-list-header">
         <h1>
-          <span aria-hidden="true">💬</span> 채팅
+          <span className="header-icon" aria-hidden="true">
+            <MessageIcon />
+          </span>{' '}
+          채팅
         </h1>
         <p>여행 메이트들과의 대화를 확인해보세요</p>
       </header>
@@ -107,7 +223,7 @@ const ChatList: React.FC = () => {
             aria-describedby="search-results-count"
           />
           <span className="search-icon" aria-hidden="true">
-            🔍
+            <SearchIcon />
           </span>
         </div>
         <span id="search-results-count" className="sr-only" aria-live="polite">
@@ -126,7 +242,7 @@ const ChatList: React.FC = () => {
         {filteredRooms.length === 0 ? (
           <div className="empty-chats" role="status">
             <div className="empty-icon" aria-hidden="true">
-              💬
+              <MessageIcon />
             </div>
             {searchQuery ? (
               <>
@@ -142,7 +258,10 @@ const ChatList: React.FC = () => {
                   onClick={() => navigate('/dashboard')}
                   aria-label="여행 메이트 찾기 페이지로 이동"
                 >
-                  <span aria-hidden="true">🔍</span> 여행 메이트 찾기
+                  <span className="btn-icon" aria-hidden="true">
+                    <SearchIcon />
+                  </span>{' '}
+                  여행 메이트 찾기
                 </button>
               </>
             )}
@@ -179,12 +298,16 @@ const ChatList: React.FC = () => {
                             className="avatar-image"
                           />
                         ) : (
-                          <div className="avatar-placeholder">👤</div>
+                          <div className="avatar-placeholder">
+                            <UserIcon />
+                          </div>
                         )}
                       </>
                     ) : (
                       <div className="group-avatar">
-                        <span className="group-icon">👥</span>
+                        <span className="group-icon">
+                          <UsersIcon />
+                        </span>
                         <span className="member-count">{room.participants.length}</span>
                       </div>
                     )}
@@ -196,11 +319,17 @@ const ChatList: React.FC = () => {
                         <h3 className="room-name">{room.name}</h3>
                         {room.type === 'group' && (
                           <span className="participant-info" aria-hidden="true">
-                            <span aria-hidden="true">👥</span> {getTotalParticipants(room)}명
+                            <span className="info-icon" aria-hidden="true">
+                              <UsersIcon />
+                            </span>{' '}
+                            {getTotalParticipants(room)}명
                             {getOnlineParticipants(room) > 0 && (
                               <span className="online-count">
-                                • <span aria-hidden="true">🟢</span> {getOnlineParticipants(room)}명
-                                온라인
+                                •{' '}
+                                <span className="status-icon online" aria-hidden="true">
+                                  <OnlineIcon />
+                                </span>{' '}
+                                {getOnlineParticipants(room)}명 온라인
                               </span>
                             )}
                           </span>
@@ -210,7 +339,10 @@ const ChatList: React.FC = () => {
                             className={`online-status ${isOnline ? 'online' : 'offline'}`}
                             aria-hidden="true"
                           >
-                            {isOnline ? '🟢 온라인' : '⚪ 오프라인'}
+                            <span className="status-icon">
+                              {isOnline ? <OnlineIcon /> : <OfflineIcon />}
+                            </span>{' '}
+                            {isOnline ? '온라인' : '오프라인'}
                           </span>
                         )}
                       </div>
@@ -241,13 +373,21 @@ const ChatList: React.FC = () => {
                             :
                           </span>
                           <span className="message-content">
-                            {room.lastMessage.type === 'text'
-                              ? room.lastMessage.content
-                              : room.lastMessage.type === 'image'
-                                ? '📷 이미지'
-                                : room.lastMessage.type === 'location'
-                                  ? '📍 위치'
-                                  : '💬 메시지'}
+                            {room.lastMessage.type === 'text' ? (
+                              room.lastMessage.content
+                            ) : room.lastMessage.type === 'image' ? (
+                              <span className="message-type-icon">
+                                <CameraIcon /> 이미지
+                              </span>
+                            ) : room.lastMessage.type === 'location' ? (
+                              <span className="message-type-icon">
+                                <MapPinIcon /> 위치
+                              </span>
+                            ) : (
+                              <span className="message-type-icon">
+                                <MessageIcon /> 메시지
+                              </span>
+                            )}
                           </span>
                         </>
                       ) : (
@@ -269,7 +409,7 @@ const ChatList: React.FC = () => {
           aria-label="새로운 여행 메이트 찾기"
         >
           <span className="btn-icon" aria-hidden="true">
-            🔍
+            <SearchIcon />
           </span>
           새로운 메이트 찾기
         </button>
@@ -279,7 +419,7 @@ const ChatList: React.FC = () => {
           aria-label="여행 그룹 목록 보기"
         >
           <span className="btn-icon" aria-hidden="true">
-            🗺️
+            <MapIcon />
           </span>
           여행 그룹 보기
         </button>

@@ -38,9 +38,22 @@
 }
 
 .loading-spinner {
-  font-size: 4rem;
+  width: 4rem;
+  height: 4rem;
   animation: pulse 2s infinite;
   margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(236, 72, 153, 0.3) 100%);
+  border-radius: 50%;
+  padding: 1rem;
+}
+
+.loading-spinner svg {
+  width: 100%;
+  height: 100%;
+  stroke: rgba(255, 255, 255, 0.9);
 }
 
 @keyframes pulse {
@@ -95,12 +108,26 @@
 .back-btn {
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  font-size: 1.25rem;
   cursor: pointer;
   padding: 0.625rem 0.875rem;
   border-radius: 12px;
   transition: all 0.3s ease;
   color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.back-btn .back-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.back-btn .back-icon svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  stroke: white;
 }
 
 .back-btn:hover {
@@ -131,6 +158,20 @@
   border-radius: 20px;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.online-indicator .status-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.online-indicator .status-icon svg {
+  width: 0.6rem;
+  height: 0.6rem;
 }
 
 .online-indicator.online {
@@ -139,14 +180,37 @@
   border-color: rgba(74, 222, 128, 0.3);
 }
 
+.online-indicator.online .status-icon svg {
+  fill: #4ade80;
+}
+
 .online-indicator.offline {
   color: rgba(255, 255, 255, 0.5);
   background: rgba(255, 255, 255, 0.05);
 }
 
+.online-indicator.offline .status-icon svg {
+  stroke: rgba(255, 255, 255, 0.5);
+}
+
 .participant-count {
   font-size: 0.9rem;
   color: rgba(255, 255, 255, 0.6);
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.participant-count .participant-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.participant-count .participant-icon svg {
+  width: 1rem;
+  height: 1rem;
+  stroke: rgba(255, 255, 255, 0.6);
 }
 
 /* Messages Container */
@@ -189,10 +253,23 @@
 }
 
 .empty-icon {
-  font-size: 5rem;
+  width: 5rem;
+  height: 5rem;
   margin-bottom: 1.5rem;
   opacity: 0.6;
   animation: float 3s ease-in-out infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(236, 72, 153, 0.3) 100%);
+  border-radius: 50%;
+  padding: 1rem;
+}
+
+.empty-icon svg {
+  width: 100%;
+  height: 100%;
+  stroke: rgba(255, 255, 255, 0.8);
 }
 
 @keyframes float {
@@ -420,7 +497,15 @@
 }
 
 .send-icon {
-  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.send-icon svg {
+  width: 1.2rem;
+  height: 1.2rem;
+  stroke: white;
 }
 
 /* Input Actions */
@@ -433,12 +518,26 @@
 .action-btn {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  font-size: 1.1rem;
   cursor: pointer;
   padding: 0.5rem 0.75rem;
   border-radius: 12px;
   transition: all 0.3s ease;
   color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn .action-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn .action-icon svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  stroke: rgba(255, 255, 255, 0.7);
 }
 
 .action-btn:hover {
@@ -477,8 +576,12 @@
   }
 
   .action-btn {
-    font-size: 1rem;
     padding: 0.4rem 0.6rem;
+  }
+
+  .action-btn .action-icon svg {
+    width: 1rem;
+    height: 1rem;
   }
 }
 
