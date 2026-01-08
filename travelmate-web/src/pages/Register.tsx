@@ -15,6 +15,8 @@ const Register: React.FC = () => {
     confirmPassword: '',
     name: '',
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [duplicateCheck, setDuplicateCheck] = useState({
@@ -103,7 +105,7 @@ const Register: React.FC = () => {
         email: { checked: true, available: !exists, loading: false },
       }));
       setError(exists ? '이미 사용중인 이메일입니다.' : '');
-    } catch (error) {
+    } catch {
       setDuplicateCheck(prev => ({
         ...prev,
         email: { checked: false, available: false, loading: false },
@@ -130,7 +132,7 @@ const Register: React.FC = () => {
         username: { checked: true, available: !exists, loading: false },
       }));
       setError(exists ? '이미 사용중인 사용자명입니다.' : '');
-    } catch (error) {
+    } catch {
       setDuplicateCheck(prev => ({
         ...prev,
         username: { checked: false, available: false, loading: false },
@@ -224,6 +226,77 @@ const Register: React.FC = () => {
     return '중복확인';
   };
 
+  // Icon components
+  const UserIcon = () => (
+    <svg
+      className="input-icon"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      aria-hidden="true"
+    >
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
+  );
+
+  const AtSignIcon = () => (
+    <svg
+      className="input-icon"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="4" />
+      <path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94" />
+    </svg>
+  );
+
+  const MailIcon = () => (
+    <svg
+      className="input-icon"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      aria-hidden="true"
+    >
+      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+      <polyline points="22,6 12,13 2,6" />
+    </svg>
+  );
+
+  const LockIcon = () => (
+    <svg
+      className="input-icon"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      aria-hidden="true"
+    >
+      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    </svg>
+  );
+
+  const EyeIcon = () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+
+  const EyeOffIcon = () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+      <line x1="1" y1="1" x2="23" y2="23" />
+    </svg>
+  );
+
   return (
     <div className="auth-container">
       {/* Animated Background Blobs */}
@@ -240,7 +313,19 @@ const Register: React.FC = () => {
 
         {error && (
           <div className="auth-error" role="alert" aria-live="assertive">
-            {error}
+            <svg
+              className="error-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            <span>{error}</span>
           </div>
         )}
 
@@ -249,21 +334,24 @@ const Register: React.FC = () => {
             <label htmlFor="name">
               이름 <span className="sr-only">(필수)</span>
             </label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              onBlur={() => handleBlur('name')}
-              placeholder="실명을 입력하세요"
-              required
-              aria-required="true"
-              autoComplete="name"
-              className={touched.name ? (validation.name ? 'valid' : 'invalid') : ''}
-              aria-invalid={touched.name && !validation.name}
-              aria-describedby={touched.name && !validation.name ? 'name-error' : undefined}
-            />
+            <div className="input-wrapper">
+              <UserIcon />
+              <input
+                type="text"
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                onBlur={() => handleBlur('name')}
+                placeholder="실명을 입력하세요"
+                required
+                aria-required="true"
+                autoComplete="name"
+                className={touched.name ? (validation.name ? 'valid' : 'invalid') : ''}
+                aria-invalid={touched.name && !validation.name}
+                aria-describedby={touched.name && !validation.name ? 'name-error' : undefined}
+              />
+            </div>
             {touched.name && !validation.name && (
               <span id="name-error" className="validation-message error" role="alert">
                 이름은 2자 이상 입력해주세요
@@ -276,21 +364,24 @@ const Register: React.FC = () => {
               사용자명 <span className="sr-only">(필수)</span>
             </label>
             <div className="input-with-button">
-              <input
-                type="text"
-                id="username"
-                name="username"
-                value={formData.username}
-                onChange={handleChange}
-                onBlur={() => handleBlur('username')}
-                placeholder="사용자명을 입력하세요"
-                required
-                aria-required="true"
-                autoComplete="username"
-                className={touched.username ? (validation.username ? 'valid' : 'invalid') : ''}
-                aria-invalid={touched.username && !validation.username}
-                aria-describedby="username-hint username-status"
-              />
+              <div className="input-wrapper">
+                <AtSignIcon />
+                <input
+                  type="text"
+                  id="username"
+                  name="username"
+                  value={formData.username}
+                  onChange={handleChange}
+                  onBlur={() => handleBlur('username')}
+                  placeholder="사용자명을 입력하세요"
+                  required
+                  aria-required="true"
+                  autoComplete="username"
+                  className={touched.username ? (validation.username ? 'valid' : 'invalid') : ''}
+                  aria-invalid={touched.username && !validation.username}
+                  aria-describedby="username-hint username-status"
+                />
+              </div>
               <button
                 type="button"
                 className={getCheckButtonClass('username')}
@@ -299,6 +390,9 @@ const Register: React.FC = () => {
                 aria-busy={duplicateCheck.username.loading}
                 aria-label={`사용자명 중복확인 ${duplicateCheck.username.checked ? (duplicateCheck.username.available ? '사용 가능' : '중복됨') : ''}`}
               >
+                {duplicateCheck.username.loading && (
+                  <span className="spinner small" aria-hidden="true" />
+                )}
                 {getCheckButtonText('username')}
               </button>
             </div>
@@ -327,21 +421,24 @@ const Register: React.FC = () => {
               이메일 <span className="sr-only">(필수)</span>
             </label>
             <div className="input-with-button">
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                onBlur={() => handleBlur('email')}
-                placeholder="your@email.com"
-                required
-                aria-required="true"
-                autoComplete="email"
-                className={touched.email ? (validation.email ? 'valid' : 'invalid') : ''}
-                aria-invalid={touched.email && !validation.email}
-                aria-describedby="email-status"
-              />
+              <div className="input-wrapper">
+                <MailIcon />
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  onBlur={() => handleBlur('email')}
+                  placeholder="your@email.com"
+                  required
+                  aria-required="true"
+                  autoComplete="email"
+                  className={touched.email ? (validation.email ? 'valid' : 'invalid') : ''}
+                  aria-invalid={touched.email && !validation.email}
+                  aria-describedby="email-status"
+                />
+              </div>
               <button
                 type="button"
                 className={getCheckButtonClass('email')}
@@ -350,6 +447,9 @@ const Register: React.FC = () => {
                 aria-busy={duplicateCheck.email.loading}
                 aria-label={`이메일 중복확인 ${duplicateCheck.email.checked ? (duplicateCheck.email.available ? '사용 가능' : '중복됨') : ''}`}
               >
+                {duplicateCheck.email.loading && (
+                  <span className="spinner small" aria-hidden="true" />
+                )}
                 {getCheckButtonText('email')}
               </button>
             </div>
@@ -374,22 +474,33 @@ const Register: React.FC = () => {
             <label htmlFor="password">
               비밀번호 <span className="sr-only">(필수)</span>
             </label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              onBlur={() => handleBlur('password')}
-              placeholder="8자 이상의 비밀번호"
-              required
-              aria-required="true"
-              minLength={8}
-              autoComplete="new-password"
-              className={touched.password ? (validation.password ? 'valid' : 'invalid') : ''}
-              aria-invalid={touched.password && !validation.password}
-              aria-describedby="password-strength password-error"
-            />
+            <div className="input-wrapper">
+              <LockIcon />
+              <input
+                type={showPassword ? 'text' : 'password'}
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                onBlur={() => handleBlur('password')}
+                placeholder="8자 이상의 비밀번호"
+                required
+                aria-required="true"
+                minLength={8}
+                autoComplete="new-password"
+                className={touched.password ? (validation.password ? 'valid' : 'invalid') : ''}
+                aria-invalid={touched.password && !validation.password}
+                aria-describedby="password-strength password-error"
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? '비밀번호 숨기기' : '비밀번호 표시'}
+              >
+                {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+              </button>
+            </div>
             {formData.password && (
               <div
                 className="password-strength"
@@ -436,25 +547,38 @@ const Register: React.FC = () => {
             <label htmlFor="confirmPassword">
               비밀번호 확인 <span className="sr-only">(필수)</span>
             </label>
-            <input
-              type="password"
-              id="confirmPassword"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              onBlur={() => handleBlur('confirmPassword')}
-              placeholder="비밀번호를 다시 입력하세요"
-              required
-              aria-required="true"
-              autoComplete="new-password"
-              className={
-                touched.confirmPassword ? (validation.confirmPassword ? 'valid' : 'invalid') : ''
-              }
-              aria-invalid={
-                touched.confirmPassword && !validation.confirmPassword && !!formData.confirmPassword
-              }
-              aria-describedby="confirm-password-status"
-            />
+            <div className="input-wrapper">
+              <LockIcon />
+              <input
+                type={showConfirmPassword ? 'text' : 'password'}
+                id="confirmPassword"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                onBlur={() => handleBlur('confirmPassword')}
+                placeholder="비밀번호를 다시 입력하세요"
+                required
+                aria-required="true"
+                autoComplete="new-password"
+                className={
+                  touched.confirmPassword ? (validation.confirmPassword ? 'valid' : 'invalid') : ''
+                }
+                aria-invalid={
+                  touched.confirmPassword &&
+                  !validation.confirmPassword &&
+                  !!formData.confirmPassword
+                }
+                aria-describedby="confirm-password-status"
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                aria-label={showConfirmPassword ? '비밀번호 숨기기' : '비밀번호 표시'}
+              >
+                {showConfirmPassword ? <EyeOffIcon /> : <EyeIcon />}
+              </button>
+            </div>
             {touched.confirmPassword && !validation.confirmPassword && formData.confirmPassword && (
               <span id="confirm-password-status" className="validation-message error" role="alert">
                 비밀번호가 일치하지 않습니다
@@ -473,7 +597,14 @@ const Register: React.FC = () => {
           </div>
 
           <button type="submit" className="auth-btn" disabled={loading} aria-busy={loading}>
-            {loading ? '가입 중...' : '회원가입'}
+            {loading ? (
+              <>
+                <span className="spinner" aria-hidden="true" />
+                <span>가입 중...</span>
+              </>
+            ) : (
+              <span>회원가입</span>
+            )}
           </button>
         </form>
 
