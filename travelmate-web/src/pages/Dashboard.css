@@ -65,6 +65,19 @@
   margin: 0;
 }
 
+.dashboard-header .greeting-text {
+  font-size: 20px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 4px;
+}
+
+.dashboard-header .sub-text {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 8px;
+}
+
 /* Stats Grid - Bento Style */
 .dashboard-stats {
   display: grid;
@@ -117,6 +130,28 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.stat-icon svg {
+  width: 28px;
+  height: 28px;
+  stroke: #c4b5fd;
+}
+
+.stat-icon.online {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.3) 0%, rgba(5, 150, 105, 0.3) 100%);
+}
+
+.stat-icon.online svg {
+  stroke: #6ee7b7;
+}
+
+.stat-icon.explore {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(37, 99, 235, 0.3) 100%);
+}
+
+.stat-icon.explore svg {
+  stroke: #93c5fd;
+}
+
 .stat-content {
   flex: 1;
 }
@@ -164,6 +199,76 @@
   font-size: 24px;
   flex-shrink: 0;
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.location-icon svg {
+  width: 24px;
+  height: 24px;
+  stroke: #fcd34d;
+}
+
+/* Skeleton Loading */
+.location-skeleton {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 24px;
+  padding: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  margin-bottom: 32px;
+  animation: fadeUp 0.6s ease-out 0.2s both;
+}
+
+.skeleton-icon {
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.1) 25%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0.1) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 16px;
+}
+
+.skeleton-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skeleton-line {
+  height: 16px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.1) 25%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0.1) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+  width: 100%;
+}
+
+.skeleton-line.short {
+  width: 40%;
+  height: 12px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 .location-content {
@@ -252,6 +357,11 @@
   gap: 6px;
 }
 
+.location-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
 .location-btn.primary {
   background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
   color: white;
@@ -290,6 +400,22 @@
 /* Mood Selector */
 .mood-selector {
   margin-bottom: 40px;
+  border: none;
+  padding: 0;
+}
+
+.mood-selector legend {
+  font-size: 15px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 16px;
+  text-align: center;
+  width: 100%;
+}
+
+.mood-selector .legend-text {
+  display: block;
+  text-align: center;
 }
 
 .mood-selector h4 {
@@ -408,6 +534,31 @@
   box-shadow: 0 0 30px rgba(139, 92, 246, 0.6);
 }
 
+/* Radar Rings */
+.radar-ring {
+  position: absolute;
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.radar-ring.ring-1 {
+  width: 40%;
+  height: 40%;
+}
+
+.radar-ring.ring-2 {
+  width: 65%;
+  height: 65%;
+}
+
+.radar-ring.ring-3 {
+  width: 90%;
+  height: 90%;
+}
+
 .discovery-btn {
   display: inline-flex;
   align-items: center;
@@ -435,6 +586,31 @@
   opacity: 0.7;
   cursor: not-allowed;
   transform: none;
+}
+
+.discovery-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.discovery-btn.discovering {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+}
+
+/* Spinner Animation */
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .discovery-info {
