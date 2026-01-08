@@ -3,6 +3,21 @@ import { useNavigate } from 'react-router-dom';
 import { useQuickSearch, useAutocomplete } from '../hooks/useSearch';
 import './SearchBar.css';
 
+const SearchIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className="search-icon"
+  >
+    <circle cx="11" cy="11" r="8" />
+    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+  </svg>
+);
+
 const SearchBar: React.FC = () => {
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
@@ -107,7 +122,10 @@ const SearchBar: React.FC = () => {
           aria-activedescendant={selectedIndex >= 0 ? `search-option-${selectedIndex}` : undefined}
         />
         <button className="search-button" onClick={handleSearch} aria-label="검색 실행">
-          <span aria-hidden="true">🔍</span> 검색
+          <span aria-hidden="true">
+            <SearchIcon />
+          </span>{' '}
+          검색
         </button>
       </div>
 
@@ -132,7 +150,10 @@ const SearchBar: React.FC = () => {
               onClick={() => handleSuggestionClick(suggestion)}
               onMouseEnter={() => setSelectedIndex(index)}
             >
-              <span aria-hidden="true">🔍</span> {suggestion}
+              <span className="suggestion-icon" aria-hidden="true">
+                <SearchIcon />
+              </span>{' '}
+              {suggestion}
             </div>
           ))}
         </div>

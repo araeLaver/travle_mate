@@ -2,6 +2,20 @@ import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from './Toast';
 
+const LoadingIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    style={{ width: '48px', height: '48px', animation: 'spin 1s linear infinite' }}
+  >
+    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+  </svg>
+);
+
 const AuthCallback: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -127,11 +141,23 @@ const AuthCallback: React.FC = () => {
         justifyContent: 'center',
         height: '100vh',
         textAlign: 'center',
+        background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%)',
+        color: 'white',
       }}
     >
-      <div style={{ marginBottom: '20px', fontSize: '24px' }}>🔄</div>
+      <style>
+        {`
+          @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+        `}
+      </style>
+      <div style={{ marginBottom: '20px', color: '#a78bfa' }} aria-hidden="true">
+        <LoadingIcon />
+      </div>
       <h2>로그인 처리 중...</h2>
-      <p>잠시만 기다려주세요.</p>
+      <p style={{ color: 'rgba(255, 255, 255, 0.7)' }}>잠시만 기다려주세요.</p>
     </div>
   );
 };
