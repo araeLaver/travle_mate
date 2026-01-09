@@ -5,6 +5,7 @@ import { chatService } from '../services/chatService';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../components/Toast';
 import { getErrorMessage, logError } from '../utils/errorHandler';
+import WalletButton from '../components/wallet/WalletButton';
 
 // SVG Icons
 const UsersIcon = () => (
@@ -293,8 +294,13 @@ const Dashboard: React.FC = () => {
     <div className="dashboard">
       <div className="dashboard-content">
         <header className="dashboard-header">
-          <p className="greeting-text">{getTimeGreeting()},</p>
-          <h1>{userName}님!</h1>
+          <div className="header-top">
+            <div className="header-greeting">
+              <p className="greeting-text">{getTimeGreeting()},</p>
+              <h1>{userName}님!</h1>
+            </div>
+            <WalletButton variant="compact" />
+          </div>
           <p className="sub-text">오늘도 멋진 여행을 만들어보세요</p>
         </header>
 
@@ -541,6 +547,16 @@ const Dashboard: React.FC = () => {
           <h2>빠른 액션</h2>
           <div className="actions-grid">
             <button
+              className="action-card nft-card"
+              onClick={() => navigate('/nft')}
+              aria-label="NFT 수집하기"
+            >
+              <div className="action-icon nft" aria-hidden="true">
+                <span className="nft-emoji">🎨</span>
+              </div>
+              <div className="action-label">NFT 수집</div>
+            </button>
+            <button
               className="action-card"
               onClick={() => navigate('/groups/create')}
               aria-label="여행 그룹 만들기"
@@ -579,6 +595,16 @@ const Dashboard: React.FC = () => {
                 <UserIcon />
               </div>
               <div className="action-label">내 프로필</div>
+            </button>
+            <button
+              className="action-card"
+              onClick={() => navigate('/wallet')}
+              aria-label="지갑 연결"
+            >
+              <div className="action-icon" aria-hidden="true">
+                <span className="nft-emoji">💰</span>
+              </div>
+              <div className="action-label">지갑 연결</div>
             </button>
           </div>
         </nav>

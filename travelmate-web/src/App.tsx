@@ -16,6 +16,10 @@ import ChatList from './pages/ChatList';
 import Groups from './pages/Groups';
 import CreateGroup from './pages/CreateGroup';
 import Profile from './pages/Profile';
+import NFTMap from './pages/NFTMap';
+import NFTCollection from './pages/NFTCollection';
+import Leaderboard from './pages/Leaderboard';
+import WalletConnect from './pages/WalletConnect';
 import AuthCallback from './components/AuthCallback';
 import { ProtectedRoute, AuthRequiredRoute } from './components/auth/ProtectedRoute';
 import { TutorialProvider, useTutorial } from './contexts/TutorialContext';
@@ -107,6 +111,58 @@ function App() {
                     <ProtectedRoute>
                       <Layout>
                         <Profile />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* NFT 수집 지도 페이지 */}
+                <Route
+                  path="/nft"
+                  element={
+                    <ProtectedRoute>
+                      <NFTMap />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* NFT 컬렉션 페이지 */}
+                <Route
+                  path="/nft/collection"
+                  element={
+                    <ProtectedRoute>
+                      <NFTCollection />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* 포인트/리더보드 페이지 */}
+                <Route
+                  path="/leaderboard"
+                  element={
+                    <ProtectedRoute>
+                      <Leaderboard />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* 포인트 페이지 (리더보드 별칭) */}
+                <Route
+                  path="/points"
+                  element={
+                    <ProtectedRoute>
+                      <Leaderboard />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* 지갑 연결 페이지 */}
+                <Route
+                  path="/wallet"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <WalletConnect />
                       </Layout>
                     </ProtectedRoute>
                   }

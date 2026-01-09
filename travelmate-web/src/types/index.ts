@@ -333,3 +333,293 @@ export interface UserProfileUpdateRequest {
   languages?: string[];
   travelStyle?: string;
 }
+
+// ===== NFT 관련 타입 =====
+
+export type Rarity = 'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY';
+export type LocationCategory =
+  | 'LANDMARK'
+  | 'MUSEUM'
+  | 'PARK'
+  | 'TEMPLE'
+  | 'BEACH'
+  | 'MOUNTAIN'
+  | 'HISTORIC'
+  | 'CULTURAL'
+  | 'ENTERTAINMENT'
+  | 'FOOD'
+  | 'SHOPPING'
+  | 'NATURE'
+  | 'HIDDEN_GEM';
+export type MintStatus = 'PENDING' | 'MINTING' | 'CONFIRMING' | 'MINTED' | 'FAILED';
+export type ListingStatus = 'ACTIVE' | 'SOLD' | 'CANCELLED' | 'EXPIRED';
+export type PointTransactionType = 'EARN' | 'SPEND' | 'TRANSFER_IN' | 'TRANSFER_OUT';
+export type PointSource =
+  | 'NFT_COLLECT'
+  | 'ACHIEVEMENT'
+  | 'MARKETPLACE_SALE'
+  | 'MARKETPLACE_PURCHASE'
+  | 'TRANSFER'
+  | 'DAILY_BONUS'
+  | 'EVENT'
+  | 'REFERRAL'
+  | 'ADMIN';
+export type AchievementType = 'COLLECTION' | 'EXPLORATION' | 'SOCIAL' | 'STREAK' | 'SPECIAL';
+
+// 포인트 관련
+export interface PointBalanceResponse {
+  totalPoints: number;
+  lifetimeEarned: number;
+  lifetimeSpent: number;
+  seasonPoints: number;
+  currentRank: number;
+}
+
+export interface PointTransactionResponse {
+  id: number;
+  type: PointTransactionType;
+  amount: number;
+  balanceAfter: number;
+  source: PointSource;
+  description: string;
+  createdAt: string;
+}
+
+export interface PointTransferRequest {
+  receiverId: number;
+  amount: number;
+  message?: string;
+}
+
+export interface LeaderboardEntry {
+  rank: number;
+  userId: number;
+  nickname: string;
+  profileImageUrl?: string;
+  totalPoints: number;
+  totalNftsCollected: number;
+}
+
+// NFT 수집 장소 관련
+export interface CollectibleLocationResponse {
+  id: number;
+  name: string;
+  description?: string;
+  latitude: number;
+  longitude: number;
+  collectRadius: number;
+  category: LocationCategory;
+  rarity: Rarity;
+  country?: string;
+  city?: string;
+  region?: string;
+  imageUrl?: string;
+  nftImageUrl?: string;
+  pointReward: number;
+  isCollected: boolean;
+  isSeasonalEvent: boolean;
+  eventEndAt?: string;
+  distance?: number; // 현재 위치로부터의 거리 (m)
+}
+
+export interface CollectibleLocationSummary {
+  id: number;
+  name: string;
+  imageUrl?: string;
+  nftImageUrl?: string;
+  rarity: Rarity;
+  category: LocationCategory;
+  city?: string;
+  country?: string;
+}
+
+// NFT 수집 요청/응답
+export interface CollectNftRequest {
+  locationId: number;
+  latitude: number;
+  longitude: number;
+  gpsAccuracy?: number;
+  deviceId?: string;
+  isMockLocation?: boolean;
+}
+
+export interface CollectNftResponse {
+  success: boolean;
+  message: string;
+  nftCollection?: UserNftCollectionResponse;
+  earnedPoints?: number;
+  unlockedAchievements?: AchievementUnlocked[];
+}
+
+export interface AchievementUnlocked {
+  achievementId: number;
+  name: string;
+  description: string;
+  iconUrl?: string;
+  rarity: Rarity;
+  pointReward: number;
+}
+
+export interface UserNftCollectionResponse {
+  id: number;
+  location: CollectibleLocationSummary;
+  tokenId?: string;
+  mintStatus: MintStatus;
+  collectedAt: string;
+  earnedPoints: number;
+  isVerified: boolean;
+}
+
+// 업적 관련
+export interface AchievementResponse {
+  id: number;
+  code: string;
+  name: string;
+  description: string;
+  iconUrl?: string;
+  badgeImageUrl?: string;
+  type: AchievementType;
+  rarity: Rarity;
+  pointReward: number;
+  grantsBadgeNft: boolean;
+  currentProgress: number;
+  targetProgress: number;
+  isCompleted: boolean;
+  completedAt?: string;
+}
+
+export interface AchievementStatsResponse {
+  totalAchievements: number;
+  completedAchievements: number;
+  totalPointsFromAchievements: number;
+  badgeNftsEarned: number;
+}
+
+// 도감 관련
+export interface CollectionBookResponse {
+  stats: CollectionStats;
+  regions: RegionCollection[];
+  categories: CategoryCollection[];
+}
+
+export interface CollectionStats {
+  totalLocations: number;
+  collectedLocations: number;
+  completionRate: number;
+  commonCollected: number;
+  rareCollected: number;
+  epicCollected: number;
+  legendaryCollected: number;
+}
+
+export interface RegionCollection {
+  region: string;
+  country: string;
+  total: number;
+  collected: number;
+  completionRate: number;
+}
+
+export interface CategoryCollection {
+  category: LocationCategory;
+  total: number;
+  collected: number;
+  completionRate: number;
+}
+
+// 마켓플레이스 관련
+export interface CreateListingRequest {
+  nftCollectionId: number;
+  priceInPoints: number;
+  durationDays?: number;
+}
+
+export interface MarketplaceListingResponse {
+  id: number;
+  nftCollection: UserNftCollectionResponse;
+  seller: SellerInfo;
+  priceInPoints: number;
+  status: ListingStatus;
+  listedAt: string;
+  expiresAt?: string;
+}
+
+export interface SellerInfo {
+  id: number;
+  nickname: string;
+  profileImageUrl?: string;
+}
+
+export interface BuyNftResponse {
+  success: boolean;
+  message: string;
+  nftCollection?: UserNftCollectionResponse;
+  pointsSpent?: number;
+  remainingBalance?: number;
+}
+
+// 지갑 관련
+export interface SignMessageResponse {
+  message: string;
+  nonce: string;
+  timestamp: number;
+  expiresAt: number;
+}
+
+export interface VerifySignatureRequest {
+  walletAddress: string;
+  message: string;
+  signature: string;
+}
+
+export interface WalletConnectionResponse {
+  success: boolean;
+  walletAddress?: string;
+  isVerified: boolean;
+  message: string;
+  walletInfo?: WalletInfo;
+}
+
+export interface WalletInfo {
+  address: string;
+  balance: string;
+  balanceFormatted: string;
+  nftCount: number;
+  networkName: string;
+  chainId: number;
+  connectedAt?: string;
+  verifiedAt?: string;
+}
+
+export interface WalletStatusResponse {
+  isConnected: boolean;
+  isVerified: boolean;
+  walletAddress?: string;
+  walletInfo?: WalletInfo;
+}
+
+export interface NetworkInfo {
+  name: string;
+  chainId: number;
+  rpcUrl: string;
+  currencySymbol: string;
+  blockExplorerUrl: string;
+  contractAddress: string;
+  isTestnet: boolean;
+}
+
+export interface DisconnectWalletResponse {
+  success: boolean;
+  message: string;
+}
+
+// 사용자 NFT 통계
+export interface UserNftStatsResponse {
+  totalNftsCollected: number;
+  uniqueLocationsVisited: number;
+  totalPointsEarned: number;
+  globalRank: number;
+  regionRank: number;
+  completedAchievements: number;
+  collectionStats: CollectionStats;
+}

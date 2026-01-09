@@ -1140,3 +1140,59 @@
     justify-content: center;
   }
 }
+
+/* Header Top with Wallet Button */
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.header-greeting {
+  text-align: left;
+}
+
+.header-greeting .greeting-text {
+  text-align: left;
+}
+
+.header-greeting h1 {
+  text-align: left;
+}
+
+/* NFT Card Style */
+.action-card.nft-card {
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.2), rgba(139, 92, 246, 0.3));
+  border: 1px solid rgba(167, 139, 250, 0.4);
+}
+
+.action-card.nft-card:hover {
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.3), rgba(139, 92, 246, 0.4));
+  border-color: rgba(167, 139, 250, 0.6);
+}
+
+.action-icon.nft {
+  background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+}
+
+.nft-emoji {
+  font-size: 24px;
+}
+
+@media (max-width: 768px) {
+  .header-top {
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .header-greeting {
+    text-align: center;
+  }
+
+  .header-greeting .greeting-text,
+  .header-greeting h1 {
+    text-align: center;
+  }
+}

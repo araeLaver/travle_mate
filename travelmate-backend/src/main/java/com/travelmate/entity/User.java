@@ -145,6 +145,25 @@ public class User {
     @Column(name = "role", nullable = false)
     private Role role = Role.USER;
 
+    // NFT & 블록체인 관련 필드
+    @Column(name = "polygon_wallet_address", length = 100)
+    private String polygonWalletAddress;
+
+    @Column(name = "is_wallet_verified", nullable = false)
+    private Boolean isWalletVerified = false;
+
+    @Column(name = "total_nfts_collected", nullable = false)
+    private Integer totalNftsCollected = 0;
+
+    @Column(name = "unique_locations_visited", nullable = false)
+    private Integer uniqueLocationsVisited = 0;
+
+    @Column(name = "global_rank")
+    private Integer globalRank;
+
+    @Column(name = "region_rank")
+    private Integer regionRank;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RefreshToken> refreshTokens;
 

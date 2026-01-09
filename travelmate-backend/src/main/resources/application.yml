@@ -142,6 +142,22 @@ app:
     rate-limit:
       enabled: false  # 개발환경에서는 비활성화
 
+# 블록체인 설정 (Polygon)
+blockchain:
+  enabled: ${BLOCKCHAIN_ENABLED:false}
+  polygon:
+    rpc-url: ${POLYGON_RPC_URL:https://polygon-amoy.g.alchemy.com/v2/demo}
+    chain-id: ${POLYGON_CHAIN_ID:80002}
+    contract-address: ${NFT_CONTRACT_ADDRESS:}
+    private-key: ${BLOCKCHAIN_PRIVATE_KEY:}
+
+# IPFS 설정
+ipfs:
+  enabled: ${IPFS_ENABLED:false}
+  gateway-url: ${IPFS_GATEWAY_URL:https://ipfs.io/ipfs/}
+  api-url: ${IPFS_API_URL:}
+  api-key: ${IPFS_API_KEY:}
+
 ---
 # 운영 환경 설정 (PostgreSQL)
 spring:

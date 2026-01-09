@@ -117,6 +117,20 @@
             <version>2.6.0</version>
         </dependency>
 
+        <!-- Web3j for Polygon Blockchain Integration -->
+        <dependency>
+            <groupId>org.web3j</groupId>
+            <artifactId>core</artifactId>
+            <version>4.10.3</version>
+        </dependency>
+
+        <!-- IPFS for NFT Metadata Storage -->
+        <dependency>
+            <groupId>com.github.ipfs</groupId>
+            <artifactId>java-ipfs-http-client</artifactId>
+            <version>1.4.4</version>
+        </dependency>
+
         <!-- Utility -->
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -138,6 +152,13 @@
         </dependency>
     </dependencies>
     
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
+
     <build>
         <plugins>
             <plugin>

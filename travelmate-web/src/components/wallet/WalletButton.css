@@ -1,0 +1,147 @@
+.wallet-btn-container {
+  display: inline-block;
+}
+
+.wallet-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.wallet-btn.connected {
+  background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%);
+  border: 1px solid #667eea40;
+  color: #333;
+}
+
+.wallet-btn.connected:hover {
+  background: linear-gradient(135deg, #667eea30 0%, #764ba230 100%);
+  transform: translateY(-1px);
+}
+
+.wallet-btn.not-connected {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.wallet-btn.not-connected:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.wallet-btn.not-connected:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.wallet-btn-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.wallet-icon-img {
+  width: 28px;
+  height: 28px;
+}
+
+.wallet-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.wallet-label {
+  font-size: 11px;
+  color: #888;
+}
+
+.wallet-address-full {
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Monaco', 'Menlo', monospace;
+  color: #333;
+}
+
+.wallet-balance {
+  margin-left: auto;
+  font-size: 14px;
+  font-weight: 600;
+  color: #667eea;
+}
+
+.spinner-small {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Compact variant */
+.wallet-btn-compact {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  background: #f0f0f5;
+  color: #333;
+  transition: all 0.2s;
+}
+
+.wallet-btn-compact:hover {
+  background: #e5e5ee;
+}
+
+.wallet-btn-compact.connected {
+  background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+  border: 1px solid #667eea30;
+}
+
+.wallet-btn-compact .wallet-icon {
+  font-size: 16px;
+}
+
+.wallet-btn-compact .wallet-address {
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 12px;
+}
+
+.loading-dot {
+  width: 8px;
+  height: 8px;
+  background: #667eea;
+  border-radius: 50%;
+  animation: pulse 0.8s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+  }
+}

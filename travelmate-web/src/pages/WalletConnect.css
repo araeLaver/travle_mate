@@ -1,0 +1,430 @@
+.wallet-connect-page {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 24px 16px;
+  min-height: 100vh;
+}
+
+.wallet-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.wallet-header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 8px;
+}
+
+.wallet-header p {
+  font-size: 16px;
+  color: #666;
+}
+
+/* 연결 안내 섹션 */
+.wallet-intro {
+  background: white;
+  border-radius: 16px;
+  padding: 32px 24px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.intro-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.intro-icon svg {
+  width: 40px;
+  height: 40px;
+  color: white;
+}
+
+.wallet-intro h2 {
+  font-size: 22px;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin-bottom: 12px;
+}
+
+.wallet-intro > p {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.features-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #333;
+}
+
+.feature-icon {
+  font-size: 20px;
+}
+
+/* MetaMask 설치 안내 */
+.metamask-install {
+  padding: 20px;
+  background: #fff3cd;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.warning-text {
+  color: #856404;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.install-btn {
+  display: inline-block;
+  padding: 12px 24px;
+  background: #f6851b;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.install-btn:hover {
+  background: #e2761b;
+}
+
+/* 연결 버튼 */
+.connect-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 300px;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+.connect-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.connect-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.metamask-logo {
+  width: 28px;
+  height: 28px;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error-message {
+  margin-top: 16px;
+  padding: 12px;
+  background: #fee;
+  color: #c00;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+/* 연결된 상태 */
+.wallet-connected {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.connection-status {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 20px;
+}
+
+.status-badge.verified {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-badge.pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.network-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 20px;
+}
+
+.network-badge.testnet {
+  background: #e7f3ff;
+  color: #0056b3;
+}
+
+.network-badge.mainnet {
+  background: #d4edda;
+  color: #155724;
+}
+
+/* 지갑 카드 */
+.wallet-card {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.wallet-card-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e9ecef;
+  margin-bottom: 16px;
+}
+
+.wallet-logo {
+  width: 48px;
+  height: 48px;
+}
+
+.wallet-address-section {
+  flex: 1;
+}
+
+.wallet-address-section .label {
+  display: block;
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.wallet-address-section .address {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a2e;
+  font-family: 'Monaco', 'Menlo', monospace;
+}
+
+.wallet-details {
+  margin-bottom: 16px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  font-size: 14px;
+  color: #666;
+}
+
+.detail-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.contract-address {
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 12px;
+}
+
+/* 네트워크 정보 */
+.network-details {
+  background: #e9ecef;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.network-details h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+.explorer-link {
+  display: inline-block;
+  margin-top: 12px;
+  color: #667eea;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.explorer-link:hover {
+  text-decoration: underline;
+}
+
+/* 액션 버튼들 */
+.wallet-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    transform 0.2s;
+}
+
+.action-btn.primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.action-btn.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.action-btn.secondary {
+  background: #f0f0f5;
+  color: #333;
+}
+
+.action-btn.secondary:hover {
+  background: #e5e5ee;
+}
+
+.action-btn.danger {
+  background: transparent;
+  color: #dc3545;
+  border: 1px solid #dc3545;
+}
+
+.action-btn.danger:hover {
+  background: #dc3545;
+  color: white;
+}
+
+/* 안내 섹션 */
+.info-section {
+  margin-top: 32px;
+  padding: 24px;
+  background: #f8f9fa;
+  border-radius: 12px;
+}
+
+.info-section h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin-bottom: 8px;
+  margin-top: 20px;
+}
+
+.info-section h3:first-child {
+  margin-top: 0;
+}
+
+.info-section p {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+}
+
+.info-section a {
+  color: #667eea;
+  text-decoration: none;
+  margin-left: 4px;
+}
+
+.info-section a:hover {
+  text-decoration: underline;
+}
+
+/* 반응형 */
+@media (max-width: 480px) {
+  .wallet-connect-page {
+    padding: 16px;
+  }
+
+  .wallet-header h1 {
+    font-size: 24px;
+  }
+
+  .features-list {
+    grid-template-columns: 1fr;
+  }
+
+  .wallet-card-header {
+    flex-direction: column;
+    text-align: center;
+  }
+}
