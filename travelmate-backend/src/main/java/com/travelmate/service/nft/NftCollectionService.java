@@ -16,6 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -55,11 +58,16 @@ public class NftCollectionService {
         List<CollectibleLocation> locations = collectibleLocationRepository
                 .findNearbyActiveLocations(latitude, longitude, radiusKm);
 
+        // N+1 방지: 수집한 장소 ID를 한 번에 조회
+        Set<Long> collectedLocationIds = userId != null
+                ? Set.copyOf(userNftCollectionRepository.findCollectedLocationIdsByUserId(userId))
+                : Set.of();
+
         return locations.stream()
                 .map(loc -> {
                     double distance = gpsVerificationService.calculateDistance(
                             latitude, longitude, loc.getLatitude(), loc.getLongitude());
-                    return toCollectibleLocationResponse(loc, userId, distance);
+                    return toCollectibleLocationResponseWithSet(loc, collectedLocationIds, distance);
                 })
                 .toList();
     }
@@ -231,11 +239,18 @@ public class NftCollectionService {
         int totalLocations = (int) collectibleLocationRepository.count();
         int collectedLocations = userNftCollectionRepository.countDistinctLocationsByUserId(userId);
 
-        // 희귀도별 통계
-        int commonCollected = userNftCollectionRepository.countByUserIdAndRarity(userId, Rarity.COMMON);
-        int rareCollected = userNftCollectionRepository.countByUserIdAndRarity(userId, Rarity.RARE);
-        int epicCollected = userNftCollectionRepository.countByUserIdAndRarity(userId, Rarity.EPIC);
-        int legendaryCollected = userNftCollectionRepository.countByUserIdAndRarity(userId, Rarity.LEGENDARY);
+        // 희귀도별 통계 - N+1 방지: 단일 쿼리로 모든 희귀도 집계
+        Map<Rarity, Integer> rarityCounts = userNftCollectionRepository.countByUserIdGroupByRarity(userId)
+                .stream()
+                .collect(Collectors.toMap(
+                        row -> (Rarity) row[0],
+                        row -> ((Number) row[1]).intValue()
+                ));
+
+        int commonCollected = rarityCounts.getOrDefault(Rarity.COMMON, 0);
+        int rareCollected = rarityCounts.getOrDefault(Rarity.RARE, 0);
+        int epicCollected = rarityCounts.getOrDefault(Rarity.EPIC, 0);
+        int legendaryCollected = rarityCounts.getOrDefault(Rarity.LEGENDARY, 0);
 
         NftDto.CollectionStats stats = NftDto.CollectionStats.builder()
                 .totalLocations(totalLocations)
@@ -306,6 +321,38 @@ public class NftCollectionService {
 
         boolean isCollected = userId != null &&
                 userNftCollectionRepository.existsByUserIdAndLocationId(userId, loc.getId());
+
+        return NftDto.CollectibleLocationResponse.builder()
+                .id(loc.getId())
+                .name(loc.getName())
+                .description(loc.getDescription())
+                .latitude(loc.getLatitude())
+                .longitude(loc.getLongitude())
+                .collectRadius(loc.getCollectRadius() != null ? loc.getCollectRadius().intValue() : 50)
+                .category(loc.getCategory())
+                .rarity(loc.getRarity())
+                .country(loc.getCountry())
+                .city(loc.getCity())
+                .region(loc.getRegion())
+                .imageUrl(loc.getImageUrl())
+                .nftImageUrl(loc.getNftImageUrl())
+                .pointReward(loc.getPointReward() != null ? loc.getPointReward().longValue() : 0L)
+                .isCollected(isCollected)
+                .isSeasonalEvent(loc.getIsSeasonalEvent())
+                .eventEndAt(loc.getEventEndAt())
+                .distance(distance)
+                .build();
+    }
+
+    /**
+     * 배치 조회된 수집 장소 ID Set을 사용하여 응답 생성 (N+1 방지)
+     */
+    private NftDto.CollectibleLocationResponse toCollectibleLocationResponseWithSet(
+            CollectibleLocation loc,
+            Set<Long> collectedLocationIds,
+            Double distance) {
+
+        boolean isCollected = collectedLocationIds.contains(loc.getId());
 
         return NftDto.CollectibleLocationResponse.builder()
                 .id(loc.getId())

@@ -311,8 +311,9 @@ public class UserService {
     
     @Transactional(readOnly = true)
     public List<UserDto.ReviewResponse> getUserReviews(Long userId) {
-        List<UserReview> reviews = userReviewRepository.findByRevieweeId(userId);
-        
+        // N+1 방지: reviewer를 함께 로드
+        List<UserReview> reviews = userReviewRepository.findByRevieweeIdWithReviewer(userId);
+
         return reviews.stream()
             .map(this::convertToReviewDto)
             .collect(Collectors.toList());

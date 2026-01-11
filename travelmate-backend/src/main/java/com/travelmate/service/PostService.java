@@ -222,13 +222,16 @@ public class PostService {
     }
 
     private void savePostImages(Post post, List<String> imageUrls) {
+        // 배치 저장으로 N+1 방지
+        List<PostImage> postImages = new ArrayList<>();
         for (int i = 0; i < imageUrls.size(); i++) {
             PostImage postImage = new PostImage();
             postImage.setPost(post);
             postImage.setImageUrl(imageUrls.get(i));
             postImage.setDisplayOrder(i);
-            postImageRepository.save(postImage);
+            postImages.add(postImage);
         }
+        postImageRepository.saveAll(postImages);
     }
 
     private PostDto.Response convertToDto(Post post) {

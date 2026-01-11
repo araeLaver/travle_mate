@@ -10,7 +10,16 @@ import java.util.List;
 
 @Repository
 public interface UserReviewRepository extends JpaRepository<UserReview, Long> {
-    
+
+    /**
+     * 리뷰 조회 시 reviewer 함께 로드하여 N+1 방지
+     */
+    @Query("SELECT r FROM UserReview r " +
+           "LEFT JOIN FETCH r.reviewer " +
+           "WHERE r.reviewee.id = :revieweeId " +
+           "ORDER BY r.createdAt DESC")
+    List<UserReview> findByRevieweeIdWithReviewer(@Param("revieweeId") Long revieweeId);
+
     List<UserReview> findByRevieweeId(Long revieweeId);
 
     List<UserReview> findByReviewerId(Long reviewerId);

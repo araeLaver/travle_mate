@@ -179,4 +179,27 @@ public interface UserNftCollectionRepository extends JpaRepository<UserNftCollec
            "WHERE nc.user.id = :userId AND nc.walletAddress = :walletAddress AND nc.mintStatus = 'MINTED'")
     List<UserNftCollection> findMintedByUserIdAndWalletAddress(
             @Param("userId") Long userId, @Param("walletAddress") String walletAddress);
+
+    /**
+     * 사용자의 희귀도별 수집 수 일괄 조회 (N+1 방지)
+     * 결과: [0]=COMMON, [1]=RARE, [2]=EPIC, [3]=LEGENDARY 순서
+     */
+    @Query("SELECT nc.location.rarity, COUNT(nc) FROM UserNftCollection nc " +
+           "WHERE nc.user.id = :userId GROUP BY nc.location.rarity")
+    List<Object[]> countByUserIdGroupByRarity(@Param("userId") Long userId);
+
+    /**
+     * 사용자가 수집한 장소 ID 목록 조회 (배치 체크용)
+     */
+    @Query("SELECT nc.location.id FROM UserNftCollection nc WHERE nc.user.id = :userId")
+    List<Long> findCollectedLocationIdsByUserId(@Param("userId") Long userId);
+
+    /**
+     * NFT 컬렉션 조회 시 location 함께 로드 (N+1 방지)
+     */
+    @Query("SELECT nc FROM UserNftCollection nc " +
+           "LEFT JOIN FETCH nc.location " +
+           "WHERE nc.user.id = :userId " +
+           "ORDER BY nc.collectedAt DESC")
+    Page<UserNftCollection> findByUserIdWithLocation(@Param("userId") Long userId, Pageable pageable);
 }

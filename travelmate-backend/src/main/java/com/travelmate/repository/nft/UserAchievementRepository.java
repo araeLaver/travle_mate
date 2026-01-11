@@ -62,4 +62,22 @@ public interface UserAchievementRepository extends JpaRepository<UserAchievement
     @Query("SELECT ua FROM UserAchievement ua WHERE ua.user.id = :userId " +
            "AND ua.isCompleted = true ORDER BY ua.completedAt DESC")
     List<UserAchievement> findRecentlyCompletedByUserId(@Param("userId") Long userId);
+
+    /**
+     * 사용자의 모든 업적을 Achievement와 함께 로드 (N+1 방지)
+     */
+    @Query("SELECT ua FROM UserAchievement ua " +
+           "LEFT JOIN FETCH ua.achievement " +
+           "WHERE ua.user.id = :userId")
+    List<UserAchievement> findByUserIdWithAchievement(@Param("userId") Long userId);
+
+    /**
+     * 사용자의 여러 업적을 한 번에 조회 (배치 조회)
+     */
+    @Query("SELECT ua FROM UserAchievement ua " +
+           "LEFT JOIN FETCH ua.achievement " +
+           "WHERE ua.user.id = :userId AND ua.achievement.id IN :achievementIds")
+    List<UserAchievement> findByUserIdAndAchievementIds(
+            @Param("userId") Long userId,
+            @Param("achievementIds") List<Long> achievementIds);
 }

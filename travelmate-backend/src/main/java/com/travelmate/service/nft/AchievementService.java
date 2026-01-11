@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -39,8 +40,21 @@ public class AchievementService {
     public List<NftDto.AchievementResponse> getAllAchievements(Long userId) {
         List<Achievement> achievements = achievementRepository.findByIsActiveTrueOrderByDisplayOrderAsc();
 
+        // N+1 방지: 모든 업적 ID를 한 번에 조회
+        List<Long> achievementIds = achievements.stream()
+                .map(Achievement::getId)
+                .toList();
+
+        Map<Long, UserAchievement> userAchievementMap = userAchievementRepository
+                .findByUserIdAndAchievementIds(userId, achievementIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        ua -> ua.getAchievement().getId(),
+                        ua -> ua
+                ));
+
         return achievements.stream()
-                .map(achievement -> toAchievementResponse(achievement, userId))
+                .map(achievement -> toAchievementResponseWithMap(achievement, userAchievementMap))
                 .toList();
     }
 
@@ -52,8 +66,21 @@ public class AchievementService {
         List<Achievement> achievements = achievementRepository
                 .findByTypeAndIsActiveTrueOrderByDisplayOrderAsc(type);
 
+        // N+1 방지: 배치 조회
+        List<Long> achievementIds = achievements.stream()
+                .map(Achievement::getId)
+                .toList();
+
+        Map<Long, UserAchievement> userAchievementMap = userAchievementRepository
+                .findByUserIdAndAchievementIds(userId, achievementIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        ua -> ua.getAchievement().getId(),
+                        ua -> ua
+                ));
+
         return achievements.stream()
-                .map(achievement -> toAchievementResponse(achievement, userId))
+                .map(achievement -> toAchievementResponseWithMap(achievement, userAchievementMap))
                 .toList();
     }
 
@@ -283,6 +310,45 @@ public class AchievementService {
 
         if (userAchievementOpt.isPresent()) {
             UserAchievement ua = userAchievementOpt.get();
+            currentProgress = ua.getCurrentProgress();
+            targetProgress = ua.getTargetProgress();
+            isCompleted = ua.getIsCompleted();
+            completedAt = ua.getCompletedAt();
+        } else {
+            targetProgress = parseCondition(achievement.getConditionJson()).getTarget();
+        }
+
+        return NftDto.AchievementResponse.builder()
+                .id(achievement.getId())
+                .code(achievement.getCode())
+                .name(achievement.getName())
+                .description(achievement.getDescription())
+                .iconUrl(achievement.getIconUrl())
+                .badgeImageUrl(achievement.getBadgeImageUrl())
+                .type(achievement.getType())
+                .rarity(achievement.getRarity())
+                .pointReward(achievement.getPointReward() != null ? achievement.getPointReward().longValue() : 0L)
+                .grantsBadgeNft(achievement.getGrantsBadgeNft())
+                .currentProgress(currentProgress)
+                .targetProgress(targetProgress)
+                .isCompleted(isCompleted)
+                .completedAt(completedAt)
+                .build();
+    }
+
+    /**
+     * 배치 조회된 UserAchievement Map을 사용하여 응답 생성 (N+1 방지)
+     */
+    private NftDto.AchievementResponse toAchievementResponseWithMap(
+            Achievement achievement, Map<Long, UserAchievement> userAchievementMap) {
+
+        int currentProgress = 0;
+        int targetProgress = 1;
+        boolean isCompleted = false;
+        LocalDateTime completedAt = null;
+
+        UserAchievement ua = userAchievementMap.get(achievement.getId());
+        if (ua != null) {
             currentProgress = ua.getCurrentProgress();
             targetProgress = ua.getTargetProgress();
             isCompleted = ua.getIsCompleted();

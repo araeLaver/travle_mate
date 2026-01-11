@@ -74,16 +74,32 @@ public class ChatService {
     
     @Transactional(readOnly = true)
     public List<ChatDto.ChatRoomResponse> getChatRooms(Long userId) {
-        List<ChatRoom> rooms = chatRoomRepository.findByUserId(userId);
-        
+        // N+1 방지: participants와 user를 함께 로드
+        List<ChatRoom> rooms = chatRoomRepository.findByUserIdWithParticipants(userId);
+
+        // 읽지 않은 메시지 수를 일괄 조회
+        Map<Long, Integer> unreadCounts = getUnreadMessageCounts(
+            rooms.stream().map(ChatRoom::getId).collect(Collectors.toList()),
+            userId
+        );
+
         return rooms.stream()
             .map(room -> {
                 ChatDto.ChatRoomResponse dto = convertChatRoomToDto(room);
-                // 읽지 않은 메시지 수 계산
-                dto.setUnreadCount(getUnreadMessageCount(room.getId(), userId));
+                dto.setUnreadCount(unreadCounts.getOrDefault(room.getId(), 0));
                 return dto;
             })
             .collect(Collectors.toList());
+    }
+
+    /**
+     * 여러 채팅방의 읽지 않은 메시지 수를 일괄 조회
+     */
+    private Map<Long, Integer> getUnreadMessageCounts(List<Long> roomIds, Long userId) {
+        if (roomIds.isEmpty()) {
+            return Map.of();
+        }
+        return chatMessageRepository.countUnreadByRoomIds(roomIds, userId);
     }
     
     @Transactional(readOnly = true)
