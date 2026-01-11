@@ -23,7 +23,8 @@ public class FileUploadController {
             @AuthenticationPrincipal Long userId,
             @RequestParam("file") MultipartFile file) {
         try {
-            String fileUrl = fileUploadService.uploadImage(file);
+            // 파일 소유자 정보와 함께 저장
+            String fileUrl = fileUploadService.uploadImage(file, userId);
             log.info("이미지 업로드 성공: {} by user {}", fileUrl, userId);
             return ResponseEntity.ok(Map.of(
                 "success", "true",
@@ -62,7 +63,8 @@ public class FileUploadController {
             @AuthenticationPrincipal Long userId,
             @RequestParam("file") MultipartFile file) {
         try {
-            String fileUrl = fileUploadService.uploadDocument(file);
+            // 파일 소유자 정보와 함께 저장
+            String fileUrl = fileUploadService.uploadDocument(file, userId);
             log.info("문서 업로드 성공: {} by user {}", fileUrl, userId);
             return ResponseEntity.ok(Map.of(
                 "success", "true",
@@ -82,12 +84,18 @@ public class FileUploadController {
             @AuthenticationPrincipal Long userId,
             @RequestParam("url") String fileUrl) {
         try {
-            // 파일 삭제는 관리자 또는 파일 소유자만 가능하도록 서비스에서 검증 필요
-            fileUploadService.deleteFile(fileUrl);
+            // 파일 소유자만 삭제 가능 (권한 검증 포함)
+            fileUploadService.deleteFileWithAuth(fileUrl, userId);
             log.info("파일 삭제 성공: {} by user {}", fileUrl, userId);
             return ResponseEntity.ok(Map.of(
                 "success", "true",
                 "message", "파일 삭제 성공"
+            ));
+        } catch (SecurityException e) {
+            log.warn("파일 삭제 권한 없음: {} by user {}", fileUrl, userId);
+            return ResponseEntity.status(403).body(Map.of(
+                "success", "false",
+                "message", e.getMessage()
             ));
         } catch (Exception e) {
             log.error("파일 삭제 실패: {} by user {}", fileUrl, userId, e);

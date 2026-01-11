@@ -3,6 +3,7 @@ package com.travelmate.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.travelmate.dto.UserDto;
 import com.travelmate.entity.User;
+import com.travelmate.security.JwtAuthenticationFilter;
 import com.travelmate.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -10,9 +11,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -21,7 +28,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(UserController.class)
+@WebMvcTest(controllers = UserController.class,
+        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
+                classes = {JwtAuthenticationFilter.class}))
 @org.springframework.context.annotation.Import(com.travelmate.config.TestSecurityConfig.class)
 @DisplayName("사용자 컨트롤러 테스트")
 class UserControllerTest {
@@ -53,10 +62,18 @@ class UserControllerTest {
 
     @BeforeEach
     void setUp() {
+        // SecurityContext 설정
+        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                "1",  // principal - String userId
+                null,
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
+        );
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
         registerRequest = new UserDto.RegisterRequest();
         registerRequest.setEmail("test@example.com");
         registerRequest.setNickname("testuser");
-        registerRequest.setPassword("password123");
+        registerRequest.setPassword("Password1!");
 
         userResponse = UserDto.Response.builder()
                 .id(1L)
@@ -99,7 +116,7 @@ class UserControllerTest {
         // Given
         UserDto.LoginRequest loginRequest = new UserDto.LoginRequest();
         loginRequest.setEmail("test@example.com");
-        loginRequest.setPassword("password123");
+        loginRequest.setPassword("Password1!");
 
         when(userService.loginUser(loginRequest))
                 .thenReturn(loginResponse);
@@ -116,7 +133,6 @@ class UserControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "1")
     @DisplayName("사용자 프로필 조회 - 성공")
     void getUserProfile_Success() throws Exception {
         // Given
@@ -131,7 +147,6 @@ class UserControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "1")
     @DisplayName("사용자 프로필 업데이트 - 성공")
     void updateUserProfile_Success() throws Exception {
         // Given

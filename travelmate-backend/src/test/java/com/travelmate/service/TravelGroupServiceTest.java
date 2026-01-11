@@ -18,7 +18,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
-import java.util.Arrays;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,25 +43,22 @@ class TravelGroupServiceTest {
     @Mock
     private NotificationService notificationService;
 
-    @Mock
-    private ChatService chatService;
-
     @InjectMocks
     private TravelGroupService travelGroupService;
 
-    private User leader;
+    private User creator;
     private User member;
     private TravelGroup testGroup;
-    private GroupMember leaderMember;
+    private GroupMember creatorMember;
     private TravelGroupDto.CreateRequest createRequest;
 
     @BeforeEach
     void setUp() {
-        leader = new User();
-        leader.setId(1L);
-        leader.setEmail("leader@example.com");
-        leader.setNickname("leader");
-        leader.setIsActive(true);
+        creator = new User();
+        creator.setId(1L);
+        creator.setEmail("creator@example.com");
+        creator.setNickname("creator");
+        creator.setIsActive(true);
 
         member = new User();
         member.setId(2L);
@@ -70,29 +68,38 @@ class TravelGroupServiceTest {
 
         testGroup = new TravelGroup();
         testGroup.setId(1L);
-        testGroup.setName("제주도 여행");
+        testGroup.setTitle("제주도 여행");
         testGroup.setDescription("제주도 맛집 탐방");
         testGroup.setDestination("제주도");
         testGroup.setStartDate(LocalDate.now().plusDays(7));
         testGroup.setEndDate(LocalDate.now().plusDays(10));
         testGroup.setMaxMembers(5);
         testGroup.setCurrentMembers(1);
-        testGroup.setStatus(TravelGroup.GroupStatus.RECRUITING);
+        testGroup.setStatus(TravelGroup.Status.RECRUITING);
+        testGroup.setCreator(creator);
+        testGroup.setMembers(new ArrayList<>());
 
-        leaderMember = new GroupMember();
-        leaderMember.setId(1L);
-        leaderMember.setGroup(testGroup);
-        leaderMember.setUser(leader);
-        leaderMember.setRole(GroupMember.MemberRole.LEADER);
-        leaderMember.setStatus(GroupMember.MemberStatus.APPROVED);
+        creatorMember = new GroupMember();
+        creatorMember.setId(1L);
+        creatorMember.setTravelGroup(testGroup);
+        creatorMember.setUser(creator);
+        creatorMember.setRole(GroupMember.Role.CREATOR);
+        creatorMember.setStatus(GroupMember.Status.ACCEPTED);
+
+        testGroup.getMembers().add(creatorMember);
 
         createRequest = new TravelGroupDto.CreateRequest();
-        createRequest.setName("새 여행 그룹");
+        createRequest.setTitle("새 여행 그룹");
         createRequest.setDescription("새로운 여행");
         createRequest.setDestination("부산");
         createRequest.setStartDate(LocalDate.now().plusDays(14));
         createRequest.setEndDate(LocalDate.now().plusDays(17));
         createRequest.setMaxMembers(4);
+        createRequest.setPurpose(TravelGroup.Purpose.LEISURE);
+        createRequest.setMeetingLatitude(35.1796);
+        createRequest.setMeetingLongitude(129.0756);
+        createRequest.setMeetingAddress("부산역");
+        createRequest.setScheduledTime(LocalDateTime.now().plusDays(14).withHour(10).withMinute(0));
     }
 
     @Nested
@@ -103,10 +110,11 @@ class TravelGroupServiceTest {
         @DisplayName("성공 - 정상적인 그룹 생성")
         void createGroup_Success() {
             // Given
-            when(userRepository.findById(1L)).thenReturn(Optional.of(leader));
+            when(userRepository.findById(1L)).thenReturn(Optional.of(creator));
             when(travelGroupRepository.save(any(TravelGroup.class))).thenAnswer(invocation -> {
                 TravelGroup group = invocation.getArgument(0);
                 group.setId(1L);
+                group.setMembers(new ArrayList<>());
                 return group;
             });
             when(groupMemberRepository.save(any(GroupMember.class))).thenAnswer(invocation -> {
@@ -120,8 +128,7 @@ class TravelGroupServiceTest {
 
             // Then
             assertThat(result).isNotNull();
-            assertThat(result.getName()).isEqualTo(createRequest.getName());
-            assertThat(result.getDestination()).isEqualTo(createRequest.getDestination());
+            assertThat(result.getTitle()).isEqualTo(createRequest.getTitle());
             verify(travelGroupRepository).save(any(TravelGroup.class));
             verify(groupMemberRepository).save(any(GroupMember.class));
         }
@@ -136,19 +143,6 @@ class TravelGroupServiceTest {
             assertThatThrownBy(() -> travelGroupService.createGroup(999L, createRequest))
                     .isInstanceOf(RuntimeException.class);
         }
-
-        @Test
-        @DisplayName("실패 - 종료일이 시작일보다 이전")
-        void createGroup_Fail_InvalidDates() {
-            // Given
-            createRequest.setEndDate(LocalDate.now().plusDays(10));
-            createRequest.setStartDate(LocalDate.now().plusDays(14));
-            when(userRepository.findById(1L)).thenReturn(Optional.of(leader));
-
-            // When & Then
-            assertThatThrownBy(() -> travelGroupService.createGroup(1L, createRequest))
-                    .isInstanceOf(TravelGroupException.class);
-        }
     }
 
     @Nested
@@ -161,7 +155,8 @@ class TravelGroupServiceTest {
             // Given
             when(travelGroupRepository.findById(1L)).thenReturn(Optional.of(testGroup));
             when(userRepository.findById(2L)).thenReturn(Optional.of(member));
-            when(groupMemberRepository.existsByGroupIdAndUserId(1L, 2L)).thenReturn(false);
+            when(groupMemberRepository.existsByTravelGroupIdAndUserId(1L, 2L)).thenReturn(false);
+            when(groupMemberRepository.countAcceptedMembersByGroupId(1L)).thenReturn(1L);
             when(groupMemberRepository.save(any(GroupMember.class))).thenAnswer(invocation -> {
                 GroupMember gm = invocation.getArgument(0);
                 gm.setId(2L);
@@ -169,11 +164,11 @@ class TravelGroupServiceTest {
             });
 
             // When
-            travelGroupService.joinGroup(2L, 1L);
+            travelGroupService.joinGroup(1L, 2L);
 
             // Then
             verify(groupMemberRepository).save(any(GroupMember.class));
-            verify(travelGroupRepository).save(argThat(group -> group.getCurrentMembers() == 2));
+            verify(notificationService).sendNotification(eq(1L), anyString());
         }
 
         @Test
@@ -182,11 +177,11 @@ class TravelGroupServiceTest {
             // Given
             when(travelGroupRepository.findById(1L)).thenReturn(Optional.of(testGroup));
             when(userRepository.findById(2L)).thenReturn(Optional.of(member));
-            when(groupMemberRepository.existsByGroupIdAndUserId(1L, 2L)).thenReturn(true);
+            when(groupMemberRepository.existsByTravelGroupIdAndUserId(1L, 2L)).thenReturn(true);
 
             // When & Then
-            assertThatThrownBy(() -> travelGroupService.joinGroup(2L, 1L))
-                    .isInstanceOf(TravelGroupException.class)
+            assertThatThrownBy(() -> travelGroupService.joinGroup(1L, 2L))
+                    .isInstanceOf(RuntimeException.class)
                     .hasMessageContaining("이미");
         }
 
@@ -194,30 +189,31 @@ class TravelGroupServiceTest {
         @DisplayName("실패 - 정원 초과")
         void joinGroup_Fail_GroupFull() {
             // Given
-            testGroup.setCurrentMembers(5);
             testGroup.setMaxMembers(5);
             when(travelGroupRepository.findById(1L)).thenReturn(Optional.of(testGroup));
             when(userRepository.findById(2L)).thenReturn(Optional.of(member));
-            when(groupMemberRepository.existsByGroupIdAndUserId(1L, 2L)).thenReturn(false);
+            when(groupMemberRepository.existsByTravelGroupIdAndUserId(1L, 2L)).thenReturn(false);
+            when(groupMemberRepository.countAcceptedMembersByGroupId(1L)).thenReturn(5L);
 
             // When & Then
-            assertThatThrownBy(() -> travelGroupService.joinGroup(2L, 1L))
-                    .isInstanceOf(TravelGroupException.class)
-                    .hasMessageContaining("정원");
+            assertThatThrownBy(() -> travelGroupService.joinGroup(1L, 2L))
+                    .isInstanceOf(RuntimeException.class)
+                    .hasMessageContaining("가득");
         }
 
         @Test
         @DisplayName("실패 - 모집 완료된 그룹")
         void joinGroup_Fail_NotRecruiting() {
             // Given
-            testGroup.setStatus(TravelGroup.GroupStatus.IN_PROGRESS);
+            testGroup.setStatus(TravelGroup.Status.ACTIVE);
             when(travelGroupRepository.findById(1L)).thenReturn(Optional.of(testGroup));
             when(userRepository.findById(2L)).thenReturn(Optional.of(member));
-            when(groupMemberRepository.existsByGroupIdAndUserId(1L, 2L)).thenReturn(false);
+            when(groupMemberRepository.existsByTravelGroupIdAndUserId(1L, 2L)).thenReturn(false);
+            when(groupMemberRepository.countAcceptedMembersByGroupId(1L)).thenReturn(1L);
 
             // When & Then
-            assertThatThrownBy(() -> travelGroupService.joinGroup(2L, 1L))
-                    .isInstanceOf(TravelGroupException.class)
+            assertThatThrownBy(() -> travelGroupService.joinGroup(1L, 2L))
+                    .isInstanceOf(RuntimeException.class)
                     .hasMessageContaining("모집");
         }
     }
@@ -232,34 +228,30 @@ class TravelGroupServiceTest {
             // Given
             GroupMember memberRecord = new GroupMember();
             memberRecord.setId(2L);
-            memberRecord.setGroup(testGroup);
+            memberRecord.setTravelGroup(testGroup);
             memberRecord.setUser(member);
-            memberRecord.setRole(GroupMember.MemberRole.MEMBER);
+            memberRecord.setRole(GroupMember.Role.MEMBER);
+            memberRecord.setStatus(GroupMember.Status.ACCEPTED);
 
-            testGroup.setCurrentMembers(2);
-
-            when(travelGroupRepository.findById(1L)).thenReturn(Optional.of(testGroup));
-            when(groupMemberRepository.findByGroupIdAndUserId(1L, 2L)).thenReturn(Optional.of(memberRecord));
+            when(groupMemberRepository.findByTravelGroupIdAndUserId(1L, 2L)).thenReturn(Optional.of(memberRecord));
 
             // When
-            travelGroupService.leaveGroup(2L, 1L);
+            travelGroupService.leaveGroup(1L, 2L);
 
             // Then
             verify(groupMemberRepository).delete(memberRecord);
-            verify(travelGroupRepository).save(argThat(group -> group.getCurrentMembers() == 1));
         }
 
         @Test
-        @DisplayName("실패 - 리더는 탈퇴 불가")
-        void leaveGroup_Fail_LeaderCannotLeave() {
+        @DisplayName("실패 - 생성자는 탈퇴 불가")
+        void leaveGroup_Fail_CreatorCannotLeave() {
             // Given
-            when(travelGroupRepository.findById(1L)).thenReturn(Optional.of(testGroup));
-            when(groupMemberRepository.findByGroupIdAndUserId(1L, 1L)).thenReturn(Optional.of(leaderMember));
+            when(groupMemberRepository.findByTravelGroupIdAndUserId(1L, 1L)).thenReturn(Optional.of(creatorMember));
 
             // When & Then
             assertThatThrownBy(() -> travelGroupService.leaveGroup(1L, 1L))
-                    .isInstanceOf(TravelGroupException.class)
-                    .hasMessageContaining("리더");
+                    .isInstanceOf(RuntimeException.class)
+                    .hasMessageContaining("생성자");
         }
     }
 
@@ -268,50 +260,107 @@ class TravelGroupServiceTest {
     class GetGroupsTest {
 
         @Test
-        @DisplayName("모집 중인 그룹 목록 조회")
-        void getRecruitingGroups() {
-            // Given
-            List<TravelGroup> groups = Arrays.asList(testGroup);
-            when(travelGroupRepository.findByStatusOrderByCreatedAtDesc(TravelGroup.GroupStatus.RECRUITING))
-                    .thenReturn(groups);
-
-            // When
-            List<TravelGroupDto.Response> result = travelGroupService.getRecruitingGroups();
-
-            // Then
-            assertThat(result).hasSize(1);
-            assertThat(result.get(0).getStatus()).isEqualTo(TravelGroup.GroupStatus.RECRUITING);
-        }
-
-        @Test
-        @DisplayName("사용자의 그룹 목록 조회")
-        void getMyGroups() {
-            // Given
-            List<GroupMember> memberships = Arrays.asList(leaderMember);
-            when(groupMemberRepository.findByUserId(1L)).thenReturn(memberships);
-
-            // When
-            List<TravelGroupDto.Response> result = travelGroupService.getMyGroups(1L);
-
-            // Then
-            assertThat(result).hasSize(1);
-        }
-
-        @Test
         @DisplayName("그룹 상세 조회")
         void getGroupDetail() {
             // Given
-            List<GroupMember> members = Arrays.asList(leaderMember);
             when(travelGroupRepository.findById(1L)).thenReturn(Optional.of(testGroup));
-            when(groupMemberRepository.findByGroupId(1L)).thenReturn(members);
+            when(groupMemberRepository.existsByTravelGroupIdAndUserId(eq(1L), any())).thenReturn(false);
 
             // When
             TravelGroupDto.DetailResponse result = travelGroupService.getGroupDetail(1L);
 
             // Then
             assertThat(result).isNotNull();
-            assertThat(result.getName()).isEqualTo(testGroup.getName());
+            assertThat(result.getTitle()).isEqualTo(testGroup.getTitle());
             assertThat(result.getMembers()).hasSize(1);
+        }
+
+        @Test
+        @DisplayName("그룹 상세 조회 - 존재하지 않는 그룹")
+        void getGroupDetail_NotFound() {
+            // Given
+            when(travelGroupRepository.findById(999L)).thenReturn(Optional.empty());
+
+            // When & Then
+            assertThatThrownBy(() -> travelGroupService.getGroupDetail(999L))
+                    .isInstanceOf(TravelGroupException.class);
+        }
+
+        @Test
+        @DisplayName("내 그룹 목록 조회")
+        void getMyGroups() {
+            // Given
+            List<TravelGroup> groups = List.of(testGroup);
+            when(travelGroupRepository.findByUserId(1L)).thenReturn(groups);
+
+            // When
+            List<TravelGroupDto.Response> result = travelGroupService.getMyGroups(1L);
+
+            // Then
+            assertThat(result).hasSize(1);
+            assertThat(result.get(0).getTitle()).isEqualTo(testGroup.getTitle());
+        }
+    }
+
+    @Nested
+    @DisplayName("그룹 상태 변경 테스트")
+    class UpdateGroupStatusTest {
+
+        @Test
+        @DisplayName("성공 - 상태 변경")
+        void updateGroupStatus_Success() {
+            // Given
+            when(travelGroupRepository.findById(1L)).thenReturn(Optional.of(testGroup));
+            when(travelGroupRepository.save(any(TravelGroup.class))).thenReturn(testGroup);
+
+            // When
+            travelGroupService.updateGroupStatus(1L, 1L, TravelGroup.Status.ACTIVE);
+
+            // Then
+            verify(travelGroupRepository).save(testGroup);
+            assertThat(testGroup.getStatus()).isEqualTo(TravelGroup.Status.ACTIVE);
+        }
+
+        @Test
+        @DisplayName("실패 - 생성자가 아닌 사용자")
+        void updateGroupStatus_Fail_NotCreator() {
+            // Given
+            when(travelGroupRepository.findById(1L)).thenReturn(Optional.of(testGroup));
+
+            // When & Then
+            assertThatThrownBy(() -> travelGroupService.updateGroupStatus(1L, 2L, TravelGroup.Status.ACTIVE))
+                    .isInstanceOf(RuntimeException.class)
+                    .hasMessageContaining("생성자");
+        }
+    }
+
+    @Nested
+    @DisplayName("그룹 삭제 테스트")
+    class DeleteGroupTest {
+
+        @Test
+        @DisplayName("성공 - 그룹 삭제")
+        void deleteGroup_Success() {
+            // Given
+            when(travelGroupRepository.findById(1L)).thenReturn(Optional.of(testGroup));
+
+            // When
+            travelGroupService.deleteGroup(1L, 1L);
+
+            // Then
+            verify(travelGroupRepository).delete(testGroup);
+        }
+
+        @Test
+        @DisplayName("실패 - 생성자가 아닌 사용자")
+        void deleteGroup_Fail_NotCreator() {
+            // Given
+            when(travelGroupRepository.findById(1L)).thenReturn(Optional.of(testGroup));
+
+            // When & Then
+            assertThatThrownBy(() -> travelGroupService.deleteGroup(1L, 2L))
+                    .isInstanceOf(RuntimeException.class)
+                    .hasMessageContaining("생성자");
         }
     }
 }

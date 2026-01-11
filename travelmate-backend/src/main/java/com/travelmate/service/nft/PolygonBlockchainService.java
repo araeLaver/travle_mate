@@ -48,6 +48,71 @@ public class PolygonBlockchainService {
     private static final BigInteger GAS_PRICE = BigInteger.valueOf(30_000_000_000L); // 30 Gwei
 
     /**
+     * 개인키를 안전하게 로드하여 Credentials 생성
+     * 개인키는 절대 로그에 기록되지 않음
+     */
+    private Credentials loadCredentialsSafely() {
+        String privateKey = blockchainConfig.getPrivateKey();
+
+        // 개인키 유효성 검증
+        if (privateKey == null || privateKey.isBlank()) {
+            log.error("블록체인 개인키가 설정되지 않았습니다.");
+            throw new IllegalStateException("블록체인 개인키가 설정되지 않았습니다.");
+        }
+
+        // 기본적인 형식 검증 (0x 접두사 및 길이)
+        String cleanKey = privateKey.startsWith("0x") ? privateKey.substring(2) : privateKey;
+        if (cleanKey.length() != 64 || !cleanKey.matches("[0-9a-fA-F]+")) {
+            log.error("블록체인 개인키 형식이 올바르지 않습니다.");
+            throw new IllegalStateException("블록체인 개인키 형식이 올바르지 않습니다.");
+        }
+
+        try {
+            Credentials credentials = Credentials.create(privateKey);
+            // 지갑 주소만 로깅 (개인키는 절대 로깅하지 않음)
+            log.debug("블록체인 자격증명 로드 성공: address={}", maskAddress(credentials.getAddress()));
+            return credentials;
+        } catch (Exception e) {
+            log.error("블록체인 자격증명 생성 실패");
+            throw new IllegalStateException("블록체인 자격증명 생성에 실패했습니다.", e);
+        }
+    }
+
+    /**
+     * 지갑 주소 마스킹 (앞 6자리와 뒤 4자리만 표시)
+     */
+    private String maskAddress(String address) {
+        if (address == null || address.length() < 12) {
+            return "***";
+        }
+        return address.substring(0, 6) + "..." + address.substring(address.length() - 4);
+    }
+
+    /**
+     * 외부 개인키를 안전하게 검증
+     */
+    private Credentials validateAndCreateCredentials(String privateKey, String purpose) {
+        if (privateKey == null || privateKey.isBlank()) {
+            log.warn("{}를 위한 개인키가 제공되지 않았습니다.", purpose);
+            throw new IllegalArgumentException("개인키가 제공되지 않았습니다.");
+        }
+
+        // 기본적인 형식 검증
+        String cleanKey = privateKey.startsWith("0x") ? privateKey.substring(2) : privateKey;
+        if (cleanKey.length() != 64 || !cleanKey.matches("[0-9a-fA-F]+")) {
+            log.warn("{}를 위한 개인키 형식이 올바르지 않습니다.", purpose);
+            throw new IllegalArgumentException("개인키 형식이 올바르지 않습니다.");
+        }
+
+        try {
+            return Credentials.create(privateKey);
+        } catch (Exception e) {
+            log.error("{}를 위한 자격증명 생성 실패", purpose);
+            throw new IllegalArgumentException("자격증명 생성에 실패했습니다.", e);
+        }
+    }
+
+    /**
      * NFT 민팅 (비동기 처리)
      */
     @Async
@@ -80,12 +145,8 @@ public class PolygonBlockchainService {
             // 민팅 상태 업데이트: PENDING -> MINTING
             updateMintStatus(nftCollectionId, MintStatus.MINTING, null, null);
 
-            String privateKey = blockchainConfig.getPrivateKey();
-            if (privateKey == null || privateKey.isBlank()) {
-                throw new IllegalStateException("블록체인 개인키가 설정되지 않았습니다.");
-            }
-
-            Credentials credentials = Credentials.create(privateKey);
+            // 개인키를 안전하게 로드 (로깅하지 않음)
+            Credentials credentials = loadCredentialsSafely();
             String contractAddress = blockchainConfig.getContractAddress();
 
             // Nonce 조회
@@ -254,6 +315,10 @@ public class PolygonBlockchainService {
 
     /**
      * NFT 전송
+     * @param fromAddress 보내는 주소
+     * @param toAddress 받는 주소
+     * @param tokenId NFT 토큰 ID
+     * @param privateKey 서명용 개인키 (절대 로깅되지 않음)
      */
     public String transferNft(String fromAddress, String toAddress, String tokenId, String privateKey) {
         if (!blockchainConfig.isBlockchainEnabled()) {
@@ -262,7 +327,16 @@ public class PolygonBlockchainService {
         }
 
         try {
-            Credentials credentials = Credentials.create(privateKey);
+            // 개인키를 안전하게 검증 및 Credentials 생성
+            Credentials credentials = validateAndCreateCredentials(privateKey, "NFT 전송");
+
+            // 주소 소유권 검증 (개인키로 생성된 주소가 fromAddress와 일치하는지)
+            if (!credentials.getAddress().equalsIgnoreCase(fromAddress)) {
+                log.warn("NFT 전송 주소 불일치: expected={}, actual={}",
+                    maskAddress(fromAddress), maskAddress(credentials.getAddress()));
+                throw new IllegalArgumentException("개인키와 발신 주소가 일치하지 않습니다.");
+            }
+
             String contractAddress = blockchainConfig.getContractAddress();
 
             EthGetTransactionCount ethGetTransactionCount = web3j.ethGetTransactionCount(

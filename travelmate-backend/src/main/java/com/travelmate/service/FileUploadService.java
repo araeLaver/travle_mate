@@ -1,8 +1,13 @@
 package com.travelmate.service;
 
+import com.travelmate.entity.UploadedFile;
+import com.travelmate.entity.User;
+import com.travelmate.repository.UploadedFileRepository;
+import com.travelmate.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.annotation.PostConstruct;
@@ -20,7 +25,11 @@ import java.util.UUID;
 
 @Service
 @Slf4j
+@Transactional
 public class FileUploadService {
+
+    private final UploadedFileRepository uploadedFileRepository;
+    private final UserRepository userRepository;
 
     @Value("${app.file.upload.path:./uploads/}")
     private String uploadPath;
@@ -29,6 +38,11 @@ public class FileUploadService {
     private Long maxFileSize;
 
     private Path uploadDir;
+
+    public FileUploadService(UploadedFileRepository uploadedFileRepository, UserRepository userRepository) {
+        this.uploadedFileRepository = uploadedFileRepository;
+        this.userRepository = userRepository;
+    }
 
     private static final List<String> ALLOWED_IMAGE_EXTENSIONS = Arrays.asList("jpg", "jpeg", "png", "gif", "webp", "bmp");
     private static final List<String> ALLOWED_DOCUMENT_EXTENSIONS = Arrays.asList("pdf", "doc", "docx");
@@ -62,15 +76,25 @@ public class FileUploadService {
         return saveFile(file, "images");
     }
 
+    public String uploadImage(MultipartFile file, Long userId) {
+        validateFile(file, ALLOWED_IMAGE_EXTENSIONS);
+        return saveFileWithOwner(file, "images", userId, "image");
+    }
+
     public String uploadDocument(MultipartFile file) {
         validateFile(file, ALLOWED_DOCUMENT_EXTENSIONS);
         return saveFile(file, "documents");
     }
 
+    public String uploadDocument(MultipartFile file, Long userId) {
+        validateFile(file, ALLOWED_DOCUMENT_EXTENSIONS);
+        return saveFileWithOwner(file, "documents", userId, "document");
+    }
+
     public String uploadProfileImage(MultipartFile file, Long userId) {
         validateFile(file, ALLOWED_IMAGE_EXTENSIONS);
         String fileName = "profile_" + userId + "_" + UUID.randomUUID() + getFileExtension(file.getOriginalFilename());
-        return saveFile(file, "profiles", fileName);
+        return saveFileWithOwner(file, "profiles", fileName, userId, "profile");
     }
 
     private void validateFile(MultipartFile file, List<String> allowedExtensions) {
@@ -150,8 +174,78 @@ public class FileUploadService {
             throw new RuntimeException("파일 업로드에 실패했습니다.", e);
         }
     }
-    
+
+    private String saveFileWithOwner(MultipartFile file, String subfolder, Long userId, String fileType) {
+        String fileName = UUID.randomUUID() + getFileExtension(file.getOriginalFilename());
+        return saveFileWithOwner(file, subfolder, fileName, userId, fileType);
+    }
+
+    private String saveFileWithOwner(MultipartFile file, String subfolder, String fileName, Long userId, String fileType) {
+        String fileUrl = saveFile(file, subfolder, fileName);
+
+        // 파일 소유자 정보 저장
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        UploadedFile uploadedFile = UploadedFile.builder()
+            .user(user)
+            .fileUrl(fileUrl)
+            .originalFilename(file.getOriginalFilename())
+            .fileType(fileType)
+            .fileSize(file.getSize())
+            .contentType(file.getContentType())
+            .build();
+
+        uploadedFileRepository.save(uploadedFile);
+        log.info("파일 소유자 정보 저장: userId={}, fileUrl={}", userId, fileUrl);
+
+        return fileUrl;
+    }
+
+    /**
+     * 파일 삭제 (권한 검증 없음 - 내부용)
+     */
     public void deleteFile(String fileUrl) {
+        deleteFileInternal(fileUrl);
+        // DB에서 파일 정보 삭제
+        uploadedFileRepository.findByFileUrl(fileUrl).ifPresent(uploadedFileRepository::delete);
+    }
+
+    /**
+     * 파일 삭제 (권한 검증 포함)
+     * @param fileUrl 삭제할 파일 URL
+     * @param userId 요청한 사용자 ID
+     * @throws SecurityException 권한이 없는 경우
+     */
+    public void deleteFileWithAuth(String fileUrl, Long userId) {
+        if (fileUrl == null || fileUrl.isEmpty()) {
+            return;
+        }
+
+        // 파일 소유자 확인
+        UploadedFile uploadedFile = uploadedFileRepository.findByFileUrl(fileUrl).orElse(null);
+
+        if (uploadedFile != null) {
+            // 파일 소유자만 삭제 가능
+            if (!uploadedFile.getUser().getId().equals(userId)) {
+                log.warn("파일 삭제 권한 없음: userId={}, fileUrl={}, ownerId={}",
+                    userId, fileUrl, uploadedFile.getUser().getId());
+                throw new SecurityException("파일 삭제 권한이 없습니다.");
+            }
+            uploadedFileRepository.delete(uploadedFile);
+        } else {
+            // DB에 소유자 정보가 없는 기존 파일은 삭제 불가 (보안)
+            log.warn("파일 소유자 정보 없음, 삭제 거부: fileUrl={}", fileUrl);
+            throw new SecurityException("파일 삭제 권한을 확인할 수 없습니다.");
+        }
+
+        deleteFileInternal(fileUrl);
+    }
+
+    /**
+     * 파일 물리적 삭제 (내부용)
+     */
+    private void deleteFileInternal(String fileUrl) {
         if (fileUrl == null || fileUrl.isEmpty()) {
             return;
         }
@@ -173,6 +267,13 @@ public class FileUploadService {
         } catch (IOException e) {
             log.error("파일 삭제 실패: {}", fileUrl, e);
         }
+    }
+
+    /**
+     * 파일 소유자 확인
+     */
+    public boolean isFileOwner(String fileUrl, Long userId) {
+        return uploadedFileRepository.existsByFileUrlAndUserId(fileUrl, userId);
     }
 
     private String getFileExtension(String filename) {

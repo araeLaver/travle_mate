@@ -164,6 +164,10 @@ public class AuthService {
     }
 
     private AuthDto.OAuthUserInfo getGoogleUserInfo(String accessToken) {
+        // 1. 먼저 토큰 유효성 검증 (tokeninfo 엔드포인트)
+        verifyGoogleToken(accessToken);
+
+        // 2. 토큰이 유효하면 사용자 정보 조회
         String url = "https://www.googleapis.com/oauth2/v2/userinfo";
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
@@ -187,8 +191,63 @@ public class AuthService {
         }
     }
 
+    /**
+     * Google 토큰 유효성 검증
+     * tokeninfo 엔드포인트를 통해 토큰의 유효성, 만료 시간, 발급자를 검증
+     */
+    @SuppressWarnings("unchecked")
+    private void verifyGoogleToken(String accessToken) {
+        String tokenInfoUrl = "https://oauth2.googleapis.com/tokeninfo?access_token=" + accessToken;
+
+        try {
+            ResponseEntity<Map> response = restTemplate.getForEntity(tokenInfoUrl, Map.class);
+            Map<String, Object> tokenInfo = response.getBody();
+
+            if (tokenInfo == null) {
+                throw new UserException("Google 토큰 검증 실패: 응답이 비어있습니다.");
+            }
+
+            // 에러 응답 확인
+            if (tokenInfo.containsKey("error")) {
+                String error = (String) tokenInfo.get("error");
+                String errorDescription = (String) tokenInfo.get("error_description");
+                log.warn("Google 토큰 검증 실패: {} - {}", error, errorDescription);
+                throw new UserException("Google 토큰이 유효하지 않습니다: " + error);
+            }
+
+            // 토큰 만료 시간 확인
+            Object expiresInObj = tokenInfo.get("expires_in");
+            if (expiresInObj != null) {
+                int expiresIn;
+                if (expiresInObj instanceof String) {
+                    expiresIn = Integer.parseInt((String) expiresInObj);
+                } else if (expiresInObj instanceof Number) {
+                    expiresIn = ((Number) expiresInObj).intValue();
+                } else {
+                    throw new UserException("Google 토큰 만료 시간 형식 오류");
+                }
+
+                if (expiresIn <= 0) {
+                    throw new UserException("Google 토큰이 만료되었습니다.");
+                }
+            }
+
+            log.debug("Google 토큰 검증 성공: email={}", tokenInfo.get("email"));
+
+        } catch (UserException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Google 토큰 검증 중 오류", e);
+            throw new UserException("Google 토큰 검증에 실패했습니다.");
+        }
+    }
+
     @SuppressWarnings("unchecked")
     private AuthDto.OAuthUserInfo getKakaoUserInfo(String accessToken) {
+        // 1. 토큰 유효성 검증
+        verifyKakaoToken(accessToken);
+
+        // 2. 사용자 정보 조회
         String url = "https://kapi.kakao.com/v2/user/me";
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
@@ -215,8 +274,49 @@ public class AuthService {
         }
     }
 
+    /**
+     * 카카오 토큰 유효성 검증
+     */
+    @SuppressWarnings("unchecked")
+    private void verifyKakaoToken(String accessToken) {
+        String tokenInfoUrl = "https://kapi.kakao.com/v1/user/access_token_info";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<Map> response = restTemplate.exchange(tokenInfoUrl, HttpMethod.GET, entity, Map.class);
+            Map<String, Object> tokenInfo = response.getBody();
+
+            if (tokenInfo == null) {
+                throw new UserException("카카오 토큰 검증 실패: 응답이 비어있습니다.");
+            }
+
+            // 토큰 만료 시간 확인 (expires_in은 초 단위)
+            Object expiresInObj = tokenInfo.get("expires_in");
+            if (expiresInObj != null) {
+                int expiresIn = ((Number) expiresInObj).intValue();
+                if (expiresIn <= 0) {
+                    throw new UserException("카카오 토큰이 만료되었습니다.");
+                }
+            }
+
+            log.debug("카카오 토큰 검증 성공: id={}", tokenInfo.get("id"));
+
+        } catch (UserException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("카카오 토큰 검증 중 오류", e);
+            throw new UserException("카카오 토큰 검증에 실패했습니다.");
+        }
+    }
+
     @SuppressWarnings("unchecked")
     private AuthDto.OAuthUserInfo getNaverUserInfo(String accessToken) {
+        // 1. 토큰 유효성 검증 (네이버는 별도 검증 엔드포인트가 없으므로 사용자 정보 조회로 검증)
+        // 사용자 정보 조회 실패 시 토큰이 유효하지 않은 것으로 간주
+
+        // 2. 사용자 정보 조회
         String url = "https://openapi.naver.com/v1/nid/me";
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
@@ -226,11 +326,22 @@ public class AuthService {
             ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, entity, Map.class);
             Map<String, Object> body = response.getBody();
             if (body == null) throw new UserException("네이버 응답이 비어있습니다.");
+
+            // 응답 코드 확인 (네이버 API는 resultcode를 반환)
+            String resultCode = (String) body.get("resultcode");
+            if (!"00".equals(resultCode)) {
+                String message = (String) body.get("message");
+                log.warn("네이버 토큰 검증 실패: resultcode={}, message={}", resultCode, message);
+                throw new UserException("네이버 토큰이 유효하지 않습니다: " + message);
+            }
+
             Map<String, Object> data = (Map<String, Object>) body.get("response");
             if (data == null) throw new UserException("네이버 사용자 정보가 없습니다.");
             String id = (String) data.get("id");
             String email = (String) data.get("email");
             if (id == null || email == null) throw new UserException("네이버 필수 정보가 없습니다.");
+
+            log.debug("네이버 토큰 검증 및 사용자 정보 조회 성공: id={}", id);
 
             return AuthDto.OAuthUserInfo.builder()
                 .provider("naver").providerId(id).email(email)

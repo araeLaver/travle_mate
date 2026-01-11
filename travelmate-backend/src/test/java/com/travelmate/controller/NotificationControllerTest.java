@@ -1,34 +1,44 @@
 package com.travelmate.controller;
 
 import com.travelmate.entity.Notification;
+import com.travelmate.security.JwtAuthenticationFilter;
+import com.travelmate.service.JwtService;
 import com.travelmate.service.NotificationService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
  * NotificationController 통합 테스트
  */
-@WebMvcTest(NotificationController.class)
+@WebMvcTest(controllers = NotificationController.class,
+        excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
+                classes = {JwtAuthenticationFilter.class}))
+@org.springframework.context.annotation.Import(com.travelmate.config.TestSecurityConfig.class)
 class NotificationControllerTest {
 
     @Autowired
@@ -37,8 +47,21 @@ class NotificationControllerTest {
     @MockBean
     private NotificationService notificationService;
 
+    @MockBean
+    private JwtService jwtService;
+
+    @BeforeEach
+    void setUp() {
+        // 각 테스트 전에 SecurityContext 설정
+        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                "1",  // principal - String userId
+                null,
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
+        );
+        SecurityContextHolder.getContext().setAuthentication(auth);
+    }
+
     @Test
-    @WithMockUser(username = "1")
     void 알림_목록_조회_테스트() throws Exception {
         // Given
         NotificationService.NotificationDto dto = NotificationService.NotificationDto.builder()
@@ -56,6 +79,7 @@ class NotificationControllerTest {
         // When & Then
         mockMvc.perform(get("/api/notifications")
                         .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
                 .andExpect(jsonPath("$.content[0].id").value(1))
@@ -65,7 +89,6 @@ class NotificationControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "1")
     void 읽지_않은_알림_개수_조회_테스트() throws Exception {
         // Given
         when(notificationService.getUnreadCount(1L)).thenReturn(5L);
@@ -80,7 +103,6 @@ class NotificationControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "1")
     void 알림_읽음_처리_테스트() throws Exception {
         // Given
         List<Long> notificationIds = Arrays.asList(1L, 2L, 3L);
@@ -97,7 +119,6 @@ class NotificationControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "1")
     void 모든_알림_읽음_처리_테스트() throws Exception {
         // Given
         doNothing().when(notificationService).markAllAsRead(1L);
@@ -112,7 +133,6 @@ class NotificationControllerTest {
     }
 
     @Test
-    @WithMockUser(username = "1")
     void 알림_삭제_테스트() throws Exception {
         // Given
         doNothing().when(notificationService).deleteNotification(1L, 1L);

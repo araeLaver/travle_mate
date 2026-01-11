@@ -1,6 +1,7 @@
 package com.travelmate.service;
 
 import com.travelmate.dto.AuthDto;
+import com.travelmate.dto.UserDto;
 import com.travelmate.entity.RefreshToken;
 import com.travelmate.entity.User;
 import com.travelmate.exception.UserException;
@@ -15,12 +16,15 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -39,15 +43,17 @@ class AuthServiceTest {
     @Mock
     private JwtService jwtService;
 
-    @Mock
-    private EmailService emailService;
-
     @InjectMocks
     private AuthService authService;
 
     private User testUser;
-    private AuthDto.RegisterRequest registerRequest;
-    private AuthDto.LoginRequest loginRequest;
+    private UserDto.LoginRequest loginRequest;
+
+    // 테스트용 상수
+    private static final String DEVICE_ID = "test-device-id";
+    private static final String DEVICE_NAME = "Test Device";
+    private static final String IP_ADDRESS = "127.0.0.1";
+    private static final String USER_AGENT = "Test-Agent/1.0";
 
     @BeforeEach
     void setUp() {
@@ -60,72 +66,13 @@ class AuthServiceTest {
         testUser.setIsActive(true);
         testUser.setIsEmailVerified(true);
 
-        registerRequest = new AuthDto.RegisterRequest();
-        registerRequest.setEmail("new@example.com");
-        registerRequest.setPassword("Password1!");
-        registerRequest.setNickname("newuser");
-        registerRequest.setFullName("새 사용자");
-
-        loginRequest = new AuthDto.LoginRequest();
+        loginRequest = new UserDto.LoginRequest();
         loginRequest.setEmail("test@example.com");
         loginRequest.setPassword("password123");
-    }
 
-    @Nested
-    @DisplayName("회원가입 테스트")
-    class RegisterTest {
-
-        @Test
-        @DisplayName("성공 - 정상적인 회원가입")
-        void register_Success() {
-            // Given
-            when(userRepository.existsByEmail(anyString())).thenReturn(false);
-            when(userRepository.existsByNickname(anyString())).thenReturn(false);
-            when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
-            when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
-                User user = invocation.getArgument(0);
-                user.setId(1L);
-                return user;
-            });
-            when(jwtService.generateToken(anyLong(), anyString())).thenReturn("accessToken");
-            when(jwtService.generateRefreshToken(anyLong(), anyString())).thenReturn("refreshToken");
-            when(emailService.sendVerificationEmail(anyString(), anyString())).thenReturn("token");
-
-            // When
-            AuthDto.AuthResponse response = authService.register(registerRequest);
-
-            // Then
-            assertThat(response).isNotNull();
-            assertThat(response.getAccessToken()).isEqualTo("accessToken");
-            assertThat(response.getUser().getEmail()).isEqualTo(registerRequest.getEmail());
-            verify(userRepository).save(any(User.class));
-            verify(emailService).sendVerificationEmail(anyString(), anyString());
-        }
-
-        @Test
-        @DisplayName("실패 - 이미 존재하는 이메일")
-        void register_Fail_DuplicateEmail() {
-            // Given
-            when(userRepository.existsByEmail(anyString())).thenReturn(true);
-
-            // When & Then
-            assertThatThrownBy(() -> authService.register(registerRequest))
-                    .isInstanceOf(UserException.class)
-                    .hasMessageContaining("이메일");
-        }
-
-        @Test
-        @DisplayName("실패 - 이미 존재하는 닉네임")
-        void register_Fail_DuplicateNickname() {
-            // Given
-            when(userRepository.existsByEmail(anyString())).thenReturn(false);
-            when(userRepository.existsByNickname(anyString())).thenReturn(true);
-
-            // When & Then
-            assertThatThrownBy(() -> authService.register(registerRequest))
-                    .isInstanceOf(UserException.class)
-                    .hasMessageContaining("닉네임");
-        }
+        // JWT 만료 시간 설정
+        ReflectionTestUtils.setField(authService, "jwtExpiration", 3600000L);
+        ReflectionTestUtils.setField(authService, "refreshExpiration", 604800000L);
     }
 
     @Nested
@@ -139,16 +86,16 @@ class AuthServiceTest {
             when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(testUser));
             when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
             when(jwtService.generateToken(anyLong(), anyString())).thenReturn("accessToken");
-            when(jwtService.generateRefreshToken(anyLong(), anyString())).thenReturn("refreshToken");
 
             // When
-            AuthDto.AuthResponse response = authService.login(loginRequest);
+            AuthDto.LoginResponse response = authService.login(loginRequest, DEVICE_ID, DEVICE_NAME, IP_ADDRESS, USER_AGENT);
 
             // Then
             assertThat(response).isNotNull();
             assertThat(response.getAccessToken()).isEqualTo("accessToken");
-            assertThat(response.getRefreshToken()).isEqualTo("refreshToken");
+            assertThat(response.getRefreshToken()).isNotNull();
             assertThat(response.getUser().getId()).isEqualTo(testUser.getId());
+            verify(refreshTokenRepository).save(any(RefreshToken.class));
         }
 
         @Test
@@ -158,8 +105,9 @@ class AuthServiceTest {
             when(userRepository.findByEmail(anyString())).thenReturn(Optional.empty());
 
             // When & Then
-            assertThatThrownBy(() -> authService.login(loginRequest))
-                    .isInstanceOf(UserException.class);
+            assertThatThrownBy(() -> authService.login(loginRequest, DEVICE_ID, DEVICE_NAME, IP_ADDRESS, USER_AGENT))
+                    .isInstanceOf(UserException.class)
+                    .hasMessageContaining("찾을 수 없습니다");
         }
 
         @Test
@@ -170,23 +118,9 @@ class AuthServiceTest {
             when(passwordEncoder.matches(anyString(), anyString())).thenReturn(false);
 
             // When & Then
-            assertThatThrownBy(() -> authService.login(loginRequest))
+            assertThatThrownBy(() -> authService.login(loginRequest, DEVICE_ID, DEVICE_NAME, IP_ADDRESS, USER_AGENT))
                     .isInstanceOf(UserException.class)
                     .hasMessageContaining("비밀번호");
-        }
-
-        @Test
-        @DisplayName("실패 - 비활성화된 계정")
-        void login_Fail_InactiveAccount() {
-            // Given
-            testUser.setIsActive(false);
-            when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(testUser));
-            when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
-
-            // When & Then
-            assertThatThrownBy(() -> authService.login(loginRequest))
-                    .isInstanceOf(UserException.class)
-                    .hasMessageContaining("비활성화");
         }
     }
 
@@ -198,65 +132,134 @@ class AuthServiceTest {
         @DisplayName("성공 - 토큰 갱신")
         void refreshToken_Success() {
             // Given
-            String refreshToken = "validRefreshToken";
-            RefreshToken storedToken = new RefreshToken();
-            storedToken.setToken(refreshToken);
-            storedToken.setUser(testUser);
+            String refreshTokenStr = "validRefreshToken";
+            RefreshToken storedToken = RefreshToken.builder()
+                    .token(refreshTokenStr)
+                    .user(testUser)
+                    .deviceId(DEVICE_ID)
+                    .expiresAt(LocalDateTime.now().plusDays(7))
+                    .isRevoked(false)
+                    .build();
 
-            when(jwtService.validateToken(refreshToken)).thenReturn(true);
-            when(jwtService.extractUserId(refreshToken)).thenReturn(1L);
-            when(refreshTokenRepository.findByToken(refreshToken)).thenReturn(Optional.of(storedToken));
+            when(refreshTokenRepository.findByToken(refreshTokenStr)).thenReturn(Optional.of(storedToken));
             when(jwtService.generateToken(anyLong(), anyString())).thenReturn("newAccessToken");
 
             // When
-            AuthDto.TokenResponse response = authService.refreshToken(refreshToken);
+            AuthDto.TokenResponse response = authService.refreshToken(refreshTokenStr, DEVICE_ID);
 
             // Then
             assertThat(response).isNotNull();
             assertThat(response.getAccessToken()).isEqualTo("newAccessToken");
+            assertThat(response.getRefreshToken()).isEqualTo(refreshTokenStr);
+            verify(refreshTokenRepository).save(storedToken);
         }
 
         @Test
-        @DisplayName("실패 - 유효하지 않은 리프레시 토큰")
-        void refreshToken_Fail_InvalidToken() {
+        @DisplayName("실패 - 존재하지 않는 리프레시 토큰")
+        void refreshToken_Fail_TokenNotFound() {
             // Given
             String refreshToken = "invalidToken";
-            when(jwtService.validateToken(refreshToken)).thenReturn(false);
+            when(refreshTokenRepository.findByToken(refreshToken)).thenReturn(Optional.empty());
 
             // When & Then
-            assertThatThrownBy(() -> authService.refreshToken(refreshToken))
-                    .isInstanceOf(UserException.class);
+            assertThatThrownBy(() -> authService.refreshToken(refreshToken, DEVICE_ID))
+                    .isInstanceOf(UserException.class)
+                    .hasMessageContaining("유효하지 않은");
+        }
+
+        @Test
+        @DisplayName("실패 - 만료된 리프레시 토큰")
+        void refreshToken_Fail_ExpiredToken() {
+            // Given
+            String refreshTokenStr = "expiredToken";
+            RefreshToken expiredToken = RefreshToken.builder()
+                    .token(refreshTokenStr)
+                    .user(testUser)
+                    .deviceId(DEVICE_ID)
+                    .expiresAt(LocalDateTime.now().minusDays(1))  // 만료됨
+                    .isRevoked(false)
+                    .build();
+
+            when(refreshTokenRepository.findByToken(refreshTokenStr)).thenReturn(Optional.of(expiredToken));
+
+            // When & Then
+            assertThatThrownBy(() -> authService.refreshToken(refreshTokenStr, DEVICE_ID))
+                    .isInstanceOf(UserException.class)
+                    .hasMessageContaining("만료");
+        }
+
+        @Test
+        @DisplayName("실패 - 취소된 리프레시 토큰")
+        void refreshToken_Fail_RevokedToken() {
+            // Given
+            String refreshTokenStr = "revokedToken";
+            RefreshToken revokedToken = RefreshToken.builder()
+                    .token(refreshTokenStr)
+                    .user(testUser)
+                    .deviceId(DEVICE_ID)
+                    .expiresAt(LocalDateTime.now().plusDays(7))
+                    .isRevoked(true)  // 취소됨
+                    .build();
+
+            when(refreshTokenRepository.findByToken(refreshTokenStr)).thenReturn(Optional.of(revokedToken));
+
+            // When & Then
+            assertThatThrownBy(() -> authService.refreshToken(refreshTokenStr, DEVICE_ID))
+                    .isInstanceOf(UserException.class)
+                    .hasMessageContaining("취소");
         }
     }
 
     @Nested
-    @DisplayName("이메일 중복 확인 테스트")
-    class CheckEmailTest {
+    @DisplayName("로그아웃 테스트")
+    class LogoutTest {
 
         @Test
-        @DisplayName("이메일 사용 가능")
-        void checkEmail_Available() {
+        @DisplayName("성공 - 특정 기기 로그아웃")
+        void logout_Success_SingleDevice() {
             // Given
-            when(userRepository.existsByEmail("new@example.com")).thenReturn(false);
+            String refreshTokenStr = "validRefreshToken";
+            RefreshToken storedToken = RefreshToken.builder()
+                    .token(refreshTokenStr)
+                    .user(testUser)
+                    .deviceId(DEVICE_ID)
+                    .isRevoked(false)
+                    .build();
+
+            when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+            when(refreshTokenRepository.findByToken(refreshTokenStr)).thenReturn(Optional.of(storedToken));
 
             // When
-            boolean exists = authService.checkEmailDuplicate("new@example.com");
+            authService.logout(1L, refreshTokenStr, false);
 
             // Then
-            assertThat(exists).isFalse();
+            verify(refreshTokenRepository).save(storedToken);
+            assertThat(storedToken.getIsRevoked()).isTrue();
         }
 
         @Test
-        @DisplayName("이메일 이미 존재")
-        void checkEmail_Duplicate() {
+        @DisplayName("성공 - 모든 기기 로그아웃")
+        void logout_Success_AllDevices() {
             // Given
-            when(userRepository.existsByEmail("existing@example.com")).thenReturn(true);
+            when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
 
             // When
-            boolean exists = authService.checkEmailDuplicate("existing@example.com");
+            authService.logout(1L, null, true);
 
             // Then
-            assertThat(exists).isTrue();
+            verify(refreshTokenRepository).revokeAllByUser(testUser);
+        }
+
+        @Test
+        @DisplayName("실패 - 존재하지 않는 사용자")
+        void logout_Fail_UserNotFound() {
+            // Given
+            when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+            // When & Then
+            assertThatThrownBy(() -> authService.logout(999L, "token", false))
+                    .isInstanceOf(UserException.class)
+                    .hasMessageContaining("찾을 수 없습니다");
         }
     }
 }

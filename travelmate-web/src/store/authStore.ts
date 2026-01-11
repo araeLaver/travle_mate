@@ -15,43 +15,44 @@ interface User {
 
 interface AuthState {
   user: User | null;
-  token: string | null;
   isAuthenticated: boolean;
 
   // Actions
-  setAuth: (user: User, token: string) => void;
+  setAuth: (user: User) => void;
   clearAuth: () => void;
   updateUser: (user: Partial<User>) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    set => ({
       user: null,
-      token: null,
       isAuthenticated: false,
 
-      setAuth: (user, token) =>
+      setAuth: user =>
         set({
           user,
-          token,
           isAuthenticated: true,
         }),
 
       clearAuth: () =>
         set({
           user: null,
-          token: null,
           isAuthenticated: false,
         }),
 
-      updateUser: (updatedUser) =>
-        set((state) => ({
+      updateUser: updatedUser =>
+        set(state => ({
           user: state.user ? { ...state.user, ...updatedUser } : null,
         })),
     }),
     {
       name: 'auth-storage', // localStorage key
+      partialize: state => ({
+        // 사용자 정보만 저장, 토큰은 저장하지 않음 (보안)
+        user: state.user,
+        isAuthenticated: state.isAuthenticated,
+      }),
     }
   )
 );

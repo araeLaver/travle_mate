@@ -56,14 +56,16 @@ export interface RegisterResponse {
 
 class AuthService {
   private accessToken: string | null = null;
-  private refreshToken: string | null = null;
   private tokenExpiresAt: number | null = null;
+  private refreshPromise: Promise<TokenResponse> | null = null; // Race condition 방지
 
   constructor() {
     this.accessToken = localStorage.getItem('accessToken');
-    this.refreshToken = localStorage.getItem('refreshToken');
     const expiresAt = localStorage.getItem('tokenExpiresAt');
     this.tokenExpiresAt = expiresAt ? parseInt(expiresAt) : null;
+
+    // 기존 refreshToken이 localStorage에 있다면 제거 (마이그레이션)
+    localStorage.removeItem('refreshToken');
   }
 
   async login(request: LoginRequest): Promise<LoginResponse> {
@@ -75,6 +77,7 @@ class AuthService {
           'X-Device-Id': this.getDeviceId(),
           'X-Device-Name': navigator.userAgent,
         },
+        credentials: 'include', // httpOnly 쿠키 수신을 위해 필수
         body: JSON.stringify(request),
       });
 
@@ -100,6 +103,7 @@ class AuthService {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // httpOnly 쿠키 수신을 위해 필수
         body: JSON.stringify({
           ...request,
           deviceId: this.getDeviceId(),
@@ -123,18 +127,30 @@ class AuthService {
   }
 
   async refreshAccessToken(): Promise<TokenResponse> {
-    if (!this.refreshToken) {
-      throw new Error('Refresh token이 없습니다.');
+    // 이미 갱신 중인 경우 기존 Promise 반환 (Race Condition 방지)
+    if (this.refreshPromise) {
+      return this.refreshPromise;
     }
 
+    this.refreshPromise = this.doRefreshToken();
+
     try {
+      return await this.refreshPromise;
+    } finally {
+      this.refreshPromise = null;
+    }
+  }
+
+  private async doRefreshToken(): Promise<TokenResponse> {
+    try {
+      // Refresh token은 httpOnly 쿠키로 자동 전송됨
       const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // httpOnly 쿠키 전송을 위해 필수
         body: JSON.stringify({
-          refreshToken: this.refreshToken,
           deviceId: this.getDeviceId(),
         }),
       });
@@ -161,11 +177,10 @@ class AuthService {
 
   private saveTokens(data: LoginResponse): void {
     this.accessToken = data.accessToken;
-    this.refreshToken = data.refreshToken;
     this.tokenExpiresAt = Date.now() + data.expiresIn * 1000;
 
+    // Access Token만 localStorage에 저장 (Refresh Token은 httpOnly 쿠키로 관리)
     localStorage.setItem('accessToken', data.accessToken);
-    localStorage.setItem('refreshToken', data.refreshToken);
     localStorage.setItem('tokenExpiresAt', this.tokenExpiresAt.toString());
 
     // 기존 호환성을 위해 authToken도 저장
@@ -190,8 +205,9 @@ class AuthService {
   async getValidToken(): Promise<string | null> {
     if (!this.accessToken) return null;
 
-    if (this.isTokenExpired() && this.refreshToken) {
+    if (this.isTokenExpired()) {
       try {
+        // Refresh token은 httpOnly 쿠키로 관리되므로 별도 체크 불필요
         await this.refreshAccessToken();
       } catch (error) {
         return null;
@@ -233,8 +249,8 @@ class AuthService {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${this.accessToken}`,
           },
+          credentials: 'include', // httpOnly 쿠키 전송 및 삭제를 위해 필수
           body: JSON.stringify({
-            refreshToken: this.refreshToken,
             logoutAll,
           }),
         });
@@ -248,12 +264,11 @@ class AuthService {
 
   private clearTokens(): void {
     this.accessToken = null;
-    this.refreshToken = null;
     this.tokenExpiresAt = null;
     localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
     localStorage.removeItem('tokenExpiresAt');
     localStorage.removeItem('authToken');
+    // refreshToken은 서버에서 쿠키 삭제 처리
   }
 
   getToken(): string | null {
@@ -261,7 +276,14 @@ class AuthService {
   }
 
   isAuthenticated(): boolean {
+    // Access Token이 있고 만료되지 않았거나, httpOnly 쿠키로 갱신 가능한 경우
     return this.accessToken !== null && !this.isTokenExpired();
+  }
+
+  hasRefreshCapability(): boolean {
+    // Refresh token은 httpOnly 쿠키로 관리되므로 클라이언트에서 확인 불가
+    // 토큰 갱신 시도 후 결과로 판단
+    return true;
   }
 
   async checkEmailDuplicate(email: string): Promise<boolean> {
