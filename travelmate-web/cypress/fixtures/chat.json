@@ -1,0 +1,95 @@
+{
+  "rooms": {
+    "content": [
+      {
+        "id": 1,
+        "name": "서울 여행 그룹 채팅",
+        "type": "GROUP",
+        "groupId": 1,
+        "lastMessage": "내일 몇 시에 만나요?",
+        "lastMessageTime": "2024-01-20T10:30:00Z",
+        "unreadCount": 3,
+        "participants": [
+          { "id": 1, "nickname": "TestUser", "profileImageUrl": null },
+          { "id": 2, "nickname": "TravelBuddy", "profileImageUrl": null },
+          { "id": 3, "nickname": "Explorer", "profileImageUrl": null }
+        ]
+      },
+      {
+        "id": 2,
+        "name": "TravelBuddy",
+        "type": "PRIVATE",
+        "lastMessage": "안녕하세요!",
+        "lastMessageTime": "2024-01-19T15:00:00Z",
+        "unreadCount": 0,
+        "participants": [
+          { "id": 1, "nickname": "TestUser", "profileImageUrl": null },
+          { "id": 2, "nickname": "TravelBuddy", "profileImageUrl": "/images/profile2.jpg" }
+        ]
+      }
+    ],
+    "totalElements": 2,
+    "totalPages": 1,
+    "number": 0
+  },
+  "messages": {
+    "content": [
+      {
+        "id": 1,
+        "senderId": 2,
+        "senderNickname": "TravelBuddy",
+        "senderProfileImageUrl": "/images/profile2.jpg",
+        "content": "안녕하세요!",
+        "type": "TEXT",
+        "createdAt": "2024-01-20T10:00:00Z",
+        "isRead": true
+      },
+      {
+        "id": 2,
+        "senderId": 1,
+        "senderNickname": "TestUser",
+        "senderProfileImageUrl": null,
+        "content": "반갑습니다!",
+        "type": "TEXT",
+        "createdAt": "2024-01-20T10:05:00Z",
+        "isRead": true
+      },
+      {
+        "id": 3,
+        "senderId": 2,
+        "senderNickname": "TravelBuddy",
+        "senderProfileImageUrl": "/images/profile2.jpg",
+        "content": "내일 몇 시에 만나요?",
+        "type": "TEXT",
+        "createdAt": "2024-01-20T10:30:00Z",
+        "isRead": false
+      }
+    ],
+    "totalElements": 3,
+    "totalPages": 1,
+    "number": 0
+  },
+  "imageMessage": {
+    "id": 4,
+    "senderId": 2,
+    "senderNickname": "TravelBuddy",
+    "content": null,
+    "type": "IMAGE",
+    "imageUrl": "/images/travel-photo.jpg",
+    "thumbnailUrl": "/images/travel-photo-thumb.jpg",
+    "createdAt": "2024-01-20T11:00:00Z",
+    "isRead": true
+  },
+  "locationMessage": {
+    "id": 5,
+    "senderId": 2,
+    "senderNickname": "TravelBuddy",
+    "content": null,
+    "type": "LOCATION",
+    "latitude": 37.5796,
+    "longitude": 126.977,
+    "placeName": "경복궁",
+    "createdAt": "2024-01-20T11:30:00Z",
+    "isRead": true
+  }
+}

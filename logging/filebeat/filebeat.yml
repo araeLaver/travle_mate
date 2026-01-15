@@ -1,0 +1,83 @@
+# Filebeat Configuration for TravelMate
+
+filebeat.inputs:
+
+  # Spring Boot application logs
+  - type: log
+    id: travelmate-backend
+    enabled: true
+    paths:
+      - /var/log/travelmate/*.log
+    fields:
+      service: travelmate-backend
+      environment: ${ENVIRONMENT:dev}
+    fields_under_root: false
+    multiline:
+      pattern: '^\d{4}-\d{2}-\d{2}'
+      negate: true
+      match: after
+    processors:
+      - add_docker_metadata: ~
+      - add_host_metadata: ~
+
+  # Docker container logs
+  - type: container
+    id: docker-containers
+    enabled: true
+    paths:
+      - /var/lib/docker/containers/*/*.log
+    processors:
+      - add_docker_metadata:
+          host: "unix:///var/run/docker.sock"
+          match_source_index: 4
+      - add_host_metadata: ~
+      - drop_event:
+          when:
+            or:
+              - contains:
+                  container.name: "filebeat"
+              - contains:
+                  container.name: "elasticsearch"
+              - contains:
+                  container.name: "logstash"
+              - contains:
+                  container.name: "kibana"
+
+# Processors
+processors:
+  - add_cloud_metadata: ~
+  - add_locale:
+      format: offset
+  - decode_json_fields:
+      fields: ["message"]
+      target: ""
+      overwrite_keys: true
+      add_error_key: true
+
+# Output to Logstash
+output.logstash:
+  hosts: ["logstash:5044"]
+  loadbalance: true
+  bulk_max_size: 2048
+
+# Elasticsearch template settings
+setup.template.enabled: false
+
+# Kibana setup
+setup.kibana:
+  host: "kibana:5601"
+
+# Index Lifecycle Management
+setup.ilm.enabled: false
+
+# Logging
+logging.level: info
+logging.to_files: true
+logging.files:
+  path: /usr/share/filebeat/logs
+  name: filebeat
+  keepfiles: 7
+  permissions: 0644
+
+# Monitoring
+monitoring.enabled: false

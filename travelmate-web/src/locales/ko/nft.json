@@ -1,0 +1,94 @@
+{
+  "collection": {
+    "title": "NFT 컬렉션",
+    "myCollections": "내 컬렉션",
+    "totalCollected": "총 수집",
+    "recentlyCollected": "최근 수집",
+    "empty": "아직 수집한 NFT가 없습니다",
+    "emptyDescription": "주변의 특별한 장소를 방문하여 NFT를 수집해보세요!"
+  },
+  "collect": {
+    "title": "NFT 수집",
+    "nearby": "주변 수집 장소",
+    "distance": "{{distance}}m 거리",
+    "collect": "수집하기",
+    "collecting": "수집 중...",
+    "collected": "수집 완료!",
+    "alreadyCollected": "이미 수집함",
+    "tooFar": "더 가까이 이동해주세요",
+    "requirements": "수집 조건",
+    "withinRange": "{{distance}}m 이내",
+    "verifyLocation": "위치 확인 중..."
+  },
+  "mint": {
+    "title": "NFT 민팅",
+    "subtitle": "수집한 NFT를 블록체인에 기록하세요",
+    "mintable": "민팅 가능",
+    "minting": "민팅 중",
+    "minted": "민팅 완료",
+    "failed": "민팅 실패",
+    "mint": "민팅하기",
+    "retry": "다시 시도",
+    "viewOnChain": "블록체인에서 보기",
+    "viewOnOpenSea": "OpenSea에서 보기",
+    "transactionHash": "트랜잭션 해시",
+    "tokenId": "토큰 ID",
+    "contractAddress": "컨트랙트 주소",
+    "status": {
+      "PENDING": "대기 중",
+      "IN_PROGRESS": "진행 중",
+      "COMPLETED": "완료",
+      "FAILED": "실패"
+    },
+    "steps": {
+      "connect": "지갑 연결",
+      "sign": "서명",
+      "upload": "메타데이터 업로드",
+      "mint": "민팅",
+      "confirm": "확인"
+    },
+    "wallet": {
+      "connect": "지갑 연결",
+      "connected": "연결됨",
+      "disconnect": "연결 해제",
+      "notConnected": "지갑이 연결되지 않았습니다"
+    }
+  },
+  "location": {
+    "title": "장소 정보",
+    "name": "장소명",
+    "category": "카테고리",
+    "address": "주소",
+    "description": "설명",
+    "rarity": "희귀도",
+    "collectors": "수집자",
+    "reviews": "리뷰",
+    "rating": "평점",
+    "writeReview": "리뷰 작성",
+    "rarityLevels": {
+      "COMMON": "일반",
+      "UNCOMMON": "희귀",
+      "RARE": "레어",
+      "EPIC": "에픽",
+      "LEGENDARY": "레전더리"
+    }
+  },
+  "review": {
+    "title": "리뷰",
+    "write": "리뷰 작성",
+    "edit": "리뷰 수정",
+    "rating": "평점",
+    "comment": "코멘트",
+    "season": "방문 계절",
+    "helpful": "도움됨",
+    "report": "신고",
+    "seasons": {
+      "SPRING": "봄",
+      "SUMMER": "여름",
+      "FALL": "가을",
+      "WINTER": "겨울"
+    },
+    "placeholder": "이 장소에 대한 경험을 공유해주세요",
+    "empty": "아직 리뷰가 없습니다"
+  }
+}

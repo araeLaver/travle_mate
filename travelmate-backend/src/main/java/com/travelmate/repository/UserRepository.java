@@ -1,11 +1,14 @@
 package com.travelmate.repository;
 
 import com.travelmate.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,4 +43,22 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findUsersForShake(@Param("latitude") Double latitude,
                                 @Param("longitude") Double longitude,
                                 @Param("radiusKm") Double radiusKm);
+
+    // Admin Dashboard methods
+    long countByCreatedAtAfter(LocalDateTime dateTime);
+
+    long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
+
+    @Query("SELECT COUNT(u) FROM User u WHERE u.lastLoginAt >= :since")
+    long countActiveUsersSince(@Param("since") LocalDateTime since);
+
+    @Query("SELECT u FROM User u WHERE " +
+           "(:search IS NULL OR u.email LIKE %:search% OR u.nickname LIKE %:search%) AND " +
+           "(:role IS NULL OR u.role = :role) AND " +
+           "(:isActive IS NULL OR u.enabled = :isActive)")
+    Page<User> findUsersForAdmin(
+            @Param("search") String search,
+            @Param("role") String role,
+            @Param("isActive") Boolean isActive,
+            Pageable pageable);
 }

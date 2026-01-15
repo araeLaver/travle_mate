@@ -3,11 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '../components/Toast';
 import { nftService } from '../services/nftService';
 import { achievementService } from '../services/achievementService';
+import { mintingService, getMintStatusLabel, getMintStatusColor } from '../services/mintingService';
+import { useWallet } from '../hooks/useWallet';
+import MintingModal from '../components/nft/MintingModal';
 import {
   UserNftCollectionResponse,
   CollectionBookResponse,
   AchievementResponse,
   Rarity,
+  MintStatus,
 } from '../types';
 import './NFTCollection.css';
 
@@ -58,6 +62,29 @@ const BackIcon = () => (
   </svg>
 );
 
+const ChainIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+  </svg>
+);
+
+const MintIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M12 2L2 7l10 5 10-5-10-5z" />
+    <path d="M2 17l10 5 10-5" />
+    <path d="M2 12l10 5 10-5" />
+  </svg>
+);
+
+const ExternalLinkIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+    <polyline points="15 3 21 3 21 9" />
+    <line x1="10" y1="14" x2="21" y2="3" />
+  </svg>
+);
+
 // Rarity 색상 매핑
 const rarityColors: Record<Rarity, string> = {
   COMMON: '#9ca3af',
@@ -78,6 +105,8 @@ type TabType = 'collection' | 'book' | 'achievements';
 const NFTCollection: React.FC = () => {
   const navigate = useNavigate();
   const toast = useToast();
+  // useWallet hook - wallet connection is handled by MintingModal
+  useWallet();
 
   const [activeTab, setActiveTab] = useState<TabType>('collection');
   const [collections, setCollections] = useState<UserNftCollectionResponse[]>([]);
@@ -87,6 +116,10 @@ const NFTCollection: React.FC = () => {
   const [selectedRarity, setSelectedRarity] = useState<Rarity | 'ALL'>('ALL');
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
+
+  // 민팅 관련 상태
+  const [mintingNft, setMintingNft] = useState<UserNftCollectionResponse | null>(null);
+  const [showMintingModal, setShowMintingModal] = useState(false);
 
   // 컬렉션 조회
   const loadCollections = useCallback(
@@ -150,6 +183,41 @@ const NFTCollection: React.FC = () => {
   const loadMore = () => {
     setPage(prev => prev + 1);
     loadCollections();
+  };
+
+  // 민팅 모달 열기
+  const handleOpenMintingModal = (nft: UserNftCollectionResponse) => {
+    setMintingNft(nft);
+    setShowMintingModal(true);
+  };
+
+  // 민팅 모달 닫기
+  const handleCloseMintingModal = () => {
+    setShowMintingModal(false);
+    setMintingNft(null);
+  };
+
+  // 민팅 완료 시 컬렉션 새로고침
+  const handleMintingComplete = () => {
+    loadCollections(true);
+    toast.success('NFT 민팅이 완료되었습니다!');
+  };
+
+  // 민팅 상태에 따른 버튼 텍스트
+  const getMintButtonContent = (status: MintStatus) => {
+    switch (status) {
+      case 'PENDING':
+        return { text: '민팅하기', icon: <MintIcon />, disabled: false };
+      case 'MINTING':
+      case 'CONFIRMING':
+        return { text: '민팅 중...', icon: <MintIcon />, disabled: true };
+      case 'MINTED':
+        return { text: '민팅 완료', icon: <ChainIcon />, disabled: true };
+      case 'FAILED':
+        return { text: '재시도', icon: <MintIcon />, disabled: false };
+      default:
+        return { text: '민팅하기', icon: <MintIcon />, disabled: false };
+    }
   };
 
   return (
@@ -229,42 +297,79 @@ const NFTCollection: React.FC = () => {
             </div>
           ) : (
             <div className="collection-grid">
-              {filteredCollections.map(nft => (
-                <article key={nft.id} className="nft-card">
-                  <div className="nft-image">
-                    {nft.location.nftImageUrl || nft.location.imageUrl ? (
-                      <img
-                        src={nft.location.nftImageUrl || nft.location.imageUrl}
-                        alt={nft.location.name}
-                      />
-                    ) : (
-                      <div className="image-placeholder">
-                        <MapPinIcon />
-                      </div>
-                    )}
-                    <span
-                      className="rarity-badge"
-                      style={{ backgroundColor: rarityColors[nft.location.rarity] }}
-                    >
-                      {rarityLabels[nft.location.rarity]}
-                    </span>
-                  </div>
-                  <div className="nft-info">
-                    <h3>{nft.location.name}</h3>
-                    <p className="nft-location">
-                      {nft.location.city}, {nft.location.country}
-                    </p>
-                    <div className="nft-meta">
-                      <span className="points">
-                        <CoinIcon />
-                        {nft.earnedPoints}P
+              {filteredCollections.map(nft => {
+                const mintButton = getMintButtonContent(nft.mintStatus);
+                return (
+                  <article key={nft.id} className="nft-card">
+                    <div className="nft-image">
+                      {nft.location.nftImageUrl || nft.location.imageUrl ? (
+                        <img
+                          src={nft.location.nftImageUrl || nft.location.imageUrl}
+                          alt={nft.location.name}
+                        />
+                      ) : (
+                        <div className="image-placeholder">
+                          <MapPinIcon />
+                        </div>
+                      )}
+                      <span
+                        className="rarity-badge"
+                        style={{ backgroundColor: rarityColors[nft.location.rarity] }}
+                      >
+                        {rarityLabels[nft.location.rarity]}
                       </span>
-                      <span className="date">{new Date(nft.collectedAt).toLocaleDateString()}</span>
+                      {/* 민팅 상태 뱃지 */}
+                      {nft.mintStatus !== 'PENDING' && (
+                        <span
+                          className={`mint-status-badge ${nft.mintStatus.toLowerCase()}`}
+                          style={{ backgroundColor: getMintStatusColor(nft.mintStatus) }}
+                        >
+                          {nft.mintStatus === 'MINTED' && <ChainIcon />}
+                          {getMintStatusLabel(nft.mintStatus)}
+                        </span>
+                      )}
                     </div>
-                    {nft.tokenId && <p className="token-id">#{nft.tokenId}</p>}
-                  </div>
-                </article>
-              ))}
+                    <div className="nft-info">
+                      <h3>{nft.location.name}</h3>
+                      <p className="nft-location">
+                        {nft.location.city}, {nft.location.country}
+                      </p>
+                      <div className="nft-meta">
+                        <span className="points">
+                          <CoinIcon />
+                          {nft.earnedPoints}P
+                        </span>
+                        <span className="date">{new Date(nft.collectedAt).toLocaleDateString()}</span>
+                      </div>
+                      {nft.tokenId && <p className="token-id">#{nft.tokenId}</p>}
+
+                      {/* 민팅 버튼 또는 링크 */}
+                      <div className="nft-actions">
+                        {nft.mintStatus === 'MINTED' ? (
+                          <a
+                            href={mintingService.getPolygonscanTxUrl(nft.tokenId || '')}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn-view-chain"
+                          >
+                            <ExternalLinkIcon />
+                            Polygonscan
+                          </a>
+                        ) : (
+                          <button
+                            className={`btn-mint ${nft.mintStatus.toLowerCase()}`}
+                            onClick={() => handleOpenMintingModal(nft)}
+                            disabled={mintButton.disabled}
+                          >
+                            {mintButton.icon}
+                            {mintButton.text}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           )}
 
@@ -421,6 +526,19 @@ const NFTCollection: React.FC = () => {
             </div>
           )}
         </div>
+      )}
+
+      {/* 민팅 모달 */}
+      {showMintingModal && mintingNft && (
+        <MintingModal
+          collectionId={mintingNft.id}
+          locationName={mintingNft.location.name}
+          nftImageUrl={mintingNft.location.nftImageUrl || mintingNft.location.imageUrl}
+          rarity={mintingNft.location.rarity}
+          currentMintStatus={mintingNft.mintStatus}
+          onClose={handleCloseMintingModal}
+          onMintingComplete={handleMintingComplete}
+        />
       )}
     </div>
   );

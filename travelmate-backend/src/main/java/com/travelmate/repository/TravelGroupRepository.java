@@ -49,4 +49,17 @@ public interface TravelGroupRepository extends JpaRepository<TravelGroup, Long> 
     List<TravelGroup> findByCreatorId(@Param("userId") Long userId);
     
     List<TravelGroup> findByStatus(TravelGroup.Status status);
+
+    // ===== Admin Dashboard Queries =====
+
+    /**
+     * 활성 그룹 수 조회 (RECRUITING 또는 ACTIVE)
+     */
+    @Query("SELECT COUNT(tg) FROM TravelGroup tg WHERE tg.status = 'RECRUITING' OR tg.status = 'ACTIVE'")
+    long countActiveGroups();
+
+    /**
+     * 특정 상태의 그룹 수 조회
+     */
+    long countByStatus(TravelGroup.Status status);
 }

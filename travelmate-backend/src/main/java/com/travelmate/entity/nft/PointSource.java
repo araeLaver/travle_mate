@@ -13,7 +13,9 @@ public enum PointSource {
     TRANSFER("포인트 전송"),
     EVENT_REWARD("이벤트 보상"),
     REFERRAL("친구 초대"),
-    ADMIN("관리자 지급");
+    ADMIN("관리자 지급"),
+    PURCHASE("포인트 구매"),
+    REFUND("포인트 환불");
 
     private final String displayName;
 

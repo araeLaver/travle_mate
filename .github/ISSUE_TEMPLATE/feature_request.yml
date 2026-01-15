@@ -1,0 +1,88 @@
+name: Feature Request
+description: Suggest a new feature for TravelMate
+title: "[Feature]: "
+labels: ["enhancement", "triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to suggest a new feature!
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      description: Which part of TravelMate would this feature affect?
+      options:
+        - Frontend (Web)
+        - Backend (API)
+        - Mobile App
+        - NFT System
+        - AI Recommendations
+        - Payment System
+        - Admin Dashboard
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: Is your feature request related to a problem? Please describe.
+      placeholder: A clear and concise description of what the problem is. Ex. I'm always frustrated when...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the solution you'd like
+      placeholder: A clear and concise description of what you want to happen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Describe any alternative solutions or features you've considered.
+      placeholder: Any alternative approaches...
+
+  - type: textarea
+    id: mockups
+    attributes:
+      label: Mockups / Examples
+      description: If applicable, add mockups, wireframes, or examples from other apps.
+      placeholder: Drag and drop images here...
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this feature to you?
+      options:
+        - Low - Nice to have
+        - Medium - Would improve my experience
+        - High - Critical for my use case
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      options:
+        - label: I would be willing to help implement this feature
+        - label: I would be willing to help test this feature
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Checklist
+      options:
+        - label: I have searched for existing feature requests
+          required: true

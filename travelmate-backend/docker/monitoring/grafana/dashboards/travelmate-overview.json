@@ -1,0 +1,339 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "description": "TravelMate Application Overview Dashboard",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "panels": [],
+      "title": "Application Overview",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "mappings": [
+            { "options": { "0": { "color": "red", "index": 0, "text": "DOWN" }, "1": { "color": "green", "index": 1, "text": "UP" } }, "type": "value" }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] }
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 1 },
+      "id": 2,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "pluginVersion": "10.2.2",
+      "targets": [{ "expr": "up{job=~\"travelmate-backend.*\"}", "refId": "A" }],
+      "title": "Application Status",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 4, "y": 1 },
+      "id": 3,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{ "expr": "travelmate_users_active", "refId": "A" }],
+      "title": "Active Users",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 8, "y": 1 },
+      "id": 4,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{ "expr": "travelmate_users_total", "refId": "A" }],
+      "title": "Total Users",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 12, "y": 1 },
+      "id": 5,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{ "expr": "travelmate_nfts_total", "refId": "A" }],
+      "title": "Total NFTs",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 16, "y": 1 },
+      "id": 6,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{ "expr": "travelmate_reviews_total", "refId": "A" }],
+      "title": "Total Reviews",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "unit": "reqps"
+        }
+      },
+      "gridPos": { "h": 4, "w": 4, "x": 20, "y": 1 },
+      "id": 7,
+      "options": { "colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{ "expr": "sum(rate(http_server_requests_seconds_count{application=\"travelmate-backend\"}[5m]))", "refId": "A" }],
+      "title": "Request Rate",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "id": 10,
+      "panels": [],
+      "title": "HTTP Metrics",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 20, "gradientMode": "none", "hideFrom": { "legend": false, "tooltip": false, "viz": false }, "lineInterpolation": "smooth", "lineWidth": 2, "pointSize": 5, "scaleDistribution": { "type": "linear" }, "showPoints": "auto", "spanNulls": false, "stacking": { "group": "A", "mode": "none" }, "thresholdsStyle": { "mode": "off" } },
+          "unit": "reqps"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "id": 11,
+      "options": { "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
+      "targets": [
+        { "expr": "sum(rate(http_server_requests_seconds_count{application=\"travelmate-backend\", status=~\"2..\"}[5m]))", "legendFormat": "2xx Success", "refId": "A" },
+        { "expr": "sum(rate(http_server_requests_seconds_count{application=\"travelmate-backend\", status=~\"4..\"}[5m]))", "legendFormat": "4xx Client Error", "refId": "B" },
+        { "expr": "sum(rate(http_server_requests_seconds_count{application=\"travelmate-backend\", status=~\"5..\"}[5m]))", "legendFormat": "5xx Server Error", "refId": "C" }
+      ],
+      "title": "HTTP Request Rate by Status",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 20, "gradientMode": "none", "hideFrom": { "legend": false, "tooltip": false, "viz": false }, "lineInterpolation": "smooth", "lineWidth": 2, "pointSize": 5, "scaleDistribution": { "type": "linear" }, "showPoints": "auto", "spanNulls": false, "stacking": { "group": "A", "mode": "none" }, "thresholdsStyle": { "mode": "off" } },
+          "unit": "s"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "id": 12,
+      "options": { "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
+      "targets": [
+        { "expr": "histogram_quantile(0.50, sum(rate(http_server_requests_seconds_bucket{application=\"travelmate-backend\"}[5m])) by (le))", "legendFormat": "P50", "refId": "A" },
+        { "expr": "histogram_quantile(0.90, sum(rate(http_server_requests_seconds_bucket{application=\"travelmate-backend\"}[5m])) by (le))", "legendFormat": "P90", "refId": "B" },
+        { "expr": "histogram_quantile(0.99, sum(rate(http_server_requests_seconds_bucket{application=\"travelmate-backend\"}[5m])) by (le))", "legendFormat": "P99", "refId": "C" }
+      ],
+      "title": "Response Time Percentiles",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 14 },
+      "id": 20,
+      "panels": [],
+      "title": "Business Metrics",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 20, "gradientMode": "none", "hideFrom": { "legend": false, "tooltip": false, "viz": false }, "lineInterpolation": "smooth", "lineWidth": 2, "pointSize": 5, "scaleDistribution": { "type": "linear" }, "showPoints": "auto", "spanNulls": false, "stacking": { "group": "A", "mode": "none" }, "thresholdsStyle": { "mode": "off" } },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 15 },
+      "id": 21,
+      "options": { "legend": { "calcs": ["sum"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
+      "targets": [
+        { "expr": "increase(travelmate_user_registrations_total[1h])", "legendFormat": "Registrations", "refId": "A" },
+        { "expr": "increase(travelmate_user_logins_total{status=\"success\"}[1h])", "legendFormat": "Successful Logins", "refId": "B" },
+        { "expr": "increase(travelmate_user_logins_total{status=\"failure\"}[1h])", "legendFormat": "Failed Logins", "refId": "C" }
+      ],
+      "title": "User Activity (Last Hour)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 20, "gradientMode": "none", "hideFrom": { "legend": false, "tooltip": false, "viz": false }, "lineInterpolation": "smooth", "lineWidth": 2, "pointSize": 5, "scaleDistribution": { "type": "linear" }, "showPoints": "auto", "spanNulls": false, "stacking": { "group": "A", "mode": "none" }, "thresholdsStyle": { "mode": "off" } },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 15 },
+      "id": 22,
+      "options": { "legend": { "calcs": ["sum"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
+      "targets": [
+        { "expr": "increase(travelmate_nft_collections_total[1h])", "legendFormat": "NFT Collections", "refId": "A" },
+        { "expr": "increase(travelmate_nft_mintings_total{status=\"success\"}[1h])", "legendFormat": "Successful Mintings", "refId": "B" },
+        { "expr": "increase(travelmate_nft_mintings_total{status=\"failure\"}[1h])", "legendFormat": "Failed Mintings", "refId": "C" }
+      ],
+      "title": "NFT Activity (Last Hour)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 20, "gradientMode": "none", "hideFrom": { "legend": false, "tooltip": false, "viz": false }, "lineInterpolation": "smooth", "lineWidth": 2, "pointSize": 5, "scaleDistribution": { "type": "linear" }, "showPoints": "auto", "spanNulls": false, "stacking": { "group": "A", "mode": "none" }, "thresholdsStyle": { "mode": "off" } },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 15 },
+      "id": 23,
+      "options": { "legend": { "calcs": ["sum"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
+      "targets": [
+        { "expr": "increase(travelmate_reviews_created_total[1h])", "legendFormat": "Reviews", "refId": "A" },
+        { "expr": "increase(travelmate_social_follows_total[1h])", "legendFormat": "Follows", "refId": "B" },
+        { "expr": "increase(travelmate_chat_messages_total[1h])", "legendFormat": "Chat Messages", "refId": "C" }
+      ],
+      "title": "Social Activity (Last Hour)",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 23 },
+      "id": 30,
+      "panels": [],
+      "title": "JVM Metrics",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 20, "gradientMode": "none", "hideFrom": { "legend": false, "tooltip": false, "viz": false }, "lineInterpolation": "smooth", "lineWidth": 2, "pointSize": 5, "scaleDistribution": { "type": "linear" }, "showPoints": "auto", "spanNulls": false, "stacking": { "group": "A", "mode": "none" }, "thresholdsStyle": { "mode": "off" } },
+          "unit": "bytes"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
+      "id": 31,
+      "options": { "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
+      "targets": [
+        { "expr": "jvm_memory_used_bytes{area=\"heap\", application=\"travelmate-backend\"}", "legendFormat": "Used Heap", "refId": "A" },
+        { "expr": "jvm_memory_max_bytes{area=\"heap\", application=\"travelmate-backend\"}", "legendFormat": "Max Heap", "refId": "B" },
+        { "expr": "jvm_memory_committed_bytes{area=\"heap\", application=\"travelmate-backend\"}", "legendFormat": "Committed Heap", "refId": "C" }
+      ],
+      "title": "JVM Heap Memory",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 20, "gradientMode": "none", "hideFrom": { "legend": false, "tooltip": false, "viz": false }, "lineInterpolation": "smooth", "lineWidth": 2, "pointSize": 5, "scaleDistribution": { "type": "linear" }, "showPoints": "auto", "spanNulls": false, "stacking": { "group": "A", "mode": "none" }, "thresholdsStyle": { "mode": "off" } },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
+      "id": 32,
+      "options": { "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
+      "targets": [
+        { "expr": "jvm_threads_live_threads{application=\"travelmate-backend\"}", "legendFormat": "Live Threads", "refId": "A" },
+        { "expr": "jvm_threads_daemon_threads{application=\"travelmate-backend\"}", "legendFormat": "Daemon Threads", "refId": "B" },
+        { "expr": "jvm_threads_peak_threads{application=\"travelmate-backend\"}", "legendFormat": "Peak Threads", "refId": "C" }
+      ],
+      "title": "JVM Threads",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 32 },
+      "id": 40,
+      "panels": [],
+      "title": "Database Metrics",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 20, "gradientMode": "none", "hideFrom": { "legend": false, "tooltip": false, "viz": false }, "lineInterpolation": "smooth", "lineWidth": 2, "pointSize": 5, "scaleDistribution": { "type": "linear" }, "showPoints": "auto", "spanNulls": false, "stacking": { "group": "A", "mode": "none" }, "thresholdsStyle": { "mode": "off" } },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 33 },
+      "id": 41,
+      "options": { "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
+      "targets": [
+        { "expr": "hikaricp_connections_active{application=\"travelmate-backend\"}", "legendFormat": "Active Connections", "refId": "A" },
+        { "expr": "hikaricp_connections_idle{application=\"travelmate-backend\"}", "legendFormat": "Idle Connections", "refId": "B" },
+        { "expr": "hikaricp_connections_max{application=\"travelmate-backend\"}", "legendFormat": "Max Connections", "refId": "C" }
+      ],
+      "title": "HikariCP Connection Pool",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisCenteredZero": false, "axisColorMode": "text", "axisLabel": "", "axisPlacement": "auto", "barAlignment": 0, "drawStyle": "line", "fillOpacity": 20, "gradientMode": "none", "hideFrom": { "legend": false, "tooltip": false, "viz": false }, "lineInterpolation": "smooth", "lineWidth": 2, "pointSize": 5, "scaleDistribution": { "type": "linear" }, "showPoints": "auto", "spanNulls": false, "stacking": { "group": "A", "mode": "none" }, "thresholdsStyle": { "mode": "off" } },
+          "unit": "ms"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 33 },
+      "id": 42,
+      "options": { "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "none" } },
+      "targets": [
+        { "expr": "hikaricp_connections_acquire_seconds_max{application=\"travelmate-backend\"} * 1000", "legendFormat": "Max Acquire Time", "refId": "A" },
+        { "expr": "rate(hikaricp_connections_acquire_seconds_sum{application=\"travelmate-backend\"}[5m]) / rate(hikaricp_connections_acquire_seconds_count{application=\"travelmate-backend\"}[5m]) * 1000", "legendFormat": "Avg Acquire Time", "refId": "B" }
+      ],
+      "title": "Connection Acquire Time",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["travelmate", "spring-boot"],
+  "templating": { "list": [] },
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "TravelMate Overview",
+  "uid": "travelmate-overview",
+  "version": 1,
+  "weekStart": ""
+}

@@ -83,8 +83,8 @@ describe('NotificationCenter', () => {
   test('알림 센터 렌더링 테스트', () => {
     render(<NotificationCenter />, { wrapper: createWrapper() });
 
-    // 알림 벨 아이콘이 보여야 함
-    const bellButton = screen.getByRole('button', { name: /🔔/i });
+    // 알림 벨 아이콘이 보여야 함 (aria-label로 검색)
+    const bellButton = screen.getByRole('button', { name: /알림/i });
     expect(bellButton).toBeInTheDocument();
 
     // 읽지 않은 알림 뱃지가 보여야 함
@@ -94,10 +94,10 @@ describe('NotificationCenter', () => {
   test('알림 벨 클릭 시 드롭다운 표시', async () => {
     render(<NotificationCenter />, { wrapper: createWrapper() });
 
-    const bellButton = screen.getByRole('button', { name: /🔔/i });
+    const bellButton = screen.getByRole('button', { name: /알림/i });
     fireEvent.click(bellButton);
 
-    expect(await screen.findByText('알림')).toBeInTheDocument();
+    expect(await screen.findByRole('dialog', { name: /알림 목록/i })).toBeInTheDocument();
     expect(screen.getByText('그룹 초대')).toBeInTheDocument();
     expect(screen.getByText('새 메시지')).toBeInTheDocument();
   });
@@ -112,7 +112,7 @@ describe('NotificationCenter', () => {
     render(<NotificationCenter />, { wrapper: createWrapper() });
 
     // 드롭다운 열기
-    const bellButton = screen.getByRole('button', { name: /🔔/i });
+    const bellButton = screen.getByRole('button', { name: /알림/i });
     fireEvent.click(bellButton);
 
     // 첫 번째 알림 클릭 (읽지 않음) - 텍스트 직접 클릭
@@ -135,7 +135,7 @@ describe('NotificationCenter', () => {
     render(<NotificationCenter />, { wrapper: createWrapper() });
 
     // 드롭다운 열기
-    const bellButton = screen.getByRole('button', { name: /🔔/i });
+    const bellButton = screen.getByRole('button', { name: /알림/i });
     fireEvent.click(bellButton);
 
     // 모두 읽음 버튼 클릭
@@ -157,11 +157,12 @@ describe('NotificationCenter', () => {
     render(<NotificationCenter />, { wrapper: createWrapper() });
 
     // 드롭다운 열기
-    const bellButton = screen.getByRole('button', { name: /🔔/i });
+    const bellButton = screen.getByRole('button', { name: /알림/i });
     fireEvent.click(bellButton);
 
     await screen.findByText('그룹 초대');
-    const deleteButtons = screen.getAllByText('✕');
+    // aria-label로 삭제 버튼 찾기
+    const deleteButtons = screen.getAllByRole('button', { name: /알림 삭제/i });
     fireEvent.click(deleteButtons[0]);
 
     await waitFor(() => {
@@ -177,7 +178,7 @@ describe('NotificationCenter', () => {
 
     render(<NotificationCenter />, { wrapper: createWrapper() });
 
-    const bellButton = screen.getByRole('button', { name: /🔔/i });
+    const bellButton = screen.getByRole('button', { name: /알림/i });
     fireEvent.click(bellButton);
 
     expect(screen.getByText('로딩 중...')).toBeInTheDocument();
@@ -195,7 +196,7 @@ describe('NotificationCenter', () => {
 
     render(<NotificationCenter />, { wrapper: createWrapper() });
 
-    const bellButton = screen.getByRole('button', { name: /🔔/i });
+    const bellButton = screen.getByRole('button', { name: /알림/i });
     fireEvent.click(bellButton);
 
     expect(screen.getByText('새로운 알림이 없습니다.')).toBeInTheDocument();

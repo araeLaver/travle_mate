@@ -1,0 +1,451 @@
+name: CD
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+env:
+  REGISTRY: ghcr.io
+  FRONTEND_IMAGE: ${{ github.repository }}/travelmate-web
+  BACKEND_IMAGE: ${{ github.repository }}/travelmate-backend
+
+jobs:
+  # ===================
+  # Build Docker Images
+  # ===================
+  build-images:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      frontend-image: ${{ steps.meta-frontend.outputs.tags }}
+      backend-image: ${{ steps.meta-backend.outputs.tags }}
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get version
+        id: version
+        run: |
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          else
+            echo "version=sha-${GITHUB_SHA::8}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata for Frontend
+        id: meta-frontend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: Build and push Frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./travelmate-web
+          file: ./travelmate-web/Dockerfile
+          push: true
+          tags: ${{ steps.meta-frontend.outputs.tags }}
+          labels: ${{ steps.meta-frontend.outputs.labels }}
+          build-args: |
+            REACT_APP_API_URL=${{ vars.REACT_APP_API_URL }}
+            REACT_APP_WS_URL=${{ vars.REACT_APP_WS_URL }}
+            REACT_APP_GOOGLE_CLIENT_ID=${{ vars.REACT_APP_GOOGLE_CLIENT_ID }}
+            REACT_APP_KAKAO_APP_KEY=${{ vars.REACT_APP_KAKAO_APP_KEY }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Extract metadata for Backend
+        id: meta-backend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: Build and push Backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./travelmate-backend
+          file: ./travelmate-backend/Dockerfile
+          push: true
+          tags: ${{ steps.meta-backend.outputs.tags }}
+          labels: ${{ steps.meta-backend.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ===================
+  # Deploy to Staging
+  # ===================
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build-images
+    if: |
+      (github.ref == 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/')) ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging')
+    environment:
+      name: staging
+      url: https://staging.travelmate.com
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.STAGING_SSH_KEY }}
+
+      - name: Add host to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.STAGING_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to staging server
+        env:
+          HOST: ${{ secrets.STAGING_HOST }}
+          USER: ${{ secrets.STAGING_USER }}
+          VERSION: ${{ needs.build-images.outputs.version }}
+        run: |
+          ssh $USER@$HOST << 'ENDSSH'
+            cd /opt/travelmate
+
+            # Pull latest images
+            docker-compose -f docker-compose.prod.yml pull
+
+            # Rolling update with zero downtime
+            docker-compose -f docker-compose.prod.yml up -d --no-deps backend
+            sleep 30
+            docker-compose -f docker-compose.prod.yml up -d --no-deps frontend
+
+            # Cleanup old images
+            docker image prune -f
+
+            echo "Staging deployment completed!"
+          ENDSSH
+
+      - name: Health check
+        run: |
+          sleep 60
+          curl --fail --retry 5 --retry-delay 10 https://staging.travelmate.com/api/health/live
+
+      - name: Notify Slack on success
+        if: success()
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: |
+            {
+              "text": "✅ Staging deployment successful",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Staging Deployment*\n• Version: `${{ needs.build-images.outputs.version }}`\n• URL: https://staging.travelmate.com\n• Actor: ${{ github.actor }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # ===================
+  # Deploy to Production
+  # ===================
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: build-images
+    if: |
+      startsWith(github.ref, 'refs/tags/v') ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
+    environment:
+      name: production
+      url: https://travelmate.com
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.PRODUCTION_SSH_KEY }}
+
+      - name: Add host to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.PRODUCTION_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Backup database before deployment
+        env:
+          HOST: ${{ secrets.PRODUCTION_HOST }}
+          USER: ${{ secrets.PRODUCTION_USER }}
+        run: |
+          ssh $USER@$HOST << 'ENDSSH'
+            cd /opt/travelmate
+
+            # Create pre-deployment backup
+            BACKUP_NAME="pre_deploy_$(date +%Y%m%d_%H%M%S).sql"
+            docker-compose -f docker-compose.prod.yml exec -T postgres pg_dump -U $DB_USERNAME travelmate > /opt/backups/$BACKUP_NAME
+
+            echo "Backup created: $BACKUP_NAME"
+          ENDSSH
+
+      - name: Deploy to production server
+        env:
+          HOST: ${{ secrets.PRODUCTION_HOST }}
+          USER: ${{ secrets.PRODUCTION_USER }}
+          VERSION: ${{ needs.build-images.outputs.version }}
+        run: |
+          ssh $USER@$HOST << 'ENDSSH'
+            cd /opt/travelmate
+
+            # Pull latest images
+            docker-compose -f docker-compose.prod.yml pull
+
+            # Rolling update with zero downtime
+            docker-compose -f docker-compose.prod.yml up -d --no-deps backend
+
+            # Wait for backend health check
+            echo "Waiting for backend to be healthy..."
+            for i in {1..30}; do
+              if curl -s http://localhost:8080/api/health/live | grep -q "UP"; then
+                echo "Backend is healthy!"
+                break
+              fi
+              sleep 5
+            done
+
+            # Update frontend
+            docker-compose -f docker-compose.prod.yml up -d --no-deps frontend
+
+            # Cleanup old images
+            docker image prune -f
+
+            echo "Production deployment completed!"
+          ENDSSH
+
+      - name: Health check
+        run: |
+          sleep 60
+          curl --fail --retry 5 --retry-delay 10 https://travelmate.com/api/health/live
+
+      - name: Notify Slack on success
+        if: success()
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: |
+            {
+              "text": "🚀 Production deployment successful",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Production Deployment*\n• Version: `${{ needs.build-images.outputs.version }}`\n• URL: https://travelmate.com\n• Actor: ${{ github.actor }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Notify Slack on failure
+        if: failure()
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: |
+            {
+              "text": "❌ Production deployment failed!",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Production Deployment Failed*\n• Version: `${{ needs.build-images.outputs.version }}`\n• Actor: ${{ github.actor }}\n• <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View logs>"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # ===================
+  # Rollback Production (on failure)
+  # ===================
+  rollback-production:
+    name: Rollback Production
+    runs-on: ubuntu-latest
+    needs: deploy-production
+    if: failure()
+    environment:
+      name: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.PRODUCTION_SSH_KEY }}
+
+      - name: Add host to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.PRODUCTION_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Rollback to previous version
+        env:
+          HOST: ${{ secrets.PRODUCTION_HOST }}
+          USER: ${{ secrets.PRODUCTION_USER }}
+        run: |
+          ssh $USER@$HOST << 'ENDSSH'
+            cd /opt/travelmate
+
+            echo "Starting rollback procedure..."
+
+            # 이전 버전으로 롤백 (이전 이미지 태그 사용)
+            # Docker는 이전에 pull된 이미지를 캐시하고 있음
+            PREVIOUS_BACKEND=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep travelmate-backend | head -2 | tail -1)
+            PREVIOUS_FRONTEND=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep travelmate-web | head -2 | tail -1)
+
+            if [ -n "$PREVIOUS_BACKEND" ]; then
+              echo "Rolling back backend to: $PREVIOUS_BACKEND"
+              docker-compose -f docker-compose.prod.yml stop backend
+              docker tag $PREVIOUS_BACKEND $(echo $PREVIOUS_BACKEND | cut -d: -f1):rollback
+              TAG=rollback docker-compose -f docker-compose.prod.yml up -d --no-deps backend
+            fi
+
+            if [ -n "$PREVIOUS_FRONTEND" ]; then
+              echo "Rolling back frontend to: $PREVIOUS_FRONTEND"
+              docker-compose -f docker-compose.prod.yml stop frontend
+              docker tag $PREVIOUS_FRONTEND $(echo $PREVIOUS_FRONTEND | cut -d: -f1):rollback
+              TAG=rollback docker-compose -f docker-compose.prod.yml up -d --no-deps frontend
+            fi
+
+            echo "Rollback completed!"
+          ENDSSH
+
+      - name: Verify rollback health
+        run: |
+          sleep 60
+          curl --fail --retry 5 --retry-delay 10 https://travelmate.com/api/health/live || echo "Health check failed after rollback"
+
+      - name: Restore database from backup
+        if: failure()
+        env:
+          HOST: ${{ secrets.PRODUCTION_HOST }}
+          USER: ${{ secrets.PRODUCTION_USER }}
+        run: |
+          ssh $USER@$HOST << 'ENDSSH'
+            cd /opt/travelmate
+
+            # 가장 최근 백업 찾기
+            LATEST_BACKUP=$(ls -t /opt/backups/pre_deploy_*.sql 2>/dev/null | head -1)
+
+            if [ -n "$LATEST_BACKUP" ]; then
+              echo "Restoring database from: $LATEST_BACKUP"
+              docker-compose -f docker-compose.prod.yml exec -T postgres psql -U $DB_USERNAME travelmate < $LATEST_BACKUP
+              echo "Database restored!"
+            else
+              echo "No backup found to restore"
+            fi
+          ENDSSH
+
+      - name: Notify Slack on rollback
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: |
+            {
+              "text": "⚠️ Production rollback executed",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Production Rollback*\n• Failed Version: `${{ needs.build-images.outputs.version }}`\n• Status: Rolled back to previous version\n• Actor: ${{ github.actor }}\n• <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View logs>"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # ===================
+  # Create Release
+  # ===================
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: [build-images, deploy-production]
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate changelog
+        id: changelog
+        uses: metcalfc/changelog-generator@v4.3.1
+        with:
+          myToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body: |
+            ## What's Changed
+            ${{ steps.changelog.outputs.changelog }}
+
+            ## Docker Images
+            - Frontend: `${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE }}:${{ github.ref_name }}`
+            - Backend: `${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE }}:${{ github.ref_name }}`
+
+            ## Deployment
+            - Production: https://travelmate.com
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

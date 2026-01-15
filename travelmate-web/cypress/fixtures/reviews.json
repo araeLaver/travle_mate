@@ -1,0 +1,75 @@
+{
+  "list": {
+    "content": [
+      {
+        "id": 1,
+        "userId": 2,
+        "userNickname": "TravelBuddy",
+        "userProfileImageUrl": "/images/profile2.jpg",
+        "rating": 5,
+        "comment": "정말 멋진 장소입니다! 한국 역사를 느낄 수 있어요.",
+        "visitSeason": "SPRING",
+        "helpfulCount": 15,
+        "createdAt": "2024-01-15T10:00:00Z",
+        "isHelpful": false,
+        "imageUrls": ["/images/review1-1.jpg", "/images/review1-2.jpg"]
+      },
+      {
+        "id": 2,
+        "userId": 3,
+        "userNickname": "Explorer",
+        "userProfileImageUrl": null,
+        "rating": 4,
+        "comment": "좋은 경험이었어요. 주말에는 사람이 많아서 평일 방문 추천합니다.",
+        "visitSeason": "SUMMER",
+        "helpfulCount": 8,
+        "createdAt": "2024-01-10T14:00:00Z",
+        "isHelpful": true,
+        "imageUrls": []
+      },
+      {
+        "id": 3,
+        "userId": 1,
+        "userNickname": "TestUser",
+        "userProfileImageUrl": null,
+        "rating": 5,
+        "comment": "아름다운 가을 풍경이었습니다. 단풍 시즌 강추!",
+        "visitSeason": "FALL",
+        "helpfulCount": 3,
+        "createdAt": "2024-01-05T09:00:00Z",
+        "isHelpful": false,
+        "imageUrls": ["/images/review3-1.jpg"]
+      }
+    ],
+    "totalElements": 3,
+    "totalPages": 1,
+    "number": 0
+  },
+  "stats": {
+    "averageRating": 4.7,
+    "totalReviews": 3,
+    "ratingDistribution": {
+      "5": 2,
+      "4": 1,
+      "3": 0,
+      "2": 0,
+      "1": 0
+    },
+    "seasonDistribution": {
+      "SPRING": 1,
+      "SUMMER": 1,
+      "FALL": 1,
+      "WINTER": 0
+    }
+  },
+  "newReview": {
+    "id": 4,
+    "userId": 1,
+    "userNickname": "TestUser",
+    "rating": 5,
+    "comment": "새로운 리뷰입니다!",
+    "visitSeason": "WINTER",
+    "helpfulCount": 0,
+    "createdAt": "2024-01-20T15:00:00Z"
+  }
+}

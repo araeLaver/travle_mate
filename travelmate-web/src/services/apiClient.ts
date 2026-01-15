@@ -115,6 +115,26 @@ class ApiClient {
     }
   }
 
+  // PATCH 요청
+  async patch<T, D = unknown>(
+    endpoint: string,
+    data?: D,
+    includeAuth: boolean = true
+  ): Promise<T> {
+    try {
+      const headers = await this.getHeadersWithRefresh(includeAuth);
+      const response = await fetch(`${this.baseURL}${endpoint}`, {
+        method: 'PATCH',
+        headers,
+        body: data ? JSON.stringify(data) : undefined,
+      });
+
+      return this.handleResponse<T>(response);
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
   // 응답 처리
   private async handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {

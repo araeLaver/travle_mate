@@ -623,3 +623,87 @@ export interface UserNftStatsResponse {
   completedAchievements: number;
   collectionStats: CollectionStats;
 }
+
+// ===== 관리자 관련 타입 =====
+
+export interface CollectibleLocationAdminResponse {
+  id: number;
+  name: string;
+  description?: string;
+  latitude: number;
+  longitude: number;
+  collectRadius: number;
+  category: LocationCategory;
+  rarity: Rarity;
+  country?: string;
+  city?: string;
+  region?: string;
+  imageUrl?: string;
+  nftImageUrl?: string;
+  nftMetadataUri?: string;
+  pointReward: number;
+  isActive: boolean;
+  isSeasonalEvent: boolean;
+  eventStartAt?: string;
+  eventEndAt?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface CreateLocationRequest {
+  name: string;
+  description?: string;
+  latitude: number;
+  longitude: number;
+  collectRadius?: number;
+  category: LocationCategory;
+  rarity: Rarity;
+  country?: string;
+  city?: string;
+  region?: string;
+  imageUrl?: string;
+  nftImageUrl?: string;
+  nftMetadataUri?: string;
+  pointReward?: number;
+  isActive?: boolean;
+  isSeasonalEvent?: boolean;
+  eventStartAt?: string;
+  eventEndAt?: string;
+}
+
+export interface UpdateLocationRequest {
+  name?: string;
+  description?: string;
+  latitude?: number;
+  longitude?: number;
+  collectRadius?: number;
+  category?: LocationCategory;
+  rarity?: Rarity;
+  country?: string;
+  city?: string;
+  region?: string;
+  imageUrl?: string;
+  nftImageUrl?: string;
+  nftMetadataUri?: string;
+  pointReward?: number;
+  isActive?: boolean;
+  isSeasonalEvent?: boolean;
+  eventStartAt?: string;
+  eventEndAt?: string;
+}
+
+export interface LocationStatsResponse {
+  totalLocations: number;
+  activeLocations: number;
+  seasonalEvents: number;
+  commonCount: number;
+  rareCount: number;
+  epicCount: number;
+  legendaryCount: number;
+}
+
+export interface BulkCreateResponse {
+  message: string;
+  total: number;
+  created: number;
+}

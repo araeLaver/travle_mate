@@ -1,0 +1,30 @@
+# Kustomization for TravelMate Kubernetes Deployment
+# Usage: kubectl apply -k k8s/
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: travelmate
+
+resources:
+  - namespace.yaml
+  - configmap.yaml
+  - secret.yaml
+  - rbac.yaml
+  - pvc.yaml
+  - postgres-deployment.yaml
+  - redis-deployment.yaml
+  - backend-deployment.yaml
+  - frontend-deployment.yaml
+  - ingress.yaml
+
+commonLabels:
+  app.kubernetes.io/name: travelmate
+  app.kubernetes.io/managed-by: kustomize
+
+# Image customization (override in overlays)
+images:
+  - name: travelmate/backend
+    newTag: latest
+  - name: travelmate/frontend
+    newTag: latest

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
@@ -6,25 +6,41 @@ import { queryClient } from './lib/queryClient';
 import ErrorBoundary from './components/ErrorBoundary';
 import './styles/accessibility.css';
 import Layout from './layouts/Layout';
-import Home from './pages/Home';
-import Portfolio from './pages/Portfolio';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
-import Chat from './pages/Chat';
-import ChatList from './pages/ChatList';
-import Groups from './pages/Groups';
-import CreateGroup from './pages/CreateGroup';
-import Profile from './pages/Profile';
-import NFTMap from './pages/NFTMap';
-import NFTCollection from './pages/NFTCollection';
-import Leaderboard from './pages/Leaderboard';
-import WalletConnect from './pages/WalletConnect';
+import AdminRoute from './components/auth/AdminRoute';
 import AuthCallback from './components/AuthCallback';
 import { ProtectedRoute, AuthRequiredRoute } from './components/auth/ProtectedRoute';
 import { TutorialProvider, useTutorial } from './contexts/TutorialContext';
 import Tutorial from './components/Tutorial';
 import { ToastProvider } from './components/Toast';
+
+// Lazy loaded pages for code splitting
+const Home = lazy(() => import('./pages/Home'));
+const Portfolio = lazy(() => import('./pages/Portfolio'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Chat = lazy(() => import('./pages/Chat'));
+const ChatList = lazy(() => import('./pages/ChatList'));
+const Groups = lazy(() => import('./pages/Groups'));
+const CreateGroup = lazy(() => import('./pages/CreateGroup'));
+const Profile = lazy(() => import('./pages/Profile'));
+const NFTMap = lazy(() => import('./pages/NFTMap'));
+const NFTCollection = lazy(() => import('./pages/NFTCollection'));
+const Leaderboard = lazy(() => import('./pages/Leaderboard'));
+const Marketplace = lazy(() => import('./pages/Marketplace'));
+const PointShop = lazy(() => import('./pages/PointShop'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const NotificationSettings = lazy(() => import('./pages/NotificationSettings'));
+const WalletConnect = lazy(() => import('./pages/WalletConnect'));
+const AIRecommendation = lazy(() => import('./pages/AIRecommendation'));
+const Payment = lazy(() => import('./pages/Payment'));
+
+// Loading fallback component
+const PageLoader: React.FC = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
+  </div>
+);
 
 // 전역 튜토리얼 컴포넌트 (Router 내부에서 사용)
 const GlobalTutorial: React.FC = () => {
@@ -40,6 +56,7 @@ function App() {
           <TutorialProvider>
             <Router>
               <GlobalTutorial />
+              <Suspense fallback={<PageLoader />}>
               <Routes>
                 {/* 인증이 필요 없는 페이지 */}
                 <Route path="/" element={<Home />} />
@@ -167,7 +184,74 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
+
+                {/* NFT 마켓플레이스 페이지 */}
+                <Route
+                  path="/marketplace"
+                  element={
+                    <ProtectedRoute>
+                      <Marketplace />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* 포인트 상점 페이지 */}
+                <Route
+                  path="/shop"
+                  element={
+                    <ProtectedRoute>
+                      <PointShop />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* 관리자 대시보드 */}
+                <Route
+                  path="/admin"
+                  element={
+                    <AdminRoute>
+                      <AdminDashboard />
+                    </AdminRoute>
+                  }
+                />
+
+                {/* 알림 설정 페이지 */}
+                <Route
+                  path="/settings/notifications"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <NotificationSettings />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* AI 추천 페이지 */}
+                <Route
+                  path="/ai"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <AIRecommendation />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* 결제 페이지 */}
+                <Route
+                  path="/payment"
+                  element={
+                    <ProtectedRoute>
+                      <Layout>
+                        <Payment />
+                      </Layout>
+                    </ProtectedRoute>
+                  }
+                />
               </Routes>
+              </Suspense>
             </Router>
           </TutorialProvider>
         </ToastProvider>

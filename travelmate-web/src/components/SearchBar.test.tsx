@@ -77,7 +77,7 @@ describe('SearchBar', () => {
 
     const searchInput = screen.getByPlaceholderText('여행 그룹 검색...');
     fireEvent.change(searchInput, { target: { value: '부산' } });
-    fireEvent.keyPress(searchInput, { key: 'Enter', code: 13, charCode: 13 });
+    fireEvent.keyDown(searchInput, { key: 'Enter', code: 'Enter' });
 
     expect(mockNavigate).toHaveBeenCalledWith('/search?q=' + encodeURIComponent('부산'));
   });

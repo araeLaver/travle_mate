@@ -305,6 +305,205 @@ public class NotificationService {
         );
     }
 
+    // ===== 댓글 관련 알림 =====
+
+    /**
+     * 댓글 알림 (게시글 작성자에게)
+     */
+    public void sendCommentNotification(User postAuthor, User commentAuthor, com.travelmate.entity.Post post, com.travelmate.entity.Comment comment) {
+        String preview = comment.getContent().length() > 30
+                ? comment.getContent().substring(0, 30) + "..."
+                : comment.getContent();
+        createAndSendNotification(
+                postAuthor.getId(),
+                Notification.NotificationType.NEW_MESSAGE,
+                "새 댓글",
+                commentAuthor.getNickname() + "님이 댓글을 남겼습니다: " + preview,
+                "/posts/" + post.getId(),
+                comment.getId(),
+                "COMMENT"
+        );
+    }
+
+    /**
+     * 답글 알림 (부모 댓글 작성자에게)
+     */
+    public void sendCommentReplyNotification(User parentCommentAuthor, User replyAuthor, com.travelmate.entity.Post post, com.travelmate.entity.Comment reply) {
+        String preview = reply.getContent().length() > 30
+                ? reply.getContent().substring(0, 30) + "..."
+                : reply.getContent();
+        createAndSendNotification(
+                parentCommentAuthor.getId(),
+                Notification.NotificationType.NEW_MESSAGE,
+                "새 답글",
+                replyAuthor.getNickname() + "님이 답글을 남겼습니다: " + preview,
+                "/posts/" + post.getId(),
+                reply.getId(),
+                "COMMENT_REPLY"
+        );
+    }
+
+    /**
+     * 댓글 좋아요 알림
+     */
+    public void sendCommentLikeNotification(User commentAuthor, User liker, com.travelmate.entity.Comment comment) {
+        createAndSendNotification(
+                commentAuthor.getId(),
+                Notification.NotificationType.FOLLOW,
+                "댓글 좋아요",
+                liker.getNickname() + "님이 회원님의 댓글을 좋아합니다.",
+                "/posts/" + comment.getPost().getId(),
+                comment.getId(),
+                "COMMENT_LIKE"
+        );
+    }
+
+    /**
+     * 멘션 알림
+     */
+    public void sendMentionNotification(User mentionedUser, User author, com.travelmate.entity.Post post, com.travelmate.entity.Comment comment) {
+        createAndSendNotification(
+                mentionedUser.getId(),
+                Notification.NotificationType.NEW_MESSAGE,
+                "멘션",
+                author.getNickname() + "님이 회원님을 댓글에서 언급했습니다.",
+                "/posts/" + post.getId(),
+                comment.getId(),
+                "MENTION"
+        );
+    }
+
+    // ===== 팔로우 관련 알림 =====
+
+    /**
+     * 팔로우 알림
+     */
+    public void notifyFollow(Long userId, Long followerId, String followerName) {
+        createAndSendNotification(
+                userId,
+                Notification.NotificationType.FOLLOW,
+                "새 팔로워",
+                followerName + "님이 회원님을 팔로우합니다.",
+                "/profile/" + followerId,
+                followerId,
+                "FOLLOW"
+        );
+    }
+
+    // ===== NFT 관련 알림 =====
+
+    /**
+     * NFT 수집 완료 알림
+     */
+    public void notifyNftCollected(Long userId, Long nftCollectionId, String locationName, int pointsEarned) {
+        String message = "'" + locationName + "' NFT를 수집했습니다! +" + pointsEarned + "P";
+        createAndSendNotification(
+                userId,
+                Notification.NotificationType.NFT_COLLECTED,
+                "NFT 수집 완료",
+                message,
+                "/nft",
+                nftCollectionId,
+                "NFT"
+        );
+    }
+
+    /**
+     * 업적 달성 알림
+     */
+    public void notifyAchievementUnlocked(Long userId, String achievementName, String description) {
+        createAndSendNotification(
+                userId,
+                Notification.NotificationType.ACHIEVEMENT_UNLOCKED,
+                "업적 달성!",
+                achievementName + " - " + description,
+                "/profile/achievements",
+                null,
+                "ACHIEVEMENT"
+        );
+    }
+
+    // ===== 마켓플레이스 관련 알림 =====
+
+    /**
+     * NFT 판매 완료 알림 (판매자에게)
+     */
+    public void notifyMarketplaceSold(Long sellerId, Long listingId, String nftName, int priceInPoints) {
+        String message = "'" + nftName + "'이(가) " + priceInPoints + "P에 판매되었습니다!";
+        createAndSendNotification(
+                sellerId,
+                Notification.NotificationType.MARKETPLACE_SOLD,
+                "NFT 판매 완료",
+                message,
+                "/marketplace",
+                listingId,
+                "LISTING"
+        );
+    }
+
+    /**
+     * NFT 구매 완료 알림 (구매자에게)
+     */
+    public void notifyMarketplacePurchased(Long buyerId, Long nftCollectionId, String nftName, int priceInPoints) {
+        String message = "'" + nftName + "' NFT를 " + priceInPoints + "P에 구매했습니다!";
+        createAndSendNotification(
+                buyerId,
+                Notification.NotificationType.MARKETPLACE_PURCHASED,
+                "NFT 구매 완료",
+                message,
+                "/nft",
+                nftCollectionId,
+                "NFT"
+        );
+    }
+
+    /**
+     * 마켓플레이스 리스팅 만료 알림
+     */
+    public void notifyListingExpired(Long sellerId, Long listingId, String nftName) {
+        createAndSendNotification(
+                sellerId,
+                Notification.NotificationType.MARKETPLACE_LISTING_EXPIRED,
+                "리스팅 만료",
+                "'" + nftName + "' NFT 판매 등록이 만료되었습니다.",
+                "/marketplace",
+                listingId,
+                "LISTING"
+        );
+    }
+
+    // ===== 포인트 관련 알림 =====
+
+    /**
+     * 포인트 획득 알림
+     */
+    public void notifyPointsReceived(Long userId, int amount, String reason) {
+        createAndSendNotification(
+                userId,
+                Notification.NotificationType.POINTS_RECEIVED,
+                "포인트 획득",
+                amount + "P를 획득했습니다! (" + reason + ")",
+                "/shop",
+                null,
+                "POINTS"
+        );
+    }
+
+    /**
+     * 포인트 사용 알림
+     */
+    public void notifyPointsSpent(Long userId, int amount, String reason) {
+        createAndSendNotification(
+                userId,
+                Notification.NotificationType.POINTS_SPENT,
+                "포인트 사용",
+                amount + "P를 사용했습니다. (" + reason + ")",
+                "/shop",
+                null,
+                "POINTS"
+        );
+    }
+
     private NotificationDto convertToDto(Notification notification) {
         return NotificationDto.builder()
                 .id(notification.getId())

@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration>
+<configuration scan="true" scanPeriod="30 seconds">
     <!-- 컬러 출력 설정 -->
     <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter" />
     <conversionRule conversionWord="wex" converterClass="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter" />
     <conversionRule conversionWord="wEx" converterClass="org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter" />
 
     <!-- 프로퍼티 정의 -->
+    <springProperty scope="context" name="APP_NAME" source="spring.application.name" defaultValue="travelmate-backend"/>
     <springProperty scope="context" name="LOG_LEVEL" source="logging.level.root" defaultValue="INFO"/>
     <springProperty scope="context" name="LOG_PATH" source="logging.file.path" defaultValue="logs"/>
     <springProperty scope="context" name="LOG_FILE" source="logging.file.name" defaultValue="travelmate"/>
+    <springProperty scope="context" name="LOGSTASH_HOST" source="logstash.host" defaultValue="localhost"/>
+    <springProperty scope="context" name="LOGSTASH_PORT" source="logstash.port" defaultValue="5000"/>
 
     <!-- 콘솔 Appender (개발환경) -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
@@ -87,6 +90,21 @@
         </rollingPolicy>
     </appender>
 
+    <!-- 프론트엔드 로그 전용 Appender -->
+    <appender name="FRONTEND_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${LOG_FILE}-frontend.log</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${LOG_FILE}-frontend.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>50MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>2GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
     <!-- 애플리케이션별 Logger 설정 -->
 
     <!-- TravelMate 애플리케이션 로거 -->
@@ -105,6 +123,12 @@
     <!-- 보안 로거 -->
     <logger name="com.travelmate.security" level="INFO" additivity="false">
         <appender-ref ref="SECURITY_FILE"/>
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+
+    <!-- 프론트엔드 로거 -->
+    <logger name="com.travelmate.frontend" level="INFO" additivity="false">
+        <appender-ref ref="FRONTEND_FILE"/>
         <appender-ref ref="CONSOLE"/>
     </logger>
 
@@ -146,11 +170,78 @@
         <appender-ref ref="FILE"/>
     </logger>
 
+    <!-- JSON 콘솔 Appender (운영환경용 - ELK 연동) -->
+    <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeMdc>true</includeMdc>
+            <includeContext>false</includeContext>
+            <includeTags>true</includeTags>
+            <shortenedLoggerNameLength>36</shortenedLoggerNameLength>
+            <customFields>{"service":"${APP_NAME}","environment":"${SPRING_PROFILES_ACTIVE:-dev}"}</customFields>
+            <fieldNames>
+                <timestamp>timestamp</timestamp>
+                <version>[ignore]</version>
+                <levelValue>[ignore]</levelValue>
+            </fieldNames>
+            <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                <maxDepthPerThrowable>30</maxDepthPerThrowable>
+                <maxLength>2048</maxLength>
+                <shortenedClassNameLength>20</shortenedClassNameLength>
+                <rootCauseFirst>true</rootCauseFirst>
+            </throwableConverter>
+        </encoder>
+    </appender>
+
+    <!-- JSON 파일 Appender (ELK Filebeat용) -->
+    <appender name="JSON_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${LOG_FILE}-json.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${LOG_FILE}-json.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>100MB</maxFileSize>
+            <maxHistory>7</maxHistory>
+            <totalSizeCap>3GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeMdc>true</includeMdc>
+            <includeContext>false</includeContext>
+            <customFields>{"service":"${APP_NAME}"}</customFields>
+        </encoder>
+    </appender>
+
+    <!-- Logstash TCP Appender (실시간 로그 전송) -->
+    <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>${LOGSTASH_HOST}:${LOGSTASH_PORT}</destination>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeMdc>true</includeMdc>
+            <includeContext>false</includeContext>
+            <customFields>{"service":"${APP_NAME}","environment":"${SPRING_PROFILES_ACTIVE:-dev}"}</customFields>
+        </encoder>
+        <keepAliveDuration>5 minutes</keepAliveDuration>
+        <reconnectionDelay>1 second</reconnectionDelay>
+        <writeBufferSize>16384</writeBufferSize>
+    </appender>
+
+    <!-- Async Logstash Appender -->
+    <appender name="ASYNC_LOGSTASH" class="ch.qos.logback.classic.AsyncAppender">
+        <discardingThreshold>0</discardingThreshold>
+        <queueSize>1024</queueSize>
+        <neverBlock>true</neverBlock>
+        <appender-ref ref="LOGSTASH"/>
+    </appender>
+
+    <!-- Async JSON File Appender -->
+    <appender name="ASYNC_JSON_FILE" class="ch.qos.logback.classic.AsyncAppender">
+        <discardingThreshold>0</discardingThreshold>
+        <queueSize>512</queueSize>
+        <appender-ref ref="JSON_FILE"/>
+    </appender>
+
     <!-- 환경별 설정 -->
     <springProfile name="dev">
         <root level="DEBUG">
             <appender-ref ref="CONSOLE"/>
             <appender-ref ref="FILE"/>
+            <appender-ref ref="ASYNC_JSON_FILE"/>
         </root>
     </springProfile>
 
@@ -162,9 +253,11 @@
 
     <springProfile name="prod">
         <root level="INFO">
-            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="CONSOLE_JSON"/>
             <appender-ref ref="FILE"/>
             <appender-ref ref="ERROR_FILE"/>
+            <appender-ref ref="ASYNC_JSON_FILE"/>
+            <appender-ref ref="ASYNC_LOGSTASH"/>
         </root>
     </springProfile>
 

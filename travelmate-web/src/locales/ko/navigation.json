@@ -1,0 +1,36 @@
+{
+  "home": "홈",
+  "explore": "탐색",
+  "map": "지도",
+  "collection": "컬렉션",
+  "myCollection": "내 컬렉션",
+  "itinerary": "일정",
+  "myItinerary": "내 일정",
+  "chat": "채팅",
+  "groups": "그룹",
+  "notifications": "알림",
+  "settings": "설정",
+  "profile": "프로필",
+  "search": "검색",
+  "nearby": "주변",
+  "popular": "인기",
+  "recent": "최근",
+  "saved": "저장됨",
+  "menu": {
+    "account": "계정",
+    "preferences": "환경설정",
+    "help": "도움말",
+    "about": "정보",
+    "contact": "문의하기",
+    "terms": "이용약관",
+    "privacy": "개인정보처리방침",
+    "logout": "로그아웃"
+  },
+  "tabs": {
+    "home": "홈",
+    "explore": "탐색",
+    "collection": "컬렉션",
+    "itinerary": "일정",
+    "profile": "프로필"
+  }
+}

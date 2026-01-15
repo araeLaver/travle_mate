@@ -95,6 +95,14 @@ public class CollectibleLocation {
     @Builder.Default
     private Integer totalCollected = 0; // 총 수집 횟수
 
+    @Column(name = "average_rating")
+    @Builder.Default
+    private Double averageRating = 0.0; // 평균 평점
+
+    @Column(name = "review_count")
+    @Builder.Default
+    private Integer reviewCount = 0; // 리뷰 수
+
     @CreationTimestamp
     @Column(name = "created_at")
     private LocalDateTime createdAt;

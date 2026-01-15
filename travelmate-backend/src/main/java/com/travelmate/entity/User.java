@@ -227,4 +227,11 @@ public class User {
     public String getName() {
         return this.fullName;
     }
+
+    /**
+     * username 반환 (nickname을 username으로 사용)
+     */
+    public String getUsername() {
+        return this.nickname;
+    }
 }

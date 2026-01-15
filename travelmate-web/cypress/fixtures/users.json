@@ -1,0 +1,57 @@
+{
+  "currentUser": {
+    "id": 1,
+    "email": "test@example.com",
+    "nickname": "TestUser",
+    "profileImageUrl": null,
+    "bio": "테스트 사용자입니다",
+    "followerCount": 50,
+    "followingCount": 30,
+    "nftCount": 25,
+    "reviewCount": 8,
+    "createdAt": "2024-01-01T00:00:00Z"
+  },
+  "otherUser": {
+    "id": 2,
+    "email": "other@example.com",
+    "nickname": "TravelBuddy",
+    "profileImageUrl": "/images/profile2.jpg",
+    "bio": "세계 여행 중",
+    "followerCount": 100,
+    "followingCount": 80,
+    "nftCount": 45,
+    "isFollowing": false
+  },
+  "topCollector": {
+    "id": 10,
+    "nickname": "TopCollector",
+    "profileImageUrl": "/images/top.jpg",
+    "nftCount": 150,
+    "totalPoints": 15000,
+    "legendaryCount": 10,
+    "epicCount": 30
+  },
+  "tokens": {
+    "accessToken": "mock-access-token-12345",
+    "refreshToken": "mock-refresh-token-67890"
+  },
+  "followers": {
+    "content": [
+      { "id": 2, "nickname": "Follower1", "profileImageUrl": null, "isMutual": true },
+      { "id": 3, "nickname": "Follower2", "profileImageUrl": null, "isMutual": false },
+      { "id": 4, "nickname": "Follower3", "profileImageUrl": "/images/p3.jpg", "isMutual": true }
+    ],
+    "totalElements": 50,
+    "totalPages": 5,
+    "number": 0
+  },
+  "following": {
+    "content": [
+      { "id": 5, "nickname": "Following1", "profileImageUrl": null, "isMutual": true },
+      { "id": 6, "nickname": "Following2", "profileImageUrl": "/images/p6.jpg", "isMutual": false }
+    ],
+    "totalElements": 30,
+    "totalPages": 3,
+    "number": 0
+  }
+}

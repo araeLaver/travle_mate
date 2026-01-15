@@ -2,7 +2,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { chatService, ChatMessage, ChatRoom } from '../services/chatService';
 import { useToast } from '../components/Toast';
+import { ImageMessage, LocationMessage, TypingIndicator } from '../components/chat';
 import './Chat.css';
+
+// 타이핑 사용자 인터페이스
+interface TypingUser {
+  id: number;
+  nickname: string;
+  profileImageUrl?: string;
+}
 
 // SVG Icons
 const MessageIcon = () => (
@@ -124,10 +132,19 @@ const Chat: React.FC = () => {
   const toast = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // toast를 ref로 저장하여 useEffect 의존성 배열 문제 방지
+  const toastRef = useRef(toast);
+  toastRef.current = toast;
+
   const [room, setRoom] = useState<ChatRoom | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  // 타이핑 사용자 상태 (실제 구현에서는 WebSocket으로 업데이트)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!roomId) {
@@ -139,7 +156,7 @@ const Chat: React.FC = () => {
     const currentRoom = rooms.find(r => r.id === roomId);
 
     if (!currentRoom) {
-      toast.error('채팅방을 찾을 수 없습니다.');
+      toastRef.current.error('채팅방을 찾을 수 없습니다.');
       navigate('/dashboard');
       return;
     }
@@ -163,7 +180,7 @@ const Chat: React.FC = () => {
     return () => {
       chatService.removeMessageListener(roomId, messageListener);
     };
-  }, [roomId, navigate, toast]);
+  }, [roomId, navigate]);
 
   useEffect(() => {
     scrollToBottom();
@@ -184,6 +201,135 @@ const Chat: React.FC = () => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
+    }
+  };
+
+  // 이미지 선택 핸들러
+  const handleImageSelect = () => {
+    fileInputRef.current?.click();
+  };
+
+  // 이미지 업로드 핸들러
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !roomId) return;
+
+    // 파일 크기 제한 (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('이미지 크기는 5MB 이하여야 합니다.');
+      return;
+    }
+
+    // 이미지 파일 확인
+    if (!file.type.startsWith('image/')) {
+      toast.error('이미지 파일만 업로드할 수 있습니다.');
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      // 로컬 미리보기 URL 생성 (실제 구현에서는 서버 업로드)
+      const imageUrl = URL.createObjectURL(file);
+
+      // 이미지 메시지 전송
+      chatService.sendMessage(roomId, imageUrl, 'image');
+      toast.success('이미지가 전송되었습니다.');
+    } catch (err) {
+      console.error('이미지 업로드 실패:', err);
+      toast.error('이미지 업로드에 실패했습니다.');
+    } finally {
+      setIsUploading(false);
+      // 파일 입력 초기화
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  // 위치 공유 핸들러
+  const handleLocationShare = () => {
+    if (!roomId) return;
+
+    if (!navigator.geolocation) {
+      toast.error('이 브라우저에서는 위치 공유를 지원하지 않습니다.');
+      return;
+    }
+
+    toast.info('현재 위치를 가져오는 중...');
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        const locationData = JSON.stringify({
+          latitude,
+          longitude,
+          locationName: '현재 위치',
+        });
+
+        chatService.sendMessage(roomId, locationData, 'location');
+        toast.success('위치가 공유되었습니다.');
+      },
+      (error) => {
+        console.error('위치 가져오기 실패:', error);
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            toast.error('위치 접근 권한이 거부되었습니다.');
+            break;
+          case error.POSITION_UNAVAILABLE:
+            toast.error('위치 정보를 사용할 수 없습니다.');
+            break;
+          case error.TIMEOUT:
+            toast.error('위치 요청이 시간 초과되었습니다.');
+            break;
+          default:
+            toast.error('위치를 가져올 수 없습니다.');
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      }
+    );
+  };
+
+  // 메시지 내용 렌더링
+  const renderMessageContent = (message: ChatMessage, isMyMessage: boolean) => {
+    switch (message.type) {
+      case 'image':
+        return (
+          <ImageMessage
+            imageUrl={message.content}
+            isMyMessage={isMyMessage}
+            alt="전송된 이미지"
+          />
+        );
+      case 'location':
+        try {
+          const locationData = JSON.parse(message.content);
+          return (
+            <LocationMessage
+              latitude={locationData.latitude}
+              longitude={locationData.longitude}
+              locationName={locationData.locationName}
+              address={locationData.address}
+              isMyMessage={isMyMessage}
+            />
+          );
+        } catch (error) {
+          console.warn('Failed to parse location data:', error);
+          return <div className="message-text">{message.content}</div>;
+        }
+      case 'system':
+        return (
+          <div className="system-message" role="status">
+            {message.content}
+          </div>
+        );
+      case 'text':
+      default:
+        return <div className="message-text">{message.content}</div>;
     }
   };
 
@@ -331,15 +477,7 @@ const Chat: React.FC = () => {
                     )}
 
                     <div className="message-content">
-                      {message.type === 'text' ? (
-                        <div className="message-text">{message.content}</div>
-                      ) : message.type === 'system' ? (
-                        <div className="system-message" role="status">
-                          {message.content}
-                        </div>
-                      ) : (
-                        <div className="message-text">{message.content}</div>
-                      )}
+                      {renderMessageContent(message, isMyMessage)}
 
                       <div className="message-time">
                         <time dateTime={message.timestamp.toISOString()}>
@@ -359,10 +497,24 @@ const Chat: React.FC = () => {
                 </article>
               );
             })}
+            {/* 타이핑 표시 */}
+            {typingUsers.length > 0 && (
+              <TypingIndicator typingUsers={typingUsers} />
+            )}
             <div ref={messagesEndRef} />
           </>
         )}
       </div>
+
+      {/* 숨겨진 파일 입력 */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleImageUpload}
+        style={{ display: 'none' }}
+        aria-hidden="true"
+      />
 
       {/* 메시지 입력 */}
       <form
@@ -406,12 +558,23 @@ const Chat: React.FC = () => {
         </div>
 
         <div className="input-actions" role="toolbar" aria-label="추가 옵션">
-          <button type="button" className="action-btn" aria-label="이미지 전송">
+          <button
+            type="button"
+            className="action-btn"
+            aria-label="이미지 전송"
+            onClick={handleImageSelect}
+            disabled={isUploading}
+          >
             <span className="action-icon" aria-hidden="true">
               <CameraIcon />
             </span>
           </button>
-          <button type="button" className="action-btn" aria-label="위치 공유">
+          <button
+            type="button"
+            className="action-btn"
+            aria-label="위치 공유"
+            onClick={handleLocationShare}
+          >
             <span className="action-icon" aria-hidden="true">
               <MapPinIcon />
             </span>

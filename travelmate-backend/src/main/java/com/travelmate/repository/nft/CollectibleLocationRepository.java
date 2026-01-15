@@ -125,4 +125,22 @@ public interface CollectibleLocationRepository extends JpaRepository<Collectible
      * 희귀도별 장소 수 카운트
      */
     int countByRarity(Rarity rarity);
+
+    // ===== Admin Dashboard Queries =====
+
+    /**
+     * 관리자용 장소 검색 (검색어, 카테고리, 희귀도, 활성상태 필터)
+     */
+    @Query("SELECT cl FROM CollectibleLocation cl WHERE " +
+           "(:search IS NULL OR LOWER(cl.name) LIKE LOWER(CONCAT('%', :search, '%')) " +
+           "    OR LOWER(cl.region) LIKE LOWER(CONCAT('%', :search, '%'))) AND " +
+           "(:category IS NULL OR CAST(cl.category AS string) = :category) AND " +
+           "(:rarity IS NULL OR CAST(cl.rarity AS string) = :rarity) AND " +
+           "(:isActive IS NULL OR cl.isActive = :isActive)")
+    Page<CollectibleLocation> findLocationsForAdmin(
+            @Param("search") String search,
+            @Param("category") String category,
+            @Param("rarity") String rarity,
+            @Param("isActive") Boolean isActive,
+            Pageable pageable);
 }

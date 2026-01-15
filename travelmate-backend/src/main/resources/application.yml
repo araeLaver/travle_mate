@@ -13,8 +13,8 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus,livenessState,readinessState
-      base-path: /management
+        include: health,info,metrics,prometheus,livenessState,readinessState,env,loggers
+      base-path: /actuator
   endpoint:
     health:
       show-details: when-authorized
@@ -22,6 +22,8 @@ management:
       probes:
         enabled: true
     metrics:
+      enabled: true
+    prometheus:
       enabled: true
   health:
     circuitbreakers:
@@ -36,10 +38,35 @@ management:
     export:
       prometheus:
         enabled: true
+    tags:
+      application: ${spring.application.name}
+      environment: ${spring.profiles.active:unknown}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5, 0.90, 0.95, 0.99
 
 spring:
   application:
     name: travel-mate-backend
+
+# OpenAPI/Swagger 설정
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operations-sorter: method
+    tags-sorter: alpha
+    display-request-duration: true
+    doc-expansion: none
+  show-actuator: false
+  packages-to-scan: com.travelmate.controller
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
 
   lifecycle:
     timeout-per-shutdown-phase: 30s
@@ -57,7 +84,8 @@ spring:
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/travelmate}
     username: ${DB_USERNAME:travelmate_user}
-    password: ${DB_PASSWORD:changeme}
+    # SECURITY: DB_PASSWORD 환경변수 필수 설정
+    password: ${DB_PASSWORD:}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -117,7 +145,9 @@ logging:
 
 app:
   jwt:
-    secret: ${JWT_SECRET:dev-local-secret-key-minimum-32-characters-long}
+    # SECURITY: JWT_SECRET 환경변수 필수 설정 (최소 32자, Base64 권장)
+    # 생성 명령어: openssl rand -base64 32
+    secret: ${JWT_SECRET:}
     expiration: ${JWT_EXPIRATION:86400000}  # 24 hours
     refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000}  # 7 days
 
@@ -141,6 +171,22 @@ app:
   security:
     rate-limit:
       enabled: false  # 개발환경에서는 비활성화
+      requests-per-minute: 60
+      auth-requests-per-minute: 10
+    xss:
+      enabled: true
+    audit:
+      enabled: true
+
+# Sentry 설정 (개발)
+sentry:
+  enabled: ${SENTRY_ENABLED:false}
+  dsn: ${SENTRY_DSN:}
+  environment: development
+  traces-sample-rate: 0.1
+  logging:
+    minimum-event-level: warn
+    minimum-breadcrumb-level: info
 
 # 블록체인 설정 (Polygon)
 blockchain:
@@ -157,6 +203,25 @@ ipfs:
   gateway-url: ${IPFS_GATEWAY_URL:https://ipfs.io/ipfs/}
   api-url: ${IPFS_API_URL:}
   api-key: ${IPFS_API_KEY:}
+
+# AWS 설정 (개발)
+aws:
+  region: ${AWS_REGION:ap-northeast-2}
+  access-key-id: ${AWS_ACCESS_KEY_ID:}
+  secret-access-key: ${AWS_SECRET_ACCESS_KEY:}
+  use-default-credentials: true
+  cloudfront:
+    distribution-id: ${CLOUDFRONT_DISTRIBUTION_ID:}
+    key-pair-id: ${CLOUDFRONT_KEY_PAIR_ID:}
+    private-key-path: ${CLOUDFRONT_PRIVATE_KEY_PATH:}
+
+# CDN 설정 (개발)
+cdn:
+  enabled: ${CDN_ENABLED:false}
+  base-url: ${CDN_BASE_URL:}
+  image-path: /images
+  static-path: /static
+  cache-duration: 86400
 
 ---
 # 운영 환경 설정 (PostgreSQL)
@@ -305,8 +370,44 @@ app:
   security:
     rate-limit:
       enabled: true
-      default-requests-per-minute: 60
-      login-requests-per-minute: 5
+      requests-per-minute: 60
+      auth-requests-per-minute: 5
+    xss:
+      enabled: true
+    audit:
+      enabled: true
+    headers:
+      content-security-policy: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:"
+
+# AWS 설정 (운영)
+aws:
+  region: ${AWS_REGION:ap-northeast-2}
+  access-key-id: ${AWS_ACCESS_KEY_ID:}
+  secret-access-key: ${AWS_SECRET_ACCESS_KEY:}
+  use-default-credentials: false
+  cloudfront:
+    distribution-id: ${CLOUDFRONT_DISTRIBUTION_ID}
+    key-pair-id: ${CLOUDFRONT_KEY_PAIR_ID:}
+    private-key-path: ${CLOUDFRONT_PRIVATE_KEY_PATH:}
+
+# CDN 설정 (운영)
+cdn:
+  enabled: ${CDN_ENABLED:true}
+  base-url: ${CDN_BASE_URL:https://cdn.travelmate.app}
+  image-path: /images
+  static-path: /static
+  cache-duration: 604800
+
+# Sentry 설정 (운영)
+sentry:
+  enabled: ${SENTRY_ENABLED:true}
+  dsn: ${SENTRY_DSN}
+  environment: production
+  traces-sample-rate: ${SENTRY_TRACES_SAMPLE_RATE:0.2}
+  logging:
+    minimum-event-level: error
+    minimum-breadcrumb-level: warn
+  send-default-pii: false
 
 ---
 # 테스트 환경 설정

@@ -64,7 +64,7 @@ class MarketplaceService {
    * 판매 취소
    */
   async cancelListing(listingId: number): Promise<void> {
-    return apiClient.delete(`/marketplace/listing/${listingId}`);
+    return apiClient.delete(`/marketplace/listings/${listingId}`);
   }
 
   /**

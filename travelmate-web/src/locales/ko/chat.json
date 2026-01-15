@@ -1,0 +1,45 @@
+{
+  "title": "채팅",
+  "groups": "그룹",
+  "createGroup": "그룹 만들기",
+  "myGroups": "내 그룹",
+  "joinedGroups": "참여 중인 그룹",
+  "publicGroups": "공개 그룹",
+  "message": {
+    "placeholder": "메시지를 입력하세요...",
+    "send": "전송",
+    "sent": "전송됨",
+    "delivered": "전달됨",
+    "read": "읽음",
+    "typing": "{{name}}님이 입력 중...",
+    "typingMultiple": "{{name}} 외 {{count}}명이 입력 중...",
+    "image": "이미지",
+    "location": "위치",
+    "file": "파일"
+  },
+  "group": {
+    "name": "그룹명",
+    "description": "그룹 설명",
+    "members": "멤버",
+    "memberCount": "{{count}}명",
+    "admin": "관리자",
+    "leave": "그룹 나가기",
+    "delete": "그룹 삭제",
+    "settings": "그룹 설정",
+    "invite": "멤버 초대",
+    "maxMembers": "최대 인원",
+    "isPrivate": "비공개 그룹",
+    "created": "그룹이 생성되었습니다"
+  },
+  "notification": {
+    "newMessage": "새 메시지",
+    "mentioned": "{{name}}님이 회원님을 언급했습니다",
+    "joined": "{{name}}님이 그룹에 참여했습니다",
+    "left": "{{name}}님이 그룹을 나갔습니다"
+  },
+  "empty": {
+    "groups": "참여 중인 그룹이 없습니다",
+    "messages": "메시지가 없습니다",
+    "startConversation": "대화를 시작해보세요!"
+  }
+}

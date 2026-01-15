@@ -612,3 +612,125 @@
 .btn-load-more:hover {
   background: rgba(255, 255, 255, 0.2);
 }
+
+/* Minting Status Badge */
+.mint-status-badge {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: white;
+  text-transform: uppercase;
+}
+
+.mint-status-badge svg {
+  width: 12px;
+  height: 12px;
+}
+
+.mint-status-badge.minted {
+  background: #10b981;
+}
+
+.mint-status-badge.minting,
+.mint-status-badge.confirming {
+  background: #3b82f6;
+  animation: pulse 2s infinite;
+}
+
+.mint-status-badge.failed {
+  background: #ef4444;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* NFT Actions */
+.nft-actions {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Mint Button */
+.btn-mint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #8b5cf6, #a855f7);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-mint svg {
+  width: 16px;
+  height: 16px;
+}
+
+.btn-mint:hover:not(:disabled) {
+  background: linear-gradient(135deg, #7c3aed, #9333ea);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+}
+
+.btn-mint:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-mint.minting,
+.btn-mint.confirming {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.btn-mint.failed {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+/* View Chain Button */
+.btn-view-chain {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 8px;
+  color: #10b981;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.btn-view-chain svg {
+  width: 14px;
+  height: 14px;
+}
+
+.btn-view-chain:hover {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: rgba(16, 185, 129, 0.5);
+}

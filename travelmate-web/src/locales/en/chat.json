@@ -1,0 +1,45 @@
+{
+  "title": "Chat",
+  "groups": "Groups",
+  "createGroup": "Create Group",
+  "myGroups": "My Groups",
+  "joinedGroups": "Joined Groups",
+  "publicGroups": "Public Groups",
+  "message": {
+    "placeholder": "Type a message...",
+    "send": "Send",
+    "sent": "Sent",
+    "delivered": "Delivered",
+    "read": "Read",
+    "typing": "{{name}} is typing...",
+    "typingMultiple": "{{name}} and {{count}} others are typing...",
+    "image": "Image",
+    "location": "Location",
+    "file": "File"
+  },
+  "group": {
+    "name": "Group Name",
+    "description": "Group Description",
+    "members": "Members",
+    "memberCount": "{{count}} members",
+    "admin": "Admin",
+    "leave": "Leave Group",
+    "delete": "Delete Group",
+    "settings": "Group Settings",
+    "invite": "Invite Members",
+    "maxMembers": "Max Members",
+    "isPrivate": "Private Group",
+    "created": "Group has been created"
+  },
+  "notification": {
+    "newMessage": "New Message",
+    "mentioned": "{{name}} mentioned you",
+    "joined": "{{name}} joined the group",
+    "left": "{{name}} left the group"
+  },
+  "empty": {
+    "groups": "No groups joined yet",
+    "messages": "No messages",
+    "startConversation": "Start a conversation!"
+  }
+}

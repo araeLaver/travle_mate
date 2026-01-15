@@ -1,32 +1,51 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { errorTracker, logger } from '../lib/monitoring';
 
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
+  onError?: (error: Error, errorInfo: ErrorInfo) => void;
 }
 
 interface State {
   hasError: boolean;
   error: Error | null;
+  errorId: string | null;
 }
 
 class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false, error: null, errorId: null };
   }
 
-  static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error };
+  static getDerivedStateFromError(error: Error): Partial<State> {
+    const errorId = `ERR-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+    return { hasError: true, error, errorId };
   }
 
-  componentDidCatch(_error: Error, _errorInfo: ErrorInfo) {
-    // 프로덕션에서는 에러 로깅 서비스로 전송
-    // TODO: Sentry 등 에러 트래킹 서비스 연동
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    // 모니터링 시스템으로 에러 전송
+    errorTracker.captureReactError(error, {
+      componentStack: errorInfo.componentStack || '',
+    });
+
+    logger.error('React Error Boundary caught error', error, {
+      errorId: this.state.errorId,
+      componentStack: errorInfo.componentStack,
+    });
+
+    // 부모 컴포넌트에 에러 알림
+    if (this.props.onError) {
+      this.props.onError(error, errorInfo);
+    }
   }
 
   handleRetry = () => {
-    this.setState({ hasError: false, error: null });
+    logger.info('User clicked retry after error', {
+      errorId: this.state.errorId,
+    });
+    this.setState({ hasError: false, error: null, errorId: null });
   };
 
   render() {
@@ -80,11 +99,22 @@ class ErrorBoundary extends Component<Props, State> {
               </button>
             </div>
 
+            {this.state.errorId && (
+              <p className="mt-4 text-xs text-gray-400">
+                오류 ID: {this.state.errorId}
+              </p>
+            )}
+
             {process.env.NODE_ENV === 'development' && this.state.error && (
               <div className="mt-8 p-4 bg-gray-100 rounded-lg text-left">
                 <p className="text-sm font-mono text-red-600 break-all">
                   {this.state.error.message}
                 </p>
+                {this.state.error.stack && (
+                  <pre className="mt-2 text-xs font-mono text-gray-500 overflow-auto max-h-40">
+                    {this.state.error.stack}
+                  </pre>
+                )}
               </div>
             )}
           </div>

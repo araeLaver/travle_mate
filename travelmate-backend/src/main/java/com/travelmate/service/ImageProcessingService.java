@@ -6,7 +6,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -17,8 +21,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import org.springframework.scheduling.annotation.Async;
 
 /**
  * 이미지 처리 서비스
@@ -26,6 +33,7 @@ import java.util.UUID;
  * - 썸네일 생성
  * - 이미지 리사이징
  * - 이미지 압축
+ * - WebP 변환
  */
 @Slf4j
 @Service
@@ -91,6 +99,14 @@ public class ImageProcessingService {
                 .build();
     }
 
+    // 이미지 파일 매직 넘버 (파일 시그니처)
+    private static final byte[] JPEG_MAGIC = {(byte) 0xFF, (byte) 0xD8, (byte) 0xFF};
+    private static final byte[] PNG_MAGIC = {(byte) 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};
+    private static final byte[] GIF_MAGIC_87 = {0x47, 0x49, 0x46, 0x38, 0x37, 0x61}; // GIF87a
+    private static final byte[] GIF_MAGIC_89 = {0x47, 0x49, 0x46, 0x38, 0x39, 0x61}; // GIF89a
+    private static final byte[] WEBP_MAGIC = {0x52, 0x49, 0x46, 0x46}; // RIFF (WebP starts with RIFF)
+    private static final byte[] WEBP_SIGNATURE = {0x57, 0x45, 0x42, 0x50}; // WEBP at offset 8
+
     /**
      * 파일 검증
      */
@@ -113,6 +129,71 @@ public class ImageProcessingService {
         if (contentType == null || !contentType.startsWith("image/")) {
             throw new IllegalArgumentException("Invalid content type");
         }
+
+        // SECURITY: 매직 넘버 검증 (파일 확장자 스푸핑 방지)
+        try {
+            if (!validateMagicNumber(file)) {
+                log.warn("File magic number validation failed for: {}", file.getOriginalFilename());
+                throw new IllegalArgumentException("File content does not match declared type");
+            }
+        } catch (IOException e) {
+            log.error("Failed to read file for magic number validation", e);
+            throw new IllegalArgumentException("Failed to validate file content");
+        }
+    }
+
+    /**
+     * 매직 넘버(파일 시그니처) 검증
+     * 파일 확장자와 실제 파일 내용이 일치하는지 확인
+     */
+    private boolean validateMagicNumber(MultipartFile file) throws IOException {
+        byte[] header = new byte[12];
+        int bytesRead = file.getInputStream().read(header);
+
+        if (bytesRead < 3) {
+            return false;
+        }
+
+        // JPEG 검증
+        if (startsWith(header, JPEG_MAGIC)) {
+            return true;
+        }
+
+        // PNG 검증
+        if (bytesRead >= 8 && startsWith(header, PNG_MAGIC)) {
+            return true;
+        }
+
+        // GIF 검증
+        if (bytesRead >= 6 && (startsWith(header, GIF_MAGIC_87) || startsWith(header, GIF_MAGIC_89))) {
+            return true;
+        }
+
+        // WebP 검증 (RIFF....WEBP)
+        if (bytesRead >= 12 && startsWith(header, WEBP_MAGIC)) {
+            byte[] webpCheck = new byte[4];
+            System.arraycopy(header, 8, webpCheck, 0, 4);
+            if (startsWith(webpCheck, WEBP_SIGNATURE)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * 바이트 배열이 특정 시그니처로 시작하는지 확인
+     */
+    private boolean startsWith(byte[] data, byte[] signature) {
+        if (data.length < signature.length) {
+            return false;
+        }
+        for (int i = 0; i < signature.length; i++) {
+            if (data[i] != signature[i]) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -230,11 +311,202 @@ public class ImageProcessingService {
     public static class ImageUploadResult {
         private String originalUrl;      // 원본 이미지 URL
         private String thumbnailUrl;     // 썸네일 URL
+        private String webpUrl;          // WebP 이미지 URL
+        private String thumbnailWebpUrl; // WebP 썸네일 URL
         private String originalFileName; // 원본 파일명
         private String savedFileName;    // 저장된 파일명
         private long fileSize;           // 파일 크기 (bytes)
         private int width;               // 이미지 너비
         private int height;              // 이미지 높이
         private String contentType;      // Content-Type
+    }
+
+    // ================== WebP 변환 기능 ==================
+
+    @Value("${image.processing.webp.quality:0.8}")
+    private float webpQuality = 0.8f;
+
+    @Value("${image.processing.webp.enabled:true}")
+    private boolean webpEnabled = true;
+
+    /**
+     * 이미지 업로드 및 WebP 변환
+     */
+    public ImageUploadResult uploadImageWithWebP(MultipartFile file, String subfolder) throws IOException {
+        // 기본 이미지 업로드
+        ImageUploadResult result = uploadImage(file, subfolder);
+
+        if (!webpEnabled) {
+            return result;
+        }
+
+        // WebP 변환
+        String webpUrl = convertToWebPAndSave(result.getSavedFileName(), subfolder);
+        String thumbnailWebpUrl = convertToWebPAndSave("thumb_" + result.getSavedFileName(), subfolder);
+
+        return ImageUploadResult.builder()
+                .originalUrl(result.getOriginalUrl())
+                .thumbnailUrl(result.getThumbnailUrl())
+                .webpUrl(webpUrl)
+                .thumbnailWebpUrl(thumbnailWebpUrl)
+                .originalFileName(result.getOriginalFileName())
+                .savedFileName(result.getSavedFileName())
+                .fileSize(result.getFileSize())
+                .width(result.getWidth())
+                .height(result.getHeight())
+                .contentType(result.getContentType())
+                .build();
+    }
+
+    /**
+     * 기존 이미지를 WebP로 변환 (비동기)
+     */
+    @Async
+    public CompletableFuture<String> convertToWebPAsync(String imagePath, String subfolder) {
+        try {
+            String webpUrl = convertToWebPAndSave(imagePath, subfolder);
+            return CompletableFuture.completedFuture(webpUrl);
+        } catch (IOException e) {
+            log.error("WebP conversion failed for: {}", imagePath, e);
+            return CompletableFuture.failedFuture(e);
+        }
+    }
+
+    /**
+     * WebP로 변환 후 저장
+     */
+    private String convertToWebPAndSave(String fileName, String subfolder) throws IOException {
+        Path originalPath = Paths.get(uploadDir, subfolder, fileName);
+        if (!Files.exists(originalPath)) {
+            throw new IOException("Original file not found: " + originalPath);
+        }
+
+        BufferedImage image = ImageIO.read(originalPath.toFile());
+        if (image == null) {
+            throw new IOException("Failed to read image: " + originalPath);
+        }
+
+        String webpFileName = fileName.replaceFirst("\\.[^.]+$", ".webp");
+        Path webpPath = Paths.get(uploadDir, subfolder, webpFileName);
+
+        saveAsWebP(image, webpPath.toFile());
+
+        log.info("WebP created: {}", webpFileName);
+        return String.format("/uploads/%s/%s", subfolder, webpFileName);
+    }
+
+    /**
+     * BufferedImage를 WebP 파일로 저장
+     */
+    private void saveAsWebP(BufferedImage image, File outputFile) throws IOException {
+        // WebP 라이터 찾기
+        Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType("image/webp");
+
+        if (writers.hasNext()) {
+            ImageWriter writer = writers.next();
+            ImageWriteParam param = writer.getDefaultWriteParam();
+
+            if (param.canWriteCompressed()) {
+                param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+                param.setCompressionQuality(webpQuality);
+            }
+
+            try (ImageOutputStream ios = ImageIO.createImageOutputStream(outputFile)) {
+                writer.setOutput(ios);
+                writer.write(null, new IIOImage(image, null, null), param);
+            } finally {
+                writer.dispose();
+            }
+        } else {
+            // WebP 라이터가 없으면 고품질 JPEG로 저장
+            log.warn("WebP writer not available, saving as JPEG instead");
+            saveAsJpeg(image, outputFile.getAbsolutePath().replace(".webp", ".jpg"));
+        }
+    }
+
+    /**
+     * 고품질 JPEG로 저장
+     */
+    private void saveAsJpeg(BufferedImage image, String outputPath) throws IOException {
+        Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("jpg");
+        if (!writers.hasNext()) {
+            throw new IOException("No JPEG writer available");
+        }
+
+        ImageWriter writer = writers.next();
+        ImageWriteParam param = writer.getDefaultWriteParam();
+        param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+        param.setCompressionQuality(COMPRESSION_QUALITY);
+
+        try (ImageOutputStream ios = ImageIO.createImageOutputStream(new File(outputPath))) {
+            writer.setOutput(ios);
+            writer.write(null, new IIOImage(image, null, null), param);
+        } finally {
+            writer.dispose();
+        }
+    }
+
+    /**
+     * 폴더 내 모든 이미지를 WebP로 일괄 변환
+     */
+    @Async
+    public CompletableFuture<Integer> batchConvertToWebP(String subfolder) {
+        int converted = 0;
+        Path folderPath = Paths.get(uploadDir, subfolder);
+
+        try {
+            if (!Files.exists(folderPath)) {
+                return CompletableFuture.completedFuture(0);
+            }
+
+            List<Path> imageFiles = Files.list(folderPath)
+                    .filter(path -> {
+                        String name = path.getFileName().toString().toLowerCase();
+                        return name.endsWith(".jpg") || name.endsWith(".jpeg") || name.endsWith(".png");
+                    })
+                    .filter(path -> {
+                        // WebP 버전이 없는 파일만
+                        String webpName = path.getFileName().toString().replaceFirst("\\.[^.]+$", ".webp");
+                        return !Files.exists(path.getParent().resolve(webpName));
+                    })
+                    .toList();
+
+            for (Path imagePath : imageFiles) {
+                try {
+                    convertToWebPAndSave(imagePath.getFileName().toString(), subfolder);
+                    converted++;
+                } catch (IOException e) {
+                    log.error("Failed to convert: {}", imagePath, e);
+                }
+            }
+
+            log.info("Batch WebP conversion complete: {} files converted in {}", converted, subfolder);
+        } catch (IOException e) {
+            log.error("Batch conversion failed for folder: {}", subfolder, e);
+        }
+
+        return CompletableFuture.completedFuture(converted);
+    }
+
+    /**
+     * Accept 헤더 기반 최적 이미지 URL 반환
+     */
+    public String getOptimalImageUrl(String imagePath, String acceptHeader) {
+        if (acceptHeader != null && acceptHeader.contains("image/webp")) {
+            String webpPath = imagePath.replaceFirst("\\.[^.]+$", ".webp");
+            Path fullWebpPath = Paths.get(uploadDir, webpPath.substring(webpPath.indexOf("/uploads/") + 9));
+            if (Files.exists(fullWebpPath)) {
+                return webpPath;
+            }
+        }
+        return imagePath;
+    }
+
+    /**
+     * WebP 지원 여부 확인
+     */
+    public boolean isWebPSupported() {
+        Iterator<ImageWriter> writers = ImageIO.getImageWritersByMIMEType("image/webp");
+        return writers.hasNext();
     }
 }

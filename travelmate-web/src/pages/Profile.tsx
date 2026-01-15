@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { profileService, UserProfile, UpdateProfileRequest } from '../services/profileService';
 import { useToast } from '../components/Toast';
 import { getErrorMessage, logError } from '../utils/errorHandler';
+import { useFollowStats, useFollowStatus, useFollowToggle } from '../hooks/useFollow';
+import { authService } from '../services/authService';
+import FollowerList from '../components/social/FollowerList';
 import './Profile.css';
 
 // SVG Icons
@@ -248,7 +252,37 @@ const ZapIcon = () => (
   </svg>
 );
 
+const UserPlusIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+    <circle cx="8.5" cy="7" r="4" />
+    <line x1="20" y1="8" x2="20" y2="14" />
+    <line x1="23" y1="11" x2="17" y2="11" />
+  </svg>
+);
+
+const CheckIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <polyline points="20 6 9 17 4 12" />
+  </svg>
+);
+
 const Profile: React.FC = () => {
+  const { userId } = useParams<{ userId?: string }>();
   const toast = useToast();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -256,15 +290,26 @@ const Profile: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'info' | 'travel' | 'preferences'>('info');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [showFollowerList, setShowFollowerList] = useState<'followers' | 'following' | null>(null);
+
+  // 현재 로그인한 사용자 정보
+  const currentUser = authService.getUser();
+  const viewedUserId = userId ? parseInt(userId) : currentUser?.id;
+  const isOwnProfile = !userId || (currentUser !== null && parseInt(userId) === currentUser.id);
+
+  // 팔로우 관련 훅
+  const { data: followStats, refetch: refetchFollowStats } = useFollowStats(viewedUserId || 0);
+  const { data: followStatus } = useFollowStatus(viewedUserId || 0, !isOwnProfile && !!viewedUserId);
+  const { toggle: toggleFollow, isLoading: isFollowLoading } = useFollowToggle();
 
   useEffect(() => {
     loadProfile();
-  }, []);
+  }, [userId]);
 
   const loadProfile = async () => {
     setIsLoading(true);
     try {
-      const userProfile = await profileService.getProfile();
+      const userProfile = await profileService.getProfile(userId);
       if (!userProfile) {
         // 프로필이 없으면 임시 프로필 생성
         const tempProfile = profileService.createTempProfile('여행러');
@@ -277,6 +322,22 @@ const Profile: React.FC = () => {
       setProfile(tempProfile);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleFollowToggle = async () => {
+    if (!viewedUserId || isOwnProfile) return;
+
+    try {
+      await toggleFollow(viewedUserId, followStatus?.isFollowing || false);
+      refetchFollowStats();
+      toast.success(
+        followStatus?.isFollowing
+          ? '팔로우를 취소했습니다.'
+          : '팔로우했습니다!'
+      );
+    } catch (error) {
+      toast.error(getErrorMessage(error));
     }
   };
 
@@ -433,49 +494,74 @@ const Profile: React.FC = () => {
             </div>
 
             <div className="profile-actions">
-              {!isEditing ? (
-                <button
-                  className="edit-btn"
-                  onClick={handleEditStart}
-                  aria-label="프로필 편집 시작"
-                >
-                  <span className="btn-icon" aria-hidden="true">
-                    <EditIcon />
-                  </span>{' '}
-                  편집
-                </button>
-              ) : (
-                <div className="edit-actions" role="group" aria-label="편집 액션">
+              {isOwnProfile ? (
+                !isEditing ? (
                   <button
-                    className="save-btn"
-                    onClick={handleEditSave}
-                    disabled={isSaving}
-                    aria-busy={isSaving}
-                    aria-label="프로필 저장"
-                  >
-                    {isSaving ? (
-                      '저장 중...'
-                    ) : (
-                      <>
-                        <span className="btn-icon" aria-hidden="true">
-                          <SaveIcon />
-                        </span>{' '}
-                        저장
-                      </>
-                    )}
-                  </button>
-                  <button
-                    className="cancel-btn"
-                    onClick={handleEditCancel}
-                    disabled={isSaving}
-                    aria-label="편집 취소"
+                    className="edit-btn"
+                    onClick={handleEditStart}
+                    aria-label="프로필 편집 시작"
                   >
                     <span className="btn-icon" aria-hidden="true">
-                      <XIcon />
+                      <EditIcon />
                     </span>{' '}
-                    취소
+                    편집
                   </button>
-                </div>
+                ) : (
+                  <div className="edit-actions" role="group" aria-label="편집 액션">
+                    <button
+                      className="save-btn"
+                      onClick={handleEditSave}
+                      disabled={isSaving}
+                      aria-busy={isSaving}
+                      aria-label="프로필 저장"
+                    >
+                      {isSaving ? (
+                        '저장 중...'
+                      ) : (
+                        <>
+                          <span className="btn-icon" aria-hidden="true">
+                            <SaveIcon />
+                          </span>{' '}
+                          저장
+                        </>
+                      )}
+                    </button>
+                    <button
+                      className="cancel-btn"
+                      onClick={handleEditCancel}
+                      disabled={isSaving}
+                      aria-label="편집 취소"
+                    >
+                      <span className="btn-icon" aria-hidden="true">
+                        <XIcon />
+                      </span>{' '}
+                      취소
+                    </button>
+                  </div>
+                )
+              ) : (
+                <button
+                  className={`follow-btn ${followStatus?.isFollowing ? 'following' : ''}`}
+                  onClick={handleFollowToggle}
+                  disabled={isFollowLoading}
+                  aria-label={followStatus?.isFollowing ? '언팔로우' : '팔로우'}
+                >
+                  {followStatus?.isFollowing ? (
+                    <>
+                      <span className="btn-icon" aria-hidden="true">
+                        <CheckIcon />
+                      </span>{' '}
+                      팔로잉
+                    </>
+                  ) : (
+                    <>
+                      <span className="btn-icon" aria-hidden="true">
+                        <UserPlusIcon />
+                      </span>{' '}
+                      팔로우
+                    </>
+                  )}
+                </button>
               )}
             </div>
           </div>
@@ -483,6 +569,30 @@ const Profile: React.FC = () => {
 
         {/* 통계 카드 */}
         <section className="profile-stats" aria-label="프로필 통계">
+          <button
+            className="stat-card clickable"
+            role="group"
+            aria-label="팔로워"
+            onClick={() => setShowFollowerList('followers')}
+          >
+            <div className="stat-number" aria-hidden="true">
+              {followStats?.followerCount || 0}
+            </div>
+            <div className="stat-label">팔로워</div>
+            <span className="sr-only">{followStats?.followerCount || 0}명</span>
+          </button>
+          <button
+            className="stat-card clickable"
+            role="group"
+            aria-label="팔로잉"
+            onClick={() => setShowFollowerList('following')}
+          >
+            <div className="stat-number" aria-hidden="true">
+              {followStats?.followingCount || 0}
+            </div>
+            <div className="stat-label">팔로잉</div>
+            <span className="sr-only">{followStats?.followingCount || 0}명</span>
+          </button>
           <div className="stat-card" role="group" aria-label="여행 횟수">
             <div className="stat-number" aria-hidden="true">
               {profile.stats.totalTrips}
@@ -496,13 +606,6 @@ const Profile: React.FC = () => {
             </div>
             <div className="stat-label">방문 국가</div>
             <span className="sr-only">{profile.stats.totalCountries}개국</span>
-          </div>
-          <div className="stat-card" role="group" aria-label="방문 도시">
-            <div className="stat-number" aria-hidden="true">
-              {profile.stats.totalCities}
-            </div>
-            <div className="stat-label">방문 도시</div>
-            <span className="sr-only">{profile.stats.totalCities}개 도시</span>
           </div>
           <div className="stat-card" role="group" aria-label="평균 평점">
             <div className="stat-number" aria-hidden="true">
@@ -886,6 +989,29 @@ const Profile: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* 팔로워/팔로잉 모달 */}
+      {showFollowerList && viewedUserId && (
+        <div
+          className="follow-modal-overlay"
+          onClick={() => setShowFollowerList(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="follow-modal-title"
+        >
+          <div
+            className="follow-modal"
+            onClick={e => e.stopPropagation()}
+          >
+            <FollowerList
+              userId={viewedUserId}
+              type={showFollowerList}
+              isOwnProfile={isOwnProfile}
+              onClose={() => setShowFollowerList(null)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

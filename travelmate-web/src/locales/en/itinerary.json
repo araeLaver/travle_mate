@@ -1,0 +1,99 @@
+{
+  "title": "Travel Itinerary",
+  "myItineraries": "My Itineraries",
+  "collaborating": "Collaborating",
+  "public": "Public Itineraries",
+  "popular": "Popular Itineraries",
+  "create": "Create New Itinerary",
+  "edit": "Edit Itinerary",
+  "delete": "Delete Itinerary",
+  "copy": "Copy Itinerary",
+  "share": "Share Itinerary",
+  "empty": "No itineraries yet",
+  "emptyDescription": "Create your first travel itinerary!",
+  "form": {
+    "title": "Title",
+    "titlePlaceholder": "Enter itinerary title",
+    "description": "Description",
+    "descriptionPlaceholder": "Enter description for your itinerary",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "coverImage": "Cover Image",
+    "visibility": "Visibility",
+    "create": "Create Itinerary",
+    "save": "Save"
+  },
+  "visibility": {
+    "PRIVATE": "Private",
+    "LINK_ONLY": "Link Only",
+    "FOLLOWERS": "Followers Only",
+    "PUBLIC": "Public"
+  },
+  "detail": {
+    "duration": "{{nights}} nights {{days}} days",
+    "dayTrip": "Day Trip",
+    "day": "Day {{number}}",
+    "views": "{{count}} views",
+    "likes": "{{count}} likes",
+    "copies": "{{count}} copies",
+    "owner": "Owner",
+    "collaborators": "Collaborators",
+    "shareCode": "Share Code",
+    "copyLink": "Copy Link"
+  },
+  "item": {
+    "add": "Add Item",
+    "edit": "Edit Item",
+    "delete": "Delete Item",
+    "move": "Move",
+    "reorder": "Reorder",
+    "type": {
+      "ATTRACTION": "Attraction",
+      "RESTAURANT": "Restaurant",
+      "CAFE": "Cafe",
+      "ACCOMMODATION": "Accommodation",
+      "TRANSPORTATION": "Transportation",
+      "ACTIVITY": "Activity",
+      "SHOPPING": "Shopping",
+      "FREE_TIME": "Free Time",
+      "NOTE": "Note",
+      "OTHER": "Other"
+    },
+    "booking": {
+      "NOT_NEEDED": "No Booking Needed",
+      "PENDING": "Booking Pending",
+      "BOOKED": "Booked",
+      "CANCELLED": "Cancelled"
+    },
+    "time": "Time",
+    "duration": "Duration",
+    "cost": "Cost",
+    "estimatedCost": "Estimated Cost",
+    "actualCost": "Actual Cost",
+    "notes": "Notes",
+    "location": "Location"
+  },
+  "collaborator": {
+    "invite": "Invite Collaborator",
+    "manage": "Manage Collaborators",
+    "role": {
+      "VIEWER": "Viewer",
+      "EDITOR": "Editor",
+      "ADMIN": "Admin"
+    },
+    "status": {
+      "PENDING": "Pending",
+      "ACCEPTED": "Accepted",
+      "DECLINED": "Declined"
+    },
+    "accept": "Accept",
+    "decline": "Decline",
+    "remove": "Remove",
+    "pendingInvites": "Pending Invites"
+  },
+  "search": {
+    "placeholder": "Search itineraries...",
+    "results": "Search Results",
+    "noResults": "No results found"
+  }
+}

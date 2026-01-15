@@ -202,4 +202,153 @@ public interface UserNftCollectionRepository extends JpaRepository<UserNftCollec
            "WHERE nc.user.id = :userId " +
            "ORDER BY nc.collectedAt DESC")
     Page<UserNftCollection> findByUserIdWithLocation(@Param("userId") Long userId, Pageable pageable);
+
+    /**
+     * 민팅 상태에 따른 NFT 조회 (민팅 가능한 NFT 목록)
+     */
+    @Query("SELECT nc FROM UserNftCollection nc " +
+           "LEFT JOIN FETCH nc.location " +
+           "WHERE nc.user.id = :userId AND nc.mintStatus IN :statuses " +
+           "ORDER BY nc.collectedAt DESC")
+    Page<UserNftCollection> findByUserIdAndMintStatusIn(
+            @Param("userId") Long userId,
+            @Param("statuses") List<MintStatus> statuses,
+            Pageable pageable);
+
+    /**
+     * 특정 민팅 상태의 NFT 수 조회
+     */
+    long countByUserIdAndMintStatus(Long userId, MintStatus mintStatus);
+
+    /**
+     * 여러 민팅 상태의 NFT 수 조회
+     */
+    @Query("SELECT COUNT(nc) FROM UserNftCollection nc " +
+           "WHERE nc.user.id = :userId AND nc.mintStatus IN :statuses")
+    long countByUserIdAndMintStatusIn(
+            @Param("userId") Long userId,
+            @Param("statuses") List<MintStatus> statuses);
+
+    // ===== Leaderboard Queries =====
+
+    /**
+     * 상위 수집가 조회 (전체 기간)
+     */
+    @Query(value = """
+        SELECT u.id, u.nickname, u.profile_image_url, COUNT(nc.id) as nft_count
+        FROM users u
+        INNER JOIN user_nft_collections nc ON u.id = nc.user_id
+        GROUP BY u.id, u.nickname, u.profile_image_url
+        ORDER BY nft_count DESC
+        LIMIT :limit
+        """, nativeQuery = true)
+    List<Object[]> findTopCollectorsByNftCount(@Param("limit") int limit);
+
+    /**
+     * 상위 수집가 조회 (특정 기간 이후)
+     */
+    @Query(value = """
+        SELECT u.id, u.nickname, u.profile_image_url, COUNT(nc.id) as nft_count
+        FROM users u
+        INNER JOIN user_nft_collections nc ON u.id = nc.user_id
+        WHERE nc.collected_at >= :since
+        GROUP BY u.id, u.nickname, u.profile_image_url
+        ORDER BY nft_count DESC
+        LIMIT :limit
+        """, nativeQuery = true)
+    List<Object[]> findTopCollectorsByNftCountSince(
+            @Param("since") java.time.LocalDateTime since,
+            @Param("limit") int limit);
+
+    /**
+     * 전체 수집 참여자 수
+     */
+    @Query("SELECT COUNT(DISTINCT nc.user.id) FROM UserNftCollection nc")
+    long countDistinctUsers();
+
+    /**
+     * 특정 기간 이후 수집 참여자 수
+     */
+    @Query("SELECT COUNT(DISTINCT nc.user.id) FROM UserNftCollection nc WHERE nc.collectedAt >= :since")
+    long countDistinctUsersSince(@Param("since") java.time.LocalDateTime since);
+
+    /**
+     * 사용자 랭크 조회 (전체 기간)
+     */
+    @Query(value = """
+        SELECT rank FROM (
+            SELECT user_id, RANK() OVER (ORDER BY COUNT(*) DESC) as rank
+            FROM user_nft_collections
+            GROUP BY user_id
+        ) ranked WHERE user_id = :userId
+        """, nativeQuery = true)
+    Long getUserRank(@Param("userId") Long userId);
+
+    /**
+     * 사용자 랭크 조회 (특정 기간 이후)
+     */
+    @Query(value = """
+        SELECT rank FROM (
+            SELECT user_id, RANK() OVER (ORDER BY COUNT(*) DESC) as rank
+            FROM user_nft_collections
+            WHERE collected_at >= :since
+            GROUP BY user_id
+        ) ranked WHERE user_id = :userId
+        """, nativeQuery = true)
+    Long getUserRankSince(@Param("userId") Long userId, @Param("since") java.time.LocalDateTime since);
+
+    /**
+     * 사용자의 희귀도별 수집 수 조회 (전체)
+     */
+    @Query(value = """
+        SELECT cl.rarity, COUNT(nc.id)
+        FROM user_nft_collections nc
+        INNER JOIN collectible_locations cl ON nc.location_id = cl.id
+        WHERE nc.user_id = :userId
+        GROUP BY cl.rarity
+        """, nativeQuery = true)
+    List<Object[]> getRarityBreakdownByUserId(@Param("userId") Long userId);
+
+    /**
+     * 사용자의 희귀도별 수집 수 조회 (특정 기간 이후)
+     */
+    @Query(value = """
+        SELECT cl.rarity, COUNT(nc.id)
+        FROM user_nft_collections nc
+        INNER JOIN collectible_locations cl ON nc.location_id = cl.id
+        WHERE nc.user_id = :userId AND nc.collected_at >= :since
+        GROUP BY cl.rarity
+        """, nativeQuery = true)
+    List<Object[]> getRarityBreakdownByUserIdSince(
+            @Param("userId") Long userId,
+            @Param("since") java.time.LocalDateTime since);
+
+    // ===== Admin Dashboard Queries =====
+
+    /**
+     * 민팅 완료된 NFT 수 조회
+     */
+    @Query("SELECT COUNT(nc) FROM UserNftCollection nc WHERE nc.mintStatus = 'MINTED'")
+    long countByMintStatusMinted();
+
+    /**
+     * 특정 시간 이후 수집된 NFT 수 조회
+     */
+    long countByCollectedAtAfter(java.time.LocalDateTime dateTime);
+
+    /**
+     * 특정 기간 동안 수집된 NFT 수 조회
+     */
+    long countByCollectedAtBetween(java.time.LocalDateTime start, java.time.LocalDateTime end);
+
+    /**
+     * 희귀도별 NFT 수 조회
+     */
+    @Query("SELECT COUNT(nc) FROM UserNftCollection nc WHERE nc.location.rarity = :rarity")
+    long countByLocationRarity(@Param("rarity") Rarity rarity);
+
+    /**
+     * 특정 장소의 수집 수 조회
+     */
+    long countByLocationId(Long locationId);
 }

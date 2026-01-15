@@ -1,0 +1,906 @@
+.marketplace {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color: #fff;
+}
+
+/* Header */
+.marketplace-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.marketplace-header h1 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.header-balance {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.75rem;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.header-balance svg {
+  width: 16px;
+  height: 16px;
+}
+
+.btn-back {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.btn-back:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.btn-back svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Tab Bar */
+.tab-bar {
+  display: flex;
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  overflow-x: auto;
+}
+
+.tab-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0.875rem 0.5rem;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #94a3b8;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.tab-item:hover {
+  color: #fff;
+}
+
+.tab-item.active {
+  color: #3b82f6;
+  border-bottom-color: #3b82f6;
+}
+
+.tab-item svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Tab Content */
+.tab-content {
+  padding: 1rem;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 1rem;
+  color: #94a3b8;
+}
+
+/* Filter Section */
+.filter-section {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.filter-row:last-child {
+  margin-bottom: 0;
+}
+
+.filter-label {
+  font-size: 0.875rem;
+  color: #94a3b8;
+  min-width: 50px;
+}
+
+.filter-options {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 0.375rem 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.filter-btn.active {
+  background: #3b82f6;
+}
+
+.price-filter {
+  flex-wrap: wrap;
+}
+
+.price-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 200px;
+}
+
+.price-inputs input {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.875rem;
+  min-width: 60px;
+}
+
+.price-inputs input::placeholder {
+  color: #64748b;
+}
+
+.price-inputs input:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.btn-apply {
+  padding: 0.5rem 1rem;
+  background: #3b82f6;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-apply:hover {
+  background: #2563eb;
+}
+
+/* Listing Grid */
+.listing-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .listing-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.listing-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s;
+}
+
+.listing-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.listing-image {
+  position: relative;
+  aspect-ratio: 1;
+  background: linear-gradient(135deg, #2d2d44 0%, #1a1a2e 100%);
+}
+
+.listing-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.listing-image.small {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+}
+
+.image-placeholder svg {
+  width: 32px;
+  height: 32px;
+}
+
+.rarity-badge {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.listing-info {
+  padding: 0.75rem;
+}
+
+.listing-info h3 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.listing-info .seller {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin: 0 0 0.5rem;
+}
+
+.listing-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.listing-meta .price {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #f59e0b;
+}
+
+.listing-meta .price svg {
+  width: 14px;
+  height: 14px;
+}
+
+.listing-meta .time {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.625rem;
+  color: #64748b;
+}
+
+.listing-meta .time svg {
+  width: 12px;
+  height: 12px;
+}
+
+.btn-buy {
+  width: 100%;
+  padding: 0.625rem;
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-buy:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+}
+
+/* NFT Select Grid (Sell Tab) */
+.nft-select-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .nft-select-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.nft-select-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nft-select-card:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.nft-select-card.selected {
+  border-color: #3b82f6;
+}
+
+.nft-image {
+  position: relative;
+  aspect-ratio: 1;
+  background: linear-gradient(135deg, #2d2d44 0%, #1a1a2e 100%);
+}
+
+.nft-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.nft-info {
+  padding: 0.75rem;
+}
+
+.nft-info h3 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nft-info p {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin: 0;
+}
+
+/* My Listings List */
+.my-listings-list,
+.purchases-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.my-listing-card,
+.purchase-card {
+  display: flex;
+  gap: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.listing-details,
+.purchase-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.listing-details h3,
+.purchase-details h3 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.listing-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.listing-meta-row .price {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-weight: 600;
+  color: #f59e0b;
+}
+
+.listing-meta-row .price svg {
+  width: 14px;
+  height: 14px;
+}
+
+.status {
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.625rem;
+  font-weight: 600;
+}
+
+.status.active {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+}
+
+.status.sold {
+  background: rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
+}
+
+.status.cancelled,
+.status.expired {
+  background: rgba(148, 163, 184, 0.2);
+  color: #94a3b8;
+}
+
+.listing-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.listing-actions .time {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.listing-actions .time svg {
+  width: 14px;
+  height: 14px;
+}
+
+.btn-cancel {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.375rem 0.75rem;
+  background: rgba(239, 68, 68, 0.2);
+  border: none;
+  border-radius: 8px;
+  color: #ef4444;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-cancel:hover {
+  background: rgba(239, 68, 68, 0.3);
+}
+
+.btn-cancel svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Purchase Card */
+.purchase-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.purchase-meta .price {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-weight: 600;
+  color: #f59e0b;
+}
+
+.purchase-meta .price svg {
+  width: 14px;
+  height: 14px;
+}
+
+.purchase-meta .date {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+  border-radius: 16px;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 400px;
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close svg {
+  width: 18px;
+  height: 18px;
+}
+
+.modal-content h2 {
+  font-size: 1.25rem;
+  margin: 0 0 1.5rem;
+}
+
+.modal-nft-preview {
+  display: flex;
+  gap: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.preview-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #2d2d44 0%, #1a1a2e 100%);
+}
+
+.preview-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.preview-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.preview-info h3 {
+  font-size: 1rem;
+  margin: 0 0 0.5rem;
+}
+
+.rarity-tag {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Form Group */
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.875rem;
+  color: #94a3b8;
+  margin-bottom: 0.5rem;
+}
+
+.price-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+}
+
+.price-input-wrapper svg {
+  width: 18px;
+  height: 18px;
+  color: #f59e0b;
+}
+
+.price-input-wrapper input {
+  flex: 1;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.price-input-wrapper input::placeholder {
+  color: #64748b;
+  font-weight: 400;
+}
+
+.price-input-wrapper input:focus {
+  outline: none;
+}
+
+.price-input-wrapper span {
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.duration-options {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.duration-btn {
+  flex: 1;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.duration-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.duration-btn.active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+}
+
+/* Purchase Summary */
+.purchase-summary {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  font-size: 0.875rem;
+}
+
+.summary-row .price-value {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-weight: 600;
+  color: #f59e0b;
+}
+
+.summary-row .price-value svg {
+  width: 14px;
+  height: 14px;
+}
+
+.summary-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 0.5rem 0;
+}
+
+.balance-after span:last-child {
+  font-weight: 600;
+}
+
+.balance-after .insufficient {
+  color: #ef4444;
+}
+
+.warning-message {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.btn-confirm {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
+}
+
+.btn-confirm:hover:not(:disabled) {
+  transform: scale(1.02);
+  box-shadow: 0 4px 20px rgba(34, 197, 94, 0.3);
+}
+
+.btn-confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-confirm svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  text-align: center;
+  padding: 2rem;
+}
+
+.empty-state svg {
+  width: 64px;
+  height: 64px;
+  color: #64748b;
+  margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+  font-size: 1.125rem;
+  margin: 0 0 0.5rem;
+}
+
+.empty-state p {
+  color: #94a3b8;
+  margin: 0 0 1rem;
+  font-size: 0.875rem;
+}
+
+.btn-primary {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-primary svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Loading */
+.loading-state {
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Load More */
+.btn-load-more {
+  display: block;
+  width: 100%;
+  padding: 1rem;
+  margin-top: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-load-more:hover {
+  background: rgba(255, 255, 255, 0.2);
+}

@@ -1,0 +1,127 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: travelmate-backend
+  namespace: travelmate
+  labels:
+    app: travelmate-backend
+    tier: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: travelmate-backend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: travelmate-backend
+        tier: backend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/api/actuator/prometheus"
+    spec:
+      serviceAccountName: travelmate-sa
+      containers:
+        - name: backend
+          image: travelmate/backend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              name: http
+          envFrom:
+            - configMapRef:
+                name: travelmate-config
+            - secretRef:
+                name: travelmate-secrets
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /api/actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 120
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          volumeMounts:
+            - name: uploads
+              mountPath: /app/uploads
+            - name: logs
+              mountPath: /app/logs
+      volumes:
+        - name: uploads
+          persistentVolumeClaim:
+            claimName: travelmate-uploads-pvc
+        - name: logs
+          emptyDir: {}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: travelmate-backend
+                topologyKey: kubernetes.io/hostname
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+  namespace: travelmate
+  labels:
+    app: travelmate-backend
+spec:
+  type: ClusterIP
+  selector:
+    app: travelmate-backend
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: travelmate-backend-hpa
+  namespace: travelmate
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: travelmate-backend
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80

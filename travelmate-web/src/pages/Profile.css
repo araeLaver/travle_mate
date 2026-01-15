@@ -885,3 +885,155 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+
+/* ===================================
+   Follow Button & Modal Styles
+   =================================== */
+
+/* Follow Button in profile-actions */
+.profile-actions .follow-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 50px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.profile-actions .follow-btn:not(.following) {
+  background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+  border: none;
+  color: white;
+  box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
+}
+
+.profile-actions .follow-btn:not(.following):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(139, 92, 246, 0.45);
+  background: linear-gradient(135deg, #7c3aed 0%, #9333ea 100%);
+}
+
+.profile-actions .follow-btn.following {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(138, 43, 226, 0.5);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.profile-actions .follow-btn.following:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #f87171;
+}
+
+.profile-actions .follow-btn.following:hover .btn-icon svg {
+  stroke: #f87171;
+}
+
+.profile-actions .follow-btn .btn-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.profile-actions .follow-btn .btn-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.profile-actions .follow-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Clickable stat cards */
+.profile-stats .stat-card.clickable {
+  cursor: pointer;
+  position: relative;
+}
+
+.profile-stats .stat-card.clickable::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(236, 72, 153, 0.1) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.profile-stats .stat-card.clickable:hover::after {
+  opacity: 1;
+}
+
+.profile-stats .stat-card.clickable:active {
+  transform: translateY(-2px) scale(0.98);
+}
+
+/* Follow Modal */
+.follow-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.follow-modal {
+  width: 100%;
+  max-width: 450px;
+  max-height: 80vh;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive adjustments for follow features */
+@media (max-width: 768px) {
+  .profile-actions .follow-btn {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+
+  .follow-modal {
+    max-width: 100%;
+    max-height: 70vh;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-actions .follow-btn {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+
+  .profile-actions .follow-btn .btn-icon {
+    width: 16px;
+    height: 16px;
+  }
+}

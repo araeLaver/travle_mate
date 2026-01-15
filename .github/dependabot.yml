@@ -1,0 +1,107 @@
+# Dependabot Configuration
+# Automatically creates PRs to update dependencies
+
+version: 2
+updates:
+  # Frontend (npm)
+  - package-ecosystem: "npm"
+    directory: "/travelmate-web"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Seoul"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "frontend"
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      react:
+        patterns:
+          - "react*"
+          - "@types/react*"
+      testing:
+        patterns:
+          - "jest*"
+          - "@testing-library/*"
+          - "cypress*"
+      typescript:
+        patterns:
+          - "typescript"
+          - "@types/*"
+
+  # Backend (Maven)
+  - package-ecosystem: "maven"
+    directory: "/travelmate-backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Seoul"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "backend"
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      spring:
+        patterns:
+          - "org.springframework*"
+      testing:
+        patterns:
+          - "org.junit*"
+          - "org.mockito*"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Seoul"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "ci/cd"
+    commit-message:
+      prefix: "chore(ci)"
+
+  # Docker
+  - package-ecosystem: "docker"
+    directory: "/travelmate-backend"
+    schedule:
+      interval: "monthly"
+    labels:
+      - "dependencies"
+      - "docker"
+    commit-message:
+      prefix: "chore(docker)"
+
+  - package-ecosystem: "docker"
+    directory: "/travelmate-web"
+    schedule:
+      interval: "monthly"
+    labels:
+      - "dependencies"
+      - "docker"
+    commit-message:
+      prefix: "chore(docker)"
+
+  # Mobile App (npm)
+  - package-ecosystem: "npm"
+    directory: "/travelmate-mobile"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Seoul"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "mobile"
+    commit-message:
+      prefix: "chore(deps)"

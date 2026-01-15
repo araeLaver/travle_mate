@@ -1,11 +1,15 @@
 package com.travelmate.service;
 
+import com.travelmate.config.CacheConfig;
 import com.travelmate.dto.UserDto;
 import com.travelmate.entity.User;
 import com.travelmate.exception.UserException;
 import com.travelmate.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -108,8 +112,8 @@ public class UserService {
     
     public UserDto.LoginResponse loginUser(UserDto.LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-        
+            .orElseThrow(() -> new UserException("사용자를 찾을 수 없습니다."));
+
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new UserException("비밀번호가 일치하지 않습니다.");
         }
@@ -125,15 +129,16 @@ public class UserService {
     }
     
     @Transactional(readOnly = true)
+    @Cacheable(value = CacheConfig.USER_PROFILES, key = "#userId")
     public UserDto.Response getUserProfile(Long userId) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+            .orElseThrow(() -> new UserException("사용자를 찾을 수 없습니다."));
         return convertToDto(user);
     }
     
     public void updateUserLocation(UserDto.LocationUpdateRequest request) {
         User user = userRepository.findById(request.getUserId())
-            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+            .orElseThrow(() -> new UserException("사용자를 찾을 수 없습니다."));
         
         user.setCurrentLatitude(request.getLatitude());
         user.setCurrentLongitude(request.getLongitude());
@@ -191,6 +196,12 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email)
+            .orElseThrow(() -> new UserException("사용자를 찾을 수 없습니다."));
+    }
+
+    @Transactional(readOnly = true)
     public boolean existsByNickname(String nickname) {
         return userRepository.existsByNickname(nickname);
     }
@@ -231,9 +242,13 @@ public class UserService {
         return null;
     }
     
+    @Caching(evict = {
+        @CacheEvict(value = CacheConfig.USER_PROFILES, key = "#userId"),
+        @CacheEvict(value = CacheConfig.USERS, key = "#userId")
+    })
     public UserDto.Response updateUserProfile(Long userId, UserDto.UpdateProfileRequest request) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+            .orElseThrow(() -> new UserException("사용자를 찾을 수 없습니다."));
         
         if (request.getNickname() != null && !request.getNickname().equals(user.getNickname())) {
             if (userRepository.existsByNickname(request.getNickname())) {
@@ -266,7 +281,7 @@ public class UserService {
     
     public void updateFcmToken(Long userId, String fcmToken) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+            .orElseThrow(() -> new UserException("사용자를 찾을 수 없습니다."));
         
         user.setFcmToken(fcmToken);
         userRepository.save(user);
@@ -275,7 +290,7 @@ public class UserService {
     
     public void deleteUser(Long userId) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+            .orElseThrow(() -> new UserException("사용자를 찾을 수 없습니다."));
         
         user.setIsActive(false);
         userRepository.save(user);
@@ -321,10 +336,10 @@ public class UserService {
     
     public UserDto.ReviewResponse writeReview(Long reviewerId, UserDto.WriteReviewRequest request) {
         User reviewer = userRepository.findById(reviewerId)
-            .orElseThrow(() -> new RuntimeException("리뷰어를 찾을 수 없습니다."));
-        
+            .orElseThrow(() -> new UserException("리뷰어를 찾을 수 없습니다."));
+
         User reviewed = userRepository.findById(request.getReviewedUserId())
-            .orElseThrow(() -> new RuntimeException("리뷰 대상자를 찾을 수 없습니다."));
+            .orElseThrow(() -> new UserException("리뷰 대상자를 찾을 수 없습니다."));
         
         // 중복 리뷰 체크
         if (userReviewRepository.existsByReviewerIdAndRevieweeId(reviewerId, request.getReviewedUserId())) {

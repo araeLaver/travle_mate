@@ -1,13 +1,19 @@
 package com.travelmate.service.nft;
 
+import com.travelmate.config.CacheConfig;
 import com.travelmate.dto.NftDto;
 import com.travelmate.entity.User;
 import com.travelmate.entity.nft.*;
 import com.travelmate.repository.UserRepository;
 import com.travelmate.repository.nft.CollectibleLocationRepository;
 import com.travelmate.repository.nft.UserNftCollectionRepository;
+import com.travelmate.service.CacheService;
+import com.travelmate.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -31,18 +37,26 @@ public class NftCollectionService {
     private final PointService pointService;
     private final GpsVerificationService gpsVerificationService;
     private final AchievementService achievementService;
+    private final NotificationService notificationService;
+    private final CacheService cacheService;
 
     /**
-     * NFT 수집 가능 장소 목록 조회
+     * NFT 수집 가능 장소 목록 조회 (배치 조회로 N+1 방지)
      */
     @Transactional(readOnly = true)
+    @Cacheable(value = CacheConfig.NFT_LOCATIONS, key = "'list_' + #pageable.pageNumber + '_' + #pageable.pageSize")
     public Page<NftDto.CollectibleLocationResponse> getCollectibleLocations(
             Long userId,
             Pageable pageable) {
 
         Page<CollectibleLocation> locations = collectibleLocationRepository.findByIsActiveTrue(pageable);
 
-        return locations.map(loc -> toCollectibleLocationResponse(loc, userId, null));
+        // N+1 방지: 수집한 장소 ID를 한 번에 조회
+        Set<Long> collectedLocationIds = userId != null
+                ? Set.copyOf(userNftCollectionRepository.findCollectedLocationIdsByUserId(userId))
+                : Set.of();
+
+        return locations.map(loc -> toCollectibleLocationResponseWithSet(loc, collectedLocationIds, null));
     }
 
     /**
@@ -73,9 +87,10 @@ public class NftCollectionService {
     }
 
     /**
-     * 카테고리별 장소 조회
+     * 카테고리별 장소 조회 (배치 조회로 N+1 방지)
      */
     @Transactional(readOnly = true)
+    @Cacheable(value = CacheConfig.NFT_LOCATIONS, key = "'category_' + #category + '_' + #pageable.pageNumber")
     public Page<NftDto.CollectibleLocationResponse> getLocationsByCategory(
             Long userId,
             LocationCategory category,
@@ -84,13 +99,23 @@ public class NftCollectionService {
         Page<CollectibleLocation> locations = collectibleLocationRepository
                 .findByCategoryAndIsActiveTrue(category, pageable);
 
-        return locations.map(loc -> toCollectibleLocationResponse(loc, userId, null));
+        // N+1 방지: 수집한 장소 ID를 한 번에 조회
+        Set<Long> collectedLocationIds = userId != null
+                ? Set.copyOf(userNftCollectionRepository.findCollectedLocationIdsByUserId(userId))
+                : Set.of();
+
+        return locations.map(loc -> toCollectibleLocationResponseWithSet(loc, collectedLocationIds, null));
     }
 
     /**
-     * NFT 수집
+     * NFT 수집 (수집 후 관련 캐시 무효화)
      */
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = CacheConfig.NFT_COLLECTIONS, key = "#userId"),
+        @CacheEvict(value = "nftStats", key = "#userId"),
+        @CacheEvict(value = "collectionBook", key = "#userId")
+    })
     public NftDto.CollectNftResponse collectNft(Long userId, NftDto.CollectNftRequest request) {
         // 1. 장소 조회
         CollectibleLocation location = collectibleLocationRepository.findById(request.getLocationId())
@@ -180,6 +205,23 @@ public class NftCollectionService {
         // 9. 업적 체크
         List<NftDto.AchievementUnlocked> unlockedAchievements = achievementService.checkAchievementsOnCollect(userId);
 
+        // 10. 알림 발송
+        notificationService.notifyNftCollected(
+                userId,
+                nftCollection.getId(),
+                location.getName(),
+                pointReward.intValue()
+        );
+
+        // 11. 업적 달성 알림 발송
+        for (NftDto.AchievementUnlocked achievement : unlockedAchievements) {
+            notificationService.notifyAchievementUnlocked(
+                    userId,
+                    achievement.getName(),
+                    achievement.getDescription()
+            );
+        }
+
         log.info("NFT 수집 성공: userId={}, locationId={}, points={}",
                 userId, location.getId(), location.getPointReward());
 
@@ -193,12 +235,14 @@ public class NftCollectionService {
     }
 
     /**
-     * 내 NFT 컬렉션 조회
+     * 내 NFT 컬렉션 조회 (N+1 방지: location과 함께 조회)
      */
     @Transactional(readOnly = true)
+    @Cacheable(value = CacheConfig.NFT_COLLECTIONS, key = "#userId + '_' + #pageable.pageNumber")
     public Page<NftDto.UserNftCollectionResponse> getMyCollection(Long userId, Pageable pageable) {
+        // N+1 방지: location을 함께 조회
         Page<UserNftCollection> collections = userNftCollectionRepository
-                .findByUserIdOrderByCollectedAtDesc(userId, pageable);
+                .findByUserIdWithLocation(userId, pageable);
         return collections.map(this::toUserNftCollectionResponse);
     }
 
@@ -231,9 +275,10 @@ public class NftCollectionService {
     }
 
     /**
-     * 도감 조회
+     * 도감 조회 (캐싱으로 성능 최적화)
      */
     @Transactional(readOnly = true)
+    @Cacheable(value = "collectionBook", key = "#userId")
     public NftDto.CollectionBookResponse getCollectionBook(Long userId) {
         // 전체 통계
         int totalLocations = (int) collectibleLocationRepository.count();
@@ -293,9 +338,10 @@ public class NftCollectionService {
     }
 
     /**
-     * 사용자 NFT 통계
+     * 사용자 NFT 통계 (캐싱으로 성능 최적화)
      */
     @Transactional(readOnly = true)
+    @Cacheable(value = "nftStats", key = "#userId")
     public NftDto.UserNftStatsResponse getUserNftStats(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다"));

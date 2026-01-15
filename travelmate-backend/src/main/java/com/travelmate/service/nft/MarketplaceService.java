@@ -6,6 +6,7 @@ import com.travelmate.entity.nft.*;
 import com.travelmate.repository.UserRepository;
 import com.travelmate.repository.nft.NftMarketplaceListingRepository;
 import com.travelmate.repository.nft.UserNftCollectionRepository;
+import com.travelmate.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -24,6 +25,7 @@ public class MarketplaceService {
     private final UserNftCollectionRepository userNftCollectionRepository;
     private final UserRepository userRepository;
     private final PointService pointService;
+    private final NotificationService notificationService;
 
     private static final int DEFAULT_LISTING_DURATION_DAYS = 7;
     private static final int MAX_LISTING_DURATION_DAYS = 30;
@@ -184,7 +186,24 @@ public class MarketplaceService {
         log.info("NFT 구매 완료: listingId={}, buyerId={}, sellerId={}, price={}",
                 listingId, buyerId, seller.getId(), price);
 
-        // 12. 구매자의 남은 잔액 조회
+        // 12. 알림 발송
+        String nftName = nftCollection.getLocation().getName();
+        // 판매자에게 판매 완료 알림
+        notificationService.notifyMarketplaceSold(
+                seller.getId(),
+                listingId,
+                nftName,
+                price.intValue()
+        );
+        // 구매자에게 구매 완료 알림
+        notificationService.notifyMarketplacePurchased(
+                buyerId,
+                nftCollection.getId(),
+                nftName,
+                price.intValue()
+        );
+
+        // 13. 구매자의 남은 잔액 조회
         Long remainingBalance = pointService.getBalance(buyerId).getTotalPoints();
 
         return NftDto.BuyNftResponse.builder()

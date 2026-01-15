@@ -151,7 +151,6 @@ describe('AuthService', () => {
   describe('logout', () => {
     it('should clear tokens on logout', async () => {
       localStorage.setItem('accessToken', 'test-token');
-      localStorage.setItem('refreshToken', 'test-refresh');
       localStorage.setItem('tokenExpiresAt', '9999999999999');
 
       mockFetch.mockResolvedValueOnce({
@@ -161,8 +160,10 @@ describe('AuthService', () => {
 
       await authService.logout();
 
+      // accessToken과 tokenExpiresAt은 localStorage에서 제거됨
+      // refreshToken은 httpOnly 쿠키로 서버에서 처리하므로 localStorage에서 제거하지 않음
       expect(localStorage.getItem('accessToken')).toBeNull();
-      expect(localStorage.getItem('refreshToken')).toBeNull();
+      expect(localStorage.getItem('tokenExpiresAt')).toBeNull();
     });
   });
 

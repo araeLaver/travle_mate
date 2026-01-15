@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: travelmate-config
+  namespace: travelmate
+data:
+  SPRING_PROFILES_ACTIVE: "prod"
+  SERVER_PORT: "8080"
+  JWT_EXPIRATION: "3600000"
+  JWT_REFRESH_EXPIRATION: "604800000"
+  REDIS_PORT: "6379"
+  DB_PORT: "5432"
+  DB_NAME: "travelmate"
+  CORS_ALLOWED_ORIGINS: "https://travelmate.app,https://admin.travelmate.app"
+  RATE_LIMIT_ENABLED: "true"
+  RATE_LIMIT_REQUESTS_PER_MINUTE: "60"

@@ -1,0 +1,268 @@
+version: '3.8'
+
+# TravelMate Production Docker Compose
+# Usage: docker-compose -f docker-compose.prod.yml up -d
+
+services:
+  # ===================
+  # Backend API Server
+  # ===================
+  backend:
+    image: ${DOCKER_REGISTRY:-ghcr.io}/travelmate/backend:${TAG:-latest}
+    container_name: travelmate-backend
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SERVER_PORT=8080
+      # =============================================================================
+      # SECURITY: 모든 필수 시크릿은 환경변수로 제공해야 합니다
+      # 절대로 docker-compose 파일에 실제 값을 하드코딩하지 마세요!
+      # =============================================================================
+      - JWT_SECRET=${JWT_SECRET:?JWT_SECRET is required}
+      - JWT_EXPIRATION=${JWT_EXPIRATION:-86400000}
+      - DB_URL=jdbc:postgresql://postgres:5432/travelmate
+      - DB_USERNAME=${DB_USERNAME:?DB_USERNAME is required}
+      - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD is required}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:?REDIS_PASSWORD is required}
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:?CORS_ALLOWED_ORIGINS is required}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - FCM_CREDENTIALS_PATH=/app/config/firebase-credentials.json
+      - TOSS_CLIENT_KEY=${TOSS_CLIENT_KEY:-}
+      - TOSS_SECRET_KEY=${TOSS_SECRET_KEY:-}
+      - POLYGON_RPC_URL=${POLYGON_RPC_URL:-}
+      - NFT_CONTRACT_ADDRESS=${NFT_CONTRACT_ADDRESS:-}
+      # =============================================================================
+      # SECURITY WARNING: WALLET_PRIVATE_KEY
+      # 블록체인 개인키는 환경변수로 전달하지 않는 것을 강력히 권장합니다!
+      # 대신 다음 방법을 사용하세요:
+      # 1. HashiCorp Vault (권장)
+      # 2. AWS Secrets Manager
+      # 3. Docker Secrets (파일 기반)
+      # 환경변수 사용 시 프로세스 메모리 및 로그에 노출될 위험이 있습니다.
+      # =============================================================================
+      - WALLET_PRIVATE_KEY_FILE=${WALLET_PRIVATE_KEY_FILE:-/run/secrets/wallet_private_key}
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs/backend:/app/logs
+      - ./config:/app/config:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/api/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"
+    networks:
+      - travelmate-network
+
+  # ===================
+  # Frontend Web App
+  # ===================
+  frontend:
+    image: ${DOCKER_REGISTRY:-ghcr.io}/travelmate/frontend:${TAG:-latest}
+    container_name: travelmate-frontend
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+    networks:
+      - travelmate-network
+
+  # ===================
+  # PostgreSQL Database
+  # ===================
+  postgres:
+    image: postgres:15-alpine
+    container_name: travelmate-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: travelmate
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backup/postgres:/backup
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d travelmate"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"
+    networks:
+      - travelmate-network
+
+  # ===================
+  # Redis Cache
+  # ===================
+  redis:
+    image: redis:7-alpine
+    container_name: travelmate-redis
+    restart: always
+    command: >
+      redis-server
+      --appendonly yes
+      --requirepass ${REDIS_PASSWORD}
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+    networks:
+      - travelmate-network
+
+  # ===================
+  # Nginx Reverse Proxy (Optional - for SSL termination)
+  # ===================
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: travelmate-nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - frontend
+      - backend
+    profiles:
+      - with-proxy
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"
+    networks:
+      - travelmate-network
+
+  # ===================
+  # Backup Service
+  # ===================
+  backup:
+    image: postgres:15-alpine
+    container_name: travelmate-backup
+    environment:
+      PGHOST: postgres
+      PGUSER: ${DB_USERNAME}
+      PGPASSWORD: ${DB_PASSWORD}
+      PGDATABASE: travelmate
+    volumes:
+      - ./backup/postgres:/backup
+      - ./scripts/backup.sh:/backup.sh:ro
+    entrypoint: ["/bin/sh", "-c", "crond -f"]
+    depends_on:
+      - postgres
+    profiles:
+      - with-backup
+    networks:
+      - travelmate-network
+
+networks:
+  travelmate-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+# =============================================================================
+# Docker Secrets (선택적 - 보안 강화를 위해 권장)
+# 사용 방법: docker-compose -f docker-compose.prod.yml --profile with-secrets up -d
+# =============================================================================
+secrets:
+  wallet_private_key:
+    file: ./secrets/wallet_private_key.txt
+  jwt_secret:
+    file: ./secrets/jwt_secret.txt
+  db_password:
+    file: ./secrets/db_password.txt

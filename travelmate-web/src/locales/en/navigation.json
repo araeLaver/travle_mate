@@ -1,0 +1,36 @@
+{
+  "home": "Home",
+  "explore": "Explore",
+  "map": "Map",
+  "collection": "Collection",
+  "myCollection": "My Collection",
+  "itinerary": "Itinerary",
+  "myItinerary": "My Itinerary",
+  "chat": "Chat",
+  "groups": "Groups",
+  "notifications": "Notifications",
+  "settings": "Settings",
+  "profile": "Profile",
+  "search": "Search",
+  "nearby": "Nearby",
+  "popular": "Popular",
+  "recent": "Recent",
+  "saved": "Saved",
+  "menu": {
+    "account": "Account",
+    "preferences": "Preferences",
+    "help": "Help",
+    "about": "About",
+    "contact": "Contact Us",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "logout": "Logout"
+  },
+  "tabs": {
+    "home": "Home",
+    "explore": "Explore",
+    "collection": "Collection",
+    "itinerary": "Itinerary",
+    "profile": "Profile"
+  }
+}

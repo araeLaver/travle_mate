@@ -1,5 +1,7 @@
 package com.travelmate.config;
 
+import com.travelmate.security.audit.SecurityAuditService;
+import org.mockito.Mockito;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -19,5 +21,10 @@ public class TestSecurityConfig {
             );
 
         return http.build();
+    }
+
+    @Bean
+    public SecurityAuditService securityAuditService() {
+        return Mockito.mock(SecurityAuditService.class);
     }
 }

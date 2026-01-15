@@ -1,0 +1,72 @@
+{
+  "list": {
+    "content": [
+      {
+        "id": 1,
+        "name": "서울 여행",
+        "description": "서울의 명소를 탐방하는 여행입니다",
+        "memberCount": 5,
+        "maxMembers": 10,
+        "thumbnail": "/images/seoul-group.jpg",
+        "startDate": "2024-03-01",
+        "endDate": "2024-03-05",
+        "status": "RECRUITING",
+        "leader": {
+          "id": 2,
+          "nickname": "TravelMaster",
+          "profileImageUrl": null
+        }
+      },
+      {
+        "id": 2,
+        "name": "부산 맛집 투어",
+        "description": "부산의 맛집을 탐방합니다",
+        "memberCount": 3,
+        "maxMembers": 8,
+        "thumbnail": "/images/busan-group.jpg",
+        "startDate": "2024-04-01",
+        "endDate": "2024-04-03",
+        "status": "RECRUITING"
+      },
+      {
+        "id": 3,
+        "name": "제주도 힐링",
+        "description": "제주도에서 힐링하는 여행",
+        "memberCount": 6,
+        "maxMembers": 6,
+        "thumbnail": "/images/jeju-group.jpg",
+        "startDate": "2024-05-01",
+        "endDate": "2024-05-04",
+        "status": "FULL"
+      }
+    ],
+    "totalElements": 3,
+    "totalPages": 1,
+    "number": 0
+  },
+  "detail": {
+    "id": 1,
+    "name": "서울 여행",
+    "description": "서울의 명소를 탐방하는 여행입니다",
+    "memberCount": 5,
+    "maxMembers": 10,
+    "thumbnail": "/images/seoul-group.jpg",
+    "startDate": "2024-03-01",
+    "endDate": "2024-03-05",
+    "status": "RECRUITING",
+    "leader": {
+      "id": 2,
+      "nickname": "TravelMaster",
+      "profileImageUrl": null
+    },
+    "members": [
+      { "id": 1, "nickname": "TestUser", "profileImageUrl": null, "role": "MEMBER" },
+      { "id": 2, "nickname": "TravelMaster", "profileImageUrl": null, "role": "LEADER" },
+      { "id": 3, "nickname": "Explorer", "profileImageUrl": null, "role": "MEMBER" },
+      { "id": 4, "nickname": "Adventurer", "profileImageUrl": null, "role": "MEMBER" },
+      { "id": 5, "nickname": "Wanderer", "profileImageUrl": null, "role": "MEMBER" }
+    ],
+    "isJoined": false,
+    "chatRoomId": 1
+  }
+}
