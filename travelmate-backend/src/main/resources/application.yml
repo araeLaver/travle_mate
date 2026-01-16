@@ -386,7 +386,7 @@ aws:
   secret-access-key: ${AWS_SECRET_ACCESS_KEY:}
   use-default-credentials: false
   cloudfront:
-    distribution-id: ${CLOUDFRONT_DISTRIBUTION_ID}
+    distribution-id: ${CLOUDFRONT_DISTRIBUTION_ID:}
     key-pair-id: ${CLOUDFRONT_KEY_PAIR_ID:}
     private-key-path: ${CLOUDFRONT_PRIVATE_KEY_PATH:}
 
@@ -398,10 +398,10 @@ cdn:
   static-path: /static
   cache-duration: 604800
 
-# Sentry 설정 (운영)
+# Sentry 설정 (운영) - 선택적 설정
 sentry:
-  enabled: ${SENTRY_ENABLED:true}
-  dsn: ${SENTRY_DSN}
+  enabled: ${SENTRY_ENABLED:false}
+  dsn: ${SENTRY_DSN:}
   environment: production
   traces-sample-rate: ${SENTRY_TRACES_SAMPLE_RATE:0.2}
   logging:

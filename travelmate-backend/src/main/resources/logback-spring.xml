@@ -257,7 +257,8 @@
             <appender-ref ref="FILE"/>
             <appender-ref ref="ERROR_FILE"/>
             <appender-ref ref="ASYNC_JSON_FILE"/>
-            <appender-ref ref="ASYNC_LOGSTASH"/>
+            <!-- Logstash disabled for Koyeb deployment (no Logstash server available) -->
+            <!-- <appender-ref ref="ASYNC_LOGSTASH"/> -->
         </root>
     </springProfile>
 
