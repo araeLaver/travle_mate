@@ -6,9 +6,12 @@ import com.travelmate.repository.nft.CollectibleLocationRepository;
 import com.travelmate.repository.nft.LocationReviewRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
 /**
@@ -24,6 +27,14 @@ public class MetricsService {
     private final UserRepository userRepository;
     private final CollectibleLocationRepository collectionRepository;
     private final LocationReviewRepository reviewRepository;
+
+    private final AtomicBoolean applicationReady = new AtomicBoolean(false);
+
+    @EventListener(ApplicationReadyEvent.class)
+    public void onApplicationReady() {
+        applicationReady.set(true);
+        log.info("Application is ready, enabling scheduled metrics updates");
+    }
 
     // ==================== User Metrics ====================
 
@@ -110,9 +121,15 @@ public class MetricsService {
 
     /**
      * Update gauge metrics every minute
+     * Only runs after ApplicationReadyEvent is fired
      */
-    @Scheduled(fixedRate = 60000)
+    @Scheduled(fixedRate = 60000, initialDelay = 30000)
     public void updateGaugeMetrics() {
+        if (!applicationReady.get()) {
+            log.debug("Skipping metrics update - application not ready yet");
+            return;
+        }
+
         try {
             // Update total users
             long totalUsers = userRepository.count();
