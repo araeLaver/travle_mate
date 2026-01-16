@@ -2,11 +2,11 @@ package com.travelmate.config;
 
 import io.sentry.Sentry;
 import io.sentry.SentryOptions;
-import io.sentry.spring.jakarta.EnableSentry;
 import io.sentry.spring.jakarta.tracing.SentryTracingFilter;
 import jakarta.servlet.Filter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,9 +14,10 @@ import org.springframework.core.Ordered;
 
 /**
  * Sentry Configuration for error tracking and performance monitoring
+ * Only enabled when sentry.enabled=true and sentry.dsn is set
  */
 @Configuration
-@EnableSentry(dsn = "${sentry.dsn:}")
+@ConditionalOnProperty(name = "sentry.enabled", havingValue = "true")
 @Slf4j
 public class SentryConfig {
 

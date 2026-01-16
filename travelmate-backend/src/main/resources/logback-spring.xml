@@ -10,8 +10,6 @@
     <springProperty scope="context" name="LOG_LEVEL" source="logging.level.root" defaultValue="INFO"/>
     <springProperty scope="context" name="LOG_PATH" source="logging.file.path" defaultValue="logs"/>
     <springProperty scope="context" name="LOG_FILE" source="logging.file.name" defaultValue="travelmate"/>
-    <springProperty scope="context" name="LOGSTASH_HOST" source="logstash.host" defaultValue="localhost"/>
-    <springProperty scope="context" name="LOGSTASH_PORT" source="logstash.port" defaultValue="5000"/>
 
     <!-- 콘솔 Appender (개발환경) -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
@@ -208,7 +206,8 @@
         </encoder>
     </appender>
 
-    <!-- Logstash TCP Appender (실시간 로그 전송) -->
+    <!-- Logstash TCP Appender - DISABLED for Koyeb deployment (no ELK stack available)
+         To enable: uncomment below and set logstash.host/logstash.port in application.yml
     <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
         <destination>${LOGSTASH_HOST}:${LOGSTASH_PORT}</destination>
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
@@ -221,13 +220,13 @@
         <writeBufferSize>16384</writeBufferSize>
     </appender>
 
-    <!-- Async Logstash Appender -->
     <appender name="ASYNC_LOGSTASH" class="ch.qos.logback.classic.AsyncAppender">
         <discardingThreshold>0</discardingThreshold>
         <queueSize>1024</queueSize>
         <neverBlock>true</neverBlock>
         <appender-ref ref="LOGSTASH"/>
     </appender>
+    -->
 
     <!-- Async JSON File Appender -->
     <appender name="ASYNC_JSON_FILE" class="ch.qos.logback.classic.AsyncAppender">
