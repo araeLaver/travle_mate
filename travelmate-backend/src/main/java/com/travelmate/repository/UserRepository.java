@@ -49,13 +49,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 
-    @Query("SELECT COUNT(u) FROM User u WHERE u.lastLoginAt >= :since")
+    @Query("SELECT COUNT(u) FROM User u WHERE u.lastActivityAt >= :since")
     long countActiveUsersSince(@Param("since") LocalDateTime since);
 
     @Query("SELECT u FROM User u WHERE " +
            "(:search IS NULL OR u.email LIKE %:search% OR u.nickname LIKE %:search%) AND " +
            "(:role IS NULL OR u.role = :role) AND " +
-           "(:isActive IS NULL OR u.enabled = :isActive)")
+           "(:isActive IS NULL OR u.isActive = :isActive)")
     Page<User> findUsersForAdmin(
             @Param("search") String search,
             @Param("role") String role,
