@@ -1,9 +1,19 @@
-import api from './api';
+import { apiClient } from './apiClient';
 
 // ==================== Types ====================
 
 export type ItineraryVisibility = 'PRIVATE' | 'LINK_ONLY' | 'FOLLOWERS' | 'PUBLIC';
-export type ItemType = 'ATTRACTION' | 'RESTAURANT' | 'CAFE' | 'ACCOMMODATION' | 'TRANSPORTATION' | 'ACTIVITY' | 'SHOPPING' | 'FREE_TIME' | 'NOTE' | 'OTHER';
+export type ItemType =
+  | 'ATTRACTION'
+  | 'RESTAURANT'
+  | 'CAFE'
+  | 'ACCOMMODATION'
+  | 'TRANSPORTATION'
+  | 'ACTIVITY'
+  | 'SHOPPING'
+  | 'FREE_TIME'
+  | 'NOTE'
+  | 'OTHER';
 export type BookingStatus = 'NOT_NEEDED' | 'PENDING' | 'BOOKED' | 'CANCELLED';
 export type CollaboratorRole = 'VIEWER' | 'EDITOR' | 'ADMIN';
 export type InviteStatus = 'PENDING' | 'ACCEPTED' | 'DECLINED';
@@ -165,114 +175,128 @@ export interface PageResponse<T> {
 
 // Itinerary CRUD
 export const createItinerary = async (data: CreateItineraryRequest): Promise<Itinerary> => {
-  const response = await api.post<Itinerary>('/itineraries', data);
-  return response.data;
+  return apiClient.post<Itinerary, CreateItineraryRequest>('/itineraries', data);
 };
 
 export const getItinerary = async (id: number): Promise<Itinerary> => {
-  const response = await api.get<Itinerary>(`/itineraries/${id}`);
-  return response.data;
+  return apiClient.get<Itinerary>(`/itineraries/${id}`);
 };
 
 export const getItineraryByShareCode = async (shareCode: string): Promise<Itinerary> => {
-  const response = await api.get<Itinerary>(`/itineraries/share/${shareCode}`);
-  return response.data;
+  return apiClient.get<Itinerary>(`/itineraries/share/${shareCode}`);
 };
 
-export const updateItinerary = async (id: number, data: UpdateItineraryRequest): Promise<Itinerary> => {
-  const response = await api.put<Itinerary>(`/itineraries/${id}`, data);
-  return response.data;
+export const updateItinerary = async (
+  id: number,
+  data: UpdateItineraryRequest
+): Promise<Itinerary> => {
+  return apiClient.put<Itinerary, UpdateItineraryRequest>(`/itineraries/${id}`, data);
 };
 
 export const deleteItinerary = async (id: number): Promise<void> => {
-  await api.delete(`/itineraries/${id}`);
+  await apiClient.delete(`/itineraries/${id}`);
 };
 
 export const copyItinerary = async (id: number): Promise<Itinerary> => {
-  const response = await api.post<Itinerary>(`/itineraries/${id}/copy`);
-  return response.data;
+  return apiClient.post<Itinerary>(`/itineraries/${id}/copy`);
 };
 
 // Itinerary Lists
 export const getMyItineraries = async (page = 0, size = 10): Promise<PageResponse<Itinerary>> => {
-  const response = await api.get<PageResponse<Itinerary>>('/itineraries/my', {
-    params: { page, size },
-  });
-  return response.data;
+  return apiClient.get<PageResponse<Itinerary>>(`/itineraries/my?page=${page}&size=${size}`);
 };
 
-export const getCollaboratingItineraries = async (page = 0, size = 10): Promise<PageResponse<Itinerary>> => {
-  const response = await api.get<PageResponse<Itinerary>>('/itineraries/collaborating', {
-    params: { page, size },
-  });
-  return response.data;
+export const getCollaboratingItineraries = async (
+  page = 0,
+  size = 10
+): Promise<PageResponse<Itinerary>> => {
+  return apiClient.get<PageResponse<Itinerary>>(
+    `/itineraries/collaborating?page=${page}&size=${size}`
+  );
 };
 
-export const getPublicItineraries = async (page = 0, size = 10): Promise<PageResponse<Itinerary>> => {
-  const response = await api.get<PageResponse<Itinerary>>('/itineraries/public', {
-    params: { page, size },
-  });
-  return response.data;
+export const getPublicItineraries = async (
+  page = 0,
+  size = 10
+): Promise<PageResponse<Itinerary>> => {
+  return apiClient.get<PageResponse<Itinerary>>(`/itineraries/public?page=${page}&size=${size}`);
 };
 
-export const getPopularItineraries = async (page = 0, size = 10): Promise<PageResponse<Itinerary>> => {
-  const response = await api.get<PageResponse<Itinerary>>('/itineraries/popular', {
-    params: { page, size },
-  });
-  return response.data;
+export const getPopularItineraries = async (
+  page = 0,
+  size = 10
+): Promise<PageResponse<Itinerary>> => {
+  return apiClient.get<PageResponse<Itinerary>>(`/itineraries/popular?page=${page}&size=${size}`);
 };
 
-export const searchItineraries = async (keyword: string, page = 0, size = 10): Promise<PageResponse<Itinerary>> => {
-  const response = await api.get<PageResponse<Itinerary>>('/itineraries/search', {
-    params: { keyword, page, size },
-  });
-  return response.data;
+export const searchItineraries = async (
+  keyword: string,
+  page = 0,
+  size = 10
+): Promise<PageResponse<Itinerary>> => {
+  return apiClient.get<PageResponse<Itinerary>>(
+    `/itineraries/search?keyword=${encodeURIComponent(keyword)}&page=${page}&size=${size}`
+  );
 };
 
 // Items
-export const addItem = async (itineraryId: number, data: CreateItemRequest): Promise<ItineraryItem> => {
-  const response = await api.post<ItineraryItem>(`/itineraries/${itineraryId}/items`, data);
-  return response.data;
+export const addItem = async (
+  itineraryId: number,
+  data: CreateItemRequest
+): Promise<ItineraryItem> => {
+  return apiClient.post<ItineraryItem, CreateItemRequest>(
+    `/itineraries/${itineraryId}/items`,
+    data
+  );
 };
 
-export const updateItem = async (itemId: number, data: UpdateItemRequest): Promise<ItineraryItem> => {
-  const response = await api.put<ItineraryItem>(`/itineraries/items/${itemId}`, data);
-  return response.data;
+export const updateItem = async (
+  itemId: number,
+  data: UpdateItemRequest
+): Promise<ItineraryItem> => {
+  return apiClient.put<ItineraryItem, UpdateItemRequest>(`/itineraries/items/${itemId}`, data);
 };
 
 export const deleteItem = async (itemId: number): Promise<void> => {
-  await api.delete(`/itineraries/items/${itemId}`);
+  await apiClient.delete(`/itineraries/items/${itemId}`);
 };
 
-export const reorderItems = async (itineraryId: number, items: ReorderItemRequest[]): Promise<void> => {
-  await api.put(`/itineraries/${itineraryId}/items/reorder`, items);
+export const reorderItems = async (
+  itineraryId: number,
+  items: ReorderItemRequest[]
+): Promise<void> => {
+  await apiClient.put(`/itineraries/${itineraryId}/items/reorder`, items);
 };
 
 // Collaborators
-export const inviteCollaborator = async (itineraryId: number, data: InviteCollaboratorRequest): Promise<void> => {
-  await api.post(`/itineraries/${itineraryId}/collaborators`, data);
+export const inviteCollaborator = async (
+  itineraryId: number,
+  data: InviteCollaboratorRequest
+): Promise<void> => {
+  await apiClient.post(`/itineraries/${itineraryId}/collaborators`, data);
 };
 
 export const getCollaborators = async (itineraryId: number): Promise<Collaborator[]> => {
-  const response = await api.get<Collaborator[]>(`/itineraries/${itineraryId}/collaborators`);
-  return response.data;
+  return apiClient.get<Collaborator[]>(`/itineraries/${itineraryId}/collaborators`);
 };
 
 export const acceptInvite = async (collaboratorId: number): Promise<void> => {
-  await api.post(`/itineraries/invites/${collaboratorId}/accept`);
+  await apiClient.post(`/itineraries/invites/${collaboratorId}/accept`);
 };
 
 export const declineInvite = async (collaboratorId: number): Promise<void> => {
-  await api.post(`/itineraries/invites/${collaboratorId}/decline`);
+  await apiClient.post(`/itineraries/invites/${collaboratorId}/decline`);
 };
 
 export const getPendingInvites = async (): Promise<Collaborator[]> => {
-  const response = await api.get<Collaborator[]>('/itineraries/invites/pending');
-  return response.data;
+  return apiClient.get<Collaborator[]>('/itineraries/invites/pending');
 };
 
-export const removeCollaborator = async (itineraryId: number, collaboratorUserId: number): Promise<void> => {
-  await api.delete(`/itineraries/${itineraryId}/collaborators/${collaboratorUserId}`);
+export const removeCollaborator = async (
+  itineraryId: number,
+  collaboratorUserId: number
+): Promise<void> => {
+  await apiClient.delete(`/itineraries/${itineraryId}/collaborators/${collaboratorUserId}`);
 };
 
 export const updateCollaboratorRole = async (
@@ -280,9 +304,9 @@ export const updateCollaboratorRole = async (
   collaboratorUserId: number,
   role: CollaboratorRole
 ): Promise<void> => {
-  await api.put(`/itineraries/${itineraryId}/collaborators/${collaboratorUserId}/role`, null, {
-    params: { role },
-  });
+  await apiClient.put(
+    `/itineraries/${itineraryId}/collaborators/${collaboratorUserId}/role?role=${role}`
+  );
 };
 
 // ==================== Helper Functions ====================
@@ -361,14 +385,14 @@ export const generateShareUrl = (shareCode: string): string => {
 export const getItemsByDay = (items: ItineraryItem[]): Map<number, ItineraryItem[]> => {
   const byDay = new Map<number, ItineraryItem[]>();
 
-  items.forEach((item) => {
+  items.forEach(item => {
     const dayItems = byDay.get(item.dayNumber) || [];
     dayItems.push(item);
     byDay.set(item.dayNumber, dayItems);
   });
 
   // Sort items within each day
-  byDay.forEach((dayItems) => {
+  byDay.forEach(dayItems => {
     dayItems.sort((a, b) => a.orderIndex - b.orderIndex);
   });
 
@@ -378,8 +402,8 @@ export const getItemsByDay = (items: ItineraryItem[]): Map<number, ItineraryItem
 export const calculateTotalCost = (items: ItineraryItem[], useActual = false): number => {
   return items.reduce((total, item) => {
     const cost = useActual
-      ? item.actualCost ?? item.estimatedCost ?? 0
-      : item.estimatedCost ?? 0;
+      ? (item.actualCost ?? item.estimatedCost ?? 0)
+      : (item.estimatedCost ?? 0);
     return total + cost;
   }, 0);
 };

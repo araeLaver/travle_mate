@@ -2,7 +2,7 @@ package com.travelmate.service;
 
 import com.travelmate.config.MetricsConfig.BusinessMetrics;
 import com.travelmate.repository.UserRepository;
-import com.travelmate.repository.nft.LocationCollectionRepository;
+import com.travelmate.repository.nft.CollectibleLocationRepository;
 import com.travelmate.repository.nft.LocationReviewRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +22,7 @@ public class MetricsService {
 
     private final BusinessMetrics businessMetrics;
     private final UserRepository userRepository;
-    private final LocationCollectionRepository collectionRepository;
+    private final CollectibleLocationRepository collectionRepository;
     private final LocationReviewRepository reviewRepository;
 
     // ==================== User Metrics ====================

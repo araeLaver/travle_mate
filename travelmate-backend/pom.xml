@@ -23,7 +23,20 @@
     
     <properties>
         <java.version>17</java.version>
+        <aws.sdk.version>2.21.29</aws.sdk.version>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>${aws.sdk.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     
     <dependencies>
         <!-- Spring Boot Starters -->
@@ -142,6 +155,16 @@
             <groupId>com.google.firebase</groupId>
             <artifactId>firebase-admin</artifactId>
             <version>9.2.0</version>
+        </dependency>
+
+        <!-- AWS SDK for S3 and CloudFront -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>cloudfront</artifactId>
         </dependency>
 
         <!-- Monitoring & Metrics -->

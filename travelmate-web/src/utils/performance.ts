@@ -82,11 +82,11 @@ export function chunk<T>(array: T[], size: number): T[][] {
  */
 export function unique<T>(array: T[], keyFn?: (item: T) => unknown): T[] {
   if (!keyFn) {
-    return [...new Set(array)];
+    return Array.from(new Set(array));
   }
 
   const seen = new Set();
-  return array.filter((item) => {
+  return array.filter(item => {
     const key = keyFn(item);
     if (seen.has(key)) {
       return false;
@@ -103,21 +103,24 @@ export function groupBy<T, K extends string | number>(
   array: T[],
   keyFn: (item: T) => K
 ): Record<K, T[]> {
-  return array.reduce((acc, item) => {
-    const key = keyFn(item);
-    if (!acc[key]) {
-      acc[key] = [];
-    }
-    acc[key].push(item);
-    return acc;
-  }, {} as Record<K, T[]>);
+  return array.reduce(
+    (acc, item) => {
+      const key = keyFn(item);
+      if (!acc[key]) {
+        acc[key] = [];
+      }
+      acc[key].push(item);
+      return acc;
+    },
+    {} as Record<K, T[]>
+  );
 }
 
 /**
  * 딥 프리즈 (불변 객체 생성)
  */
 export function deepFreeze<T extends object>(obj: T): Readonly<T> {
-  Object.keys(obj).forEach((prop) => {
+  Object.keys(obj).forEach(prop => {
     const value = (obj as Record<string, unknown>)[prop];
     if (value && typeof value === 'object' && !Object.isFrozen(value)) {
       deepFreeze(value as object);
@@ -141,7 +144,7 @@ export function shallowEqual(
 
   if (keys1.length !== keys2.length) return false;
 
-  return keys1.every((key) => obj1[key] === obj2[key]);
+  return keys1.every(key => obj1[key] === obj2[key]);
 }
 
 /**
@@ -163,11 +166,8 @@ export function deepEqual(a: unknown, b: unknown): boolean {
 
   if (keysA.length !== keysB.length) return false;
 
-  return keysA.every((key) =>
-    deepEqual(
-      (a as Record<string, unknown>)[key],
-      (b as Record<string, unknown>)[key]
-    )
+  return keysA.every(key =>
+    deepEqual((a as Record<string, unknown>)[key], (b as Record<string, unknown>)[key])
   );
 }
 
@@ -188,10 +188,7 @@ export const cancelIdleCallback =
 /**
  * 유휴 시간에 작업 실행
  */
-export function runWhenIdle<T>(
-  tasks: (() => T)[],
-  onComplete?: (results: T[]) => void
-): void {
+export function runWhenIdle<T>(tasks: (() => T)[], onComplete?: (results: T[]) => void): void {
   const results: T[] = [];
   let index = 0;
 
@@ -214,10 +211,7 @@ export function runWhenIdle<T>(
 /**
  * 배열 정렬 (안정 정렬)
  */
-export function stableSort<T>(
-  array: T[],
-  compareFn: (a: T, b: T) => number
-): T[] {
+export function stableSort<T>(array: T[], compareFn: (a: T, b: T) => number): T[] {
   return array
     .map((item, index) => ({ item, index }))
     .sort((a, b) => {
@@ -230,13 +224,9 @@ export function stableSort<T>(
 /**
  * 지연 평가 생성기
  */
-export function* lazyMap<T, U>(
-  iterable: Iterable<T>,
-  mapFn: (item: T, index: number) => U
-): Generator<U> {
-  let index = 0;
-  for (const item of iterable) {
-    yield mapFn(item, index++);
+export function* lazyMap<T, U>(array: T[], mapFn: (item: T, index: number) => U): Generator<U> {
+  for (let index = 0; index < array.length; index++) {
+    yield mapFn(array[index], index);
   }
 }
 
@@ -244,13 +234,12 @@ export function* lazyMap<T, U>(
  * 지연 필터
  */
 export function* lazyFilter<T>(
-  iterable: Iterable<T>,
+  array: T[],
   predicate: (item: T, index: number) => boolean
 ): Generator<T> {
-  let index = 0;
-  for (const item of iterable) {
-    if (predicate(item, index++)) {
-      yield item;
+  for (let index = 0; index < array.length; index++) {
+    if (predicate(array[index], index)) {
+      yield array[index];
     }
   }
 }
@@ -300,7 +289,7 @@ export function formatBytes(bytes: number, decimals: number = 2): string {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
 
-export default {
+const performanceUtils = {
   memoize,
   memoizeWithLRU,
   chunk,
@@ -320,3 +309,5 @@ export default {
   formatCompactNumber,
   formatBytes,
 };
+
+export default performanceUtils;

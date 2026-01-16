@@ -30,7 +30,7 @@ public class SentryService {
 
         Sentry.withScope(scope -> {
             if (extras != null) {
-                extras.forEach((key, value) -> scope.setExtra(key, value));
+                extras.forEach((key, value) -> scope.setExtra(key, value != null ? value.toString() : "null"));
             }
             Sentry.captureException(throwable);
         });
@@ -143,7 +143,7 @@ public class SentryService {
      */
     public void setExtra(String key, Object value) {
         if (!sentryEnabled) return;
-        Sentry.setExtra(key, value);
+        Sentry.setExtra(key, value != null ? value.toString() : "null");
     }
 
     /**
@@ -178,7 +178,7 @@ public class SentryService {
         // Optionally send as a custom message with properties
         Sentry.withScope(scope -> {
             if (properties != null) {
-                properties.forEach((key, value) -> scope.setExtra(key, value));
+                properties.forEach((key, value) -> scope.setExtra(key, value != null ? value.toString() : "null"));
             }
             scope.setTag("event.type", eventName);
             Sentry.captureMessage("Event: " + eventName, SentryLevel.INFO);

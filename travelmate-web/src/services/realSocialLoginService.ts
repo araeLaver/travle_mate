@@ -117,6 +117,19 @@ declare global {
   }
 }
 
+// 개발 환경에서만 로그 출력
+const isDev = process.env.NODE_ENV === 'development';
+const logger = {
+  // eslint-disable-next-line no-console
+  log: (...args: unknown[]): void => {
+    if (isDev) console.log(...args);
+  },
+  // eslint-disable-next-line no-console
+  error: (...args: unknown[]): void => {
+    if (isDev) console.error(...args);
+  },
+};
+
 // JWT 페이로드 타입 (Google 토큰)
 interface GoogleJWTPayload extends GoogleUser {
   iss: string;
@@ -140,29 +153,31 @@ class RealSocialLoginService {
 
   // 실제 구글 OAuth 로그인
   async loginWithGoogle(): Promise<SocialLoginResponse> {
-    console.log('🔵 구글 로그인 시도...');
-    
-    return new Promise((resolve) => {
+    logger.log('🔵 구글 로그인 시도...');
+
+    return new Promise(resolve => {
       try {
         // Google OAuth 라이브러리 로드 확인
         if (!window.google) {
-          this.loadGoogleScript().then(() => {
-            this.initializeGoogleAuth(resolve);
-          }).catch((error) => {
-            console.error('Google 스크립트 로드 실패:', error);
-            resolve({
-              success: false,
-              error: 'Google 로그인 서비스를 로드할 수 없습니다.'
+          this.loadGoogleScript()
+            .then(() => {
+              this.initializeGoogleAuth(resolve);
+            })
+            .catch(error => {
+              logger.error('Google 스크립트 로드 실패:', error);
+              resolve({
+                success: false,
+                error: 'Google 로그인 서비스를 로드할 수 없습니다.',
+              });
             });
-          });
         } else {
           this.initializeGoogleAuth(resolve);
         }
       } catch (error) {
-        console.error('Google 로그인 에러:', error);
+        logger.error('Google 로그인 에러:', error);
         resolve({
           success: false,
-          error: 'Google 로그인 중 오류가 발생했습니다.'
+          error: 'Google 로그인 중 오류가 발생했습니다.',
         });
       }
     });
@@ -190,10 +205,10 @@ class RealSocialLoginService {
     const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 
     if (!clientId) {
-      console.error('Google Client ID가 설정되지 않았습니다.');
+      logger.error('Google Client ID가 설정되지 않았습니다.');
       resolve({
         success: false,
-        error: 'Google 클라이언트 ID가 설정되지 않았습니다. 환경 변수를 확인해주세요.'
+        error: 'Google 클라이언트 ID가 설정되지 않았습니다. 환경 변수를 확인해주세요.',
       });
       return;
     }
@@ -201,7 +216,7 @@ class RealSocialLoginService {
     if (!window.google) {
       resolve({
         success: false,
-        error: 'Google SDK가 로드되지 않았습니다.'
+        error: 'Google SDK가 로드되지 않았습니다.',
       });
       return;
     }
@@ -212,46 +227,49 @@ class RealSocialLoginService {
         this.handleGoogleCallback(response, resolve);
       },
       auto_select: false,
-      cancel_on_tap_outside: true
+      cancel_on_tap_outside: true,
     });
 
     // 로그인 프롬프트 표시
     window.google.accounts.id.prompt((notification: GoogleNotification) => {
       if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-        console.log('Google 로그인 프롬프트가 표시되지 않음');
+        logger.log('Google 로그인 프롬프트가 표시되지 않음');
         resolve({
           success: false,
-          error: '로그인 프롬프트를 표시할 수 없습니다.'
+          error: '로그인 프롬프트를 표시할 수 없습니다.',
         });
       }
     });
   }
 
-  private handleGoogleCallback(response: GoogleCredentialResponse, resolve: (value: SocialLoginResponse) => void): void {
+  private handleGoogleCallback(
+    response: GoogleCredentialResponse,
+    resolve: (value: SocialLoginResponse) => void
+  ): void {
     try {
       // JWT 토큰 파싱
       const payload = this.parseJWT(response.credential);
-      
+
       const user: SocialUserInfo = {
         id: payload.sub,
         email: payload.email,
         name: payload.name,
         profileImage: payload.picture,
-        provider: 'google'
+        provider: 'google',
       };
 
       this.saveSocialUser(user);
-      console.log('✅ 구글 로그인 성공:', user);
-      
+      logger.log('✅ 구글 로그인 성공:', user);
+
       resolve({
         success: true,
-        user: user
+        user: user,
       });
     } catch (error) {
-      console.error('Google 토큰 파싱 오류:', error);
+      logger.error('Google 토큰 파싱 오류:', error);
       resolve({
         success: false,
-        error: '로그인 정보를 처리하는 중 오류가 발생했습니다.'
+        error: '로그인 정보를 처리하는 중 오류가 발생했습니다.',
       });
     }
   }
@@ -260,9 +278,14 @@ class RealSocialLoginService {
     try {
       const base64Url = token.split('.')[1];
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-      }).join(''));
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map(function (c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+          })
+          .join('')
+      );
       return JSON.parse(jsonPayload) as GoogleJWTPayload;
     } catch {
       throw new Error('JWT 파싱 실패');
@@ -271,28 +294,30 @@ class RealSocialLoginService {
 
   // 실제 카카오 OAuth 로그인
   async loginWithKakao(): Promise<SocialLoginResponse> {
-    console.log('🟡 카카오 로그인 시도...');
-    
-    return new Promise((resolve) => {
+    logger.log('🟡 카카오 로그인 시도...');
+
+    return new Promise(resolve => {
       try {
         if (!window.Kakao) {
-          this.loadKakaoScript().then(() => {
-            this.initializeKakaoAuth(resolve);
-          }).catch((error) => {
-            console.error('Kakao 스크립트 로드 실패:', error);
-            resolve({
-              success: false,
-              error: 'Kakao 로그인 서비스를 로드할 수 없습니다.'
+          this.loadKakaoScript()
+            .then(() => {
+              this.initializeKakaoAuth(resolve);
+            })
+            .catch(error => {
+              logger.error('Kakao 스크립트 로드 실패:', error);
+              resolve({
+                success: false,
+                error: 'Kakao 로그인 서비스를 로드할 수 없습니다.',
+              });
             });
-          });
         } else {
           this.initializeKakaoAuth(resolve);
         }
       } catch (error) {
-        console.error('Kakao 로그인 에러:', error);
+        logger.error('Kakao 로그인 에러:', error);
         resolve({
           success: false,
-          error: 'Kakao 로그인 중 오류가 발생했습니다.'
+          error: 'Kakao 로그인 중 오류가 발생했습니다.',
         });
       }
     });
@@ -320,10 +345,10 @@ class RealSocialLoginService {
     const clientId = process.env.REACT_APP_KAKAO_CLIENT_ID;
 
     if (!clientId) {
-      console.error('Kakao Client ID가 설정되지 않았습니다.');
+      logger.error('Kakao Client ID가 설정되지 않았습니다.');
       resolve({
         success: false,
-        error: 'Kakao 클라이언트 ID가 설정되지 않았습니다. 환경 변수를 확인해주세요.'
+        error: 'Kakao 클라이언트 ID가 설정되지 않았습니다. 환경 변수를 확인해주세요.',
       });
       return;
     }
@@ -331,7 +356,7 @@ class RealSocialLoginService {
     if (!window.Kakao) {
       resolve({
         success: false,
-        error: 'Kakao SDK가 로드되지 않았습니다.'
+        error: 'Kakao SDK가 로드되지 않았습니다.',
       });
       return;
     }
@@ -342,16 +367,16 @@ class RealSocialLoginService {
 
     window.Kakao.Auth.login({
       success: (response: KakaoAuthResponse) => {
-        console.log('Kakao 로그인 토큰:', response);
+        logger.log('Kakao 로그인 토큰:', response);
         this.getKakaoUserInfo(resolve);
       },
       fail: (error: KakaoError) => {
-        console.error('Kakao 로그인 실패:', error);
+        logger.error('Kakao 로그인 실패:', error);
         resolve({
           success: false,
-          error: 'Kakao 로그인에 실패했습니다.'
+          error: 'Kakao 로그인에 실패했습니다.',
         });
-      }
+      },
     });
   }
 
@@ -359,58 +384,60 @@ class RealSocialLoginService {
     window.Kakao!.API.request({
       url: '/v2/user/me',
       success: (response: KakaoUser) => {
-        console.log('Kakao 사용자 정보:', response);
+        logger.log('Kakao 사용자 정보:', response);
 
         const user: SocialUserInfo = {
           id: response.id.toString(),
           email: response.kakao_account?.email || '',
           name: response.kakao_account?.profile?.nickname || '카카오사용자',
           profileImage: response.kakao_account?.profile?.profile_image_url,
-          provider: 'kakao'
+          provider: 'kakao',
         };
 
         this.saveSocialUser(user);
-        console.log('✅ 카카오 로그인 성공:', user);
+        logger.log('✅ 카카오 로그인 성공:', user);
 
         resolve({
           success: true,
-          user: user
+          user: user,
         });
       },
       fail: (error: KakaoError) => {
-        console.error('Kakao 사용자 정보 가져오기 실패:', error);
+        logger.error('Kakao 사용자 정보 가져오기 실패:', error);
         resolve({
           success: false,
-          error: '사용자 정보를 가져오는 중 오류가 발생했습니다.'
+          error: '사용자 정보를 가져오는 중 오류가 발생했습니다.',
         });
-      }
+      },
     });
   }
 
   // 실제 네이버 OAuth 로그인
   async loginWithNaver(): Promise<SocialLoginResponse> {
-    console.log('🟢 네이버 로그인 시도...');
-    
-    return new Promise((resolve) => {
+    logger.log('🟢 네이버 로그인 시도...');
+
+    return new Promise(resolve => {
       try {
         if (!window.naver) {
-          this.loadNaverScript().then(() => {
-            this.initializeNaverAuth(resolve);
-          }).catch((error) => {
-            console.error('Naver 스크립트 로드 실패:', error);
-            resolve({
-              success: false,
-              error: 'Naver 로그인 서비스를 로드할 수 없습니다.'
+          this.loadNaverScript()
+            .then(() => {
+              this.initializeNaverAuth(resolve);
+            })
+            .catch(error => {
+              logger.error('Naver 스크립트 로드 실패:', error);
+              resolve({
+                success: false,
+                error: 'Naver 로그인 서비스를 로드할 수 없습니다.',
+              });
             });
-          });
         } else {
           this.initializeNaverAuth(resolve);
         }
       } catch (error) {
-        console.error('Naver 로그인 에러:', error);
+        logger.error('Naver 로그인 에러:', error);
         resolve({
           success: false,
-          error: 'Naver 로그인 중 오류가 발생했습니다.'
+          error: 'Naver 로그인 중 오류가 발생했습니다.',
         });
       }
     });
@@ -437,10 +464,10 @@ class RealSocialLoginService {
     const callbackUrl = process.env.REACT_APP_REDIRECT_URI;
 
     if (!clientId) {
-      console.error('Naver Client ID가 설정되지 않았습니다.');
+      logger.error('Naver Client ID가 설정되지 않았습니다.');
       resolve({
         success: false,
-        error: 'Naver 클라이언트 ID가 설정되지 않았습니다. 환경 변수를 확인해주세요.'
+        error: 'Naver 클라이언트 ID가 설정되지 않았습니다. 환경 변수를 확인해주세요.',
       });
       return;
     }
@@ -448,7 +475,7 @@ class RealSocialLoginService {
     if (!window.naver) {
       resolve({
         success: false,
-        error: 'Naver SDK가 로드되지 않았습니다.'
+        error: 'Naver SDK가 로드되지 않았습니다.',
       });
       return;
     }
@@ -458,7 +485,7 @@ class RealSocialLoginService {
       callbackUrl: callbackUrl,
       isPopup: true,
       loginButton: { color: 'green', type: 3, height: 60 },
-      callbackHandle: true
+      callbackHandle: true,
     });
 
     naverLogin.init();
@@ -470,22 +497,22 @@ class RealSocialLoginService {
           email: naverLogin.user.email,
           name: naverLogin.user.nickname || naverLogin.user.name || '네이버사용자',
           profileImage: naverLogin.user.profile_image,
-          provider: 'naver'
+          provider: 'naver',
         };
 
         this.saveSocialUser(user);
-        console.log('✅ 네이버 로그인 성공:', user);
-        
+        logger.log('✅ 네이버 로그인 성공:', user);
+
         resolve({
           success: true,
-          user: user
+          user: user,
         });
       } else {
         // 로그인 팝업 열기
         naverLogin.login();
         resolve({
           success: false,
-          error: '네이버 로그인 창이 열렸습니다. 로그인을 완료해주세요.'
+          error: '네이버 로그인 창이 열렸습니다. 로그인을 완료해주세요.',
         });
       }
     });
@@ -505,7 +532,7 @@ class RealSocialLoginService {
       try {
         return JSON.parse(userData);
       } catch (error) {
-        console.error('Failed to parse social user data:', error);
+        logger.error('Failed to parse social user data:', error);
         return null;
       }
     }
@@ -522,19 +549,19 @@ class RealSocialLoginService {
     localStorage.removeItem('socialUser');
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('loginProvider');
-    
+
     // 각 플랫폼별 로그아웃 처리
     const provider = this.getLoginProvider();
-    
+
     if (provider === 'kakao' && window.Kakao?.Auth) {
       window.Kakao.Auth.logout();
     }
-    
+
     if (provider === 'google' && window.google?.accounts) {
       window.google.accounts.id.disableAutoSelect();
     }
-    
-    console.log('✅ 로그아웃 완료');
+
+    logger.log('✅ 로그아웃 완료');
   }
 
   // 현재 로그인 제공자

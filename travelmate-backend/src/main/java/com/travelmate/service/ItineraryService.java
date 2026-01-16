@@ -279,12 +279,11 @@ public class ItineraryService {
         collaboratorRepository.save(collaborator);
 
         // 알림 발송
-        notificationService.sendNotification(
+        notificationService.createNotification(
                 invitee.getId(),
                 "일정 초대",
                 inviter.getNickname() + "님이 '" + itinerary.getTitle() + "' 일정에 초대했습니다.",
-                "ITINERARY_INVITE",
-                itinerary.getId().toString()
+                "ITINERARY_INVITE"
         );
 
         log.info("User {} invited to itinerary {} by {}", invitee.getId(), itineraryId, userId);
