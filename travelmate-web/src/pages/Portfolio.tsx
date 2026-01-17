@@ -286,7 +286,9 @@ const Portfolio: React.FC = () => {
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
                 Cloud Deployed
               </h3>
-              <p className="text-gray-600 dark:text-gray-400 text-sm">Docker + Koyeb + Vercel</p>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">
+                Docker + Koyeb (Full Stack)
+              </p>
             </motion.div>
           </div>
         </div>

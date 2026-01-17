@@ -35,6 +35,8 @@
   padding: 22px;
   width: 340px;
   max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   z-index: 10001;
   animation: tooltipAppear 0.3s ease;

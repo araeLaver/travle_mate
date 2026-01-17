@@ -277,8 +277,8 @@ const Tutorial: React.FC<TutorialProps> = ({ onComplete, isOpen }) => {
     }
 
     const position = step?.position || 'bottom';
-    const tooltipWidth = 320;
-    const tooltipHeight = 220;
+    const tooltipWidth = 340;
+    const tooltipHeight = 380; // 실제 툴팁 높이에 맞게 증가
     const margin = 20;
 
     let top: number;
