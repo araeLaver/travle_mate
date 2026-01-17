@@ -1,109 +1,43 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '../components/Toast';
 import { marketplaceService } from '../services/marketplaceService';
 import { nftService } from '../services/nftService';
 import { pointService } from '../services/pointService';
+import Logo from '../components/Logo';
+import ThemeToggle from '../components/ThemeToggle';
 import {
   MarketplaceListingResponse,
   UserNftCollectionResponse,
   Rarity,
   PointBalanceResponse,
 } from '../types';
-import './Marketplace.css';
-
-// SVG Icons
-const BackIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M19 12H5M12 19l-7-7 7-7" />
-  </svg>
-);
-
-const ShopIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-    <polyline points="9 22 9 12 15 12 15 22" />
-  </svg>
-);
-
-const SellIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <line x1="12" y1="1" x2="12" y2="23" />
-    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-  </svg>
-);
-
-const ListIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <line x1="8" y1="6" x2="21" y2="6" />
-    <line x1="8" y1="12" x2="21" y2="12" />
-    <line x1="8" y1="18" x2="21" y2="18" />
-    <line x1="3" y1="6" x2="3.01" y2="6" />
-    <line x1="3" y1="12" x2="3.01" y2="12" />
-    <line x1="3" y1="18" x2="3.01" y2="18" />
-  </svg>
-);
-
-const CartIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <circle cx="9" cy="21" r="1" />
-    <circle cx="20" cy="21" r="1" />
-    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-  </svg>
-);
-
-const CoinIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <circle cx="12" cy="12" r="10" />
-    <path d="M9 12h6M12 9v6" />
-  </svg>
-);
-
-const MapPinIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-    <circle cx="12" cy="10" r="3" />
-  </svg>
-);
-
-const ClockIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <circle cx="12" cy="12" r="10" />
-    <polyline points="12 6 12 12 16 14" />
-  </svg>
-);
-
-const CloseIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <line x1="18" y1="6" x2="6" y2="18" />
-    <line x1="6" y1="6" x2="18" y2="18" />
-  </svg>
-);
-
-const XCircleIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <circle cx="12" cy="12" r="10" />
-    <line x1="15" y1="9" x2="9" y2="15" />
-    <line x1="9" y1="9" x2="15" y2="15" />
-  </svg>
-);
 
 // Rarity 색상 매핑
-const rarityColors: Record<Rarity, string> = {
-  COMMON: '#9ca3af',
-  RARE: '#3b82f6',
-  EPIC: '#8b5cf6',
-  LEGENDARY: '#f59e0b',
-};
-
-const rarityLabels: Record<Rarity, string> = {
-  COMMON: '일반',
-  RARE: '레어',
-  EPIC: '에픽',
-  LEGENDARY: '전설',
+const rarityConfig: Record<Rarity, { color: string; label: string; emoji: string }> = {
+  COMMON: { color: '#9ca3af', label: '일반', emoji: '⚪' },
+  RARE: { color: '#3b82f6', label: '레어', emoji: '🔵' },
+  EPIC: { color: '#8b5cf6', label: '에픽', emoji: '🟣' },
+  LEGENDARY: { color: '#f59e0b', label: '전설', emoji: '🟡' },
 };
 
 type TabType = 'market' | 'sell' | 'my-listings' | 'purchases';
+
+const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -20 },
+  transition: { duration: 0.3 },
+};
+
+const staggerContainer = {
+  animate: {
+    transition: {
+      staggerChildren: 0.05,
+    },
+  },
+};
 
 const Marketplace: React.FC = () => {
   const navigate = useNavigate();
@@ -135,6 +69,13 @@ const Marketplace: React.FC = () => {
   const [selectedListing, setSelectedListing] = useState<MarketplaceListingResponse | null>(null);
   const [isBuying, setIsBuying] = useState(false);
 
+  const tabs = [
+    { id: 'market' as TabType, label: '마켓', icon: '🏪' },
+    { id: 'sell' as TabType, label: '판매', icon: '💵' },
+    { id: 'my-listings' as TabType, label: '내 판매', icon: '📋' },
+    { id: 'purchases' as TabType, label: '구매', icon: '🛒' },
+  ];
+
   // 포인트 잔액 조회
   const loadBalance = useCallback(async () => {
     try {
@@ -146,37 +87,40 @@ const Marketplace: React.FC = () => {
   }, []);
 
   // 마켓 리스팅 조회
-  const loadListings = useCallback(async (reset = false) => {
-    const currentPage = reset ? 0 : page;
-    setIsLoading(true);
-    try {
-      let response;
-      if (selectedRarity !== 'ALL') {
-        response = await marketplaceService.getListingsByRarity(selectedRarity, currentPage, 20);
-      } else if (minPrice && maxPrice) {
-        response = await marketplaceService.getListingsByPriceRange(
-          parseInt(minPrice),
-          parseInt(maxPrice),
-          currentPage,
-          20
-        );
-      } else {
-        response = await marketplaceService.getActiveListings(currentPage, 20);
-      }
+  const loadListings = useCallback(
+    async (reset = false) => {
+      const currentPage = reset ? 0 : page;
+      setIsLoading(true);
+      try {
+        let response;
+        if (selectedRarity !== 'ALL') {
+          response = await marketplaceService.getListingsByRarity(selectedRarity, currentPage, 20);
+        } else if (minPrice && maxPrice) {
+          response = await marketplaceService.getListingsByPriceRange(
+            parseInt(minPrice),
+            parseInt(maxPrice),
+            currentPage,
+            20
+          );
+        } else {
+          response = await marketplaceService.getActiveListings(currentPage, 20);
+        }
 
-      if (reset) {
-        setListings(response.content);
-      } else {
-        setListings(prev => [...prev, ...response.content]);
+        if (reset) {
+          setListings(response.content);
+        } else {
+          setListings((prev) => [...prev, ...response.content]);
+        }
+        setHasMore(!response.last);
+        setPage(currentPage);
+      } catch {
+        toast.error('리스팅을 불러오는데 실패했습니다.');
+      } finally {
+        setIsLoading(false);
       }
-      setHasMore(!response.last);
-      setPage(currentPage);
-    } catch {
-      toast.error('리스팅을 불러오는데 실패했습니다.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [page, selectedRarity, minPrice, maxPrice, toast]);
+    },
+    [page, selectedRarity, minPrice, maxPrice, toast]
+  );
 
   // 내 판매 리스팅 조회
   const loadMyListings = useCallback(async () => {
@@ -204,7 +148,7 @@ const Marketplace: React.FC = () => {
     }
   }, [toast]);
 
-  // 내 NFT 목록 조회 (판매용)
+  // 내 NFT 목록 조회
   const loadMyNfts = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -241,7 +185,7 @@ const Marketplace: React.FC = () => {
 
   // 더 보기
   const loadMore = () => {
-    setPage(prev => prev + 1);
+    setPage((prev) => prev + 1);
     loadListings();
   };
 
@@ -328,487 +272,636 @@ const Marketplace: React.FC = () => {
   };
 
   return (
-    <div className="marketplace">
-      {/* 헤더 */}
-      <header className="marketplace-header">
-        <button className="btn-back" onClick={() => navigate(-1)} aria-label="뒤로 가기">
-          <BackIcon />
-        </button>
-        <h1>NFT 마켓플레이스</h1>
-        <div className="header-balance">
-          <CoinIcon />
-          <span>{balance?.totalPoints?.toLocaleString() || 0}P</span>
+    <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] relative overflow-hidden">
+      {/* Background Effects */}
+      <div
+        className="absolute top-20 left-10 w-72 h-72 bg-violet-400/30 dark:bg-violet-600/20 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite' }}
+      />
+      <div
+        className="absolute top-40 right-10 w-96 h-96 bg-pink-400/20 dark:bg-pink-600/10 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite 2s' }}
+      />
+      <div
+        className="absolute bottom-20 left-1/3 w-80 h-80 bg-blue-400/20 dark:bg-blue-600/10 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite 4s' }}
+      />
+
+      <style>{`
+        @keyframes blob {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          33% { transform: translate(30px, -50px) scale(1.1); }
+          66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+      `}</style>
+
+      {/* Navigation */}
+      <motion.nav
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="sticky top-0 z-50 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50"
+      >
+        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              <span className="text-xl">←</span>
+            </button>
+            <Logo size="sm" />
+          </div>
+          <h1 className="text-lg font-bold text-gray-800 dark:text-white">NFT 마켓</h1>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1 px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 rounded-full">
+              <span>💰</span>
+              <span className="font-semibold text-yellow-700 dark:text-yellow-400">
+                {balance?.totalPoints?.toLocaleString() || 0}P
+              </span>
+            </div>
+            <ThemeToggle />
+          </div>
         </div>
-      </header>
+      </motion.nav>
 
       {/* 탭 */}
-      <div className="tab-bar">
-        <button
-          className={`tab-item ${activeTab === 'market' ? 'active' : ''}`}
-          onClick={() => setActiveTab('market')}
-        >
-          <ShopIcon />
-          마켓
-        </button>
-        <button
-          className={`tab-item ${activeTab === 'sell' ? 'active' : ''}`}
-          onClick={() => setActiveTab('sell')}
-        >
-          <SellIcon />
-          판매
-        </button>
-        <button
-          className={`tab-item ${activeTab === 'my-listings' ? 'active' : ''}`}
-          onClick={() => setActiveTab('my-listings')}
-        >
-          <ListIcon />
-          내 판매
-        </button>
-        <button
-          className={`tab-item ${activeTab === 'purchases' ? 'active' : ''}`}
-          onClick={() => setActiveTab('purchases')}
-        >
-          <CartIcon />
-          구매
-        </button>
+      <div className="sticky top-[57px] z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="flex">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex-1 py-3 flex items-center justify-center gap-2 font-medium border-b-2 transition-colors ${
+                  activeTab === tab.id
+                    ? 'text-violet-600 dark:text-violet-400 border-violet-600 dark:border-violet-400'
+                    : 'text-gray-500 dark:text-gray-400 border-transparent hover:text-gray-700 dark:hover:text-gray-300'
+                }`}
+              >
+                <span>{tab.icon}</span>
+                <span className="text-sm">{tab.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* 마켓 탭 */}
-      {activeTab === 'market' && (
-        <div className="tab-content">
-          {/* 필터 */}
-          <div className="filter-section">
-            <div className="filter-row">
-              <span className="filter-label">희귀도</span>
-              <div className="filter-options">
-                <button
-                  className={`filter-btn ${selectedRarity === 'ALL' ? 'active' : ''}`}
-                  onClick={() => setSelectedRarity('ALL')}
-                >
-                  전체
-                </button>
-                {Object.entries(rarityLabels).map(([key, label]) => (
-                  <button
-                    key={key}
-                    className={`filter-btn ${selectedRarity === key ? 'active' : ''}`}
-                    style={selectedRarity === key ? { backgroundColor: rarityColors[key as Rarity] } : {}}
-                    onClick={() => setSelectedRarity(key as Rarity)}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="filter-row price-filter">
-              <span className="filter-label">가격</span>
-              <div className="price-inputs">
-                <input
-                  type="number"
-                  placeholder="최소"
-                  value={minPrice}
-                  onChange={(e) => setMinPrice(e.target.value)}
-                />
-                <span>~</span>
-                <input
-                  type="number"
-                  placeholder="최대"
-                  value={maxPrice}
-                  onChange={(e) => setMaxPrice(e.target.value)}
-                />
-                <button className="btn-apply" onClick={applyFilters}>적용</button>
-              </div>
-            </div>
-          </div>
-
-          {/* 리스팅 그리드 */}
-          {listings.length === 0 && !isLoading ? (
-            <div className="empty-state">
-              <ShopIcon />
-              <h3>등록된 NFT가 없습니다</h3>
-              <p>첫 번째로 NFT를 판매해보세요!</p>
-            </div>
-          ) : (
-            <div className="listing-grid">
-              {listings.map(listing => (
-                <article key={listing.id} className="listing-card">
-                  <div className="listing-image">
-                    {listing.nftCollection.location.nftImageUrl || listing.nftCollection.location.imageUrl ? (
-                      <img
-                        src={listing.nftCollection.location.nftImageUrl || listing.nftCollection.location.imageUrl}
-                        alt={listing.nftCollection.location.name}
-                      />
-                    ) : (
-                      <div className="image-placeholder">
-                        <MapPinIcon />
-                      </div>
-                    )}
-                    <span
-                      className="rarity-badge"
-                      style={{ backgroundColor: rarityColors[listing.nftCollection.location.rarity] }}
-                    >
-                      {rarityLabels[listing.nftCollection.location.rarity]}
-                    </span>
-                  </div>
-                  <div className="listing-info">
-                    <h3>{listing.nftCollection.location.name}</h3>
-                    <p className="seller">판매자: {listing.seller.nickname}</p>
-                    <div className="listing-meta">
-                      <span className="price">
-                        <CoinIcon />
-                        {listing.priceInPoints.toLocaleString()}P
-                      </span>
-                      <span className="time">
-                        <ClockIcon />
-                        {getTimeRemaining(listing.expiresAt)}
-                      </span>
-                    </div>
+      <main className="max-w-4xl mx-auto px-4 py-6 relative z-10">
+        <AnimatePresence mode="wait">
+          {/* 마켓 탭 */}
+          {activeTab === 'market' && (
+            <motion.div key="market" {...fadeInUp}>
+              {/* 필터 */}
+              <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-4 border border-gray-200/50 dark:border-gray-700/50 mb-6">
+                <div className="mb-4">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">희귀도</p>
+                  <div className="flex flex-wrap gap-2">
                     <button
-                      className="btn-buy"
-                      onClick={() => {
-                        setSelectedListing(listing);
-                        setShowBuyModal(true);
-                      }}
+                      onClick={() => setSelectedRarity('ALL')}
+                      className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                        selectedRarity === 'ALL'
+                          ? 'bg-violet-600 text-white'
+                          : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+                      }`}
                     >
-                      구매하기
+                      전체
                     </button>
+                    {Object.entries(rarityConfig).map(([key, config]) => (
+                      <button
+                        key={key}
+                        onClick={() => setSelectedRarity(key as Rarity)}
+                        className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                          selectedRarity === key ? 'text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+                        }`}
+                        style={selectedRarity === key ? { backgroundColor: config.color } : {}}
+                      >
+                        {config.emoji} {config.label}
+                      </button>
+                    ))}
                   </div>
-                </article>
-              ))}
-            </div>
-          )}
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-gray-500 dark:text-gray-400">가격</span>
+                  <input
+                    type="number"
+                    placeholder="최소"
+                    value={minPrice}
+                    onChange={(e) => setMinPrice(e.target.value)}
+                    className="w-24 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-sm outline-none text-gray-800 dark:text-white"
+                  />
+                  <span className="text-gray-400">~</span>
+                  <input
+                    type="number"
+                    placeholder="최대"
+                    value={maxPrice}
+                    onChange={(e) => setMaxPrice(e.target.value)}
+                    className="w-24 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-sm outline-none text-gray-800 dark:text-white"
+                  />
+                  <button
+                    onClick={applyFilters}
+                    className="px-4 py-2 bg-violet-600 text-white text-sm font-medium rounded-lg hover:bg-violet-700 transition-colors"
+                  >
+                    적용
+                  </button>
+                </div>
+              </div>
 
-          {hasMore && !isLoading && (
-            <button className="btn-load-more" onClick={loadMore}>
-              더 보기
-            </button>
-          )}
-
-          {isLoading && (
-            <div className="loading-state">
-              <div className="loading-spinner" />
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* 판매 탭 */}
-      {activeTab === 'sell' && (
-        <div className="tab-content">
-          <h2 className="section-title">판매할 NFT 선택</h2>
-          {myNfts.length === 0 && !isLoading ? (
-            <div className="empty-state">
-              <MapPinIcon />
-              <h3>보유한 NFT가 없습니다</h3>
-              <p>NFT를 수집해서 마켓에 판매해보세요!</p>
-              <button className="btn-primary" onClick={() => navigate('/nft')}>
-                NFT 수집하러 가기
-              </button>
-            </div>
-          ) : (
-            <div className="nft-select-grid">
-              {myNfts.map(nft => (
-                <article
-                  key={nft.id}
-                  className={`nft-select-card ${selectedNft?.id === nft.id ? 'selected' : ''}`}
-                  onClick={() => {
-                    setSelectedNft(nft);
-                    setShowSellModal(true);
-                  }}
+              {/* 리스팅 */}
+              {listings.length === 0 && !isLoading ? (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <span className="text-6xl mb-4">🏪</span>
+                  <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">등록된 NFT가 없습니다</h3>
+                  <p className="text-gray-500 dark:text-gray-400">첫 번째로 NFT를 판매해보세요!</p>
+                </div>
+              ) : (
+                <motion.div
+                  variants={staggerContainer}
+                  initial="initial"
+                  animate="animate"
+                  className="grid grid-cols-2 gap-4"
                 >
-                  <div className="nft-image">
-                    {nft.location.nftImageUrl || nft.location.imageUrl ? (
-                      <img
-                        src={nft.location.nftImageUrl || nft.location.imageUrl}
-                        alt={nft.location.name}
-                      />
-                    ) : (
-                      <div className="image-placeholder">
-                        <MapPinIcon />
-                      </div>
-                    )}
-                    <span
-                      className="rarity-badge"
-                      style={{ backgroundColor: rarityColors[nft.location.rarity] }}
+                  {listings.map((listing) => (
+                    <motion.article
+                      key={listing.id}
+                      variants={fadeInUp}
+                      className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-700/50 overflow-hidden"
                     >
-                      {rarityLabels[nft.location.rarity]}
-                    </span>
-                  </div>
-                  <div className="nft-info">
-                    <h3>{nft.location.name}</h3>
-                    <p>{nft.location.city}</p>
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
-          {isLoading && (
-            <div className="loading-state">
-              <div className="loading-spinner" />
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* 내 판매 탭 */}
-      {activeTab === 'my-listings' && (
-        <div className="tab-content">
-          {myListings.length === 0 && !isLoading ? (
-            <div className="empty-state">
-              <ListIcon />
-              <h3>판매중인 NFT가 없습니다</h3>
-              <p>NFT를 판매 등록해보세요!</p>
-            </div>
-          ) : (
-            <div className="my-listings-list">
-              {myListings.map(listing => (
-                <article key={listing.id} className="my-listing-card">
-                  <div className="listing-image small">
-                    {listing.nftCollection.location.nftImageUrl ? (
-                      <img
-                        src={listing.nftCollection.location.nftImageUrl}
-                        alt={listing.nftCollection.location.name}
-                      />
-                    ) : (
-                      <div className="image-placeholder">
-                        <MapPinIcon />
-                      </div>
-                    )}
-                  </div>
-                  <div className="listing-details">
-                    <h3>{listing.nftCollection.location.name}</h3>
-                    <div className="listing-meta-row">
-                      <span className="price">
-                        <CoinIcon />
-                        {listing.priceInPoints.toLocaleString()}P
-                      </span>
-                      <span className={`status ${listing.status.toLowerCase()}`}>
-                        {listing.status === 'ACTIVE' ? '판매중' : listing.status === 'SOLD' ? '판매완료' : '취소됨'}
-                      </span>
-                    </div>
-                    {listing.status === 'ACTIVE' && (
-                      <div className="listing-actions">
-                        <span className="time">
-                          <ClockIcon />
-                          {getTimeRemaining(listing.expiresAt)}
-                        </span>
-                        <button
-                          className="btn-cancel"
-                          onClick={() => handleCancelListing(listing.id)}
+                      <div className="aspect-square relative">
+                        {listing.nftCollection.location.nftImageUrl || listing.nftCollection.location.imageUrl ? (
+                          <img
+                            src={listing.nftCollection.location.nftImageUrl || listing.nftCollection.location.imageUrl}
+                            alt={listing.nftCollection.location.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-violet-400 to-pink-400 flex items-center justify-center text-6xl">
+                            📍
+                          </div>
+                        )}
+                        <span
+                          className="absolute top-2 left-2 px-2 py-1 rounded-lg text-xs font-bold text-white"
+                          style={{ backgroundColor: rarityConfig[listing.nftCollection.location.rarity].color }}
                         >
-                          <XCircleIcon />
-                          취소
+                          {rarityConfig[listing.nftCollection.location.rarity].emoji}{' '}
+                          {rarityConfig[listing.nftCollection.location.rarity].label}
+                        </span>
+                      </div>
+                      <div className="p-4">
+                        <h3 className="font-semibold text-gray-800 dark:text-white truncate mb-1">
+                          {listing.nftCollection.location.name}
+                        </h3>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                          판매자: {listing.seller.nickname}
+                        </p>
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="flex items-center gap-1 text-yellow-600 dark:text-yellow-400 font-bold">
+                            💰 {listing.priceInPoints.toLocaleString()}P
+                          </span>
+                          <span className="text-xs text-gray-400 flex items-center gap-1">
+                            ⏰ {getTimeRemaining(listing.expiresAt)}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setSelectedListing(listing);
+                            setShowBuyModal(true);
+                          }}
+                          className="w-full py-2 bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold rounded-xl text-sm hover:opacity-90 transition-opacity"
+                        >
+                          구매하기
                         </button>
                       </div>
-                    )}
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
-          {isLoading && (
-            <div className="loading-state">
-              <div className="loading-spinner" />
-            </div>
-          )}
-        </div>
-      )}
+                    </motion.article>
+                  ))}
+                </motion.div>
+              )}
 
-      {/* 구매 내역 탭 */}
-      {activeTab === 'purchases' && (
-        <div className="tab-content">
-          {myPurchases.length === 0 && !isLoading ? (
-            <div className="empty-state">
-              <CartIcon />
-              <h3>구매 내역이 없습니다</h3>
-              <p>마켓에서 NFT를 구매해보세요!</p>
-            </div>
-          ) : (
-            <div className="purchases-list">
-              {myPurchases.map(listing => (
-                <article key={listing.id} className="purchase-card">
-                  <div className="listing-image small">
-                    {listing.nftCollection.location.nftImageUrl ? (
-                      <img
-                        src={listing.nftCollection.location.nftImageUrl}
-                        alt={listing.nftCollection.location.name}
-                      />
-                    ) : (
-                      <div className="image-placeholder">
-                        <MapPinIcon />
+              {hasMore && !isLoading && (
+                <button
+                  onClick={loadMore}
+                  className="w-full mt-6 py-3 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 font-medium rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                >
+                  더 보기
+                </button>
+              )}
+
+              {isLoading && (
+                <div className="flex justify-center py-8">
+                  <div className="w-10 h-10 border-4 border-violet-500 border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {/* 판매 탭 */}
+          {activeTab === 'sell' && (
+            <motion.div key="sell" {...fadeInUp}>
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">판매할 NFT 선택</h2>
+              {myNfts.length === 0 && !isLoading ? (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <span className="text-6xl mb-4">📍</span>
+                  <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">보유한 NFT가 없습니다</h3>
+                  <p className="text-gray-500 dark:text-gray-400 mb-4">NFT를 수집해서 마켓에 판매해보세요!</p>
+                  <button
+                    onClick={() => navigate('/nft')}
+                    className="px-6 py-3 bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold rounded-xl"
+                  >
+                    NFT 수집하러 가기
+                  </button>
+                </div>
+              ) : (
+                <motion.div
+                  variants={staggerContainer}
+                  initial="initial"
+                  animate="animate"
+                  className="grid grid-cols-2 gap-4"
+                >
+                  {myNfts.map((nft) => (
+                    <motion.article
+                      key={nft.id}
+                      variants={fadeInUp}
+                      onClick={() => {
+                        setSelectedNft(nft);
+                        setShowSellModal(true);
+                      }}
+                      className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-700/50 overflow-hidden cursor-pointer hover:ring-2 hover:ring-violet-500/50 transition-all"
+                    >
+                      <div className="aspect-square relative">
+                        {nft.location.nftImageUrl || nft.location.imageUrl ? (
+                          <img
+                            src={nft.location.nftImageUrl || nft.location.imageUrl}
+                            alt={nft.location.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-violet-400 to-pink-400 flex items-center justify-center text-6xl">
+                            📍
+                          </div>
+                        )}
+                        <span
+                          className="absolute top-2 left-2 px-2 py-1 rounded-lg text-xs font-bold text-white"
+                          style={{ backgroundColor: rarityConfig[nft.location.rarity].color }}
+                        >
+                          {rarityConfig[nft.location.rarity].emoji} {rarityConfig[nft.location.rarity].label}
+                        </span>
                       </div>
-                    )}
-                  </div>
-                  <div className="purchase-details">
-                    <h3>{listing.nftCollection.location.name}</h3>
-                    <p className="seller">판매자: {listing.seller.nickname}</p>
-                    <div className="purchase-meta">
-                      <span className="price">
-                        <CoinIcon />
-                        {listing.priceInPoints.toLocaleString()}P
-                      </span>
-                      <span className="date">
-                        {new Date(listing.listedAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
+                      <div className="p-4">
+                        <h3 className="font-semibold text-gray-800 dark:text-white truncate">{nft.location.name}</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{nft.location.city}</p>
+                      </div>
+                    </motion.article>
+                  ))}
+                </motion.div>
+              )}
+              {isLoading && (
+                <div className="flex justify-center py-8">
+                  <div className="w-10 h-10 border-4 border-violet-500 border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+            </motion.div>
           )}
-          {isLoading && (
-            <div className="loading-state">
-              <div className="loading-spinner" />
-            </div>
+
+          {/* 내 판매 탭 */}
+          {activeTab === 'my-listings' && (
+            <motion.div key="my-listings" {...fadeInUp}>
+              {myListings.length === 0 && !isLoading ? (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <span className="text-6xl mb-4">📋</span>
+                  <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">판매중인 NFT가 없습니다</h3>
+                  <p className="text-gray-500 dark:text-gray-400">NFT를 판매 등록해보세요!</p>
+                </div>
+              ) : (
+                <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-3">
+                  {myListings.map((listing) => (
+                    <motion.article
+                      key={listing.id}
+                      variants={fadeInUp}
+                      className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-xl p-4 border border-gray-200/50 dark:border-gray-700/50 flex items-center gap-4"
+                    >
+                      <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
+                        {listing.nftCollection.location.nftImageUrl ? (
+                          <img
+                            src={listing.nftCollection.location.nftImageUrl}
+                            alt={listing.nftCollection.location.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-violet-400 to-pink-400 flex items-center justify-center">
+                            📍
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-800 dark:text-white truncate">
+                          {listing.nftCollection.location.name}
+                        </h3>
+                        <div className="flex items-center gap-3 text-sm">
+                          <span className="text-yellow-600 dark:text-yellow-400 font-medium">
+                            💰 {listing.priceInPoints.toLocaleString()}P
+                          </span>
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                              listing.status === 'ACTIVE'
+                                ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
+                                : listing.status === 'SOLD'
+                                ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                                : 'bg-gray-100 dark:bg-gray-800 text-gray-500'
+                            }`}
+                          >
+                            {listing.status === 'ACTIVE' ? '판매중' : listing.status === 'SOLD' ? '판매완료' : '취소됨'}
+                          </span>
+                        </div>
+                      </div>
+                      {listing.status === 'ACTIVE' && (
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs text-gray-400">⏰ {getTimeRemaining(listing.expiresAt)}</span>
+                          <button
+                            onClick={() => handleCancelListing(listing.id)}
+                            className="px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-sm font-medium rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
+                          >
+                            취소
+                          </button>
+                        </div>
+                      )}
+                    </motion.article>
+                  ))}
+                </motion.div>
+              )}
+              {isLoading && (
+                <div className="flex justify-center py-8">
+                  <div className="w-10 h-10 border-4 border-violet-500 border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+            </motion.div>
           )}
-        </div>
-      )}
+
+          {/* 구매 내역 탭 */}
+          {activeTab === 'purchases' && (
+            <motion.div key="purchases" {...fadeInUp}>
+              {myPurchases.length === 0 && !isLoading ? (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <span className="text-6xl mb-4">🛒</span>
+                  <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">구매 내역이 없습니다</h3>
+                  <p className="text-gray-500 dark:text-gray-400">마켓에서 NFT를 구매해보세요!</p>
+                </div>
+              ) : (
+                <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-3">
+                  {myPurchases.map((listing) => (
+                    <motion.article
+                      key={listing.id}
+                      variants={fadeInUp}
+                      className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-xl p-4 border border-gray-200/50 dark:border-gray-700/50 flex items-center gap-4"
+                    >
+                      <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
+                        {listing.nftCollection.location.nftImageUrl ? (
+                          <img
+                            src={listing.nftCollection.location.nftImageUrl}
+                            alt={listing.nftCollection.location.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-violet-400 to-pink-400 flex items-center justify-center">
+                            📍
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-800 dark:text-white truncate">
+                          {listing.nftCollection.location.name}
+                        </h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">판매자: {listing.seller.nickname}</p>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-yellow-600 dark:text-yellow-400 font-bold">
+                          💰 {listing.priceInPoints.toLocaleString()}P
+                        </span>
+                        <p className="text-xs text-gray-400">{new Date(listing.listedAt).toLocaleDateString()}</p>
+                      </div>
+                    </motion.article>
+                  ))}
+                </motion.div>
+              )}
+              {isLoading && (
+                <div className="flex justify-center py-8">
+                  <div className="w-10 h-10 border-4 border-violet-500 border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
 
       {/* 판매 등록 모달 */}
-      {showSellModal && selectedNft && (
-        <div className="modal-overlay" onClick={() => setShowSellModal(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setShowSellModal(false)}>
-              <CloseIcon />
-            </button>
-            <h2>NFT 판매 등록</h2>
-
-            <div className="modal-nft-preview">
-              <div className="preview-image">
-                {selectedNft.location.nftImageUrl || selectedNft.location.imageUrl ? (
-                  <img
-                    src={selectedNft.location.nftImageUrl || selectedNft.location.imageUrl}
-                    alt={selectedNft.location.name}
-                  />
-                ) : (
-                  <div className="image-placeholder">
-                    <MapPinIcon />
-                  </div>
-                )}
-              </div>
-              <div className="preview-info">
-                <h3>{selectedNft.location.name}</h3>
-                <span
-                  className="rarity-tag"
-                  style={{ backgroundColor: rarityColors[selectedNft.location.rarity] }}
+      <AnimatePresence>
+        {showSellModal && selectedNft && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+            onClick={() => setShowSellModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-md w-full p-6 border border-gray-200/50 dark:border-gray-700/50"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-bold text-gray-800 dark:text-white">NFT 판매 등록</h2>
+                <button
+                  onClick={() => setShowSellModal(false)}
+                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400"
                 >
-                  {rarityLabels[selectedNft.location.rarity]}
-                </span>
+                  ✕
+                </button>
               </div>
-            </div>
 
-            <div className="form-group">
-              <label htmlFor="sellPrice">판매 가격 (포인트)</label>
-              <div className="price-input-wrapper">
-                <CoinIcon />
-                <input
-                  id="sellPrice"
-                  type="number"
-                  placeholder="판매할 가격을 입력하세요"
-                  value={sellPrice}
-                  onChange={(e) => setSellPrice(e.target.value)}
-                  min="1"
-                />
-                <span>P</span>
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label>판매 기간</label>
-              <div className="duration-options">
-                {[3, 7, 14, 30].map(days => (
-                  <button
-                    key={days}
-                    className={`duration-btn ${sellDuration === days ? 'active' : ''}`}
-                    onClick={() => setSellDuration(days)}
+              <div className="flex items-center gap-4 mb-6 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                <div className="w-16 h-16 rounded-lg overflow-hidden">
+                  {selectedNft.location.nftImageUrl || selectedNft.location.imageUrl ? (
+                    <img
+                      src={selectedNft.location.nftImageUrl || selectedNft.location.imageUrl}
+                      alt={selectedNft.location.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-violet-400 to-pink-400 flex items-center justify-center">
+                      📍
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-800 dark:text-white">{selectedNft.location.name}</h3>
+                  <span
+                    className="inline-block px-2 py-0.5 rounded-full text-xs font-medium text-white mt-1"
+                    style={{ backgroundColor: rarityConfig[selectedNft.location.rarity].color }}
                   >
-                    {days}일
-                  </button>
-                ))}
+                    {rarityConfig[selectedNft.location.rarity].emoji} {rarityConfig[selectedNft.location.rarity].label}
+                  </span>
+                </div>
               </div>
-            </div>
 
-            <button className="btn-confirm" onClick={handleSell}>
-              <SellIcon />
-              판매 등록
-            </button>
-          </div>
-        </div>
-      )}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  판매 가격 (포인트)
+                </label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2">💰</span>
+                  <input
+                    type="number"
+                    placeholder="판매할 가격을 입력하세요"
+                    value={sellPrice}
+                    onChange={(e) => setSellPrice(e.target.value)}
+                    min="1"
+                    className="w-full pl-12 pr-12 py-3 bg-gray-100 dark:bg-gray-800 rounded-xl outline-none text-gray-800 dark:text-white placeholder-gray-400"
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">P</span>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">판매 기간</label>
+                <div className="flex gap-2">
+                  {[3, 7, 14, 30].map((days) => (
+                    <button
+                      key={days}
+                      onClick={() => setSellDuration(days)}
+                      className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        sellDuration === days
+                          ? 'bg-violet-600 text-white'
+                          : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+                      }`}
+                    >
+                      {days}일
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <button
+                onClick={handleSell}
+                className="w-full py-4 bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold rounded-xl hover:opacity-90 transition-opacity"
+              >
+                💵 판매 등록
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* 구매 확인 모달 */}
-      {showBuyModal && selectedListing && (
-        <div className="modal-overlay" onClick={() => setShowBuyModal(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setShowBuyModal(false)}>
-              <CloseIcon />
-            </button>
-            <h2>구매 확인</h2>
-
-            <div className="modal-nft-preview">
-              <div className="preview-image">
-                {selectedListing.nftCollection.location.nftImageUrl || selectedListing.nftCollection.location.imageUrl ? (
-                  <img
-                    src={selectedListing.nftCollection.location.nftImageUrl || selectedListing.nftCollection.location.imageUrl}
-                    alt={selectedListing.nftCollection.location.name}
-                  />
-                ) : (
-                  <div className="image-placeholder">
-                    <MapPinIcon />
-                  </div>
-                )}
-              </div>
-              <div className="preview-info">
-                <h3>{selectedListing.nftCollection.location.name}</h3>
-                <span
-                  className="rarity-tag"
-                  style={{ backgroundColor: rarityColors[selectedListing.nftCollection.location.rarity] }}
-                >
-                  {rarityLabels[selectedListing.nftCollection.location.rarity]}
-                </span>
-              </div>
-            </div>
-
-            <div className="purchase-summary">
-              <div className="summary-row">
-                <span>판매자</span>
-                <span>{selectedListing.seller.nickname}</span>
-              </div>
-              <div className="summary-row">
-                <span>가격</span>
-                <span className="price-value">
-                  <CoinIcon />
-                  {selectedListing.priceInPoints.toLocaleString()}P
-                </span>
-              </div>
-              <div className="summary-divider" />
-              <div className="summary-row">
-                <span>내 포인트</span>
-                <span>{balance?.totalPoints?.toLocaleString() || 0}P</span>
-              </div>
-              <div className="summary-row balance-after">
-                <span>구매 후 잔액</span>
-                <span className={balance && balance.totalPoints < selectedListing.priceInPoints ? 'insufficient' : ''}>
-                  {((balance?.totalPoints || 0) - selectedListing.priceInPoints).toLocaleString()}P
-                </span>
-              </div>
-            </div>
-
-            {balance && balance.totalPoints < selectedListing.priceInPoints && (
-              <div className="warning-message">
-                포인트가 부족합니다.
-              </div>
-            )}
-
-            <button
-              className="btn-confirm"
-              onClick={handleBuy}
-              disabled={isBuying || !balance || balance.totalPoints < selectedListing.priceInPoints}
+      <AnimatePresence>
+        {showBuyModal && selectedListing && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+            onClick={() => setShowBuyModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-md w-full p-6 border border-gray-200/50 dark:border-gray-700/50"
+              onClick={(e) => e.stopPropagation()}
             >
-              {isBuying ? '구매 중...' : '구매하기'}
-            </button>
-          </div>
-        </div>
-      )}
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-bold text-gray-800 dark:text-white">구매 확인</h2>
+                <button
+                  onClick={() => setShowBuyModal(false)}
+                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="flex items-center gap-4 mb-6 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                <div className="w-16 h-16 rounded-lg overflow-hidden">
+                  {selectedListing.nftCollection.location.nftImageUrl ||
+                  selectedListing.nftCollection.location.imageUrl ? (
+                    <img
+                      src={
+                        selectedListing.nftCollection.location.nftImageUrl ||
+                        selectedListing.nftCollection.location.imageUrl
+                      }
+                      alt={selectedListing.nftCollection.location.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-violet-400 to-pink-400 flex items-center justify-center">
+                      📍
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-800 dark:text-white">
+                    {selectedListing.nftCollection.location.name}
+                  </h3>
+                  <span
+                    className="inline-block px-2 py-0.5 rounded-full text-xs font-medium text-white mt-1"
+                    style={{ backgroundColor: rarityConfig[selectedListing.nftCollection.location.rarity].color }}
+                  >
+                    {rarityConfig[selectedListing.nftCollection.location.rarity].emoji}{' '}
+                    {rarityConfig[selectedListing.nftCollection.location.rarity].label}
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-3 mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500 dark:text-gray-400">판매자</span>
+                  <span className="text-gray-800 dark:text-white">{selectedListing.seller.nickname}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500 dark:text-gray-400">가격</span>
+                  <span className="text-yellow-600 dark:text-yellow-400 font-bold">
+                    💰 {selectedListing.priceInPoints.toLocaleString()}P
+                  </span>
+                </div>
+                <hr className="border-gray-200 dark:border-gray-700" />
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500 dark:text-gray-400">내 포인트</span>
+                  <span className="text-gray-800 dark:text-white">{balance?.totalPoints?.toLocaleString() || 0}P</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500 dark:text-gray-400">구매 후 잔액</span>
+                  <span
+                    className={`font-bold ${
+                      balance && balance.totalPoints < selectedListing.priceInPoints
+                        ? 'text-red-500'
+                        : 'text-gray-800 dark:text-white'
+                    }`}
+                  >
+                    {((balance?.totalPoints || 0) - selectedListing.priceInPoints).toLocaleString()}P
+                  </span>
+                </div>
+              </div>
+
+              {balance && balance.totalPoints < selectedListing.priceInPoints && (
+                <p className="text-red-500 text-sm text-center mb-4">포인트가 부족합니다.</p>
+              )}
+
+              <button
+                onClick={handleBuy}
+                disabled={isBuying || !balance || balance.totalPoints < selectedListing.priceInPoints}
+                className="w-full py-4 bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isBuying ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    구매 중...
+                  </>
+                ) : (
+                  '🛒 구매하기'
+                )}
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

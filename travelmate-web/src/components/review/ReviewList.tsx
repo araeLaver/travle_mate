@@ -203,7 +203,7 @@ const ReviewList: React.FC<ReviewListProps> = ({ locationId, onReviewDeleted }) 
                       className="reviewer-avatar"
                     />
                   ) : (
-                    <div className="reviewer-avatar placeholder">
+                    <div className="reviewer-avatar placeholder" data-testid={`reviewer-avatar-placeholder-${review.reviewer.id}`}>
                       <UserIcon />
                     </div>
                   )}
@@ -235,6 +235,7 @@ const ReviewList: React.FC<ReviewListProps> = ({ locationId, onReviewDeleted }) 
                 <button
                   className={`helpful-btn ${review.isHelpful ? 'active' : ''}`}
                   onClick={() => handleToggleHelpful(review.id)}
+                  data-testid={`helpful-btn-${review.id}`}
                 >
                   <ThumbsUpIcon />
                   <span>도움됨 {review.helpfulCount > 0 && `(${review.helpfulCount})`}</span>
@@ -244,6 +245,7 @@ const ReviewList: React.FC<ReviewListProps> = ({ locationId, onReviewDeleted }) 
                   <button
                     className="delete-btn"
                     onClick={() => handleDeleteReview(review.id)}
+                    data-testid={`delete-btn-${review.id}`}
                   >
                     <TrashIcon />
                   </button>
@@ -257,7 +259,7 @@ const ReviewList: React.FC<ReviewListProps> = ({ locationId, onReviewDeleted }) 
       {/* 로딩 */}
       {isLoading && (
         <div className="loading">
-          <div className="loading-spinner" />
+          <div className="loading-spinner" data-testid="loading-spinner" />
         </div>
       )}
 

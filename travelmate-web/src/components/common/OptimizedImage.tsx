@@ -43,10 +43,13 @@ function OptimizedImageComponent({
   const defaultPlaceholder = blurDataURL ||
     'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PC9zdmc+';
 
-  // Priority 이미지는 즉시 로드
-  const { imageSrc, isLoaded: lazyLoaded, ref } = priority
-    ? { imageSrc: src, isLoaded: true, ref: imgRef }
-    : useLazyImage(src, defaultPlaceholder);
+  // Hook은 항상 호출 (React Hooks 규칙 준수)
+  const lazyImageResult = useLazyImage(src, defaultPlaceholder);
+
+  // Priority 이미지는 즉시 로드, 아니면 lazy loading 사용
+  const imageSrc = priority ? src : lazyImageResult.imageSrc;
+  const lazyLoaded = priority ? true : lazyImageResult.isLoaded;
+  const ref = priority ? imgRef : lazyImageResult.ref;
 
   useEffect(() => {
     if (lazyLoaded) {

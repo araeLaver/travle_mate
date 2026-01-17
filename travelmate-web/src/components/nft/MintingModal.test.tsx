@@ -71,14 +71,13 @@ describe('MintingModal', () => {
   test('NFT 이미지 없을 때 플레이스홀더 표시', async () => {
     render(<MintingModal {...defaultProps} nftImageUrl={null} />);
 
-    const placeholder = document.querySelector('.nft-placeholder');
-    expect(placeholder).toBeInTheDocument();
+    expect(screen.getByTestId('nft-placeholder')).toBeInTheDocument();
   });
 
   test('지갑 미연결 시 연결 버튼 표시', async () => {
     render(<MintingModal {...defaultProps} />);
 
-    const connectBtn = document.querySelector('.action-btn.primary');
+    const connectBtn = screen.getByTestId('connect-wallet-btn');
     expect(connectBtn).toHaveTextContent('지갑 연결');
     expect(screen.getByText('지갑을 연결하여 민팅을 시작하세요.')).toBeInTheDocument();
   });
@@ -94,8 +93,8 @@ describe('MintingModal', () => {
 
     render(<MintingModal {...defaultProps} />);
 
-    const connectBtn = document.querySelector('.action-btn.primary');
-    fireEvent.click(connectBtn!);
+    const connectBtn = screen.getByTestId('connect-wallet-btn');
+    fireEvent.click(connectBtn);
 
     expect(mockConnect).toHaveBeenCalled();
   });
@@ -223,6 +222,9 @@ describe('MintingModal', () => {
 
     await waitFor(() => {
       expect(screen.getByText('민팅이 완료되었습니다!')).toBeInTheDocument();
+    });
+
+    await waitFor(() => {
       expect(screen.getByText('Token ID: 42')).toBeInTheDocument();
     });
   });
@@ -246,6 +248,9 @@ describe('MintingModal', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Polygonscan에서 보기')).toBeInTheDocument();
+    });
+
+    await waitFor(() => {
       expect(screen.getByText('OpenSea에서 보기')).toBeInTheDocument();
     });
   });
@@ -269,6 +274,9 @@ describe('MintingModal', () => {
 
     await waitFor(() => {
       expect(screen.getByText('민팅에 실패했습니다.')).toBeInTheDocument();
+    });
+
+    await waitFor(() => {
       expect(screen.getByText('민팅 재시도')).toBeInTheDocument();
     });
   });
@@ -305,20 +313,18 @@ describe('MintingModal', () => {
   test('진행 단계 표시', async () => {
     render(<MintingModal {...defaultProps} />);
 
-    const steps = document.querySelectorAll('.step-label');
-    const stepTexts = Array.from(steps).map(s => s.textContent);
-    expect(stepTexts).toContain('지갑 연결');
-    expect(stepTexts).toContain('민팅 요청');
-    expect(stepTexts).toContain('블록체인 처리');
-    expect(stepTexts).toContain('완료');
+    expect(screen.getByTestId('step-label-0')).toHaveTextContent('지갑 연결');
+    expect(screen.getByTestId('step-label-1')).toHaveTextContent('민팅 요청');
+    expect(screen.getByTestId('step-label-2')).toHaveTextContent('블록체인 처리');
+    expect(screen.getByTestId('step-label-3')).toHaveTextContent('완료');
   });
 
   test('닫기 버튼 동작', async () => {
     const mockOnClose = jest.fn();
     render(<MintingModal {...defaultProps} onClose={mockOnClose} />);
 
-    const closeBtn = document.querySelector('.close-btn');
-    fireEvent.click(closeBtn!);
+    const closeBtn = screen.getByTestId('minting-close-btn');
+    fireEvent.click(closeBtn);
 
     expect(mockOnClose).toHaveBeenCalled();
   });
@@ -327,8 +333,8 @@ describe('MintingModal', () => {
     const mockOnClose = jest.fn();
     render(<MintingModal {...defaultProps} onClose={mockOnClose} />);
 
-    const overlay = document.querySelector('.minting-modal-overlay');
-    fireEvent.click(overlay!);
+    const overlay = screen.getByTestId('minting-modal-overlay');
+    fireEvent.click(overlay);
 
     expect(mockOnClose).toHaveBeenCalled();
   });
@@ -337,8 +343,8 @@ describe('MintingModal', () => {
     const mockOnClose = jest.fn();
     render(<MintingModal {...defaultProps} onClose={mockOnClose} />);
 
-    const modal = document.querySelector('.minting-modal');
-    fireEvent.click(modal!);
+    const modal = screen.getByTestId('minting-modal');
+    fireEvent.click(modal);
 
     expect(mockOnClose).not.toHaveBeenCalled();
   });
@@ -369,7 +375,7 @@ describe('MintingModal', () => {
   test('레어리티 색상 적용', async () => {
     render(<MintingModal {...defaultProps} rarity="LEGENDARY" />);
 
-    const badge = document.querySelector('.rarity-badge');
+    const badge = screen.getByTestId('rarity-badge');
     expect(badge).toHaveStyle('background-color: rgb(245, 158, 11)');
   });
 
@@ -431,8 +437,8 @@ describe('MintingModal', () => {
 
     render(<MintingModal {...defaultProps} />);
 
-    const connectBtn = document.querySelector('.action-btn.primary');
-    fireEvent.click(connectBtn!);
+    const connectBtn = screen.getByTestId('connect-wallet-btn');
+    fireEvent.click(connectBtn);
 
     await waitFor(() => {
       expect(screen.getByText('MetaMask를 찾을 수 없습니다.')).toBeInTheDocument();

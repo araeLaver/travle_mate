@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { notificationService } from '../services/notificationService';
 import { useToast } from '../components/Toast';
 import { Notification } from '../types';
-import './NotificationSettings.css';
+import Logo from '../components/Logo';
+import ThemeToggle from '../components/ThemeToggle';
 
 interface NotificationPreferences {
   pushEnabled: boolean;
@@ -25,6 +27,12 @@ const defaultPreferences: NotificationPreferences = {
   pointTransfer: true,
   achievements: true,
   systemNotice: true,
+};
+
+const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.3 },
 };
 
 const NotificationSettings: React.FC = () => {
@@ -131,277 +139,211 @@ const NotificationSettings: React.FC = () => {
     switch (type) {
       case 'GROUP_INVITE':
       case 'GROUP_JOIN':
-        return (
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-            <circle cx="9" cy="7" r="4"/>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-          </svg>
-        );
+        return '👥';
       case 'NEW_MESSAGE':
-        return (
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-          </svg>
-        );
+        return '💬';
       case 'NFT_COLLECTED':
-        return (
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-            <circle cx="8.5" cy="8.5" r="1.5"/>
-            <polyline points="21 15 16 10 5 21"/>
-          </svg>
-        );
+        return '🖼️';
       case 'MARKETPLACE_SOLD':
       case 'MARKETPLACE_PURCHASED':
-        return (
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="9" cy="21" r="1"/>
-            <circle cx="20" cy="21" r="1"/>
-            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-          </svg>
-        );
+        return '🛒';
       case 'POINTS_RECEIVED':
       case 'POINTS_SPENT':
-        return (
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/>
-            <path d="M12 18V6"/>
-          </svg>
-        );
+        return '💰';
       case 'ACHIEVEMENT_UNLOCKED':
-        return (
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="8" r="7"/>
-            <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>
-          </svg>
-        );
+        return '🏆';
       default:
-        return (
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-          </svg>
-        );
+        return '🔔';
     }
   };
 
-  return (
-    <div className="notification-settings">
-      {/* Header */}
-      <header className="settings-header">
-        <button className="btn-back" onClick={() => navigate(-1)}>
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 12H5M12 19l-7-7 7-7"/>
-          </svg>
-        </button>
-        <h1>알림 설정</h1>
-        <div className="header-spacer" />
-      </header>
+  const settingItems = [
+    { key: 'groupInvite' as const, label: '그룹 초대/가입', icon: '👥' },
+    { key: 'newMessage' as const, label: '새 메시지', icon: '💬' },
+    { key: 'nftCollect' as const, label: 'NFT 수집/업적', icon: '🖼️' },
+    { key: 'marketplace' as const, label: '마켓플레이스 거래', icon: '🛒' },
+    { key: 'pointTransfer' as const, label: '포인트 전송', icon: '💰' },
+    { key: 'achievements' as const, label: '업적 달성', icon: '🏆' },
+    { key: 'systemNotice' as const, label: '시스템 공지', icon: '📢' },
+  ];
 
-      {/* Push Notification Toggle */}
-      <section className="settings-section">
-        <div className="section-header">
-          <h2>푸시 알림</h2>
+  return (
+    <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] relative overflow-hidden">
+      {/* Background Effects */}
+      <div
+        className="absolute top-20 left-10 w-72 h-72 bg-violet-400/30 dark:bg-violet-600/20 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite' }}
+      />
+      <div
+        className="absolute top-40 right-10 w-96 h-96 bg-pink-400/20 dark:bg-pink-600/10 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite 2s' }}
+      />
+      <div
+        className="absolute bottom-20 left-1/3 w-80 h-80 bg-blue-400/20 dark:bg-blue-600/10 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite 4s' }}
+      />
+
+      <style>{`
+        @keyframes blob {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          33% { transform: translate(30px, -50px) scale(1.1); }
+          66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+      `}</style>
+
+      {/* Navigation */}
+      <motion.nav
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="sticky top-0 z-50 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50"
+      >
+        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate(-1)}
+              className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              <span className="text-xl">←</span>
+            </button>
+            <Logo size="sm" />
+          </div>
+          <h1 className="text-lg font-bold text-gray-800 dark:text-white">알림 설정</h1>
+          <ThemeToggle />
         </div>
-        <div className="setting-item main">
-          <div className="setting-info">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-            </svg>
-            <div>
-              <span className="setting-title">푸시 알림 받기</span>
-              <span className="setting-desc">모든 알림을 실시간으로 받습니다</span>
+      </motion.nav>
+
+      <main className="max-w-4xl mx-auto px-4 py-6 relative z-10 space-y-6">
+        {/* 푸시 알림 섹션 */}
+        <motion.section {...fadeInUp} className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
+          <div className="p-4 border-b border-gray-200/50 dark:border-gray-700/50">
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-white">푸시 알림</h2>
+          </div>
+          <div className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🔔</span>
+                <div>
+                  <p className="font-medium text-gray-800 dark:text-white">푸시 알림 받기</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">모든 알림을 실시간으로 받습니다</p>
+                </div>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={preferences.pushEnabled}
+                  onChange={() => handleToggle('pushEnabled')}
+                  className="sr-only peer"
+                />
+                <div className="w-14 h-7 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-violet-600 peer-checked:to-pink-600"></div>
+              </label>
             </div>
           </div>
-          <label className="toggle">
-            <input
-              type="checkbox"
-              checked={preferences.pushEnabled}
-              onChange={() => handleToggle('pushEnabled')}
-            />
-            <span className="toggle-slider" />
-          </label>
-        </div>
-      </section>
+        </motion.section>
 
-      {/* Notification Types */}
-      <section className="settings-section">
-        <div className="section-header">
-          <h2>알림 유형</h2>
-        </div>
-
-        <div className="setting-item">
-          <div className="setting-info">
-            <span className="setting-title">그룹 초대/가입</span>
+        {/* 알림 유형 섹션 */}
+        <motion.section
+          {...fadeInUp}
+          transition={{ delay: 0.1 }}
+          className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-700/50 overflow-hidden"
+        >
+          <div className="p-4 border-b border-gray-200/50 dark:border-gray-700/50">
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-white">알림 유형</h2>
           </div>
-          <label className="toggle">
-            <input
-              type="checkbox"
-              checked={preferences.groupInvite}
-              onChange={() => handleToggle('groupInvite')}
-              disabled={!preferences.pushEnabled}
-            />
-            <span className="toggle-slider" />
-          </label>
-        </div>
-
-        <div className="setting-item">
-          <div className="setting-info">
-            <span className="setting-title">새 메시지</span>
-          </div>
-          <label className="toggle">
-            <input
-              type="checkbox"
-              checked={preferences.newMessage}
-              onChange={() => handleToggle('newMessage')}
-              disabled={!preferences.pushEnabled}
-            />
-            <span className="toggle-slider" />
-          </label>
-        </div>
-
-        <div className="setting-item">
-          <div className="setting-info">
-            <span className="setting-title">NFT 수집/업적</span>
-          </div>
-          <label className="toggle">
-            <input
-              type="checkbox"
-              checked={preferences.nftCollect}
-              onChange={() => handleToggle('nftCollect')}
-              disabled={!preferences.pushEnabled}
-            />
-            <span className="toggle-slider" />
-          </label>
-        </div>
-
-        <div className="setting-item">
-          <div className="setting-info">
-            <span className="setting-title">마켓플레이스 거래</span>
-          </div>
-          <label className="toggle">
-            <input
-              type="checkbox"
-              checked={preferences.marketplace}
-              onChange={() => handleToggle('marketplace')}
-              disabled={!preferences.pushEnabled}
-            />
-            <span className="toggle-slider" />
-          </label>
-        </div>
-
-        <div className="setting-item">
-          <div className="setting-info">
-            <span className="setting-title">포인트 전송</span>
-          </div>
-          <label className="toggle">
-            <input
-              type="checkbox"
-              checked={preferences.pointTransfer}
-              onChange={() => handleToggle('pointTransfer')}
-              disabled={!preferences.pushEnabled}
-            />
-            <span className="toggle-slider" />
-          </label>
-        </div>
-
-        <div className="setting-item">
-          <div className="setting-info">
-            <span className="setting-title">업적 달성</span>
-          </div>
-          <label className="toggle">
-            <input
-              type="checkbox"
-              checked={preferences.achievements}
-              onChange={() => handleToggle('achievements')}
-              disabled={!preferences.pushEnabled}
-            />
-            <span className="toggle-slider" />
-          </label>
-        </div>
-
-        <div className="setting-item">
-          <div className="setting-info">
-            <span className="setting-title">시스템 공지</span>
-          </div>
-          <label className="toggle">
-            <input
-              type="checkbox"
-              checked={preferences.systemNotice}
-              onChange={() => handleToggle('systemNotice')}
-              disabled={!preferences.pushEnabled}
-            />
-            <span className="toggle-slider" />
-          </label>
-        </div>
-      </section>
-
-      {/* Recent Notifications */}
-      <section className="settings-section">
-        <div className="section-header">
-          <h2>최근 알림</h2>
-          {unreadCount > 0 && (
-            <button className="btn-mark-all" onClick={handleMarkAllAsRead}>
-              모두 읽음
-            </button>
-          )}
-        </div>
-
-        {loading ? (
-          <div className="loading-state">
-            <div className="loading-spinner" />
-          </div>
-        ) : notifications.length === 0 ? (
-          <div className="empty-state">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-              <line x1="1" y1="1" x2="23" y2="23"/>
-            </svg>
-            <p>읽지 않은 알림이 없습니다</p>
-          </div>
-        ) : (
-          <div className="notification-list">
-            {notifications.map((notif) => (
-              <div key={notif.id} className="notification-item">
-                <div className="notif-icon">
-                  {getNotificationIcon(notif.type)}
+          <div className="divide-y divide-gray-200/50 dark:divide-gray-700/50">
+            {settingItems.map((item) => (
+              <div key={item.key} className="p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-xl">{item.icon}</span>
+                  <span className="font-medium text-gray-800 dark:text-white">{item.label}</span>
                 </div>
-                <div className="notif-content">
-                  <h4>{notif.title}</h4>
-                  <p>{notif.message}</p>
-                  <span className="notif-time">{formatDate(notif.createdAt)}</span>
-                </div>
-                <div className="notif-actions">
-                  <button
-                    className="btn-action"
-                    onClick={() => handleMarkAsRead(notif.id)}
-                    title="읽음 처리"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12"/>
-                    </svg>
-                  </button>
-                  <button
-                    className="btn-action delete"
-                    onClick={() => handleDelete(notif.id)}
-                    title="삭제"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="18" y1="6" x2="6" y2="18"/>
-                      <line x1="6" y1="6" x2="18" y2="18"/>
-                    </svg>
-                  </button>
-                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={preferences[item.key]}
+                    onChange={() => handleToggle(item.key)}
+                    disabled={!preferences.pushEnabled}
+                    className="sr-only peer"
+                  />
+                  <div
+                    className={`w-14 h-7 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-violet-600 peer-checked:to-pink-600 ${
+                      !preferences.pushEnabled ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                  ></div>
+                </label>
               </div>
             ))}
           </div>
-        )}
-      </section>
+        </motion.section>
+
+        {/* 최근 알림 섹션 */}
+        <motion.section
+          {...fadeInUp}
+          transition={{ delay: 0.2 }}
+          className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-700/50 overflow-hidden"
+        >
+          <div className="p-4 border-b border-gray-200/50 dark:border-gray-700/50 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+              최근 알림 {unreadCount > 0 && <span className="text-violet-500">({unreadCount})</span>}
+            </h2>
+            {unreadCount > 0 && (
+              <button
+                onClick={handleMarkAllAsRead}
+                className="text-sm text-violet-600 dark:text-violet-400 font-medium hover:underline"
+              >
+                모두 읽음
+              </button>
+            )}
+          </div>
+
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <div className="w-10 h-10 border-4 border-violet-500 border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : notifications.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <span className="text-5xl mb-3">🔕</span>
+              <p className="text-gray-500 dark:text-gray-400">읽지 않은 알림이 없습니다</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-200/50 dark:divide-gray-700/50">
+              {notifications.map((notif) => (
+                <motion.div
+                  key={notif.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  className="p-4 flex items-start gap-3"
+                >
+                  <div className="w-10 h-10 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-xl flex-shrink-0">
+                    {getNotificationIcon(notif.type)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium text-gray-800 dark:text-white truncate">{notif.title}</h4>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">{notif.message}</p>
+                    <span className="text-xs text-gray-400 dark:text-gray-500">{formatDate(notif.createdAt)}</span>
+                  </div>
+                  <div className="flex gap-2 flex-shrink-0">
+                    <button
+                      onClick={() => handleMarkAsRead(notif.id)}
+                      className="p-2 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 text-green-600 dark:text-green-400 transition-colors"
+                      title="읽음 처리"
+                    >
+                      ✓
+                    </button>
+                    <button
+                      onClick={() => handleDelete(notif.id)}
+                      className="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 transition-colors"
+                      title="삭제"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </motion.section>
+      </main>
     </div>
   );
 };

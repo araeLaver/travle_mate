@@ -1,157 +1,25 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { groupService, TravelGroup } from '../services/groupService';
 import { useToast } from '../components/Toast';
 import { getErrorMessage, logError } from '../utils/errorHandler';
-import './Groups.css';
+import Logo from '../components/Logo';
+import ThemeToggle from '../components/ThemeToggle';
 
-// SVG Icons
-const MapIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
-    <line x1="8" y1="2" x2="8" y2="18" />
-    <line x1="16" y1="6" x2="16" y2="22" />
-  </svg>
-);
+const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.5 },
+};
 
-const SparklesIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z" />
-    <path d="M5 19l.5 1.5L7 21l-1.5.5L5 23l-.5-1.5L3 21l1.5-.5L5 19z" />
-    <path d="M19 12l.5 1.5L21 14l-1.5.5L19 16l-.5-1.5L17 14l1.5-.5L19 12z" />
-  </svg>
-);
-
-const GlobeIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="12" cy="12" r="10" />
-    <line x1="2" y1="12" x2="22" y2="12" />
-    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-  </svg>
-);
-
-const UsersIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-    <circle cx="9" cy="7" r="4" />
-    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-  </svg>
-);
-
-const StarIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-  </svg>
-);
-
-const SearchIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="11" cy="11" r="8" />
-    <line x1="21" y1="21" x2="16.65" y2="16.65" />
-  </svg>
-);
-
-const MapPinIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-    <circle cx="12" cy="10" r="3" />
-  </svg>
-);
-
-const CalendarIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-    <line x1="16" y1="2" x2="16" y2="6" />
-    <line x1="8" y1="2" x2="8" y2="6" />
-    <line x1="3" y1="10" x2="21" y2="10" />
-  </svg>
-);
-
-const WalletIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
-    <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
-    <path d="M18 12a2 2 0 0 0 0 4h4v-4h-4z" />
-  </svg>
-);
-
-const CrownIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7z" />
-    <path d="M3 20h18" />
-  </svg>
-);
+const staggerContainer = {
+  animate: {
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
 
 const Groups: React.FC = () => {
   const navigate = useNavigate();
@@ -181,11 +49,18 @@ const Groups: React.FC = () => {
     '등산/트레킹',
   ];
 
-  const statusLabels = {
+  const statusLabels: Record<string, string> = {
     recruiting: '모집중',
     full: '모집완료',
     active: '진행중',
     completed: '완료',
+  };
+
+  const statusColors: Record<string, string> = {
+    recruiting: 'bg-emerald-500',
+    full: 'bg-amber-500',
+    active: 'bg-blue-500',
+    completed: 'bg-gray-500',
   };
 
   useEffect(() => {
@@ -226,7 +101,6 @@ const Groups: React.FC = () => {
   const filterGroups = async () => {
     let filtered = [...groups];
 
-    // 검색어 필터링
     if (searchQuery.trim()) {
       try {
         filtered = await groupService.searchGroups(searchQuery.trim(), {
@@ -235,11 +109,10 @@ const Groups: React.FC = () => {
             filters.travelStyle && filters.travelStyle !== '전체' ? filters.travelStyle : undefined,
           status: filters.status || undefined,
         });
-      } catch (error) {
+      } catch {
         // 에러 발생 시 로컬 필터링 사용
       }
     } else {
-      // 추가 필터 적용 (검색어가 없을 때)
       if (filters.destination) {
         filtered = filtered.filter(group =>
           group.destination.toLowerCase().includes(filters.destination.toLowerCase())
@@ -306,300 +179,328 @@ const Groups: React.FC = () => {
     return `${min}~${max}만원`;
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'recruiting':
-        return '#28a745';
-      case 'full':
-        return '#fd7e14';
-      case 'active':
-        return '#007bff';
-      case 'completed':
-        return '#6c757d';
-      default:
-        return '#6c757d';
-    }
-  };
-
   const isMyGroup = (group: TravelGroup) => {
     return group.members.some(member => member.id === groupService.getCurrentUserId());
   };
 
-  if (isLoading) {
-    return (
-      <div className="groups-loading" role="status" aria-live="polite">
-        <div className="loading-spinner" aria-hidden="true">
-          <MapIcon />
-        </div>
-        <p>여행 그룹을 불러오는 중...</p>
-      </div>
-    );
-  }
+  const tabs = [
+    { id: 'all', label: '전체 그룹', icon: '🌍' },
+    { id: 'my', label: '내 그룹', icon: '👥' },
+    { id: 'recommended', label: '추천 그룹', icon: '⭐' },
+  ] as const;
 
   return (
-    <div className="groups-container">
-      <div className="groups-content">
-        {/* 헤더 */}
-        <header className="groups-header">
-          <h1>Travel Groups</h1>
-          <p>함께할 여행 메이트를 찾고 멋진 추억을 만들어보세요!</p>
+    <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] relative overflow-hidden">
+      {/* Background Effects */}
+      <div
+        className="absolute top-20 left-10 w-72 h-72 bg-violet-400/30 dark:bg-violet-600/20 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite' }}
+      />
+      <div
+        className="absolute top-40 right-10 w-96 h-96 bg-pink-400/20 dark:bg-pink-600/15 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite 2s' }}
+      />
+      <div
+        className="absolute bottom-20 left-1/3 w-80 h-80 bg-blue-400/20 dark:bg-blue-600/15 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite 4s' }}
+      />
 
-          <button
-            className="create-group-btn"
-            onClick={() => navigate('/groups/create')}
-            aria-label="새 여행 그룹 만들기"
-          >
-            <SparklesIcon /> 새 그룹 만들기
-          </button>
-        </header>
-
-        {/* 탭 네비게이션 */}
-        <nav className="groups-tabs" role="tablist" aria-label="그룹 카테고리">
-          <button
-            className={`tab-btn ${selectedTab === 'all' ? 'active' : ''}`}
-            onClick={() => setSelectedTab('all')}
-            role="tab"
-            id="tab-all"
-            aria-selected={selectedTab === 'all'}
-            aria-controls="tabpanel-groups"
-            tabIndex={selectedTab === 'all' ? 0 : -1}
-          >
-            <GlobeIcon /> 전체 그룹
-          </button>
-          <button
-            className={`tab-btn ${selectedTab === 'my' ? 'active' : ''}`}
-            onClick={() => setSelectedTab('my')}
-            role="tab"
-            id="tab-my"
-            aria-selected={selectedTab === 'my'}
-            aria-controls="tabpanel-groups"
-            tabIndex={selectedTab === 'my' ? 0 : -1}
-          >
-            <UsersIcon /> 내 그룹
-          </button>
-          <button
-            className={`tab-btn ${selectedTab === 'recommended' ? 'active' : ''}`}
-            onClick={() => setSelectedTab('recommended')}
-            role="tab"
-            id="tab-recommended"
-            aria-selected={selectedTab === 'recommended'}
-            aria-controls="tabpanel-groups"
-            tabIndex={selectedTab === 'recommended' ? 0 : -1}
-          >
-            <StarIcon /> 추천 그룹
-          </button>
-        </nav>
-
-        {/* 검색 및 필터 */}
-        <search className="groups-filters" role="search" aria-label="그룹 검색 및 필터">
-          <div className="search-bar">
-            <label htmlFor="group-search" className="sr-only">
-              그룹 검색
-            </label>
-            <input
-              id="group-search"
-              type="search"
-              placeholder="그룹명, 목적지, 태그로 검색..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="search-input"
-              aria-describedby="search-hint"
-            />
-            <span className="search-icon" aria-hidden="true">
-              <SearchIcon />
-            </span>
-            <span id="search-hint" className="sr-only">
-              엔터를 눌러 검색
-            </span>
-          </div>
-
-          <div className="filter-row" role="group" aria-label="필터 옵션">
-            <label htmlFor="filter-destination" className="sr-only">
-              지역 필터
-            </label>
-            <select
-              id="filter-destination"
-              value={filters.destination}
-              onChange={e => setFilters({ ...filters, destination: e.target.value })}
-              className="filter-select"
-              aria-label="지역 선택"
-            >
-              <option value="">전체 지역</option>
-              <option value="서울">서울</option>
-              <option value="부산">부산</option>
-              <option value="제주">제주</option>
-              <option value="경주">경주</option>
-              <option value="강릉">강릉</option>
-              <option value="여수">여수</option>
-              <option value="전주">전주</option>
-            </select>
-
-            <label htmlFor="filter-style" className="sr-only">
-              여행 스타일 필터
-            </label>
-            <select
-              id="filter-style"
-              value={filters.travelStyle}
-              onChange={e => setFilters({ ...filters, travelStyle: e.target.value })}
-              className="filter-select"
-              aria-label="여행 스타일 선택"
-            >
-              {travelStyles.map(style => (
-                <option key={style} value={style}>
-                  {style}
-                </option>
-              ))}
-            </select>
-
-            <label htmlFor="filter-status" className="sr-only">
-              상태 필터
-            </label>
-            <select
-              id="filter-status"
-              value={filters.status}
-              onChange={e => setFilters({ ...filters, status: e.target.value })}
-              className="filter-select"
-              aria-label="모집 상태 선택"
-            >
-              <option value="">전체 상태</option>
-              <option value="recruiting">모집중</option>
-              <option value="full">모집완료</option>
-              <option value="active">진행중</option>
-            </select>
-          </div>
-        </search>
-
-        {/* 그룹 목록 */}
-        <section
-          id="tabpanel-groups"
-          className="groups-list"
-          role="tabpanel"
-          aria-labelledby={`tab-${selectedTab}`}
-          aria-label={`${selectedTab === 'all' ? '전체' : selectedTab === 'my' ? '내' : '추천'} 그룹 목록`}
-        >
-          {filteredGroups.length === 0 ? (
-            <div className="empty-groups" role="status">
-              <div className="empty-icon" aria-hidden="true">
-                <MapIcon />
-              </div>
-              <h2>검색 결과가 없습니다</h2>
-              <p>다른 검색어나 필터를 시도해보세요.</p>
+      {/* Navigation */}
+      <nav className="fixed top-0 w-full z-50 px-4 py-3">
+        <div className="max-w-6xl mx-auto bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-2xl px-6 py-3 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
+          <div className="flex items-center justify-between">
+            <button onClick={() => navigate('/')} className="flex items-center gap-2">
+              <Logo size={32} />
+              <span className="font-bold text-gray-900 dark:text-white">TravelMate</span>
+            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+              >
+                대시보드
+              </button>
+              <ThemeToggle />
             </div>
-          ) : (
-            <div className="groups-grid" role="list">
-              {filteredGroups.map(group => (
-                <article
-                  key={group.id}
-                  className="group-card"
-                  role="listitem"
-                  aria-label={`${group.name} - ${group.destination}, ${statusLabels[group.status]}`}
-                >
-                  {group.coverImage && (
-                    <div className="group-image">
-                      <img src={group.coverImage} alt={`${group.name} 그룹 커버 이미지`} />
-                      <div
-                        className="group-status"
-                        style={{ backgroundColor: getStatusColor(group.status) }}
-                        aria-label={`모집 상태: ${statusLabels[group.status]}`}
-                      >
-                        {statusLabels[group.status]}
-                      </div>
-                    </div>
-                  )}
+          </div>
+        </div>
+      </nav>
 
-                  <div className="group-content">
-                    <div className="group-header">
-                      <h3 className="group-name">{group.name}</h3>
-                      <div
-                        className="group-members"
-                        aria-label={`참여 인원 ${group.currentMembers}명 중 ${group.maxMembers}명`}
-                      >
-                        {group.currentMembers}/{group.maxMembers}명
-                      </div>
-                    </div>
+      {/* Main Content */}
+      <main className="relative z-10 max-w-6xl mx-auto px-4 pt-24 pb-12">
+        {/* Header */}
+        <motion.header
+          className="text-center mb-12"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            <span className="bg-gradient-to-r from-violet-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Travel Groups
+            </span>
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-8">
+            함께할 여행 메이트를 찾고 멋진 추억을 만들어보세요!
+          </p>
+          <motion.button
+            onClick={() => navigate('/groups/create')}
+            className="px-8 py-4 bg-gradient-to-r from-violet-600 to-pink-600 text-white rounded-full font-semibold text-lg shadow-lg shadow-violet-500/30 hover:shadow-xl hover:shadow-violet-500/40 transition-all duration-300 hover:-translate-y-1 flex items-center gap-2 mx-auto"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <span className="text-xl">✨</span>
+            새 그룹 만들기
+          </motion.button>
+        </motion.header>
 
-                    <p className="group-destination">
-                      <MapPinIcon /> {group.destination}
-                    </p>
-                    <p className="group-dates">
-                      <CalendarIcon /> {formatDate(group.startDate)} - {formatDate(group.endDate)}
-                    </p>
-                    <p className="group-budget">
-                      <WalletIcon /> {formatBudget(group.budget)}
-                    </p>
+        {/* Tabs */}
+        <motion.nav
+          className="flex justify-center gap-2 mb-8"
+          {...fadeInUp}
+          transition={{ delay: 0.1 }}
+          role="tablist"
+          aria-label="그룹 카테고리"
+        >
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setSelectedTab(tab.id)}
+              className={`px-6 py-3 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 ${
+                selectedTab === tab.id
+                  ? 'bg-gradient-to-r from-violet-600 to-pink-600 text-white shadow-lg shadow-violet-500/30'
+                  : 'bg-white/80 dark:bg-gray-900/80 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200/50 dark:border-gray-800/50'
+              }`}
+              role="tab"
+              aria-selected={selectedTab === tab.id}
+            >
+              <span>{tab.icon}</span>
+              <span className="hidden sm:inline">{tab.label}</span>
+            </button>
+          ))}
+        </motion.nav>
 
-                    <p className="group-description">{group.description}</p>
+        {/* Search and Filters */}
+        <motion.div
+          className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-800/50 shadow-lg mb-8"
+          {...fadeInUp}
+          transition={{ delay: 0.2 }}
+        >
+          <div className="flex flex-col lg:flex-row gap-4">
+            {/* Search Bar */}
+            <div className="relative flex-1">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+              <input
+                type="search"
+                placeholder="그룹명, 목적지, 태그로 검색..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all"
+              />
+            </div>
 
-                    <div className="group-tags" aria-label="태그">
-                      {group.tags.slice(0, 3).map((tag, index) => (
-                        <span key={index} className="group-tag">
-                          #{tag}
-                        </span>
-                      ))}
-                    </div>
+            {/* Filters */}
+            <div className="flex flex-wrap gap-3">
+              <select
+                value={filters.destination}
+                onChange={e => setFilters({ ...filters, destination: e.target.value })}
+                className="px-4 py-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+              >
+                <option value="">전체 지역</option>
+                <option value="서울">서울</option>
+                <option value="부산">부산</option>
+                <option value="제주">제주</option>
+                <option value="경주">경주</option>
+                <option value="강릉">강릉</option>
+                <option value="여수">여수</option>
+                <option value="전주">전주</option>
+              </select>
 
-                    <div className="group-leader">
-                      <span className="leader-label">
-                        <CrownIcon /> 리더:
-                      </span>
-                      <span className="leader-name">
-                        {group.members.find(m => m.role === 'leader')?.name || '알 수 없음'}
-                      </span>
-                    </div>
+              <select
+                value={filters.travelStyle}
+                onChange={e => setFilters({ ...filters, travelStyle: e.target.value })}
+                className="px-4 py-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+              >
+                {travelStyles.map(style => (
+                  <option key={style} value={style}>
+                    {style}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={filters.status}
+                onChange={e => setFilters({ ...filters, status: e.target.value })}
+                className="px-4 py-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+              >
+                <option value="">전체 상태</option>
+                <option value="recruiting">모집중</option>
+                <option value="full">모집완료</option>
+                <option value="active">진행중</option>
+              </select>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Groups List */}
+        {isLoading ? (
+          <motion.div
+            className="flex flex-col items-center justify-center py-20"
+            {...fadeInUp}
+          >
+            <div className="w-16 h-16 rounded-full border-4 border-violet-200 dark:border-violet-800 border-t-violet-600 animate-spin mb-4" />
+            <p className="text-gray-500 dark:text-gray-400">여행 그룹을 불러오는 중...</p>
+          </motion.div>
+        ) : filteredGroups.length === 0 ? (
+          <motion.div
+            className="text-center py-20 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-800/50 shadow-lg"
+            {...fadeInUp}
+          >
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-violet-400/20 to-pink-400/20 dark:from-violet-500/30 dark:to-pink-500/30 flex items-center justify-center text-4xl">
+              🗺️
+            </div>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">검색 결과가 없습니다</h2>
+            <p className="text-gray-500 dark:text-gray-400">다른 검색어나 필터를 시도해보세요.</p>
+          </motion.div>
+        ) : (
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            variants={staggerContainer}
+            initial="initial"
+            animate="animate"
+            role="list"
+          >
+            {filteredGroups.map(group => (
+              <motion.article
+                key={group.id}
+                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-800/50 shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
+                variants={fadeInUp}
+                role="listitem"
+                whileHover={{ scale: 1.02 }}
+              >
+                {/* Cover Image */}
+                {group.coverImage && (
+                  <div className="relative h-40 overflow-hidden">
+                    <img
+                      src={group.coverImage}
+                      alt={`${group.name} 그룹 커버`}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                    <span
+                      className={`absolute top-3 right-3 px-3 py-1 ${statusColors[group.status]} text-white text-xs font-semibold rounded-full`}
+                    >
+                      {statusLabels[group.status]}
+                    </span>
+                  </div>
+                )}
+
+                <div className="p-5">
+                  {/* Header */}
+                  <div className="flex items-start justify-between mb-3">
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-1">
+                      {group.name}
+                    </h3>
+                    <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                      👥 {group.currentMembers}/{group.maxMembers}
+                    </span>
                   </div>
 
-                  <div className="group-actions">
+                  {/* Info */}
+                  <div className="space-y-2 mb-4 text-sm text-gray-600 dark:text-gray-400">
+                    <p className="flex items-center gap-2">
+                      📍 {group.destination}
+                    </p>
+                    <p className="flex items-center gap-2">
+                      📅 {formatDate(group.startDate)} - {formatDate(group.endDate)}
+                    </p>
+                    <p className="flex items-center gap-2">
+                      💰 {formatBudget(group.budget)}
+                    </p>
+                  </div>
+
+                  {/* Description */}
+                  <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-4">
+                    {group.description}
+                  </p>
+
+                  {/* Tags */}
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {group.tags.slice(0, 3).map((tag, idx) => (
+                      <span
+                        key={idx}
+                        className="px-2 py-1 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 text-xs font-medium rounded-full"
+                      >
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* Leader */}
+                  <div className="flex items-center gap-2 mb-4 text-sm">
+                    <span className="text-amber-500">👑</span>
+                    <span className="text-gray-600 dark:text-gray-400">리더:</span>
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {group.members.find(m => m.role === 'leader')?.name || '알 수 없음'}
+                    </span>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-3">
                     {isMyGroup(group) ? (
-                      <div className="my-group-actions">
+                      <>
                         <button
-                          className="btn-small secondary"
                           onClick={() => navigate(`/groups/${group.id}`)}
-                          aria-label={`${group.name} 그룹 보기`}
+                          className="flex-1 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl font-medium border border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
                         >
                           그룹 보기
                         </button>
-                        {group.members.find(m => m.id === groupService.getCurrentUserId())?.role !==
-                          'leader' && (
+                        {group.members.find(m => m.id === groupService.getCurrentUserId())?.role !== 'leader' && (
                           <button
-                            className="btn-small danger"
                             onClick={() => handleLeaveGroup(group.id)}
                             disabled={actionLoading === `leave-${group.id}`}
-                            aria-busy={actionLoading === `leave-${group.id}`}
-                            aria-label={`${group.name} 그룹에서 탈퇴`}
+                            className="px-4 py-2.5 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-xl font-medium hover:bg-red-200 dark:hover:bg-red-900/50 transition-all disabled:opacity-50"
                           >
-                            {actionLoading === `leave-${group.id}` ? '처리중...' : '탈퇴하기'}
+                            {actionLoading === `leave-${group.id}` ? '...' : '탈퇴'}
                           </button>
                         )}
-                      </div>
+                      </>
                     ) : (
-                      <div className="join-group-actions">
+                      <>
                         <button
-                          className="btn-small secondary"
                           onClick={() => navigate(`/groups/${group.id}`)}
-                          aria-label={`${group.name} 그룹 상세보기`}
+                          className="flex-1 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl font-medium border border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
                         >
                           상세보기
                         </button>
                         {group.status === 'recruiting' && (
                           <button
-                            className="btn-small primary"
                             onClick={() => handleJoinGroup(group.id)}
                             disabled={actionLoading === `join-${group.id}`}
-                            aria-busy={actionLoading === `join-${group.id}`}
-                            aria-label={`${group.name} 그룹 가입하기`}
+                            className="flex-1 py-2.5 bg-gradient-to-r from-violet-600 to-pink-600 text-white rounded-xl font-medium hover:shadow-lg hover:shadow-violet-500/30 transition-all disabled:opacity-50"
                           >
                             {actionLoading === `join-${group.id}` ? '가입중...' : '가입하기'}
                           </button>
                         )}
-                      </div>
+                      </>
                     )}
                   </div>
-                </article>
-              ))}
-            </div>
-          )}
-        </section>
-      </div>
+                </div>
+              </motion.article>
+            ))}
+          </motion.div>
+        )}
+      </main>
+
+      {/* Blob animation keyframes */}
+      <style>{`
+        @keyframes blob {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          25% { transform: translate(20px, -30px) scale(1.1); }
+          50% { transform: translate(-20px, 20px) scale(0.9); }
+          75% { transform: translate(30px, 10px) scale(1.05); }
+        }
+      `}</style>
     </div>
   );
 };

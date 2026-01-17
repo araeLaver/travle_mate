@@ -80,11 +80,11 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
   };
 
   return (
-    <div className="review-form-overlay" onClick={onClose}>
-      <div className="review-form-modal" onClick={(e) => e.stopPropagation()}>
+    <div className="review-form-overlay" onClick={onClose} data-testid="review-form-overlay">
+      <div className="review-form-modal" onClick={(e) => e.stopPropagation()} data-testid="review-form-modal">
         <div className="review-form-header">
           <h2>리뷰 작성</h2>
-          <button className="close-btn" onClick={onClose}>
+          <button className="close-btn" onClick={onClose} data-testid="close-btn">
             <CloseIcon />
           </button>
         </div>
@@ -95,7 +95,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
           {/* 별점 */}
           <div className="form-group">
             <label>평점 *</label>
-            <div className="star-rating">
+            <div className="star-rating" data-testid="star-rating">
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
                   key={star}
@@ -104,6 +104,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                   onMouseEnter={() => setHoverRating(star)}
                   onMouseLeave={() => setHoverRating(0)}
                   onClick={() => setRating(star)}
+                  data-testid={`star-btn-${star}`}
                 >
                   <StarIcon filled={star <= (hoverRating || rating)} />
                 </button>
@@ -143,7 +144,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
               maxLength={1000}
               rows={5}
             />
-            <div className="char-count">{comment.length}/1000</div>
+            <div className="char-count" data-testid="char-count">{comment.length}/1000</div>
           </div>
 
           {/* 에러 메시지 */}

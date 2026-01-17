@@ -10,8 +10,8 @@ describe('TypingIndicator', () => {
   ];
 
   test('빈 배열일 때 컴포넌트 미렌더링', () => {
-    const { container } = render(<TypingIndicator typingUsers={[]} />);
-    expect(container.firstChild).toBeNull();
+    render(<TypingIndicator typingUsers={[]} />);
+    expect(screen.queryByTestId('typing-indicator')).not.toBeInTheDocument();
   });
 
   test('1명일 때 "○○○님이 입력 중" 표시', () => {
@@ -52,19 +52,22 @@ describe('TypingIndicator', () => {
 
   test('타이핑 도트 애니메이션 요소 존재', () => {
     render(<TypingIndicator typingUsers={[mockUsers[0]]} />);
-    const dots = document.querySelectorAll('.dot');
+    const dots = screen.getAllByTestId('dot');
     expect(dots).toHaveLength(3);
   });
 
   test('다수의 아바타 표시', () => {
     render(<TypingIndicator typingUsers={mockUsers.slice(0, 3)} />);
-    const avatars = document.querySelectorAll('.typing-avatar');
-    expect(avatars).toHaveLength(3);
+    expect(screen.getByTestId('typing-avatar-1')).toBeInTheDocument();
+    expect(screen.getByTestId('typing-avatar-2')).toBeInTheDocument();
+    expect(screen.getByTestId('typing-avatar-3')).toBeInTheDocument();
   });
 
   test('maxDisplay 초과 시 제한된 아바타만 표시', () => {
     render(<TypingIndicator typingUsers={mockUsers} maxDisplay={3} />);
-    const avatars = document.querySelectorAll('.typing-avatar');
-    expect(avatars).toHaveLength(3); // maxDisplay 만큼만
+    expect(screen.getByTestId('typing-avatar-1')).toBeInTheDocument();
+    expect(screen.getByTestId('typing-avatar-2')).toBeInTheDocument();
+    expect(screen.getByTestId('typing-avatar-3')).toBeInTheDocument();
+    expect(screen.queryByTestId('typing-avatar-4')).not.toBeInTheDocument();
   });
 });

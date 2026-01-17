@@ -37,10 +37,10 @@ const TypingIndicator: React.FC<TypingIndicatorProps> = ({
   };
 
   return (
-    <div className="typing-indicator">
-      <div className="typing-avatars">
+    <div className="typing-indicator" data-testid="typing-indicator">
+      <div className="typing-avatars" data-testid="typing-avatars">
         {typingUsers.slice(0, maxDisplay).map((user) => (
-          <div key={user.id} className="typing-avatar">
+          <div key={user.id} className="typing-avatar" data-testid={`typing-avatar-${user.id}`}>
             {user.profileImageUrl ? (
               <img src={user.profileImageUrl} alt={user.nickname} />
             ) : (
@@ -53,10 +53,10 @@ const TypingIndicator: React.FC<TypingIndicatorProps> = ({
       </div>
 
       <div className="typing-content">
-        <div className="typing-dots">
-          <span className="dot" />
-          <span className="dot" />
-          <span className="dot" />
+        <div className="typing-dots" data-testid="typing-dots">
+          <span className="dot" data-testid="dot" />
+          <span className="dot" data-testid="dot" />
+          <span className="dot" data-testid="dot" />
         </div>
         <span className="typing-text">{getTypingText()}</span>
       </div>

@@ -84,6 +84,7 @@ const LocationMessage: React.FC<LocationMessageProps> = ({
     <div
       className={`location-message ${isMyMessage ? 'my-message' : ''}`}
       onClick={handleOpenMap}
+      data-testid="location-message-container"
     >
       {/* 지도 미리보기 */}
       <div className="map-preview">
@@ -111,7 +112,7 @@ const LocationMessage: React.FC<LocationMessageProps> = ({
             {locationName || '공유된 위치'}
           </span>
         </div>
-        {address && <p className="location-address">{address}</p>}
+        {address && <p className="location-address" data-testid="location-address">{address}</p>}
         <p className="location-coords">
           {latitude.toFixed(6)}, {longitude.toFixed(6)}
         </p>

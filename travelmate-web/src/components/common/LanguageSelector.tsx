@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import { supportedLanguages, changeLanguage, getCurrentLanguage } from '../../lib/i18n';
 
 interface LanguageSelectorProps {
@@ -15,7 +14,6 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   showName = true,
   className = '',
 }) => {
-  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [currentLang, setCurrentLang] = useState(getCurrentLanguage());
   const dropdownRef = useRef<HTMLDivElement>(null);

@@ -303,7 +303,7 @@ export function maskSensitiveData(data: string, type: 'email' | 'phone' | 'card'
   }
 }
 
-export default {
+const securityUtils = {
   escapeHtml,
   unescapeHtml,
   isUrlSafe,
@@ -317,3 +317,5 @@ export default {
   secureStorage,
   maskSensitiveData,
 };
+
+export default securityUtils;

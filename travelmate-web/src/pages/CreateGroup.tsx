@@ -1,143 +1,17 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { groupService, CreateGroupRequest } from '../services/groupService';
 import { useToast } from '../components/Toast';
 import { getErrorMessage, logError } from '../utils/errorHandler';
-import './CreateGroup.css';
+import Logo from '../components/common/Logo';
+import ThemeToggle from '../components/common/ThemeToggle';
 
-// SVG Icons
-const MapIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
-    <line x1="8" y1="2" x2="8" y2="18" />
-    <line x1="16" y1="6" x2="16" y2="22" />
-  </svg>
-);
-
-const EditIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-  </svg>
-);
-
-const CalendarIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-    <line x1="16" y1="2" x2="16" y2="6" />
-    <line x1="8" y1="2" x2="8" y2="6" />
-    <line x1="3" y1="10" x2="21" y2="10" />
-  </svg>
-);
-
-const UsersIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-    <circle cx="9" cy="7" r="4" />
-    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-  </svg>
-);
-
-const WalletIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
-    <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
-    <path d="M18 12a2 2 0 0 0 0 4h4v-4h-4z" />
-  </svg>
-);
-
-const TagIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
-    <line x1="7" y1="7" x2="7.01" y2="7" />
-  </svg>
-);
-
-const ClipboardIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-    <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
-  </svg>
-);
-
-const SparklesIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z" />
-    <path d="M5 19l.5 1.5L7 21l-1.5.5L5 23l-.5-1.5L3 21l1.5-.5L5 19z" />
-    <path d="M19 12l.5 1.5L21 14l-1.5.5L19 16l-.5-1.5L17 14l1.5-.5L19 12z" />
-  </svg>
-);
-
-const ArrowLeftIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <line x1="19" y1="12" x2="5" y2="12" />
-    <polyline points="12 19 5 12 12 5" />
-  </svg>
-);
+const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.5 },
+};
 
 const CreateGroup: React.FC = () => {
   const navigate = useNavigate();
@@ -169,7 +43,6 @@ const CreateGroup: React.FC = () => {
   const [newTag, setNewTag] = useState('');
   const [newRequirement, setNewRequirement] = useState('');
 
-  // 실시간 유효성 검사
   const validation = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -213,8 +86,6 @@ const CreateGroup: React.FC = () => {
     '산악',
     '역사',
     '예술',
-    '음악',
-    '스포츠',
   ];
 
   const handleInputChange = (
@@ -274,7 +145,6 @@ const CreateGroup: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 모든 필드 터치 처리
     setTouched({
       name: true,
       destination: true,
@@ -329,369 +199,424 @@ const CreateGroup: React.FC = () => {
   };
 
   return (
-    <div className="create-group-container">
-      <header className="create-group-header">
-        <button
-          className="back-btn"
-          onClick={() => navigate('/groups')}
-          aria-label="그룹 목록으로 돌아가기"
-        >
-          <ArrowLeftIcon /> 뒤로가기
-        </button>
-        <h1>
-          <MapIcon /> 새 여행 그룹 만들기
-        </h1>
-        <p>함께할 여행 메이트들을 모집해보세요!</p>
-      </header>
+    <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] relative overflow-hidden">
+      {/* Background Effects */}
+      <div
+        className="absolute top-20 left-10 w-72 h-72 bg-violet-400/30 dark:bg-violet-600/20 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite' }}
+      />
+      <div
+        className="absolute top-40 right-10 w-72 h-72 bg-pink-400/30 dark:bg-pink-600/20 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite 2s' }}
+      />
+      <div
+        className="absolute bottom-20 left-1/3 w-72 h-72 bg-blue-400/30 dark:bg-blue-600/20 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite 4s' }}
+      />
 
-      <form
-        onSubmit={handleSubmit}
-        className="create-group-form"
-        aria-label="여행 그룹 생성 양식"
-        noValidate
-      >
-        <fieldset className="form-section">
-          <legend>
-            <EditIcon /> 기본 정보
-          </legend>
+      <style>{`
+        @keyframes blob {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          25% { transform: translate(20px, -30px) scale(1.1); }
+          50% { transform: translate(-20px, 20px) scale(0.9); }
+          75% { transform: translate(30px, 10px) scale(1.05); }
+        }
+      `}</style>
 
-          <div className="form-group">
-            <label htmlFor="name">
-              그룹명 <span aria-hidden="true">*</span>
-              <span className="sr-only">(필수)</span>
-            </label>
-            <input
-              type="text"
-              id="name"
-              value={formData.name}
-              onChange={e => handleInputChange('name', e.target.value)}
-              onBlur={() => handleBlur('name')}
-              placeholder="예: 🌸 봄 벚꽃 여행"
-              className={`form-input ${touched.name ? (validation.name ? 'valid' : 'invalid') : ''}`}
-              maxLength={50}
-              required
-              aria-required="true"
-              aria-invalid={touched.name && !validation.name}
-              aria-describedby={touched.name && !validation.name ? 'name-error' : undefined}
-            />
-            {touched.name && !validation.name && (
-              <span id="name-error" className="validation-message error" role="alert">
-                그룹명은 2~50자로 입력해주세요
-              </span>
-            )}
+      {/* Navigation */}
+      <nav className="fixed top-0 w-full z-50 px-4 py-3">
+        <div className="max-w-4xl mx-auto bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-2xl px-6 py-3 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => navigate('/groups')}
+                className="p-2 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                aria-label="그룹 목록으로 돌아가기"
+              >
+                <span className="text-lg">←</span>
+              </button>
+              <Logo />
+            </div>
+            <ThemeToggle />
           </div>
+        </div>
+      </nav>
 
-          <div className="form-group">
-            <label htmlFor="destination">
-              목적지 <span aria-hidden="true">*</span>
-              <span className="sr-only">(필수)</span>
-            </label>
-            <input
-              type="text"
-              id="destination"
-              value={formData.destination}
-              onChange={e => handleInputChange('destination', e.target.value)}
-              onBlur={() => handleBlur('destination')}
-              placeholder="예: 제주도, 부산, 경주"
-              className={`form-input ${touched.destination ? (validation.destination ? 'valid' : 'invalid') : ''}`}
-              required
-              aria-required="true"
-              aria-invalid={touched.destination && !validation.destination}
-              aria-describedby={
-                touched.destination && !validation.destination ? 'destination-error' : undefined
-              }
-            />
-            {touched.destination && !validation.destination && (
-              <span id="destination-error" className="validation-message error" role="alert">
-                목적지는 2자 이상 입력해주세요
-              </span>
-            )}
-          </div>
+      {/* Main Content */}
+      <div className="relative z-10 pt-24 pb-8 px-4">
+        <div className="max-w-2xl mx-auto">
+          {/* Header */}
+          <motion.header
+            className="text-center mb-8"
+            {...fadeInUp}
+          >
+            <div className="inline-flex items-center gap-3 px-4 py-2 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-full border border-gray-200/50 dark:border-gray-700/50 mb-4">
+              <span className="text-2xl">🗺️</span>
+              <span className="text-gray-600 dark:text-gray-300 font-medium">새 그룹</span>
+            </div>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white mb-2">
+              새 여행 그룹 만들기
+            </h1>
+            <p className="text-gray-500 dark:text-gray-400">
+              함께할 여행 메이트들을 모집해보세요!
+            </p>
+          </motion.header>
 
-          <div className="form-group">
-            <label htmlFor="description">그룹 설명</label>
-            <textarea
-              id="description"
-              value={formData.description}
-              onChange={e => handleInputChange('description', e.target.value)}
-              placeholder="어떤 여행을 계획하고 있는지 자세히 설명해주세요..."
-              className="form-textarea"
-              rows={4}
-              maxLength={500}
-              aria-describedby="description-hint"
-            />
-            <span id="description-hint" className="sr-only">
-              최대 500자까지 입력 가능
-            </span>
-          </div>
-        </fieldset>
+          {/* Form */}
+          <motion.form
+            onSubmit={handleSubmit}
+            className="space-y-6"
+            aria-label="여행 그룹 생성 양식"
+            noValidate
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            {/* Basic Info */}
+            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
+              <h2 className="text-lg font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                <span>✏️</span> 기본 정보
+              </h2>
 
-        <fieldset className="form-section">
-          <legend>
-            <CalendarIcon /> 여행 일정
-          </legend>
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    그룹명 <span className="text-pink-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    value={formData.name}
+                    onChange={e => handleInputChange('name', e.target.value)}
+                    onBlur={() => handleBlur('name')}
+                    placeholder="예: 🌸 봄 벚꽃 여행"
+                    className={`w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 transition-all ${
+                      touched.name && !validation.name
+                        ? 'ring-2 ring-red-500 focus:ring-red-500'
+                        : 'focus:ring-violet-500/50'
+                    }`}
+                    maxLength={50}
+                    required
+                  />
+                  {touched.name && !validation.name && (
+                    <p className="mt-1 text-sm text-red-500" role="alert">
+                      그룹명은 2~50자로 입력해주세요
+                    </p>
+                  )}
+                </div>
 
-          <div className="date-group">
-            <div className="form-group">
-              <label htmlFor="startDate">
-                시작일 <span aria-hidden="true">*</span>
-                <span className="sr-only">(필수)</span>
-              </label>
-              <input
-                type="date"
-                id="startDate"
-                value={formatDate(formData.startDate)}
-                onChange={e => handleInputChange('startDate', parseDate(e.target.value))}
-                className="form-input"
-                min={formatDate(new Date())}
-                required
-                aria-required="true"
-              />
+                <div>
+                  <label htmlFor="destination" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    목적지 <span className="text-pink-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="destination"
+                    value={formData.destination}
+                    onChange={e => handleInputChange('destination', e.target.value)}
+                    onBlur={() => handleBlur('destination')}
+                    placeholder="예: 제주도, 부산, 경주"
+                    className={`w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 transition-all ${
+                      touched.destination && !validation.destination
+                        ? 'ring-2 ring-red-500 focus:ring-red-500'
+                        : 'focus:ring-violet-500/50'
+                    }`}
+                    required
+                  />
+                  {touched.destination && !validation.destination && (
+                    <p className="mt-1 text-sm text-red-500" role="alert">
+                      목적지는 2자 이상 입력해주세요
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    그룹 설명
+                  </label>
+                  <textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={e => handleInputChange('description', e.target.value)}
+                    placeholder="어떤 여행을 계획하고 있는지 자세히 설명해주세요..."
+                    className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-violet-500/50 transition-all resize-none"
+                    rows={4}
+                    maxLength={500}
+                  />
+                </div>
+              </div>
             </div>
 
-            <div className="form-group">
-              <label htmlFor="endDate">
-                종료일 <span aria-hidden="true">*</span>
-                <span className="sr-only">(필수)</span>
-              </label>
-              <input
-                type="date"
-                id="endDate"
-                value={formatDate(formData.endDate)}
-                onChange={e => handleInputChange('endDate', parseDate(e.target.value))}
-                className="form-input"
-                min={formatDate(formData.startDate)}
-                required
-                aria-required="true"
-                aria-describedby="date-hint"
-              />
-              <span id="date-hint" className="sr-only">
-                종료일은 시작일보다 나중이어야 합니다
-              </span>
-            </div>
-          </div>
-        </fieldset>
+            {/* Schedule */}
+            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
+              <h2 className="text-lg font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                <span>📅</span> 여행 일정
+              </h2>
 
-        <fieldset className="form-section">
-          <legend>
-            <UsersIcon /> 그룹 설정
-          </legend>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    시작일 <span className="text-pink-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    id="startDate"
+                    value={formatDate(formData.startDate)}
+                    onChange={e => handleInputChange('startDate', parseDate(e.target.value))}
+                    className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white focus:ring-2 focus:ring-violet-500/50 transition-all"
+                    min={formatDate(new Date())}
+                    required
+                  />
+                </div>
 
-          <div className="form-group">
-            <label htmlFor="maxMembers">최대 인원</label>
-            <select
-              id="maxMembers"
-              value={formData.maxMembers}
-              onChange={e => handleInputChange('maxMembers', parseInt(e.target.value))}
-              className="form-select"
-              aria-describedby="members-hint"
-            >
-              {[2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
-                <option key={num} value={num}>
-                  {num}명
-                </option>
-              ))}
-            </select>
-            <span id="members-hint" className="sr-only">
-              그룹에 참여할 수 있는 최대 인원 수
-            </span>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="travelStyle">여행 스타일</label>
-            <select
-              id="travelStyle"
-              value={formData.travelStyle}
-              onChange={e => handleInputChange('travelStyle', e.target.value)}
-              className="form-select"
-            >
-              {travelStyles.map(style => (
-                <option key={style} value={style}>
-                  {style}
-                </option>
-              ))}
-            </select>
-          </div>
-        </fieldset>
-
-        <fieldset className="form-section">
-          <legend>
-            <WalletIcon /> 예산
-          </legend>
-
-          <div className="budget-group">
-            <div className="form-group">
-              <label htmlFor="minBudget">최소 예산 (원)</label>
-              <input
-                type="number"
-                id="minBudget"
-                value={formData.budget?.min || 0}
-                onChange={e => handleBudgetChange('min', parseInt(e.target.value) || 0)}
-                className="form-input"
-                min="0"
-                step="10000"
-                aria-describedby="budget-hint"
-              />
+                <div>
+                  <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    종료일 <span className="text-pink-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    id="endDate"
+                    value={formatDate(formData.endDate)}
+                    onChange={e => handleInputChange('endDate', parseDate(e.target.value))}
+                    className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white focus:ring-2 focus:ring-violet-500/50 transition-all"
+                    min={formatDate(formData.startDate)}
+                    required
+                  />
+                </div>
+              </div>
             </div>
 
-            <div className="form-group">
-              <label htmlFor="maxBudget">최대 예산 (원)</label>
-              <input
-                type="number"
-                id="maxBudget"
-                value={formData.budget?.max || 0}
-                onChange={e => handleBudgetChange('max', parseInt(e.target.value) || 0)}
-                className="form-input"
-                min="0"
-                step="10000"
-              />
+            {/* Group Settings */}
+            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
+              <h2 className="text-lg font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                <span>👥</span> 그룹 설정
+              </h2>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="maxMembers" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    최대 인원
+                  </label>
+                  <select
+                    id="maxMembers"
+                    value={formData.maxMembers}
+                    onChange={e => handleInputChange('maxMembers', parseInt(e.target.value))}
+                    className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white focus:ring-2 focus:ring-violet-500/50 transition-all"
+                  >
+                    {[2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
+                      <option key={num} value={num}>
+                        {num}명
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="travelStyle" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    여행 스타일
+                  </label>
+                  <select
+                    id="travelStyle"
+                    value={formData.travelStyle}
+                    onChange={e => handleInputChange('travelStyle', e.target.value)}
+                    className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white focus:ring-2 focus:ring-violet-500/50 transition-all"
+                  >
+                    {travelStyles.map(style => (
+                      <option key={style} value={style}>
+                        {style}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
             </div>
-          </div>
-          <span id="budget-hint" className="sr-only">
-            1인당 예상 여행 경비
-          </span>
-        </fieldset>
 
-        <fieldset className="form-section">
-          <legend>
-            <TagIcon /> 태그
-          </legend>
-          <p className="section-description" id="tags-description">
-            여행의 특징을 나타내는 태그를 추가해주세요.
-          </p>
+            {/* Budget */}
+            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
+              <h2 className="text-lg font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                <span>💰</span> 예산
+              </h2>
 
-          <div className="tag-input-group">
-            <label htmlFor="new-tag" className="sr-only">
-              새 태그 입력
-            </label>
-            <input
-              type="text"
-              id="new-tag"
-              value={newTag}
-              onChange={e => setNewTag(e.target.value)}
-              placeholder="태그 입력..."
-              className="form-input"
-              maxLength={20}
-              onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addTag())}
-              aria-describedby="tags-description"
-            />
-            <button type="button" onClick={addTag} className="add-btn" aria-label="태그 추가">
-              추가
-            </button>
-          </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="minBudget" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    최소 예산 (원)
+                  </label>
+                  <input
+                    type="number"
+                    id="minBudget"
+                    value={formData.budget?.min || 0}
+                    onChange={e => handleBudgetChange('min', parseInt(e.target.value) || 0)}
+                    className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white focus:ring-2 focus:ring-violet-500/50 transition-all"
+                    min="0"
+                    step="10000"
+                  />
+                </div>
 
-          <div className="popular-tags">
-            <p id="popular-tags-label">인기 태그:</p>
-            <div className="popular-tags-grid" role="group" aria-labelledby="popular-tags-label">
-              {popularTags.map(tag => (
-                <button
-                  key={tag}
-                  type="button"
-                  onClick={() => addPopularTag(tag)}
-                  className={`popular-tag ${formData.tags.includes(tag) ? 'selected' : ''}`}
-                  disabled={formData.tags.includes(tag)}
-                  aria-pressed={formData.tags.includes(tag)}
-                  aria-label={formData.tags.includes(tag) ? `${tag} (선택됨)` : tag}
-                >
-                  {tag}
-                </button>
-              ))}
+                <div>
+                  <label htmlFor="maxBudget" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    최대 예산 (원)
+                  </label>
+                  <input
+                    type="number"
+                    id="maxBudget"
+                    value={formData.budget?.max || 0}
+                    onChange={e => handleBudgetChange('max', parseInt(e.target.value) || 0)}
+                    className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white focus:ring-2 focus:ring-violet-500/50 transition-all"
+                    min="0"
+                    step="10000"
+                  />
+                </div>
+              </div>
             </div>
-          </div>
 
-          <div className="selected-tags" role="list" aria-label="선택된 태그">
-            {formData.tags.map(tag => (
-              <span key={tag} className="selected-tag" role="listitem">
-                #{tag}
-                <button
-                  type="button"
-                  onClick={() => removeTag(tag)}
-                  className="remove-tag"
-                  aria-label={`${tag} 태그 삭제`}
-                >
-                  <span aria-hidden="true">×</span>
-                </button>
-              </span>
-            ))}
-          </div>
-        </fieldset>
+            {/* Tags */}
+            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
+              <h2 className="text-lg font-bold text-gray-800 dark:text-white mb-2 flex items-center gap-2">
+                <span>🏷️</span> 태그
+              </h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                여행의 특징을 나타내는 태그를 추가해주세요.
+              </p>
 
-        <fieldset className="form-section">
-          <legend>
-            <ClipboardIcon /> 참가 조건
-          </legend>
-          <p className="section-description" id="requirements-description">
-            그룹 참가자에게 요구하는 조건이 있다면 추가해주세요.
-          </p>
-
-          <div className="tag-input-group">
-            <label htmlFor="new-requirement" className="sr-only">
-              새 참가 조건 입력
-            </label>
-            <input
-              type="text"
-              id="new-requirement"
-              value={newRequirement}
-              onChange={e => setNewRequirement(e.target.value)}
-              placeholder="예: 금연자, 새벽 일찍 출발 가능한 분"
-              className="form-input"
-              maxLength={100}
-              onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addRequirement())}
-              aria-describedby="requirements-description"
-            />
-            <button
-              type="button"
-              onClick={addRequirement}
-              className="add-btn"
-              aria-label="참가 조건 추가"
-            >
-              추가
-            </button>
-          </div>
-
-          <div className="requirements-list" role="list" aria-label="참가 조건 목록">
-            {formData.requirements.map((req, index) => (
-              <div key={index} className="requirement-item" role="listitem">
-                <span>• {req}</span>
+              <div className="flex gap-2 mb-4">
+                <input
+                  type="text"
+                  value={newTag}
+                  onChange={e => setNewTag(e.target.value)}
+                  placeholder="태그 입력..."
+                  className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-violet-500/50 transition-all"
+                  maxLength={20}
+                  onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addTag())}
+                />
                 <button
                   type="button"
-                  onClick={() => removeRequirement(req)}
-                  className="remove-req"
-                  aria-label={`${req} 조건 삭제`}
+                  onClick={addTag}
+                  className="px-4 py-3 bg-violet-600 text-white font-medium rounded-xl hover:bg-violet-700 transition-colors"
                 >
-                  <span aria-hidden="true">×</span>
+                  추가
                 </button>
               </div>
-            ))}
-          </div>
-        </fieldset>
 
-        <div className="form-actions" role="group" aria-label="양식 제출 버튼">
-          <button
-            type="button"
-            onClick={() => navigate('/groups')}
-            className="cancel-btn"
-            aria-label="그룹 생성 취소"
-          >
-            취소
-          </button>
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="submit-btn"
-            aria-busy={isLoading}
-            aria-label={isLoading ? '그룹 생성 중' : '그룹 만들기'}
-          >
-            {isLoading ? (
-              '생성 중...'
-            ) : (
-              <>
-                <SparklesIcon /> 그룹 만들기
-              </>
-            )}
-          </button>
+              <div className="mb-4">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">인기 태그:</p>
+                <div className="flex flex-wrap gap-2">
+                  {popularTags.map(tag => (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => addPopularTag(tag)}
+                      className={`px-3 py-1.5 rounded-full text-sm transition-all ${
+                        formData.tags.includes(tag)
+                          ? 'bg-violet-600 text-white'
+                          : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                      }`}
+                      disabled={formData.tags.includes(tag)}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {formData.tags.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {formData.tags.map(tag => (
+                    <span
+                      key={tag}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-violet-500 to-pink-500 text-white rounded-full text-sm"
+                    >
+                      #{tag}
+                      <button
+                        type="button"
+                        onClick={() => removeTag(tag)}
+                        className="ml-1 hover:bg-white/20 rounded-full w-4 h-4 flex items-center justify-center"
+                        aria-label={`${tag} 태그 삭제`}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Requirements */}
+            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
+              <h2 className="text-lg font-bold text-gray-800 dark:text-white mb-2 flex items-center gap-2">
+                <span>📋</span> 참가 조건
+              </h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                그룹 참가자에게 요구하는 조건이 있다면 추가해주세요.
+              </p>
+
+              <div className="flex gap-2 mb-4">
+                <input
+                  type="text"
+                  value={newRequirement}
+                  onChange={e => setNewRequirement(e.target.value)}
+                  placeholder="예: 금연자, 새벽 일찍 출발 가능한 분"
+                  className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-violet-500/50 transition-all"
+                  maxLength={100}
+                  onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addRequirement())}
+                />
+                <button
+                  type="button"
+                  onClick={addRequirement}
+                  className="px-4 py-3 bg-violet-600 text-white font-medium rounded-xl hover:bg-violet-700 transition-colors"
+                >
+                  추가
+                </button>
+              </div>
+
+              {formData.requirements.length > 0 && (
+                <div className="space-y-2">
+                  {formData.requirements.map((req, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-800 rounded-xl"
+                    >
+                      <span className="text-gray-700 dark:text-gray-300">• {req}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeRequirement(req)}
+                        className="text-red-500 hover:text-red-600 p-1"
+                        aria-label={`${req} 조건 삭제`}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-4">
+              <button
+                type="button"
+                onClick={() => navigate('/groups')}
+                className="flex-1 py-4 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              >
+                취소
+              </button>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="flex-1 py-4 bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-violet-500/25 transition-all duration-300 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:transform-none flex items-center justify-center gap-2"
+              >
+                {isLoading ? (
+                  '생성 중...'
+                ) : (
+                  <>
+                    <span>✨</span> 그룹 만들기
+                  </>
+                )}
+              </button>
+            </div>
+          </motion.form>
         </div>
-      </form>
+      </div>
     </div>
   );
 };

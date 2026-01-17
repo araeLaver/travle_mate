@@ -1,130 +1,24 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { chatService, ChatMessage, ChatRoom } from '../services/chatService';
 import { useToast } from '../components/Toast';
 import { ImageMessage, LocationMessage, TypingIndicator } from '../components/chat';
-import './Chat.css';
+import Logo from '../components/common/Logo';
+import ThemeToggle from '../components/common/ThemeToggle';
 
-// 타이핑 사용자 인터페이스
+// Typing user interface
 interface TypingUser {
   id: number;
   nickname: string;
   profileImageUrl?: string;
 }
 
-// SVG Icons
-const MessageIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-  </svg>
-);
-
-const ArrowLeftIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <line x1="19" y1="12" x2="5" y2="12" />
-    <polyline points="12 19 5 12 12 5" />
-  </svg>
-);
-
-const UsersIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-    <circle cx="9" cy="7" r="4" />
-    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-  </svg>
-);
-
-const OnlineIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor">
-    <circle cx="12" cy="12" r="6" />
-  </svg>
-);
-
-const OfflineIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <circle cx="12" cy="12" r="6" />
-  </svg>
-);
-
-const SendIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <line x1="22" y1="2" x2="11" y2="13" />
-    <polygon points="22 2 15 22 11 13 2 9 22 2" />
-  </svg>
-);
-
-const CameraIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-    <circle cx="12" cy="13" r="4" />
-  </svg>
-);
-
-const MapPinIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-    <circle cx="12" cy="10" r="3" />
-  </svg>
-);
-
-const SmileIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="12" cy="12" r="10" />
-    <path d="M8 14s1.5 2 4 2 4-2 4-2" />
-    <line x1="9" y1="9" x2="9.01" y2="9" />
-    <line x1="15" y1="9" x2="15.01" y2="9" />
-  </svg>
-);
+const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.5 },
+};
 
 const Chat: React.FC = () => {
   const { roomId } = useParams<{ roomId: string }>();
@@ -132,7 +26,7 @@ const Chat: React.FC = () => {
   const toast = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // toast를 ref로 저장하여 useEffect 의존성 배열 문제 방지
+  // Store toast in ref to avoid useEffect dependency issues
   const toastRef = useRef(toast);
   toastRef.current = toast;
 
@@ -140,7 +34,6 @@ const Chat: React.FC = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  // 타이핑 사용자 상태 (실제 구현에서는 WebSocket으로 업데이트)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -204,23 +97,19 @@ const Chat: React.FC = () => {
     }
   };
 
-  // 이미지 선택 핸들러
   const handleImageSelect = () => {
     fileInputRef.current?.click();
   };
 
-  // 이미지 업로드 핸들러
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !roomId) return;
 
-    // 파일 크기 제한 (5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast.error('이미지 크기는 5MB 이하여야 합니다.');
       return;
     }
 
-    // 이미지 파일 확인
     if (!file.type.startsWith('image/')) {
       toast.error('이미지 파일만 업로드할 수 있습니다.');
       return;
@@ -229,10 +118,7 @@ const Chat: React.FC = () => {
     setIsUploading(true);
 
     try {
-      // 로컬 미리보기 URL 생성 (실제 구현에서는 서버 업로드)
       const imageUrl = URL.createObjectURL(file);
-
-      // 이미지 메시지 전송
       chatService.sendMessage(roomId, imageUrl, 'image');
       toast.success('이미지가 전송되었습니다.');
     } catch (err) {
@@ -240,14 +126,12 @@ const Chat: React.FC = () => {
       toast.error('이미지 업로드에 실패했습니다.');
     } finally {
       setIsUploading(false);
-      // 파일 입력 초기화
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
     }
   };
 
-  // 위치 공유 핸들러
   const handleLocationShare = () => {
     if (!roomId) return;
 
@@ -294,7 +178,6 @@ const Chat: React.FC = () => {
     );
   };
 
-  // 메시지 내용 렌더링
   const renderMessageContent = (message: ChatMessage, isMyMessage: boolean) => {
     switch (message.type) {
       case 'image':
@@ -319,17 +202,17 @@ const Chat: React.FC = () => {
           );
         } catch (error) {
           console.warn('Failed to parse location data:', error);
-          return <div className="message-text">{message.content}</div>;
+          return <div className="text-gray-800 dark:text-white">{message.content}</div>;
         }
       case 'system':
         return (
-          <div className="system-message" role="status">
+          <div className="text-center text-sm text-gray-500 dark:text-gray-400 italic py-2 px-4 bg-gray-100/50 dark:bg-gray-800/50 rounded-xl" role="status">
             {message.content}
           </div>
         );
       case 'text':
       default:
-        return <div className="message-text">{message.content}</div>;
+        return <div className="text-gray-800 dark:text-white">{message.content}</div>;
     }
   };
 
@@ -364,22 +247,41 @@ const Chat: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="chat-loading" role="status" aria-live="polite">
-        <div className="loading-spinner" aria-hidden="true">
-          <MessageIcon />
-        </div>
-        <p>채팅방을 불러오는 중...</p>
+      <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] flex items-center justify-center" role="status" aria-live="polite">
+        <motion.div
+          className="text-center"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-r from-violet-500 to-pink-500 flex items-center justify-center animate-pulse">
+            <span className="text-3xl">💬</span>
+          </div>
+          <p className="text-gray-600 dark:text-gray-300 text-lg">채팅방을 불러오는 중...</p>
+        </motion.div>
       </div>
     );
   }
 
   if (!room) {
     return (
-      <div className="chat-error">
-        <h3>채팅방을 찾을 수 없습니다</h3>
-        <button onClick={() => navigate('/dashboard')} className="btn-primary">
-          대시보드로 돌아가기
-        </button>
+      <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] flex items-center justify-center">
+        <motion.div
+          className="text-center"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+            <span className="text-3xl">😢</span>
+          </div>
+          <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4">채팅방을 찾을 수 없습니다</h3>
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="px-6 py-3 bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-violet-500/25 transition-all duration-300 hover:-translate-y-0.5"
+          >
+            대시보드로 돌아가기
+          </button>
+        </motion.div>
       </div>
     );
   }
@@ -387,205 +289,294 @@ const Chat: React.FC = () => {
   const otherParticipants = room.participants.filter(p => p.id !== chatService.getCurrentUserId());
 
   return (
-    <div className="chat-container" role="main" aria-label={`${room.name} 채팅방`}>
-      {/* 채팅 헤더 */}
-      <header className="chat-header">
-        <button
-          className="back-btn"
-          onClick={() => navigate('/dashboard')}
-          aria-label="대시보드로 돌아가기"
-        >
-          <span className="back-icon" aria-hidden="true">
-            <ArrowLeftIcon />
-          </span>
-        </button>
-        <div className="chat-info">
-          <h1 className="chat-title">
-            {room.type === 'direct' ? (
-              <>
-                <span className="chat-name">{room.name}</span>
-                {otherParticipants[0] && (
-                  <span
-                    className={`online-indicator ${otherParticipants[0].isOnline ? 'online' : 'offline'}`}
-                    aria-label={otherParticipants[0].isOnline ? '온라인 상태' : '오프라인 상태'}
-                  >
-                    <span className="status-icon">
-                      {otherParticipants[0].isOnline ? <OnlineIcon /> : <OfflineIcon />}
-                    </span>{' '}
-                    {otherParticipants[0].isOnline ? '온라인' : '오프라인'}
-                  </span>
-                )}
-              </>
-            ) : (
-              <span className="chat-name">{room.name}</span>
-            )}
-          </h1>
-          <div className="participant-count" aria-label={`참여자 ${room.participants.length}명`}>
-            <span className="participant-icon" aria-hidden="true">
-              <UsersIcon />
-            </span>{' '}
-            {room.participants.length}명
-          </div>
-        </div>
-      </header>
-
-      {/* 메시지 목록 */}
-      <div className="messages-container" role="log" aria-live="polite" aria-label="채팅 메시지">
-        {messages.length === 0 ? (
-          <div className="empty-messages" role="status">
-            <div className="empty-icon" aria-hidden="true">
-              <MessageIcon />
-            </div>
-            <h2>아직 메시지가 없습니다</h2>
-            <p>첫 번째 메시지를 보내서 대화를 시작해보세요!</p>
-          </div>
-        ) : (
-          <>
-            {messages.map((message, index) => {
-              const prevMessage = messages[index - 1];
-              const showDate =
-                !prevMessage ||
-                new Date(message.timestamp).toDateString() !==
-                  new Date(prevMessage.timestamp).toDateString();
-
-              const isMyMessage = message.senderId === chatService.getCurrentUserId();
-              const showSenderName =
-                !isMyMessage &&
-                room.type === 'group' &&
-                (!prevMessage || prevMessage.senderId !== message.senderId);
-
-              return (
-                <article
-                  key={message.id}
-                  aria-label={`${message.senderName}: ${message.content}, ${formatTime(message.timestamp)}`}
-                >
-                  {showDate && (
-                    <div
-                      className="date-divider"
-                      role="separator"
-                      aria-label={`${formatDate(message.timestamp)} 메시지`}
-                    >
-                      <span>{formatDate(message.timestamp)}</span>
-                    </div>
-                  )}
-
-                  <div className={`message ${isMyMessage ? 'my-message' : 'other-message'}`}>
-                    {showSenderName && (
-                      <div className="sender-name" aria-hidden="true">
-                        {message.senderName}
-                      </div>
-                    )}
-
-                    <div className="message-content">
-                      {renderMessageContent(message, isMyMessage)}
-
-                      <div className="message-time">
-                        <time dateTime={message.timestamp.toISOString()}>
-                          {formatTime(message.timestamp)}
-                        </time>
-                        {isMyMessage && (
-                          <span
-                            className="read-status"
-                            aria-label={message.isRead ? '상대방이 읽음' : '아직 읽지 않음'}
-                          >
-                            {message.isRead ? '읽음' : '안읽음'}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
-            {/* 타이핑 표시 */}
-            {typingUsers.length > 0 && (
-              <TypingIndicator typingUsers={typingUsers} />
-            )}
-            <div ref={messagesEndRef} />
-          </>
-        )}
-      </div>
-
-      {/* 숨겨진 파일 입력 */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        onChange={handleImageUpload}
-        style={{ display: 'none' }}
-        aria-hidden="true"
+    <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] relative overflow-hidden" role="main" aria-label={`${room.name} 채팅방`}>
+      {/* Background Effects */}
+      <div
+        className="absolute top-20 left-10 w-72 h-72 bg-violet-400/30 dark:bg-violet-600/20 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite' }}
+      />
+      <div
+        className="absolute top-40 right-10 w-72 h-72 bg-pink-400/30 dark:bg-pink-600/20 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite 2s' }}
+      />
+      <div
+        className="absolute bottom-20 left-1/3 w-72 h-72 bg-blue-400/30 dark:bg-blue-600/20 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite 4s' }}
       />
 
-      {/* 메시지 입력 */}
-      <form
-        className="message-input-container"
-        onSubmit={e => {
-          e.preventDefault();
-          handleSendMessage();
-        }}
-        aria-label="메시지 입력"
-      >
-        <div className="message-input-wrapper">
-          <label htmlFor="message-input" className="sr-only">
-            메시지 입력
-          </label>
-          <textarea
-            id="message-input"
-            value={newMessage}
-            onChange={e => setNewMessage(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="메시지를 입력하세요..."
-            className="message-input"
-            rows={1}
-            maxLength={1000}
-            aria-describedby="message-char-count"
-          />
-          <span id="message-char-count" className="sr-only">
-            {newMessage.length}/1000자
-          </span>
-          <button
-            type="submit"
-            onClick={handleSendMessage}
-            disabled={!newMessage.trim()}
-            className="send-btn"
-            aria-label="메시지 보내기"
-            aria-disabled={!newMessage.trim()}
-          >
-            <span className="send-icon" aria-hidden="true">
-              <SendIcon />
-            </span>
-          </button>
-        </div>
+      <style>{`
+        @keyframes blob {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          25% { transform: translate(20px, -30px) scale(1.1); }
+          50% { transform: translate(-20px, 20px) scale(0.9); }
+          75% { transform: translate(30px, 10px) scale(1.05); }
+        }
+      `}</style>
 
-        <div className="input-actions" role="toolbar" aria-label="추가 옵션">
-          <button
-            type="button"
-            className="action-btn"
-            aria-label="이미지 전송"
-            onClick={handleImageSelect}
-            disabled={isUploading}
-          >
-            <span className="action-icon" aria-hidden="true">
-              <CameraIcon />
-            </span>
-          </button>
-          <button
-            type="button"
-            className="action-btn"
-            aria-label="위치 공유"
-            onClick={handleLocationShare}
-          >
-            <span className="action-icon" aria-hidden="true">
-              <MapPinIcon />
-            </span>
-          </button>
-          <button type="button" className="action-btn" aria-label="이모티콘 선택">
-            <span className="action-icon" aria-hidden="true">
-              <SmileIcon />
-            </span>
-          </button>
+      {/* Navigation */}
+      <nav className="fixed top-0 w-full z-50 px-4 py-3">
+        <div className="max-w-4xl mx-auto bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-2xl px-6 py-3 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="p-2 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                aria-label="대시보드로 돌아가기"
+              >
+                <span className="text-lg">←</span>
+              </button>
+              <Logo />
+            </div>
+
+            <div className="flex items-center gap-3">
+              <ThemeToggle />
+            </div>
+          </div>
         </div>
-      </form>
+      </nav>
+
+      {/* Main Content */}
+      <div className="relative z-10 pt-24 pb-36 h-screen flex flex-col">
+        {/* Chat Header */}
+        <motion.header
+          className="px-4"
+          {...fadeInUp}
+        >
+          <div className="max-w-4xl mx-auto bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-4 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-violet-500 to-pink-500 flex items-center justify-center text-white text-xl font-bold">
+                {room.name.charAt(0)}
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-1">
+                  <h1 className="text-lg font-bold text-gray-800 dark:text-white">{room.name}</h1>
+                  {room.type === 'direct' && otherParticipants[0] && (
+                    <span
+                      className={`text-xs px-2 py-1 rounded-full flex items-center gap-1 ${
+                        otherParticipants[0].isOnline
+                          ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
+                          : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
+                      }`}
+                      aria-label={otherParticipants[0].isOnline ? '온라인 상태' : '오프라인 상태'}
+                    >
+                      <span className={`w-2 h-2 rounded-full ${otherParticipants[0].isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
+                      {otherParticipants[0].isOnline ? '온라인' : '오프라인'}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                  <span>👥</span>
+                  <span aria-label={`참여자 ${room.participants.length}명`}>{room.participants.length}명 참여</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.header>
+
+        {/* Messages Container */}
+        <motion.div
+          className="flex-1 overflow-y-auto px-4 py-4"
+          role="log"
+          aria-live="polite"
+          aria-label="채팅 메시지"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+        >
+          <div className="max-w-4xl mx-auto space-y-4">
+            {messages.length === 0 ? (
+              <motion.div
+                className="flex flex-col items-center justify-center h-64 text-center"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                role="status"
+              >
+                <div className="w-20 h-20 rounded-full bg-gradient-to-r from-violet-100 to-pink-100 dark:from-violet-900/30 dark:to-pink-900/30 flex items-center justify-center mb-4">
+                  <span className="text-4xl">💬</span>
+                </div>
+                <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-2">아직 메시지가 없습니다</h2>
+                <p className="text-gray-500 dark:text-gray-400">첫 번째 메시지를 보내서 대화를 시작해보세요!</p>
+              </motion.div>
+            ) : (
+              <>
+                <AnimatePresence>
+                  {messages.map((message, index) => {
+                    const prevMessage = messages[index - 1];
+                    const showDate =
+                      !prevMessage ||
+                      new Date(message.timestamp).toDateString() !==
+                        new Date(prevMessage.timestamp).toDateString();
+
+                    const isMyMessage = message.senderId === chatService.getCurrentUserId();
+                    const showSenderName =
+                      !isMyMessage &&
+                      room.type === 'group' &&
+                      (!prevMessage || prevMessage.senderId !== message.senderId);
+
+                    return (
+                      <motion.article
+                        key={message.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        aria-label={`${message.senderName}: ${message.content}, ${formatTime(message.timestamp)}`}
+                      >
+                        {showDate && (
+                          <div
+                            className="flex items-center justify-center my-6"
+                            role="separator"
+                            aria-label={`${formatDate(message.timestamp)} 메시지`}
+                          >
+                            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent" />
+                            <span className="px-4 py-1.5 text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 rounded-full">
+                              {formatDate(message.timestamp)}
+                            </span>
+                            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent" />
+                          </div>
+                        )}
+
+                        <div className={`flex ${isMyMessage ? 'justify-end' : 'justify-start'}`}>
+                          <div className={`max-w-[70%] ${isMyMessage ? 'items-end' : 'items-start'}`}>
+                            {showSenderName && (
+                              <div className="text-xs text-gray-500 dark:text-gray-400 mb-1 px-3" aria-hidden="true">
+                                {message.senderName}
+                              </div>
+                            )}
+
+                            <div
+                              className={`px-4 py-3 rounded-2xl ${
+                                isMyMessage
+                                  ? 'bg-gradient-to-r from-violet-600 to-pink-600 text-white rounded-br-md'
+                                  : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-bl-md'
+                              }`}
+                            >
+                              {renderMessageContent(message, isMyMessage)}
+                            </div>
+
+                            <div className={`flex items-center gap-2 mt-1 px-2 ${isMyMessage ? 'justify-end' : 'justify-start'}`}>
+                              <time
+                                dateTime={message.timestamp.toISOString()}
+                                className="text-xs text-gray-400 dark:text-gray-500"
+                              >
+                                {formatTime(message.timestamp)}
+                              </time>
+                              {isMyMessage && (
+                                <span
+                                  className={`text-xs px-1.5 py-0.5 rounded ${
+                                    message.isRead
+                                      ? 'text-violet-500 dark:text-violet-400 bg-violet-100 dark:bg-violet-900/30'
+                                      : 'text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-800'
+                                  }`}
+                                  aria-label={message.isRead ? '상대방이 읽음' : '아직 읽지 않음'}
+                                >
+                                  {message.isRead ? '읽음' : '안읽음'}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </motion.article>
+                    );
+                  })}
+                </AnimatePresence>
+                {typingUsers.length > 0 && (
+                  <TypingIndicator typingUsers={typingUsers} />
+                )}
+                <div ref={messagesEndRef} />
+              </>
+            )}
+          </div>
+        </motion.div>
+
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleImageUpload}
+          style={{ display: 'none' }}
+          aria-hidden="true"
+        />
+
+        {/* Message Input */}
+        <motion.div
+          className="fixed bottom-0 left-0 right-0 px-4 py-4 bg-gradient-to-t from-[#fafafa] dark:from-[#0a0a0b] via-[#fafafa]/90 dark:via-[#0a0a0b]/90 to-transparent"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <form
+            className="max-w-4xl mx-auto"
+            onSubmit={e => {
+              e.preventDefault();
+              handleSendMessage();
+            }}
+            aria-label="메시지 입력"
+          >
+            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-3 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
+              <div className="flex items-end gap-3">
+                <label htmlFor="message-input" className="sr-only">
+                  메시지 입력
+                </label>
+                <textarea
+                  id="message-input"
+                  value={newMessage}
+                  onChange={e => setNewMessage(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="메시지를 입력하세요..."
+                  className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 resize-none outline-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-violet-500/50 transition-all min-h-[48px] max-h-[120px]"
+                  rows={1}
+                  maxLength={1000}
+                  aria-describedby="message-char-count"
+                />
+                <span id="message-char-count" className="sr-only">
+                  {newMessage.length}/1000자
+                </span>
+                <button
+                  type="submit"
+                  disabled={!newMessage.trim()}
+                  className="w-12 h-12 rounded-xl bg-gradient-to-r from-violet-600 to-pink-600 text-white flex items-center justify-center hover:shadow-lg hover:shadow-violet-500/25 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
+                  aria-label="메시지 보내기"
+                  aria-disabled={!newMessage.trim()}
+                >
+                  <span className="text-xl">➤</span>
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-200/50 dark:border-gray-700/50" role="toolbar" aria-label="추가 옵션">
+                <button
+                  type="button"
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
+                  aria-label="이미지 전송"
+                  onClick={handleImageSelect}
+                  disabled={isUploading}
+                >
+                  <span>📷</span>
+                  <span className="text-sm hidden sm:inline">이미지</span>
+                </button>
+                <button
+                  type="button"
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
+                  aria-label="위치 공유"
+                  onClick={handleLocationShare}
+                >
+                  <span>📍</span>
+                  <span className="text-sm hidden sm:inline">위치</span>
+                </button>
+                <button
+                  type="button"
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"
+                  aria-label="이모티콘 선택"
+                >
+                  <span>😊</span>
+                  <span className="text-sm hidden sm:inline">이모티콘</span>
+                </button>
+              </div>
+            </div>
+          </form>
+        </motion.div>
+      </div>
     </div>
   );
 };

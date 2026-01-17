@@ -81,15 +81,16 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
       <div
         className={`image-message ${isMyMessage ? 'my-message' : ''}`}
         onClick={handleClick}
+        data-testid="image-message-container"
       >
         {isLoading && (
-          <div className="image-loading">
+          <div className="image-loading" data-testid="image-loading">
             <LoadingIcon />
           </div>
         )}
 
         {hasError ? (
-          <div className="image-error">
+          <div className="image-error" data-testid="image-error">
             <span>이미지를 불러올 수 없습니다</span>
           </div>
         ) : (
@@ -105,18 +106,18 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
 
       {/* 이미지 모달 */}
       {showModal && (
-        <div className="image-modal-overlay" onClick={handleClose}>
+        <div className="image-modal-overlay" onClick={handleClose} data-testid="image-modal-overlay">
           <div className="image-modal">
             <div className="modal-header">
-              <button className="close-btn" onClick={handleClose}>
+              <button className="close-btn" onClick={handleClose} data-testid="modal-close-btn">
                 <CloseIcon />
               </button>
-              <button className="download-btn" onClick={handleDownload}>
+              <button className="download-btn" onClick={handleDownload} data-testid="modal-download-btn">
                 <DownloadIcon />
               </button>
             </div>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <img src={imageUrl} alt={alt} />
+              <img src={imageUrl} alt={alt} data-testid="modal-image" />
             </div>
           </div>
         </div>

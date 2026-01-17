@@ -1,288 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useParams, useNavigate } from 'react-router-dom';
 import { profileService, UserProfile, UpdateProfileRequest } from '../services/profileService';
 import { useToast } from '../components/Toast';
 import { getErrorMessage, logError } from '../utils/errorHandler';
 import { useFollowStats, useFollowStatus, useFollowToggle } from '../hooks/useFollow';
 import { authService } from '../services/authService';
 import FollowerList from '../components/social/FollowerList';
-import './Profile.css';
+import Logo from '../components/Logo';
+import ThemeToggle from '../components/ThemeToggle';
 
-// SVG Icons
-const UserIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-    <circle cx="12" cy="7" r="4" />
-  </svg>
-);
-
-const MapPinIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-    <circle cx="12" cy="10" r="3" />
-  </svg>
-);
-
-const EditIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-  </svg>
-);
-
-const SaveIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-    <polyline points="17 21 17 13 7 13 7 21" />
-    <polyline points="7 3 7 8 15 8" />
-  </svg>
-);
-
-const XIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <line x1="18" y1="6" x2="6" y2="18" />
-    <line x1="6" y1="6" x2="18" y2="18" />
-  </svg>
-);
-
-const ClipboardIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-    <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
-  </svg>
-);
-
-const PlaneIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M22 2L11 13" />
-    <path d="M22 2l-7 20-4-9-9-4 20-7z" />
-  </svg>
-);
-
-const SettingsIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="12" cy="12" r="3" />
-    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-  </svg>
-);
-
-const TargetIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="12" cy="12" r="10" />
-    <circle cx="12" cy="12" r="6" />
-    <circle cx="12" cy="12" r="2" />
-  </svg>
-);
-
-const SparklesIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M12 3l1.912 5.813L20 10l-6.088 1.187L12 17l-1.912-5.813L4 10l6.088-1.187L12 3z" />
-    <path d="M5 3v4M3 5h4M6 17v4M4 19h4M18 14v4M16 16h4" />
-  </svg>
-);
-
-const MessageCircleIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-  </svg>
-);
-
-const GlobeIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="12" cy="12" r="10" />
-    <line x1="2" y1="12" x2="22" y2="12" />
-    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-  </svg>
-);
-
-const WalletIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
-    <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
-    <path d="M18 12a2 2 0 0 0 0 4h4v-4h-4z" />
-  </svg>
-);
-
-const HomeIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-    <polyline points="9 22 9 12 15 12 15 22" />
-  </svg>
-);
-
-const CarIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M14 16H9m10 0h3v-3.15a1 1 0 0 0-.84-.99L16 11l-2.7-3.6a1 1 0 0 0-.8-.4H5.24a2 2 0 0 0-1.8 1.1l-.8 1.63A6 6 0 0 0 2 12.42V16h2" />
-    <circle cx="6.5" cy="16.5" r="2.5" />
-    <circle cx="16.5" cy="16.5" r="2.5" />
-  </svg>
-);
-
-const UsersIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-    <circle cx="9" cy="7" r="4" />
-    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-  </svg>
-);
-
-const ZapIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-  </svg>
-);
-
-const UserPlusIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-    <circle cx="8.5" cy="7" r="4" />
-    <line x1="20" y1="8" x2="20" y2="14" />
-    <line x1="23" y1="11" x2="17" y2="11" />
-  </svg>
-);
-
-const CheckIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <polyline points="20 6 9 17 4 12" />
-  </svg>
-);
+const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.5 },
+};
 
 const Profile: React.FC = () => {
   const { userId } = useParams<{ userId?: string }>();
+  const navigate = useNavigate();
   const toast = useToast();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -292,12 +28,10 @@ const Profile: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [showFollowerList, setShowFollowerList] = useState<'followers' | 'following' | null>(null);
 
-  // 현재 로그인한 사용자 정보
   const currentUser = authService.getUser();
   const viewedUserId = userId ? parseInt(userId) : currentUser?.id;
   const isOwnProfile = !userId || (currentUser !== null && parseInt(userId) === currentUser.id);
 
-  // 팔로우 관련 훅
   const { data: followStats, refetch: refetchFollowStats } = useFollowStats(viewedUserId || 0);
   const { data: followStatus } = useFollowStatus(viewedUserId || 0, !isOwnProfile && !!viewedUserId);
   const { toggle: toggleFollow, isLoading: isFollowLoading } = useFollowToggle();
@@ -311,13 +45,12 @@ const Profile: React.FC = () => {
     try {
       const userProfile = await profileService.getProfile(userId);
       if (!userProfile) {
-        // 프로필이 없으면 임시 프로필 생성
         const tempProfile = profileService.createTempProfile('여행러');
         setProfile(tempProfile);
       } else {
         setProfile(userProfile);
       }
-    } catch (error) {
+    } catch {
       const tempProfile = profileService.createTempProfile('여행러');
       setProfile(tempProfile);
     } finally {
@@ -331,11 +64,7 @@ const Profile: React.FC = () => {
     try {
       await toggleFollow(viewedUserId, followStatus?.isFollowing || false);
       refetchFollowStats();
-      toast.success(
-        followStatus?.isFollowing
-          ? '팔로우를 취소했습니다.'
-          : '팔로우했습니다!'
-      );
+      toast.success(followStatus?.isFollowing ? '팔로우를 취소했습니다.' : '팔로우했습니다!');
     } catch (error) {
       toast.error(getErrorMessage(error));
     }
@@ -382,10 +111,7 @@ const Profile: React.FC = () => {
     field: keyof UpdateProfileRequest,
     value: UpdateProfileRequest[keyof UpdateProfileRequest]
   ) => {
-    setEditForm(prev => ({
-      ...prev,
-      [field]: value,
-    }));
+    setEditForm(prev => ({ ...prev, [field]: value }));
   };
 
   const handleInterestToggle = (interest: string) => {
@@ -430,588 +156,523 @@ const Profile: React.FC = () => {
     }).format(date);
   };
 
+  const tabs = [
+    { id: 'info', label: '기본 정보', icon: '📋' },
+    { id: 'travel', label: '여행 기록', icon: '✈️' },
+    { id: 'preferences', label: '선호도', icon: '⚙️' },
+  ] as const;
+
   if (isLoading) {
     return (
-      <div className="profile-loading" role="status" aria-live="polite">
-        <div className="loading-spinner" aria-hidden="true">
-          <UserIcon />
+      <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 rounded-full border-4 border-violet-200 dark:border-violet-800 border-t-violet-600 animate-spin mb-4 mx-auto" />
+          <p className="text-gray-500 dark:text-gray-400">프로필을 불러오는 중...</p>
         </div>
-        <p>프로필을 불러오는 중...</p>
       </div>
     );
   }
 
   if (!profile) {
     return (
-      <div className="profile-error" role="alert">
-        <h2>프로필을 불러올 수 없습니다</h2>
-        <button onClick={loadProfile} className="btn-primary" aria-label="프로필 다시 불러오기">
-          다시 시도
-        </button>
+      <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">프로필을 불러올 수 없습니다</h2>
+          <button
+            onClick={loadProfile}
+            className="px-6 py-3 bg-gradient-to-r from-violet-600 to-pink-600 text-white rounded-xl font-semibold"
+          >
+            다시 시도
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="profile-container">
-      <div className="profile-content">
-        {/* 프로필 헤더 */}
-        <header className="profile-header">
-          <div className="cover-section">
+    <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] relative overflow-hidden">
+      {/* Background Effects */}
+      <div
+        className="absolute top-20 left-10 w-72 h-72 bg-violet-400/30 dark:bg-violet-600/20 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite' }}
+      />
+      <div
+        className="absolute top-40 right-10 w-96 h-96 bg-pink-400/20 dark:bg-pink-600/15 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite 2s' }}
+      />
+      <div
+        className="absolute bottom-20 left-1/3 w-80 h-80 bg-blue-400/20 dark:bg-blue-600/15 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite 4s' }}
+      />
+
+      {/* Navigation */}
+      <nav className="fixed top-0 w-full z-50 px-4 py-3">
+        <div className="max-w-4xl mx-auto bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-2xl px-6 py-3 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
+          <div className="flex items-center justify-between">
+            <button onClick={() => navigate('/')} className="flex items-center gap-2">
+              <Logo size={32} />
+              <span className="font-bold text-gray-900 dark:text-white">TravelMate</span>
+            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+              >
+                대시보드
+              </button>
+              <ThemeToggle />
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <main className="relative z-10 max-w-4xl mx-auto px-4 pt-24 pb-12">
+        {/* Profile Header */}
+        <motion.div
+          className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl border border-gray-200/50 dark:border-gray-800/50 shadow-xl overflow-hidden mb-8"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          {/* Cover */}
+          <div className="h-32 bg-gradient-to-r from-violet-500 via-purple-500 to-pink-500 relative">
             {profile.coverImage && (
-              <img src={profile.coverImage} alt="" className="cover-image" aria-hidden="true" />
+              <img src={profile.coverImage} alt="" className="w-full h-full object-cover" />
             )}
-            <div className="cover-overlay" aria-hidden="true"></div>
           </div>
 
-          <div className="profile-main">
-            <div className="profile-avatar">
-              {profile.profileImage ? (
-                <img src={profile.profileImage} alt={`${profile.name}의 프로필 사진`} />
-              ) : (
-                <div className="avatar-placeholder" aria-label="기본 프로필 이미지">
-                  <UserIcon />
-                </div>
-              )}
-            </div>
-
-            <div className="profile-info">
-              <h1 className="profile-name">{profile.name}</h1>
-              {profile.age && (
-                <span className="profile-age" aria-label={`나이 ${profile.age}세`}>
-                  {profile.age}세
-                </span>
-              )}
-              {profile.location && (
-                <p className="profile-location">
-                  <span className="location-icon" aria-hidden="true">
-                    <MapPinIcon />
-                  </span>{' '}
-                  {profile.location.city}, {profile.location.country}
-                </p>
-              )}
-              <p className="profile-bio">{profile.bio}</p>
-            </div>
-
-            <div className="profile-actions">
-              {isOwnProfile ? (
-                !isEditing ? (
-                  <button
-                    className="edit-btn"
-                    onClick={handleEditStart}
-                    aria-label="프로필 편집 시작"
-                  >
-                    <span className="btn-icon" aria-hidden="true">
-                      <EditIcon />
-                    </span>{' '}
-                    편집
-                  </button>
+          {/* Profile Info */}
+          <div className="px-6 pb-6">
+            <div className="flex flex-col md:flex-row md:items-end gap-4 -mt-12">
+              {/* Avatar */}
+              <div className="w-24 h-24 rounded-full border-4 border-white dark:border-gray-900 bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center text-white text-3xl font-bold shadow-xl overflow-hidden">
+                {profile.profileImage ? (
+                  <img src={profile.profileImage} alt={profile.name} className="w-full h-full object-cover" />
                 ) : (
-                  <div className="edit-actions" role="group" aria-label="편집 액션">
-                    <button
-                      className="save-btn"
-                      onClick={handleEditSave}
-                      disabled={isSaving}
-                      aria-busy={isSaving}
-                      aria-label="프로필 저장"
-                    >
-                      {isSaving ? (
-                        '저장 중...'
-                      ) : (
-                        <>
-                          <span className="btn-icon" aria-hidden="true">
-                            <SaveIcon />
-                          </span>{' '}
-                          저장
-                        </>
-                      )}
-                    </button>
-                    <button
-                      className="cancel-btn"
-                      onClick={handleEditCancel}
-                      disabled={isSaving}
-                      aria-label="편집 취소"
-                    >
-                      <span className="btn-icon" aria-hidden="true">
-                        <XIcon />
-                      </span>{' '}
-                      취소
-                    </button>
-                  </div>
-                )
-              ) : (
-                <button
-                  className={`follow-btn ${followStatus?.isFollowing ? 'following' : ''}`}
-                  onClick={handleFollowToggle}
-                  disabled={isFollowLoading}
-                  aria-label={followStatus?.isFollowing ? '언팔로우' : '팔로우'}
-                >
-                  {followStatus?.isFollowing ? (
-                    <>
-                      <span className="btn-icon" aria-hidden="true">
-                        <CheckIcon />
-                      </span>{' '}
-                      팔로잉
-                    </>
-                  ) : (
-                    <>
-                      <span className="btn-icon" aria-hidden="true">
-                        <UserPlusIcon />
-                      </span>{' '}
-                      팔로우
-                    </>
+                  profile.name.charAt(0).toUpperCase()
+                )}
+              </div>
+
+              {/* Info */}
+              <div className="flex-1">
+                <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{profile.name}</h1>
+                  {profile.age && (
+                    <span className="text-gray-500 dark:text-gray-400">{profile.age}세</span>
                   )}
-                </button>
-              )}
+                </div>
+                {profile.location && (
+                  <p className="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+                    📍 {profile.location.city}, {profile.location.country}
+                  </p>
+                )}
+                <p className="text-gray-600 dark:text-gray-300 mt-2">{profile.bio}</p>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-2">
+                {isOwnProfile ? (
+                  !isEditing ? (
+                    <button
+                      onClick={handleEditStart}
+                      className="edit-btn px-5 py-2.5 bg-gradient-to-r from-violet-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all flex items-center gap-2"
+                    >
+                      ✏️ 편집
+                    </button>
+                  ) : (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleEditSave}
+                        disabled={isSaving}
+                        className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50"
+                      >
+                        {isSaving ? '저장중...' : '💾 저장'}
+                      </button>
+                      <button
+                        onClick={handleEditCancel}
+                        disabled={isSaving}
+                        className="px-5 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl font-semibold border border-gray-200 dark:border-gray-700"
+                      >
+                        취소
+                      </button>
+                    </div>
+                  )
+                ) : (
+                  <button
+                    onClick={handleFollowToggle}
+                    disabled={isFollowLoading}
+                    className={`px-5 py-2.5 rounded-xl font-semibold transition-all flex items-center gap-2 ${
+                      followStatus?.isFollowing
+                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700'
+                        : 'bg-gradient-to-r from-violet-600 to-pink-600 text-white hover:shadow-lg'
+                    }`}
+                  >
+                    {followStatus?.isFollowing ? '✓ 팔로잉' : '➕ 팔로우'}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-        </header>
+        </motion.div>
 
-        {/* 통계 카드 */}
-        <section className="profile-stats" aria-label="프로필 통계">
+        {/* Stats */}
+        <motion.div
+          className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8"
+          {...fadeInUp}
+          transition={{ delay: 0.1 }}
+        >
           <button
-            className="stat-card clickable"
-            role="group"
-            aria-label="팔로워"
             onClick={() => setShowFollowerList('followers')}
+            className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-4 border border-gray-200/50 dark:border-gray-800/50 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 text-center"
           >
-            <div className="stat-number" aria-hidden="true">
-              {followStats?.followerCount || 0}
-            </div>
-            <div className="stat-label">팔로워</div>
-            <span className="sr-only">{followStats?.followerCount || 0}명</span>
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">{followStats?.followerCount || 0}</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">팔로워</div>
           </button>
           <button
-            className="stat-card clickable"
-            role="group"
-            aria-label="팔로잉"
             onClick={() => setShowFollowerList('following')}
+            className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-4 border border-gray-200/50 dark:border-gray-800/50 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 text-center"
           >
-            <div className="stat-number" aria-hidden="true">
-              {followStats?.followingCount || 0}
-            </div>
-            <div className="stat-label">팔로잉</div>
-            <span className="sr-only">{followStats?.followingCount || 0}명</span>
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">{followStats?.followingCount || 0}</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">팔로잉</div>
           </button>
-          <div className="stat-card" role="group" aria-label="여행 횟수">
-            <div className="stat-number" aria-hidden="true">
-              {profile.stats.totalTrips}
-            </div>
-            <div className="stat-label">여행 횟수</div>
-            <span className="sr-only">{profile.stats.totalTrips}회</span>
+          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-4 border border-gray-200/50 dark:border-gray-800/50 shadow-lg text-center">
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">{profile.stats.totalTrips}</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">여행 횟수</div>
           </div>
-          <div className="stat-card" role="group" aria-label="방문 국가">
-            <div className="stat-number" aria-hidden="true">
-              {profile.stats.totalCountries}
-            </div>
-            <div className="stat-label">방문 국가</div>
-            <span className="sr-only">{profile.stats.totalCountries}개국</span>
+          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-4 border border-gray-200/50 dark:border-gray-800/50 shadow-lg text-center">
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">{profile.stats.totalCountries}</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">방문 국가</div>
           </div>
-          <div className="stat-card" role="group" aria-label="평균 평점">
-            <div className="stat-number" aria-hidden="true">
-              {profile.stats.averageRating.toFixed(1)}
-            </div>
-            <div className="stat-label">평균 평점</div>
-            <span className="sr-only">{profile.stats.averageRating.toFixed(1)}점</span>
+          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-4 border border-gray-200/50 dark:border-gray-800/50 shadow-lg text-center col-span-2 md:col-span-1">
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">{profile.stats.averageRating.toFixed(1)}</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">평균 평점</div>
           </div>
-        </section>
+        </motion.div>
 
-        {/* 탭 네비게이션 */}
-        <nav className="profile-tabs" role="tablist" aria-label="프로필 정보 탭">
-          <button
-            className={`tab-btn ${activeTab === 'info' ? 'active' : ''}`}
-            onClick={() => setActiveTab('info')}
-            role="tab"
-            id="tab-info"
-            aria-selected={activeTab === 'info'}
-            aria-controls="tabpanel-info"
-            tabIndex={activeTab === 'info' ? 0 : -1}
-          >
-            <span className="tab-icon" aria-hidden="true">
-              <ClipboardIcon />
-            </span>{' '}
-            기본 정보
-          </button>
-          <button
-            className={`tab-btn ${activeTab === 'travel' ? 'active' : ''}`}
-            onClick={() => setActiveTab('travel')}
-            role="tab"
-            id="tab-travel"
-            aria-selected={activeTab === 'travel'}
-            aria-controls="tabpanel-travel"
-            tabIndex={activeTab === 'travel' ? 0 : -1}
-          >
-            <span className="tab-icon" aria-hidden="true">
-              <PlaneIcon />
-            </span>{' '}
-            여행 기록
-          </button>
-          <button
-            className={`tab-btn ${activeTab === 'preferences' ? 'active' : ''}`}
-            onClick={() => setActiveTab('preferences')}
-            role="tab"
-            id="tab-preferences"
-            aria-selected={activeTab === 'preferences'}
-            aria-controls="tabpanel-preferences"
-            tabIndex={activeTab === 'preferences' ? 0 : -1}
-          >
-            <span className="tab-icon" aria-hidden="true">
-              <SettingsIcon />
-            </span>{' '}
-            선호도
-          </button>
-        </nav>
-
-        {/* 탭 컨텐츠 */}
-        <div className="tab-content">
-          {activeTab === 'info' && (
-            <section
-              id="tabpanel-info"
-              className="info-tab"
-              role="tabpanel"
-              aria-labelledby="tab-info"
+        {/* Tabs */}
+        <motion.nav
+          className="flex justify-center gap-2 mb-6"
+          {...fadeInUp}
+          transition={{ delay: 0.2 }}
+        >
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-5 py-2.5 rounded-xl font-medium transition-all flex items-center gap-2 ${
+                activeTab === tab.id
+                  ? 'bg-gradient-to-r from-violet-600 to-pink-600 text-white shadow-lg shadow-violet-500/30'
+                  : 'bg-white/80 dark:bg-gray-900/80 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200/50 dark:border-gray-800/50'
+              }`}
             >
+              <span>{tab.icon}</span>
+              <span className="hidden sm:inline">{tab.label}</span>
+            </button>
+          ))}
+        </motion.nav>
+
+        {/* Tab Content */}
+        <motion.div
+          className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl p-6 border border-gray-200/50 dark:border-gray-800/50 shadow-xl"
+          {...fadeInUp}
+          transition={{ delay: 0.3 }}
+        >
+          {activeTab === 'info' && (
+            <div>
               {isEditing ? (
-                <form
-                  className="edit-form"
-                  onSubmit={e => {
-                    e.preventDefault();
-                    handleEditSave();
-                  }}
-                >
-                  <div className="form-group">
-                    <label htmlFor="edit-name">이름</label>
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">이름</label>
                     <input
-                      id="edit-name"
                       type="text"
                       value={editForm.name || ''}
                       onChange={e => handleInputChange('name', e.target.value)}
-                      className="form-input"
-                      aria-required="true"
+                      className="w-full px-4 py-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
                     />
                   </div>
 
-                  <div className="form-group">
-                    <label htmlFor="edit-age">나이</label>
-                    <input
-                      id="edit-age"
-                      type="number"
-                      value={editForm.age || ''}
-                      onChange={e =>
-                        handleInputChange('age', parseInt(e.target.value) || undefined)
-                      }
-                      className="form-input"
-                      min="18"
-                      max="99"
-                      aria-describedby="age-hint"
-                    />
-                    <span id="age-hint" className="sr-only">
-                      18세에서 99세 사이
-                    </span>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">나이</label>
+                      <input
+                        type="number"
+                        value={editForm.age || ''}
+                        onChange={e => handleInputChange('age', parseInt(e.target.value) || undefined)}
+                        className="w-full px-4 py-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+                        min="18"
+                        max="99"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">성별</label>
+                      <select
+                        value={editForm.gender || ''}
+                        onChange={e => handleInputChange('gender', e.target.value as 'male' | 'female' | 'other')}
+                        className="w-full px-4 py-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      >
+                        <option value="">선택 안함</option>
+                        <option value="male">남성</option>
+                        <option value="female">여성</option>
+                        <option value="other">기타</option>
+                      </select>
+                    </div>
                   </div>
 
-                  <div className="form-group">
-                    <label htmlFor="edit-gender">성별</label>
-                    <select
-                      id="edit-gender"
-                      value={editForm.gender || ''}
-                      onChange={e =>
-                        handleInputChange('gender', e.target.value as 'male' | 'female' | 'other')
-                      }
-                      className="form-select"
-                    >
-                      <option value="">선택 안함</option>
-                      <option value="male">남성</option>
-                      <option value="female">여성</option>
-                      <option value="other">기타</option>
-                    </select>
-                  </div>
-
-                  <div className="form-group">
-                    <label htmlFor="edit-bio">자기소개</label>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">자기소개</label>
                     <textarea
-                      id="edit-bio"
                       value={editForm.bio || ''}
                       onChange={e => handleInputChange('bio', e.target.value)}
-                      className="form-textarea"
+                      className="w-full px-4 py-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500 resize-none"
                       rows={4}
                       placeholder="자신에 대해 소개해주세요..."
                     />
                   </div>
 
-                  <div className="form-group">
-                    <label htmlFor="edit-style">여행 스타일</label>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">여행 스타일</label>
                     <select
-                      id="edit-style"
                       value={editForm.travelStyle || ''}
                       onChange={e => handleInputChange('travelStyle', e.target.value)}
-                      className="form-select"
+                      className="w-full px-4 py-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
                     >
                       {profileService.getAvailableTravelStyles().map(style => (
-                        <option key={style} value={style}>
-                          {style}
-                        </option>
+                        <option key={style} value={style}>{style}</option>
                       ))}
                     </select>
                   </div>
 
-                  <fieldset className="form-group">
-                    <legend>관심사</legend>
-                    <div className="interest-grid" role="group" aria-label="관심사 선택">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">관심사</label>
+                    <div className="flex flex-wrap gap-2">
                       {profileService.getAvailableInterests().map(interest => (
                         <button
                           key={interest}
                           type="button"
-                          className={`interest-btn ${(editForm.interests || []).includes(interest) ? 'selected' : ''}`}
                           onClick={() => handleInterestToggle(interest)}
-                          aria-pressed={(editForm.interests || []).includes(interest)}
+                          className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                            (editForm.interests || []).includes(interest)
+                              ? 'bg-gradient-to-r from-violet-600 to-pink-600 text-white'
+                              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700'
+                          }`}
                         >
                           {interest}
                         </button>
                       ))}
                     </div>
-                  </fieldset>
+                  </div>
 
-                  <fieldset className="form-group">
-                    <legend>언어</legend>
-                    <div className="language-grid" role="group" aria-label="구사 언어 선택">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">언어</label>
+                    <div className="flex flex-wrap gap-2">
                       {profileService.getAvailableLanguages().map(language => (
                         <button
                           key={language}
                           type="button"
-                          className={`language-btn ${(editForm.languages || []).includes(language) ? 'selected' : ''}`}
                           onClick={() => handleLanguageToggle(language)}
-                          aria-pressed={(editForm.languages || []).includes(language)}
+                          className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                            (editForm.languages || []).includes(language)
+                              ? 'bg-gradient-to-r from-violet-600 to-pink-600 text-white'
+                              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700'
+                          }`}
                         >
                           {language}
                         </button>
                       ))}
                     </div>
-                  </fieldset>
-                </form>
+                  </div>
+                </div>
               ) : (
-                <div className="info-display">
-                  <section className="info-section">
-                    <h2>
-                      <span className="section-icon" aria-hidden="true">
-                        <TargetIcon />
-                      </span>{' '}
-                      여행 스타일
-                    </h2>
-                    <div className="travel-style">{profile.travelStyle}</div>
-                  </section>
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                      🎯 여행 스타일
+                    </h3>
+                    <span className="px-4 py-2 bg-gradient-to-r from-violet-600 to-pink-600 text-white rounded-full font-medium">
+                      {profile.travelStyle}
+                    </span>
+                  </div>
 
-                  <section className="info-section">
-                    <h2>
-                      <span className="section-icon" aria-hidden="true">
-                        <SparklesIcon />
-                      </span>{' '}
-                      관심사
-                    </h2>
-                    <div className="interests" role="list" aria-label="관심사 목록">
-                      {profile.interests.map((interest, index) => (
-                        <span key={index} className="interest-tag" role="listitem">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                      ✨ 관심사
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {profile.interests.map((interest, idx) => (
+                        <span
+                          key={idx}
+                          className="px-3 py-1.5 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-full text-sm font-medium"
+                        >
                           #{interest}
                         </span>
                       ))}
                     </div>
-                  </section>
+                  </div>
 
-                  <section className="info-section">
-                    <h2>
-                      <span className="section-icon" aria-hidden="true">
-                        <MessageCircleIcon />
-                      </span>{' '}
-                      구사 언어
-                    </h2>
-                    <div className="languages" role="list" aria-label="구사 언어 목록">
-                      {profile.languages.map((language, index) => (
-                        <span key={index} className="language-tag" role="listitem">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                      💬 구사 언어
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {profile.languages.map((language, idx) => (
+                        <span
+                          key={idx}
+                          className="px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full text-sm font-medium"
+                        >
                           {language}
                         </span>
                       ))}
                     </div>
-                  </section>
+                  </div>
                 </div>
               )}
-            </section>
+            </div>
           )}
 
           {activeTab === 'travel' && (
-            <section
-              id="tabpanel-travel"
-              className="travel-tab"
-              role="tabpanel"
-              aria-labelledby="tab-travel"
-            >
-              <div className="travel-header">
-                <h2>
-                  <span className="section-icon" aria-hidden="true">
-                    <PlaneIcon />
-                  </span>{' '}
-                  여행 기록
-                </h2>
-                <button
-                  className="add-travel-btn"
-                  onClick={addTravelHistory}
-                  aria-label="새 여행 기록 추가"
-                >
-                  + 여행 추가
-                </button>
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                  ✈️ 여행 기록
+                </h3>
+                {isOwnProfile && (
+                  <button
+                    onClick={addTravelHistory}
+                    className="px-4 py-2 bg-gradient-to-r from-violet-600 to-pink-600 text-white rounded-xl font-medium text-sm hover:shadow-lg transition-all"
+                  >
+                    + 여행 추가
+                  </button>
+                )}
               </div>
 
               {profile.travelHistory.length === 0 ? (
-                <div className="empty-travel" role="status">
-                  <div className="empty-icon" aria-hidden="true">
-                    <GlobeIcon />
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-violet-400/20 to-pink-400/20 dark:from-violet-500/30 dark:to-pink-500/30 flex items-center justify-center text-3xl">
+                    🌍
                   </div>
-                  <h3>아직 여행 기록이 없습니다</h3>
-                  <p>첫 번째 여행을 추가해보세요!</p>
+                  <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">아직 여행 기록이 없습니다</h4>
+                  <p className="text-gray-500 dark:text-gray-400">첫 번째 여행을 추가해보세요!</p>
                 </div>
               ) : (
-                <div className="travel-list" role="list" aria-label="여행 기록 목록">
+                <div className="space-y-4">
                   {profile.travelHistory.map(travel => (
-                    <article key={travel.id} className="travel-card" role="listitem">
-                      <div className="travel-info">
-                        <h3 className="travel-destination">
-                          <span className="dest-icon" aria-hidden="true">
-                            <MapPinIcon />
-                          </span>{' '}
-                          {travel.destination}
-                        </h3>
-                        <p className="travel-dates">
-                          <time dateTime={travel.startDate.toISOString()}>
-                            {formatDate(travel.startDate)}
-                          </time>
-                          {' - '}
-                          <time dateTime={travel.endDate.toISOString()}>
-                            {formatDate(travel.endDate)}
-                          </time>
-                        </p>
-                        <p className="travel-description">{travel.description}</p>
-                        <div className="travel-tags" aria-label="여행 태그">
-                          {travel.tags.map((tag, index) => (
-                            <span key={index} className="travel-tag">
-                              #{tag}
-                            </span>
-                          ))}
-                        </div>
+                    <div
+                      key={travel.id}
+                      className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-200/50 dark:border-gray-700/50"
+                    >
+                      <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2 mb-2">
+                        📍 {travel.destination}
+                      </h4>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                        📅 {formatDate(travel.startDate)} - {formatDate(travel.endDate)}
+                      </p>
+                      <p className="text-gray-600 dark:text-gray-300 mb-3">{travel.description}</p>
+                      <div className="flex flex-wrap gap-2">
+                        {travel.tags.map((tag, idx) => (
+                          <span
+                            key={idx}
+                            className="px-2 py-1 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-full text-xs font-medium"
+                          >
+                            #{tag}
+                          </span>
+                        ))}
                       </div>
-                    </article>
+                    </div>
                   ))}
                 </div>
               )}
-            </section>
+            </div>
           )}
 
           {activeTab === 'preferences' && (
-            <section
-              id="tabpanel-preferences"
-              className="preferences-tab"
-              role="tabpanel"
-              aria-labelledby="tab-preferences"
-            >
-              <div className="pref-section">
-                <h2>
-                  <span className="pref-icon" aria-hidden="true">
-                    <WalletIcon />
-                  </span>{' '}
-                  예산 선호도
-                </h2>
-                <p
-                  aria-label={`예산 범위 ${(profile.preferences.budget.min / 10000).toFixed(0)}만원에서 ${(profile.preferences.budget.max / 10000).toFixed(0)}만원`}
-                >
-                  {(profile.preferences.budget.min / 10000).toFixed(0)}만원 -{' '}
-                  {(profile.preferences.budget.max / 10000).toFixed(0)}만원
+            <div className="space-y-6">
+              <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl">
+                <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2 mb-2">💰 예산 선호도</h4>
+                <p className="text-gray-600 dark:text-gray-300">
+                  {(profile.preferences.budget.min / 10000).toFixed(0)}만원 - {(profile.preferences.budget.max / 10000).toFixed(0)}만원
                 </p>
               </div>
 
-              <div className="pref-section">
-                <h2>
-                  <span className="pref-icon" aria-hidden="true">
-                    <HomeIcon />
-                  </span>{' '}
-                  숙박 선호도
-                </h2>
-                <div className="pref-tags" role="list" aria-label="선호 숙박 유형">
-                  {profile.preferences.accommodationType.map((type, index) => (
-                    <span key={index} className="pref-tag" role="listitem">
+              <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl">
+                <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2 mb-3">🏨 숙박 선호도</h4>
+                <div className="flex flex-wrap gap-2">
+                  {profile.preferences.accommodationType.map((type, idx) => (
+                    <span key={idx} className="px-3 py-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full text-sm font-medium">
                       {type}
                     </span>
                   ))}
                 </div>
               </div>
 
-              <div className="pref-section">
-                <h2>
-                  <span className="pref-icon" aria-hidden="true">
-                    <CarIcon />
-                  </span>{' '}
-                  교통 선호도
-                </h2>
-                <div className="pref-tags" role="list" aria-label="선호 교통수단">
-                  {profile.preferences.transportPreference.map((transport, index) => (
-                    <span key={index} className="pref-tag" role="listitem">
+              <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl">
+                <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2 mb-3">🚗 교통 선호도</h4>
+                <div className="flex flex-wrap gap-2">
+                  {profile.preferences.transportPreference.map((transport, idx) => (
+                    <span key={idx} className="px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full text-sm font-medium">
                       {transport}
                     </span>
                   ))}
                 </div>
               </div>
 
-              <div className="pref-section">
-                <h2>
-                  <span className="pref-icon" aria-hidden="true">
-                    <UsersIcon />
-                  </span>{' '}
-                  그룹 크기
-                </h2>
-                <p
-                  aria-label={`선호 그룹 크기 ${profile.preferences.groupSize.min}명에서 ${profile.preferences.groupSize.max}명`}
-                >
+              <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl">
+                <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2 mb-2">👥 그룹 크기</h4>
+                <p className="text-gray-600 dark:text-gray-300">
                   {profile.preferences.groupSize.min}명 - {profile.preferences.groupSize.max}명
                 </p>
               </div>
 
-              <div className="pref-section">
-                <h2>
-                  <span className="pref-icon" aria-hidden="true">
-                    <ZapIcon />
-                  </span>{' '}
-                  여행 스타일
-                </h2>
-                <p>
-                  여행 페이스: <span className="pref-value">{profile.preferences.travelPace}</span>{' '}
-                  | 활동 레벨:{' '}
-                  <span className="pref-value">{profile.preferences.activityLevel}</span>
+              <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl">
+                <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2 mb-2">⚡ 여행 스타일</h4>
+                <p className="text-gray-600 dark:text-gray-300">
+                  여행 페이스: <span className="font-medium text-violet-600 dark:text-violet-400">{profile.preferences.travelPace}</span>
+                  {' | '}
+                  활동 레벨: <span className="font-medium text-violet-600 dark:text-violet-400">{profile.preferences.activityLevel}</span>
                 </p>
               </div>
-            </section>
+            </div>
           )}
-        </div>
-      </div>
+        </motion.div>
+      </main>
 
-      {/* 팔로워/팔로잉 모달 */}
-      {showFollowerList && viewedUserId && (
-        <div
-          className="follow-modal-overlay"
-          onClick={() => setShowFollowerList(null)}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="follow-modal-title"
-        >
-          <div
-            className="follow-modal"
-            onClick={e => e.stopPropagation()}
+      {/* Follower/Following Modal */}
+      <AnimatePresence>
+        {showFollowerList && viewedUserId && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowFollowerList(null)}
           >
-            <FollowerList
-              userId={viewedUserId}
-              type={showFollowerList}
-              isOwnProfile={isOwnProfile}
-              onClose={() => setShowFollowerList(null)}
-            />
-          </div>
-        </div>
-      )}
+            <motion.div
+              className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-md w-full max-h-[80vh] overflow-hidden"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <FollowerList
+                userId={viewedUserId}
+                type={showFollowerList}
+                isOwnProfile={isOwnProfile}
+                onClose={() => setShowFollowerList(null)}
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Blob animation keyframes */}
+      <style>{`
+        @keyframes blob {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          25% { transform: translate(20px, -30px) scale(1.1); }
+          50% { transform: translate(-20px, 20px) scale(0.9); }
+          75% { transform: translate(30px, 10px) scale(1.05); }
+        }
+      `}</style>
     </div>
   );
 };

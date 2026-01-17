@@ -9,7 +9,6 @@ class MockIntersectionObserver {
   observe = jest.fn();
   unobserve = jest.fn();
   disconnect = jest.fn();
-  constructor() {}
 }
 global.IntersectionObserver = MockIntersectionObserver as unknown as typeof IntersectionObserver;
 
@@ -281,8 +280,7 @@ describe('FollowerList', () => {
       { wrapper: createWrapper() }
     );
 
-    const mutualBadge = document.querySelector('.mutual-badge');
-    expect(mutualBadge).toBeInTheDocument();
+    expect(screen.getByTestId('mutual-badge')).toBeInTheDocument();
   });
 
   test('본인 프로필 아닐 때 팔로우 버튼 미표시', () => {
@@ -349,8 +347,7 @@ describe('FollowerList', () => {
       { wrapper: createWrapper() }
     );
 
-    const placeholder = document.querySelector('.avatar-placeholder');
-    expect(placeholder).toBeInTheDocument();
+    expect(screen.getByTestId('avatar-placeholder-2')).toBeInTheDocument();
   });
 
   test('총 카운트 표시', () => {

@@ -1,66 +1,40 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '../components/Toast';
 import { pointService } from '../services/pointService';
+import Logo from '../components/Logo';
+import ThemeToggle from '../components/ThemeToggle';
 import {
   PointBalanceResponse,
   PointTransactionResponse,
   LeaderboardEntry,
   PointTransactionType,
 } from '../types';
-import './Leaderboard.css';
 
-// SVG Icons
-const BackIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M19 12H5M12 19l-7-7 7-7" />
-  </svg>
-);
-
-const CoinIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <circle cx="12" cy="12" r="10" />
-    <path d="M9 12h6M12 9v6" />
-  </svg>
-);
-
-const TrophyIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
-    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
-    <path d="M4 22h16" />
-    <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
-    <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
-    <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
-  </svg>
-);
-
-const ArrowUpIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M12 19V5M5 12l7-7 7 7" />
-  </svg>
-);
-
-const ArrowDownIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M12 5v14M19 12l-7 7-7-7" />
-  </svg>
-);
-
-const SendIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
-  </svg>
-);
-
-const transactionTypeLabels: Record<PointTransactionType, { label: string; color: string }> = {
-  EARN: { label: '획득', color: '#22c55e' },
-  SPEND: { label: '사용', color: '#ef4444' },
-  TRANSFER_IN: { label: '수신', color: '#3b82f6' },
-  TRANSFER_OUT: { label: '전송', color: '#f59e0b' },
+const transactionTypeLabels: Record<PointTransactionType, { label: string; color: string; darkColor: string }> = {
+  EARN: { label: '획득', color: '#22c55e', darkColor: '#4ade80' },
+  SPEND: { label: '사용', color: '#ef4444', darkColor: '#f87171' },
+  TRANSFER_IN: { label: '수신', color: '#3b82f6', darkColor: '#60a5fa' },
+  TRANSFER_OUT: { label: '전송', color: '#f59e0b', darkColor: '#fbbf24' },
 };
 
 type TabType = 'leaderboard' | 'history' | 'transfer';
+
+const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -20 },
+  transition: { duration: 0.3 },
+};
+
+const staggerContainer = {
+  animate: {
+    transition: {
+      staggerChildren: 0.05,
+    },
+  },
+};
 
 const Leaderboard: React.FC = () => {
   const navigate = useNavigate();
@@ -173,232 +147,329 @@ const Leaderboard: React.FC = () => {
   const currentLeaderboard = showSeason ? seasonLeaderboard : leaderboard;
 
   // 순위 뱃지 색상
-  const getRankColor = (rank: number) => {
-    if (rank === 1) return '#ffd700';
-    if (rank === 2) return '#c0c0c0';
-    if (rank === 3) return '#cd7f32';
-    return '#64748b';
+  const getRankStyle = (rank: number) => {
+    if (rank === 1) return 'bg-gradient-to-r from-yellow-400 to-amber-500 text-white';
+    if (rank === 2) return 'bg-gradient-to-r from-gray-300 to-gray-400 text-gray-800';
+    if (rank === 3) return 'bg-gradient-to-r from-orange-400 to-amber-600 text-white';
+    return 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300';
   };
 
+  const tabs = [
+    { id: 'leaderboard' as TabType, label: '랭킹', icon: '🏆' },
+    { id: 'history' as TabType, label: '내역', icon: '📋' },
+    { id: 'transfer' as TabType, label: '전송', icon: '📤' },
+  ];
+
   return (
-    <div className="leaderboard-page">
-      {/* 헤더 */}
-      <header className="leaderboard-header">
-        <button className="btn-back" onClick={() => navigate(-1)}>
-          <BackIcon />
-        </button>
-        <h1>포인트</h1>
-        <div />
-      </header>
+    <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] relative overflow-hidden">
+      {/* Background Effects */}
+      <div
+        className="absolute top-20 left-10 w-72 h-72 bg-yellow-400/30 dark:bg-yellow-600/20 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite' }}
+      />
+      <div
+        className="absolute top-40 right-10 w-96 h-96 bg-orange-400/20 dark:bg-orange-600/10 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite 2s' }}
+      />
+      <div
+        className="absolute bottom-20 left-1/3 w-80 h-80 bg-amber-400/20 dark:bg-amber-600/10 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite 4s' }}
+      />
 
-      {/* 잔액 카드 */}
-      {balance && (
-        <div className="balance-card">
-          <div className="balance-main">
-            <CoinIcon />
-            <span className="balance-amount">{balance.totalPoints.toLocaleString()}</span>
-            <span className="balance-unit">P</span>
-          </div>
-          <div className="balance-details">
-            <div className="balance-item">
-              <span className="balance-label">총 획득</span>
-              <span className="balance-value earn">{balance.lifetimeEarned.toLocaleString()}P</span>
-            </div>
-            <div className="balance-item">
-              <span className="balance-label">총 사용</span>
-              <span className="balance-value spend">{balance.lifetimeSpent.toLocaleString()}P</span>
-            </div>
-            <div className="balance-item">
-              <span className="balance-label">현재 순위</span>
-              <span className="balance-value rank">#{balance.currentRank}</span>
-            </div>
-          </div>
-        </div>
-      )}
+      <style>{`
+        @keyframes blob {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          33% { transform: translate(30px, -50px) scale(1.1); }
+          66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+      `}</style>
 
-      {/* 탭 */}
-      <div className="tab-bar">
-        <button
-          className={`tab-item ${activeTab === 'leaderboard' ? 'active' : ''}`}
-          onClick={() => setActiveTab('leaderboard')}
-        >
-          <TrophyIcon />
-          랭킹
-        </button>
-        <button
-          className={`tab-item ${activeTab === 'history' ? 'active' : ''}`}
-          onClick={() => setActiveTab('history')}
-        >
-          <CoinIcon />
-          내역
-        </button>
-        <button
-          className={`tab-item ${activeTab === 'transfer' ? 'active' : ''}`}
-          onClick={() => setActiveTab('transfer')}
-        >
-          <SendIcon />
-          전송
-        </button>
-      </div>
-
-      {/* 리더보드 탭 */}
-      {activeTab === 'leaderboard' && (
-        <div className="tab-content">
-          {/* 시즌 토글 */}
-          <div className="leaderboard-toggle">
+      {/* Navigation */}
+      <motion.nav
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="sticky top-0 z-50 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50"
+      >
+        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
             <button
-              className={`toggle-btn ${!showSeason ? 'active' : ''}`}
-              onClick={() => setShowSeason(false)}
+              onClick={() => navigate(-1)}
+              className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
-              전체
+              <span className="text-xl">←</span>
             </button>
-            <button
-              className={`toggle-btn ${showSeason ? 'active' : ''}`}
-              onClick={() => setShowSeason(true)}
-            >
-              시즌
-            </button>
+            <Logo size="sm" />
           </div>
-
-          {isLoading ? (
-            <div className="loading-state">
-              <div className="loading-spinner" />
-            </div>
-          ) : (
-            <div className="leaderboard-list">
-              {currentLeaderboard.map(entry => (
-                <div
-                  key={entry.userId}
-                  className={`leaderboard-item ${entry.rank <= 3 ? 'top-rank' : ''}`}
-                >
-                  <div className="rank-badge" style={{ backgroundColor: getRankColor(entry.rank) }}>
-                    {entry.rank <= 3 ? <TrophyIcon /> : entry.rank}
-                  </div>
-                  <div className="user-avatar">
-                    {entry.profileImageUrl ? (
-                      <img src={entry.profileImageUrl} alt={entry.nickname} />
-                    ) : (
-                      <span>{entry.nickname.charAt(0)}</span>
-                    )}
-                  </div>
-                  <div className="user-info">
-                    <span className="user-name">{entry.nickname}</span>
-                    <span className="user-nfts">{entry.totalNftsCollected} NFTs</span>
-                  </div>
-                  <div className="user-points">
-                    <CoinIcon />
-                    <span>{entry.totalPoints.toLocaleString()}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          <h1 className="text-lg font-bold text-gray-800 dark:text-white">포인트</h1>
+          <ThemeToggle />
         </div>
-      )}
+      </motion.nav>
 
-      {/* 거래 내역 탭 */}
-      {activeTab === 'history' && (
-        <div className="tab-content">
-          {isLoading ? (
-            <div className="loading-state">
-              <div className="loading-spinner" />
-            </div>
-          ) : transactions.length === 0 ? (
-            <div className="empty-state">
-              <CoinIcon />
-              <h3>거래 내역이 없습니다</h3>
-              <p>NFT를 수집하여 포인트를 획득해보세요!</p>
-            </div>
-          ) : (
-            <div className="transactions-list">
-              {transactions.map(tx => {
-                const typeInfo = transactionTypeLabels[tx.type];
-                const isPositive = tx.type === 'EARN' || tx.type === 'TRANSFER_IN';
-
-                return (
-                  <div key={tx.id} className="transaction-item">
-                    <div className="tx-icon" style={{ backgroundColor: `${typeInfo.color}20` }}>
-                      {isPositive ? <ArrowUpIcon /> : <ArrowDownIcon />}
-                    </div>
-                    <div className="tx-info">
-                      <span className="tx-description">{tx.description}</span>
-                      <span className="tx-meta">
-                        <span className="tx-type" style={{ color: typeInfo.color }}>
-                          {typeInfo.label}
-                        </span>
-                        <span className="tx-date">
-                          {new Date(tx.createdAt).toLocaleDateString()}
-                        </span>
-                      </span>
-                    </div>
-                    <div className={`tx-amount ${isPositive ? 'positive' : 'negative'}`}>
-                      {isPositive ? '+' : '-'}
-                      {tx.amount.toLocaleString()}P
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* 전송 탭 */}
-      {activeTab === 'transfer' && (
-        <div className="tab-content">
-          <form className="transfer-form" onSubmit={handleTransfer}>
-            <div className="form-group">
-              <label>받는 사람 ID</label>
-              <input
-                type="number"
-                value={transferReceiverId}
-                onChange={e => setTransferReceiverId(e.target.value)}
-                placeholder="사용자 ID를 입력하세요"
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>전송 금액</label>
-              <div className="amount-input">
-                <input
-                  type="number"
-                  value={transferAmount}
-                  onChange={e => setTransferAmount(e.target.value)}
-                  placeholder="0"
-                  required
-                  min="1"
-                />
-                <span className="unit">P</span>
+      <main className="max-w-4xl mx-auto px-4 py-6 relative z-10">
+        {/* 잔액 카드 */}
+        {balance && (
+          <motion.div
+            {...fadeInUp}
+            className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-2xl p-6 mb-6 text-white shadow-xl"
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <span className="text-4xl">💰</span>
+              <div>
+                <span className="text-3xl font-bold">{balance.totalPoints.toLocaleString()}</span>
+                <span className="text-xl ml-1 opacity-90">P</span>
               </div>
-              {balance && (
-                <span className="balance-hint">보유: {balance.totalPoints.toLocaleString()}P</span>
-              )}
             </div>
-            <div className="form-group">
-              <label>메시지 (선택)</label>
-              <input
-                type="text"
-                value={transferMessage}
-                onChange={e => setTransferMessage(e.target.value)}
-                placeholder="전송 메시지를 입력하세요"
-              />
+            <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-white/20">
+              <div>
+                <p className="text-sm opacity-80">총 획득</p>
+                <p className="font-semibold text-green-200">{balance.lifetimeEarned.toLocaleString()}P</p>
+              </div>
+              <div>
+                <p className="text-sm opacity-80">총 사용</p>
+                <p className="font-semibold text-red-200">{balance.lifetimeSpent.toLocaleString()}P</p>
+              </div>
+              <div>
+                <p className="text-sm opacity-80">현재 순위</p>
+                <p className="font-semibold text-yellow-200">#{balance.currentRank}</p>
+              </div>
             </div>
-            <button type="submit" className="btn-send" disabled={isSending}>
-              {isSending ? (
-                <>
-                  <span className="spinner" />
-                  전송 중...
-                </>
-              ) : (
-                <>
-                  <SendIcon />
-                  포인트 전송
-                </>
-              )}
+          </motion.div>
+        )}
+
+        {/* 탭 */}
+        <motion.div
+          {...fadeInUp}
+          transition={{ delay: 0.1 }}
+          className="flex gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl mb-6"
+        >
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${
+                activeTab === tab.id
+                  ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-white shadow-sm'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+              }`}
+            >
+              <span>{tab.icon}</span>
+              <span>{tab.label}</span>
             </button>
-          </form>
-        </div>
-      )}
+          ))}
+        </motion.div>
+
+        {/* 탭 콘텐츠 */}
+        <AnimatePresence mode="wait">
+          {/* 리더보드 탭 */}
+          {activeTab === 'leaderboard' && (
+            <motion.div key="leaderboard" {...fadeInUp}>
+              {/* 시즌 토글 */}
+              <div className="flex gap-2 mb-4">
+                <button
+                  onClick={() => setShowSeason(false)}
+                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                    !showSeason
+                      ? 'bg-gradient-to-r from-violet-600 to-pink-600 text-white'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+                  }`}
+                >
+                  전체
+                </button>
+                <button
+                  onClick={() => setShowSeason(true)}
+                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                    showSeason
+                      ? 'bg-gradient-to-r from-violet-600 to-pink-600 text-white'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+                  }`}
+                >
+                  시즌
+                </button>
+              </div>
+
+              {isLoading ? (
+                <div className="flex flex-col items-center justify-center py-16">
+                  <div className="w-12 h-12 border-4 border-violet-500 border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : (
+                <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-3">
+                  {currentLeaderboard.map((entry) => (
+                    <motion.div
+                      key={entry.userId}
+                      variants={fadeInUp}
+                      className={`bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-xl p-4 border border-gray-200/50 dark:border-gray-700/50 flex items-center gap-4 ${
+                        entry.rank <= 3 ? 'ring-2 ring-yellow-400/50' : ''
+                      }`}
+                    >
+                      <div
+                        className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${getRankStyle(
+                          entry.rank
+                        )}`}
+                      >
+                        {entry.rank <= 3 ? '🏆' : entry.rank}
+                      </div>
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-400 to-pink-400 flex items-center justify-center text-white font-bold overflow-hidden">
+                        {entry.profileImageUrl ? (
+                          <img
+                            src={entry.profileImageUrl}
+                            alt={entry.nickname}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          entry.nickname.charAt(0).toUpperCase()
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-800 dark:text-white">{entry.nickname}</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{entry.totalNftsCollected} NFTs</p>
+                      </div>
+                      <div className="flex items-center gap-2 text-yellow-600 dark:text-yellow-400">
+                        <span className="text-lg">💰</span>
+                        <span className="font-bold">{entry.totalPoints.toLocaleString()}</span>
+                      </div>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
+            </motion.div>
+          )}
+
+          {/* 거래 내역 탭 */}
+          {activeTab === 'history' && (
+            <motion.div key="history" {...fadeInUp}>
+              {isLoading ? (
+                <div className="flex flex-col items-center justify-center py-16">
+                  <div className="w-12 h-12 border-4 border-violet-500 border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : transactions.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <span className="text-6xl mb-4">📭</span>
+                  <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">거래 내역이 없습니다</h3>
+                  <p className="text-gray-500 dark:text-gray-400">NFT를 수집하여 포인트를 획득해보세요!</p>
+                </div>
+              ) : (
+                <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-3">
+                  {transactions.map((tx) => {
+                    const typeInfo = transactionTypeLabels[tx.type];
+                    const isPositive = tx.type === 'EARN' || tx.type === 'TRANSFER_IN';
+
+                    return (
+                      <motion.div
+                        key={tx.id}
+                        variants={fadeInUp}
+                        className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-xl p-4 border border-gray-200/50 dark:border-gray-700/50 flex items-center gap-4"
+                      >
+                        <div
+                          className="w-12 h-12 rounded-full flex items-center justify-center text-2xl"
+                          style={{ backgroundColor: `${typeInfo.color}20` }}
+                        >
+                          {isPositive ? '📈' : '📉'}
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-medium text-gray-800 dark:text-white">{tx.description}</p>
+                          <div className="flex items-center gap-2 text-sm">
+                            <span style={{ color: typeInfo.color }}>{typeInfo.label}</span>
+                            <span className="text-gray-400">•</span>
+                            <span className="text-gray-500 dark:text-gray-400">
+                              {new Date(tx.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+                        <span
+                          className={`font-bold text-lg ${
+                            isPositive ? 'text-green-500' : 'text-red-500'
+                          }`}
+                        >
+                          {isPositive ? '+' : '-'}
+                          {tx.amount.toLocaleString()}P
+                        </span>
+                      </motion.div>
+                    );
+                  })}
+                </motion.div>
+              )}
+            </motion.div>
+          )}
+
+          {/* 전송 탭 */}
+          {activeTab === 'transfer' && (
+            <motion.div key="transfer" {...fadeInUp}>
+              <form
+                onSubmit={handleTransfer}
+                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50"
+              >
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    받는 사람 ID
+                  </label>
+                  <input
+                    type="number"
+                    value={transferReceiverId}
+                    onChange={(e) => setTransferReceiverId(e.target.value)}
+                    placeholder="사용자 ID를 입력하세요"
+                    required
+                    className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-violet-500/50 transition-all"
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">전송 금액</label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={transferAmount}
+                      onChange={(e) => setTransferAmount(e.target.value)}
+                      placeholder="0"
+                      required
+                      min="1"
+                      className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 pr-12 outline-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-violet-500/50 transition-all"
+                    />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 font-medium">
+                      P
+                    </span>
+                  </div>
+                  {balance && (
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                      보유: {balance.totalPoints.toLocaleString()}P
+                    </p>
+                  )}
+                </div>
+
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    메시지 (선택)
+                  </label>
+                  <input
+                    type="text"
+                    value={transferMessage}
+                    onChange={(e) => setTransferMessage(e.target.value)}
+                    placeholder="전송 메시지를 입력하세요"
+                    className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-violet-500/50 transition-all"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSending}
+                  className="w-full py-4 bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {isSending ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      전송 중...
+                    </>
+                  ) : (
+                    <>
+                      <span>📤</span>
+                      포인트 전송
+                    </>
+                  )}
+                </button>
+              </form>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
     </div>
   );
 };

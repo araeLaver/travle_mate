@@ -82,8 +82,8 @@ describe('ReviewList', () => {
 
     await waitFor(() => {
       expect(screen.getByText('정말 좋은 장소입니다!')).toBeInTheDocument();
-      expect(screen.getByText('괜찮았어요')).toBeInTheDocument();
     });
+    expect(screen.getByText('괜찮았어요')).toBeInTheDocument();
   });
 
   test('통계 헤더 표시', async () => {
@@ -97,8 +97,8 @@ describe('ReviewList', () => {
 
     await waitFor(() => {
       expect(screen.getByText('4.5')).toBeInTheDocument();
-      expect(screen.getByText('25개의 리뷰')).toBeInTheDocument();
     });
+    expect(screen.getByText('25개의 리뷰')).toBeInTheDocument();
   });
 
   test('빈 목록 메시지 표시', async () => {
@@ -112,8 +112,8 @@ describe('ReviewList', () => {
 
     await waitFor(() => {
       expect(screen.getByText('아직 리뷰가 없습니다.')).toBeInTheDocument();
-      expect(screen.getByText('첫 번째 리뷰를 작성해보세요!')).toBeInTheDocument();
     });
+    expect(screen.getByText('첫 번째 리뷰를 작성해보세요!')).toBeInTheDocument();
   });
 
   test('최신순 정렬 버튼 활성화 상태', async () => {
@@ -149,8 +149,8 @@ describe('ReviewList', () => {
 
     await waitFor(() => {
       expect(helpfulBtn).toHaveClass('active');
-      expect(mockGetLocationReviews).toHaveBeenCalledWith(1, 'helpful', 0);
     });
+    expect(mockGetLocationReviews).toHaveBeenCalledWith(1, 'helpful', 0);
   });
 
   test('도움됨 버튼 클릭', async () => {
@@ -185,9 +185,10 @@ describe('ReviewList', () => {
     render(<ReviewList locationId={1} />);
 
     await waitFor(() => {
-      const deleteBtns = document.querySelectorAll('.delete-btn');
-      expect(deleteBtns).toHaveLength(1); // 본인 리뷰만
+      // 본인 리뷰 (id: 1)에만 삭제 버튼이 있음
+      expect(screen.getByTestId('delete-btn-1')).toBeInTheDocument();
     });
+    expect(screen.queryByTestId('delete-btn-2')).not.toBeInTheDocument();
   });
 
   test('삭제 버튼 클릭 시 삭제 확인 및 실행', async () => {
@@ -203,17 +204,17 @@ describe('ReviewList', () => {
     render(<ReviewList locationId={1} onReviewDeleted={mockOnReviewDeleted} />);
 
     await waitFor(() => {
-      expect(document.querySelector('.delete-btn')).toBeInTheDocument();
+      expect(screen.getByTestId('delete-btn-1')).toBeInTheDocument();
     });
 
-    const deleteBtn = document.querySelector('.delete-btn');
-    fireEvent.click(deleteBtn!);
+    const deleteBtn = screen.getByTestId('delete-btn-1');
+    fireEvent.click(deleteBtn);
 
     await waitFor(() => {
-      expect(confirmSpy).toHaveBeenCalledWith('리뷰를 삭제하시겠습니까?');
       expect(mockDeleteReview).toHaveBeenCalledWith(1);
-      expect(mockOnReviewDeleted).toHaveBeenCalled();
     });
+    expect(confirmSpy).toHaveBeenCalledWith('리뷰를 삭제하시겠습니까?');
+    expect(mockOnReviewDeleted).toHaveBeenCalled();
 
     confirmSpy.mockRestore();
   });
@@ -230,11 +231,11 @@ describe('ReviewList', () => {
     render(<ReviewList locationId={1} />);
 
     await waitFor(() => {
-      expect(document.querySelector('.delete-btn')).toBeInTheDocument();
+      expect(screen.getByTestId('delete-btn-1')).toBeInTheDocument();
     });
 
-    const deleteBtn = document.querySelector('.delete-btn');
-    fireEvent.click(deleteBtn!);
+    const deleteBtn = screen.getByTestId('delete-btn-1');
+    fireEvent.click(deleteBtn);
 
     expect(mockDeleteReview).not.toHaveBeenCalled();
 
@@ -285,8 +286,7 @@ describe('ReviewList', () => {
 
     render(<ReviewList locationId={1} />);
 
-    const spinner = document.querySelector('.loading-spinner');
-    expect(spinner).toBeInTheDocument();
+    expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
   });
 
   test('리뷰어 프로필 이미지 표시', async () => {
@@ -314,8 +314,7 @@ describe('ReviewList', () => {
     render(<ReviewList locationId={1} />);
 
     await waitFor(() => {
-      const placeholder = document.querySelector('.reviewer-avatar.placeholder');
-      expect(placeholder).toBeInTheDocument();
+      expect(screen.getByTestId('reviewer-avatar-placeholder-2')).toBeInTheDocument();
     });
   });
 
@@ -358,8 +357,8 @@ describe('ReviewList', () => {
     render(<ReviewList locationId={1} />);
 
     await waitFor(() => {
-      const activeBtn = document.querySelector('.helpful-btn.active');
-      expect(activeBtn).toBeInTheDocument();
+      const activeBtn = screen.getByTestId('helpful-btn-2');
+      expect(activeBtn).toHaveClass('active');
     });
   });
 
@@ -388,8 +387,9 @@ describe('ReviewList', () => {
     render(<ReviewList locationId={1} />);
 
     await waitFor(() => {
-      const deleteBtns = document.querySelectorAll('.delete-btn');
-      expect(deleteBtns).toHaveLength(0);
+      expect(screen.getByText('정말 좋은 장소입니다!')).toBeInTheDocument();
     });
+    expect(screen.queryByTestId('delete-btn-1')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('delete-btn-2')).not.toBeInTheDocument();
   });
 });

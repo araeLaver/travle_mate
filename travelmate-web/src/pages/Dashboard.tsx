@@ -1,143 +1,27 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import './Dashboard.css';
+import { motion } from 'framer-motion';
 import { locationService, TravelMate, Location } from '../services/locationService';
 import { chatService } from '../services/chatService';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../components/Toast';
 import { getErrorMessage, logError } from '../utils/errorHandler';
 import WalletButton from '../components/wallet/WalletButton';
+import Logo from '../components/Logo';
+import ThemeToggle from '../components/ThemeToggle';
 
-// SVG Icons
-const UsersIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-    <circle cx="9" cy="7" r="4" />
-    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-  </svg>
-);
+const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.5 },
+};
 
-const WifiIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M5 12.55a11 11 0 0 1 14.08 0" />
-    <path d="M1.42 9a16 16 0 0 1 21.16 0" />
-    <path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
-    <line x1="12" y1="20" x2="12.01" y2="20" />
-  </svg>
-);
-
-const CompassIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="12" cy="12" r="10" />
-    <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
-  </svg>
-);
-
-const MapPinIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-    <circle cx="12" cy="10" r="3" />
-  </svg>
-);
-
-const MapIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
-    <line x1="8" y1="2" x2="8" y2="18" />
-    <line x1="16" y1="6" x2="16" y2="22" />
-  </svg>
-);
-
-const SearchIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="11" cy="11" r="8" />
-    <line x1="21" y1="21" x2="16.65" y2="16.65" />
-  </svg>
-);
-
-const MessageCircleIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-  </svg>
-);
-
-const UserIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-    <circle cx="12" cy="7" r="4" />
-  </svg>
-);
-
-const RefreshIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <polyline points="23 4 23 10 17 10" />
-    <polyline points="1 20 1 14 7 14" />
-    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-  </svg>
-);
+const staggerContainer = {
+  animate: {
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -269,7 +153,7 @@ const Dashboard: React.FC = () => {
         <img
           src={image}
           alt={`${name}의 프로필 사진`}
-          className="profile-image"
+          className="rounded-full object-cover border-3 border-violet-400/50 shadow-lg"
           style={{ width: size, height: size }}
           onError={e => {
             e.currentTarget.style.display = 'none';
@@ -281,8 +165,8 @@ const Dashboard: React.FC = () => {
 
     return (
       <div
-        className="profile-avatar"
-        style={{ width: size, height: size }}
+        className="flex items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-pink-500 border-3 border-violet-400/50 shadow-lg text-white font-bold"
+        style={{ width: size, height: size, fontSize: size * 0.4 }}
         aria-label={`${name}의 프로필`}
       >
         {initials}
@@ -290,83 +174,139 @@ const Dashboard: React.FC = () => {
     );
   };
 
+  const quickActions = [
+    { label: 'NFT 수집', icon: '🎨', path: '/nft', gradient: 'from-violet-500 to-purple-500' },
+    { label: '그룹 만들기', icon: '🗺️', path: '/groups/create', gradient: 'from-blue-500 to-cyan-500' },
+    { label: '그룹 찾기', icon: '🔍', path: '/groups', gradient: 'from-emerald-500 to-teal-500' },
+    { label: '채팅방', icon: '💬', path: '/chat', gradient: 'from-pink-500 to-rose-500' },
+    { label: '내 프로필', icon: '👤', path: '/profile', gradient: 'from-amber-500 to-orange-500' },
+    { label: '지갑 연결', icon: '💰', path: '/wallet', gradient: 'from-indigo-500 to-violet-500' },
+    { label: '마켓플레이스', icon: '🛒', path: '/marketplace', gradient: 'from-cyan-500 to-blue-500' },
+    { label: '포인트 상점', icon: '💎', path: '/shop', gradient: 'from-rose-500 to-pink-500' },
+  ];
+
   return (
-    <div className="dashboard">
-      <div className="dashboard-content">
-        <header className="dashboard-header">
-          <div className="header-top">
-            <div className="header-greeting">
-              <p className="greeting-text">{getTimeGreeting()},</p>
-              <h1>{userName}님!</h1>
-            </div>
-            <WalletButton variant="compact" />
-          </div>
-          <p className="sub-text">오늘도 멋진 여행을 만들어보세요</p>
-        </header>
+    <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] relative overflow-hidden">
+      {/* Background Effects */}
+      <div
+        className="absolute top-20 left-10 w-72 h-72 bg-violet-400/30 dark:bg-violet-600/20 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite' }}
+      />
+      <div
+        className="absolute top-40 right-10 w-96 h-96 bg-pink-400/20 dark:bg-pink-600/15 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite 2s' }}
+      />
+      <div
+        className="absolute bottom-20 left-1/3 w-80 h-80 bg-blue-400/20 dark:bg-blue-600/15 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite 4s' }}
+      />
 
-        <section className="dashboard-stats" aria-label="통계 요약">
-          <div className="stat-card" role="group" aria-label="발견된 메이트 수">
-            <div className="stat-icon" aria-hidden="true">
-              <UsersIcon />
-            </div>
-            <div className="stat-content">
-              <div className="stat-number">{nearbyUsers.length}</div>
-              <div className="stat-label">발견된 메이트</div>
-            </div>
-          </div>
-          <div className="stat-card" role="group" aria-label="온라인 메이트 수">
-            <div className="stat-icon online" aria-hidden="true">
-              <WifiIcon />
-            </div>
-            <div className="stat-content">
-              <div className="stat-number">{nearbyUsers.filter(u => u.isOnline).length}</div>
-              <div className="stat-label">온라인</div>
+      {/* Navigation */}
+      <nav className="fixed top-0 w-full z-50 px-4 py-3">
+        <div className="max-w-6xl mx-auto bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-2xl px-6 py-3 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
+          <div className="flex items-center justify-between">
+            <button onClick={() => navigate('/')} className="flex items-center gap-2">
+              <Logo size={32} />
+              <span className="font-bold text-gray-900 dark:text-white">TravelMate</span>
+            </button>
+            <div className="flex items-center gap-3">
+              <WalletButton variant="compact" />
+              <ThemeToggle />
             </div>
           </div>
-          <div className="stat-card" role="group" aria-label="탐색 횟수">
-            <div className="stat-icon explore" aria-hidden="true">
-              <CompassIcon />
-            </div>
-            <div className="stat-content">
-              <div className="stat-number">{discoveryCount}</div>
-              <div className="stat-label">탐색 횟수</div>
-            </div>
-          </div>
-        </section>
+        </div>
+      </nav>
 
-        {isInitialLoading ? (
-          <div className="location-skeleton">
-            <div className="skeleton-icon" />
-            <div className="skeleton-content">
-              <div className="skeleton-line short" />
-              <div className="skeleton-line" />
-            </div>
-          </div>
-        ) : (
-          currentLocation && (
-            <div className="location-info">
-              <div className="location-card">
-                <div className="location-icon" aria-hidden="true">
-                  <MapPinIcon />
+      {/* Main Content */}
+      <main className="relative z-10 max-w-6xl mx-auto px-4 pt-24 pb-12">
+        {/* Header */}
+        <motion.header
+          className="text-center mb-12"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <p className="text-lg text-gray-600 dark:text-gray-400 mb-2">{getTimeGreeting()},</p>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            <span className="bg-gradient-to-r from-violet-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+              {userName}
+            </span>
+            <span className="text-gray-900 dark:text-white">님!</span>
+          </h1>
+          <p className="text-gray-500 dark:text-gray-400">오늘도 멋진 여행을 만들어보세요</p>
+        </motion.header>
+
+        {/* Stats Grid */}
+        <motion.section
+          className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"
+          variants={staggerContainer}
+          initial="initial"
+          animate="animate"
+          aria-label="통계 요약"
+        >
+          {[
+            { label: '발견된 메이트', value: nearbyUsers.length, icon: '👥', color: 'violet' },
+            { label: '온라인', value: nearbyUsers.filter(u => u.isOnline).length, icon: '🟢', color: 'emerald' },
+            { label: '탐색 횟수', value: discoveryCount, icon: '🧭', color: 'blue' },
+          ].map((stat, idx) => (
+            <motion.div
+              key={idx}
+              className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-800/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+              variants={fadeInUp}
+            >
+              <div className="flex items-center gap-4">
+                <div className={`w-14 h-14 rounded-xl bg-gradient-to-br from-${stat.color}-400/20 to-${stat.color}-500/20 dark:from-${stat.color}-500/30 dark:to-${stat.color}-600/30 flex items-center justify-center text-2xl`}>
+                  {stat.icon}
                 </div>
-                <div className="location-content">
-                  <div className={`location-status ${!isLocationEnabled ? 'default' : ''}`}>
+                <div>
+                  <div className="text-3xl font-bold text-gray-900 dark:text-white">{stat.value}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">{stat.label}</div>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </motion.section>
+
+        {/* Location Card */}
+        <motion.section
+          className="mb-8"
+          {...fadeInUp}
+          transition={{ delay: 0.2 }}
+        >
+          {isInitialLoading ? (
+            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
+              <div className="flex items-center gap-4 animate-pulse">
+                <div className="w-14 h-14 bg-gray-200 dark:bg-gray-700 rounded-xl" />
+                <div className="flex-1 space-y-3">
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4" />
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
+                </div>
+              </div>
+            </div>
+          ) : currentLocation && (
+            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
+              <div className="flex flex-col md:flex-row md:items-start gap-4">
+                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-amber-400/20 to-orange-500/20 dark:from-amber-500/30 dark:to-orange-600/30 flex items-center justify-center text-2xl flex-shrink-0">
+                  📍
+                </div>
+                <div className="flex-1">
+                  <div className={`text-sm font-semibold mb-1 ${isLocationEnabled ? 'text-emerald-500' : 'text-amber-500'}`}>
                     {isLocationEnabled ? '실제 GPS 위치' : '기본 위치 사용 중'}
                   </div>
-                  <div className="location-address">
+                  <div className="text-gray-900 dark:text-white font-medium mb-2">
                     {currentLocation.address ||
                       `${currentLocation.latitude.toFixed(4)}, ${currentLocation.longitude.toFixed(4)}`}
                   </div>
-                  <div className="location-debug">
+                  <div className="text-xs text-gray-400 dark:text-gray-500 font-mono mb-3">
                     {currentLocation.latitude.toFixed(6)}, {currentLocation.longitude.toFixed(6)}
                   </div>
-                  <div className="search-radius">
-                    <label htmlFor="radius-select">검색 반경:</label>
+                  <div className="flex items-center gap-3 mb-4">
+                    <label htmlFor="radius-select" className="text-sm text-gray-600 dark:text-gray-400">검색 반경:</label>
                     <select
                       id="radius-select"
                       value={searchRadius}
                       onChange={e => setSearchRadius(Number(e.target.value))}
-                      className="radius-select"
+                      className="px-4 py-2 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
                     >
                       <option value={1}>1km 이내</option>
                       <option value={3}>3km 이내</option>
@@ -377,18 +317,20 @@ const Dashboard: React.FC = () => {
                   </div>
                   {!isLocationEnabled && (
                     <>
-                      <div className="location-tip">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 italic mb-3">
                         더 정확한 위치를 원하시면 브라우저에서 위치 권한을 허용해주세요
-                      </div>
-                      <div className="location-buttons">
+                      </p>
+                      <div className="flex flex-wrap gap-3">
                         <button
                           onClick={requestLocationPermission}
-                          className="location-btn primary"
+                          className="px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl text-sm font-semibold hover:shadow-lg transition-all duration-300 flex items-center gap-2"
                         >
-                          <MapPinIcon />
-                          위치 권한 요청
+                          📍 위치 권한 요청
                         </button>
-                        <button onClick={setManualLocation} className="location-btn secondary">
+                        <button
+                          onClick={setManualLocation}
+                          className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl text-sm font-semibold hover:shadow-lg transition-all duration-300"
+                        >
                           경기광주로 설정
                         </button>
                       </div>
@@ -397,21 +339,33 @@ const Dashboard: React.FC = () => {
                 </div>
               </div>
             </div>
-          )
-        )}
+          )}
+        </motion.section>
 
-        <div className="discovery-section">
-          <h2>여행 메이트 발견하기</h2>
+        {/* Discovery Section */}
+        <motion.section
+          className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl p-8 border border-gray-200/50 dark:border-gray-800/50 shadow-xl mb-8"
+          {...fadeInUp}
+          transition={{ delay: 0.3 }}
+        >
+          <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-8">
+            여행 메이트 발견하기
+          </h2>
 
-          <fieldset className="mood-selector">
-            <legend>
-              <span className="legend-text">현재 나의 여행 기분</span>
+          {/* Mood Selector */}
+          <fieldset className="mb-8">
+            <legend className="text-center text-gray-600 dark:text-gray-400 font-medium mb-4">
+              현재 나의 여행 기분
             </legend>
-            <div className="mood-options" role="radiogroup" aria-label="여행 기분 선택">
+            <div className="flex flex-wrap justify-center gap-3" role="radiogroup" aria-label="여행 기분 선택">
               {moods.map(mood => (
                 <button
                   key={mood}
-                  className={`mood-btn ${currentMood === mood ? 'active' : ''}`}
+                  className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${
+                    currentMood === mood
+                      ? 'bg-gradient-to-r from-violet-600 to-pink-600 text-white shadow-lg shadow-violet-500/30'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
+                  }`}
                   onClick={() => setCurrentMood(mood)}
                   role="radio"
                   aria-checked={currentMood === mood}
@@ -422,221 +376,196 @@ const Dashboard: React.FC = () => {
             </div>
           </fieldset>
 
-          <div className="discovery-area">
-            <div className={`radar-container ${isDiscovering ? 'active' : ''}`} aria-hidden="true">
-              <div className="radar-circle">
-                <div className="radar-sweep" />
-                <div className="radar-ring ring-1" />
-                <div className="radar-ring ring-2" />
-                <div className="radar-ring ring-3" />
-                <div className="center-dot" />
+          {/* Radar Animation */}
+          <div className="flex flex-col items-center">
+            <div className={`relative w-44 h-44 mb-8 ${isDiscovering ? 'animate-pulse' : ''}`}>
+              <div className="absolute inset-0 rounded-full border-2 border-violet-300/30 dark:border-violet-500/30" />
+              <div className="absolute inset-4 rounded-full border-2 border-violet-300/40 dark:border-violet-500/40" />
+              <div className="absolute inset-8 rounded-full border-2 border-violet-300/50 dark:border-violet-500/50" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className={`w-6 h-6 rounded-full bg-gradient-to-br from-violet-500 to-pink-500 shadow-lg ${isDiscovering ? 'animate-ping' : ''}`} />
               </div>
+              {isDiscovering && (
+                <div
+                  className="absolute top-1/2 left-1/2 w-1 h-1/2 bg-gradient-to-b from-violet-500 to-transparent origin-bottom"
+                  style={{ animation: 'spin 2s linear infinite' }}
+                />
+              )}
             </div>
 
             <button
-              className={`discovery-btn ${isDiscovering ? 'discovering' : ''}`}
+              className={`discovery-btn px-10 py-4 rounded-full font-semibold text-white text-lg transition-all duration-300 flex items-center gap-3 ${
+                isDiscovering
+                  ? 'bg-gradient-to-r from-indigo-500 to-violet-500'
+                  : 'bg-gradient-to-r from-violet-600 to-pink-600 hover:shadow-xl hover:shadow-violet-500/30 hover:-translate-y-1'
+              }`}
               onClick={discoverNearbyMates}
               disabled={isDiscovering}
               aria-busy={isDiscovering}
             >
               {isDiscovering ? (
                 <>
-                  <span className="spinner" aria-hidden="true" />
+                  <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   <span>탐색 중...</span>
                 </>
               ) : (
                 <>
-                  <RefreshIcon />
+                  <span className="text-xl">🔄</span>
                   <span>주변 메이트 발견하기</span>
                 </>
               )}
             </button>
 
-            <p className="discovery-info">실시간 위치 기반으로 가까운 여행 메이트를 찾아드립니다</p>
+            <p className="text-gray-500 dark:text-gray-400 text-sm mt-4">
+              실시간 위치 기반으로 가까운 여행 메이트를 찾아드립니다
+            </p>
           </div>
-        </div>
+        </motion.section>
 
+        {/* Nearby Users */}
         {nearbyUsers.length > 0 ? (
-          <section className="nearby-users-section" aria-label="발견된 여행 메이트 목록">
-            <div className="section-header">
-              <h2>발견된 여행 메이트</h2>
-              <span className="badge">{nearbyUsers.length}명</span>
+          <motion.section
+            className="mb-8"
+            {...fadeInUp}
+            transition={{ delay: 0.4 }}
+            aria-label="발견된 여행 메이트 목록"
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">발견된 여행 메이트</h2>
+              <span className="px-3 py-1 bg-gradient-to-r from-violet-600 to-pink-600 text-white text-sm font-semibold rounded-full">
+                {nearbyUsers.length}명
+              </span>
             </div>
-            <div className="nearby-users" role="list">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6" role="list">
               {nearbyUsers.map(user => (
-                <article
+                <motion.article
                   key={user.id}
-                  className="user-card"
+                  className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-800/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
                   role="listitem"
-                  aria-label={`${user.name}, ${user.age}세, 매칭도 ${user.matchScore}%`}
+                  whileHover={{ scale: 1.02 }}
                 >
-                  <div className="user-profile">
-                    <Avatar name={user.name} image={user.profileImage} />
-                    <div className="user-info">
-                      <div className="user-header">
-                        <h4>{user.name}</h4>
-                        <span className="user-age">{user.age}세</span>
+                  <div className="flex gap-4 mb-4">
+                    <Avatar name={user.name} image={user.profileImage} size={72} />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className="text-lg font-bold text-gray-900 dark:text-white">{user.name}</h4>
+                        <span className="text-sm text-gray-500 dark:text-gray-400">{user.age}세</span>
                         <span
-                          className={`online-indicator ${user.isOnline ? 'online' : 'offline'}`}
+                          className={`w-2.5 h-2.5 rounded-full ml-auto ${user.isOnline ? 'bg-emerald-400 shadow-lg shadow-emerald-400/50' : 'bg-gray-300 dark:bg-gray-600'}`}
                           aria-label={user.isOnline ? '온라인' : '오프라인'}
                         />
                       </div>
-                      <p className="user-mood">{user.mood}</p>
-                      <p className="user-details">
-                        <MapPinIcon /> {user.distance}km · {user.travelStyle}
+                      <p className="text-violet-500 dark:text-violet-400 font-medium mb-1">{user.mood}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                        📍 {user.distance}km · {user.travelStyle}
                       </p>
-                      <div className="user-interests" aria-label="관심사">
-                        {user.interests.slice(0, 3).map((interest, idx) => (
-                          <span key={idx} className="interest-tag">
-                            #{interest}
-                          </span>
-                        ))}
-                      </div>
-                      <p className="user-bio">{user.bio}</p>
-                      <div className="match-score-bar">
-                        <div className="match-label">
-                          <span>매칭도</span>
-                          <strong>{user.matchScore}%</strong>
-                        </div>
-                        <div className="progress-bar">
-                          <div
-                            className="progress-fill"
-                            style={{ width: `${user.matchScore}%` }}
-                            aria-label={`매칭도 ${user.matchScore}퍼센트`}
-                          />
-                        </div>
-                      </div>
                     </div>
                   </div>
-                  <div className="user-actions">
+
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {user.interests.slice(0, 3).map((interest, idx) => (
+                      <span
+                        key={idx}
+                        className="px-3 py-1 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 text-xs font-medium rounded-full"
+                      >
+                        #{interest}
+                      </span>
+                    ))}
+                  </div>
+
+                  <p className="text-sm text-gray-500 dark:text-gray-400 italic mb-4">{user.bio}</p>
+
+                  <div className="mb-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm text-gray-600 dark:text-gray-400">매칭도</span>
+                      <span className="text-violet-600 dark:text-violet-400 font-bold">{user.matchScore}%</span>
+                    </div>
+                    <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-violet-500 to-pink-500 rounded-full transition-all duration-500"
+                        style={{ width: `${user.matchScore}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3">
                     <button
-                      className="btn-action primary"
+                      className="flex-1 py-3 bg-gradient-to-r from-violet-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-violet-500/30 transition-all duration-300 flex items-center justify-center gap-2"
                       onClick={() => startChat(user)}
                       aria-label={`${user.name}님과 채팅 시작`}
                     >
-                      <MessageCircleIcon />
-                      채팅 시작
+                      💬 채팅 시작
                     </button>
                     <button
-                      className="btn-action secondary"
+                      className="flex-1 py-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl font-semibold border border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300"
                       onClick={() => sendGreeting(user)}
                       aria-label={`${user.name}님에게 인사하기`}
                     >
                       인사하기
                     </button>
                   </div>
-                </article>
+                </motion.article>
               ))}
             </div>
-          </section>
+          </motion.section>
         ) : discoveryCount > 0 && !isDiscovering ? (
-          <div className="empty-state">
-            <div className="empty-icon" aria-hidden="true">
-              <UsersIcon />
+          <motion.div
+            className="text-center py-16 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-800/50 shadow-lg mb-8"
+            {...fadeInUp}
+            transition={{ delay: 0.4 }}
+          >
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-violet-400/20 to-pink-400/20 dark:from-violet-500/30 dark:to-pink-500/30 flex items-center justify-center text-4xl">
+              👥
             </div>
-            <h3>주변에 여행 메이트가 없어요</h3>
-            <p>검색 반경을 넓히거나 다른 시간에 다시 시도해보세요</p>
-            <button className="btn-retry" onClick={discoverNearbyMates}>
-              <RefreshIcon />
-              다시 검색하기
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">주변에 여행 메이트가 없어요</h3>
+            <p className="text-gray-500 dark:text-gray-400 mb-6">검색 반경을 넓히거나 다른 시간에 다시 시도해보세요</p>
+            <button
+              className="px-6 py-3 bg-gradient-to-r from-violet-600 to-pink-600 text-white rounded-full font-semibold hover:shadow-lg hover:shadow-violet-500/30 transition-all duration-300 flex items-center gap-2 mx-auto"
+              onClick={discoverNearbyMates}
+            >
+              🔄 다시 검색하기
             </button>
-          </div>
+          </motion.div>
         ) : null}
 
-        <nav className="quick-actions" aria-label="빠른 액션">
-          <h2>빠른 액션</h2>
-          <div className="actions-grid">
-            <button
-              className="action-card nft-card"
-              onClick={() => navigate('/nft')}
-              aria-label="NFT 수집하기"
-            >
-              <div className="action-icon nft" aria-hidden="true">
-                <span className="nft-emoji">🎨</span>
-              </div>
-              <div className="action-label">NFT 수집</div>
-            </button>
-            <button
-              className="action-card"
-              onClick={() => navigate('/groups/create')}
-              aria-label="여행 그룹 만들기"
-            >
-              <div className="action-icon" aria-hidden="true">
-                <MapIcon />
-              </div>
-              <div className="action-label">여행 그룹 만들기</div>
-            </button>
-            <button
-              className="action-card"
-              onClick={() => navigate('/groups')}
-              aria-label="그룹 찾기"
-            >
-              <div className="action-icon" aria-hidden="true">
-                <SearchIcon />
-              </div>
-              <div className="action-label">그룹 찾기</div>
-            </button>
-            <button
-              className="action-card"
-              onClick={() => navigate('/chat')}
-              aria-label="채팅방으로 이동"
-            >
-              <div className="action-icon" aria-hidden="true">
-                <MessageCircleIcon />
-              </div>
-              <div className="action-label">채팅방</div>
-            </button>
-            <button
-              className="action-card"
-              onClick={() => navigate('/profile')}
-              aria-label="내 프로필 보기"
-            >
-              <div className="action-icon" aria-hidden="true">
-                <UserIcon />
-              </div>
-              <div className="action-label">내 프로필</div>
-            </button>
-            <button
-              className="action-card"
-              onClick={() => navigate('/wallet')}
-              aria-label="지갑 연결"
-            >
-              <div className="action-icon" aria-hidden="true">
-                <span className="nft-emoji">💰</span>
-              </div>
-              <div className="action-label">지갑 연결</div>
-            </button>
-            <button
-              className="action-card marketplace-card"
-              onClick={() => navigate('/marketplace')}
-              aria-label="NFT 마켓플레이스"
-            >
-              <div className="action-icon marketplace" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="9" cy="21" r="1"/>
-                  <circle cx="20" cy="21" r="1"/>
-                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-                </svg>
-              </div>
-              <div className="action-label">마켓플레이스</div>
-            </button>
-            <button
-              className="action-card shop-card"
-              onClick={() => navigate('/shop')}
-              aria-label="포인트 상점"
-            >
-              <div className="action-icon shop" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10"/>
-                  <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/>
-                  <path d="M12 18V6"/>
-                </svg>
-              </div>
-              <div className="action-label">포인트 상점</div>
-            </button>
+        {/* Quick Actions */}
+        <motion.nav
+          className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl p-8 border border-gray-200/50 dark:border-gray-800/50 shadow-xl"
+          {...fadeInUp}
+          transition={{ delay: 0.5 }}
+          aria-label="빠른 액션"
+        >
+          <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-8">빠른 액션</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {quickActions.map((action, idx) => (
+              <motion.button
+                key={idx}
+                className="group p-6 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                onClick={() => navigate(action.path)}
+                whileHover={{ scale: 1.02 }}
+                aria-label={action.label}
+              >
+                <div className={`w-12 h-12 mx-auto mb-3 rounded-xl bg-gradient-to-br ${action.gradient} flex items-center justify-center text-2xl shadow-lg`}>
+                  {action.icon}
+                </div>
+                <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+                  {action.label}
+                </div>
+              </motion.button>
+            ))}
           </div>
-        </nav>
-      </div>
+        </motion.nav>
+      </main>
+
+      {/* Blob animation keyframes */}
+      <style>{`
+        @keyframes blob {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          25% { transform: translate(20px, -30px) scale(1.1); }
+          50% { transform: translate(-20px, 20px) scale(0.9); }
+          75% { transform: translate(30px, 10px) scale(1.05); }
+        }
+      `}</style>
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '../components/Toast';
 import { pointService } from '../services/pointService';
 import {
@@ -7,98 +8,21 @@ import {
   PointTransactionResponse,
   PointTransactionType,
 } from '../types';
-import './PointShop.css';
+import Logo from '../components/common/Logo';
+import ThemeToggle from '../components/common/ThemeToggle';
 
-// SVG Icons
-const BackIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M19 12H5M12 19l-7-7 7-7" />
-  </svg>
-);
+const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.5 },
+};
 
-const CoinIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <circle cx="12" cy="12" r="10" />
-    <path d="M9 12h6M12 9v6" />
-  </svg>
-);
-
-const ShopIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-    <polyline points="9 22 9 12 15 12 15 22" />
-  </svg>
-);
-
-const HistoryIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <circle cx="12" cy="12" r="10" />
-    <polyline points="12 6 12 12 16 14" />
-  </svg>
-);
-
-const SendIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <line x1="22" y1="2" x2="11" y2="13" />
-    <polygon points="22 2 15 22 11 13 2 9 22 2" />
-  </svg>
-);
-
-const TrophyIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
-    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
-    <path d="M4 22h16" />
-    <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
-    <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
-    <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
-  </svg>
-);
-
-const ArrowUpIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <line x1="12" y1="19" x2="12" y2="5" />
-    <polyline points="5 12 12 5 19 12" />
-  </svg>
-);
-
-const ArrowDownIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <line x1="12" y1="5" x2="12" y2="19" />
-    <polyline points="19 12 12 19 5 12" />
-  </svg>
-);
-
-const GiftIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <polyline points="20 12 20 22 4 22 4 12" />
-    <rect x="2" y="7" width="20" height="5" />
-    <line x1="12" y1="22" x2="12" y2="7" />
-    <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z" />
-    <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
-  </svg>
-);
-
-const StarIcon = () => (
-  <svg viewBox="0 0 24 24" fill="currentColor">
-    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-  </svg>
-);
-
-const UserIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-    <circle cx="12" cy="7" r="4" />
-  </svg>
-);
-
-// 상점 아이템 (향후 확장용)
 interface ShopItem {
   id: string;
   name: string;
   description: string;
   price: number;
-  icon: React.ReactNode;
+  icon: string;
   category: string;
   available: boolean;
 }
@@ -109,7 +33,7 @@ const shopItems: ShopItem[] = [
     name: '골드 테두리',
     description: '프로필에 골드 테두리가 적용됩니다',
     price: 500,
-    icon: <StarIcon />,
+    icon: '⭐',
     category: 'profile',
     available: false,
   },
@@ -118,7 +42,7 @@ const shopItems: ShopItem[] = [
     name: '닉네임 컬러',
     description: '닉네임에 특별한 색상을 적용합니다',
     price: 1000,
-    icon: <UserIcon />,
+    icon: '🎨',
     category: 'profile',
     available: false,
   },
@@ -127,7 +51,7 @@ const shopItems: ShopItem[] = [
     name: '프리미엄 배지',
     description: '프로필에 프리미엄 배지가 표시됩니다',
     price: 2000,
-    icon: <TrophyIcon />,
+    icon: '🏆',
     category: 'badge',
     available: false,
   },
@@ -136,7 +60,7 @@ const shopItems: ShopItem[] = [
     name: '시즌 이벤트 입장권',
     description: '시즌 특별 이벤트에 참여할 수 있습니다',
     price: 5000,
-    icon: <GiftIcon />,
+    icon: '🎁',
     category: 'event',
     available: false,
   },
@@ -154,17 +78,12 @@ const PointShop: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
-
-  // 필터
   const [selectedType, setSelectedType] = useState<PointTransactionType | 'ALL'>('ALL');
-
-  // 전송 폼
   const [receiverId, setReceiverId] = useState('');
   const [transferAmount, setTransferAmount] = useState('');
   const [transferMessage, setTransferMessage] = useState('');
   const [isTransferring, setIsTransferring] = useState(false);
 
-  // 포인트 잔액 조회
   const loadBalance = useCallback(async () => {
     try {
       const res = await pointService.getBalance();
@@ -174,7 +93,6 @@ const PointShop: React.FC = () => {
     }
   }, [toast]);
 
-  // 거래 내역 조회
   const loadTransactions = useCallback(async (reset = false) => {
     const currentPage = reset ? 0 : page;
     setIsLoading(true);
@@ -210,7 +128,6 @@ const PointShop: React.FC = () => {
     }
   }, [activeTab, selectedType, loadTransactions]);
 
-  // 포인트 전송
   const handleTransfer = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -249,29 +166,26 @@ const PointShop: React.FC = () => {
     }
   };
 
-  // 더 보기
   const loadMore = () => {
     setPage(prev => prev + 1);
     loadTransactions();
   };
 
-  // 거래 타입 아이콘 및 색상
   const getTransactionStyle = (type: PointTransactionType) => {
     switch (type) {
       case 'EARN':
-        return { icon: <ArrowUpIcon />, color: '#22c55e', label: '획득' };
+        return { icon: '📈', color: 'text-green-500', bg: 'bg-green-100 dark:bg-green-900/30', label: '획득' };
       case 'SPEND':
-        return { icon: <ArrowDownIcon />, color: '#ef4444', label: '사용' };
+        return { icon: '📉', color: 'text-red-500', bg: 'bg-red-100 dark:bg-red-900/30', label: '사용' };
       case 'TRANSFER_IN':
-        return { icon: <ArrowUpIcon />, color: '#3b82f6', label: '받음' };
+        return { icon: '📥', color: 'text-blue-500', bg: 'bg-blue-100 dark:bg-blue-900/30', label: '받음' };
       case 'TRANSFER_OUT':
-        return { icon: <ArrowDownIcon />, color: '#f59e0b', label: '보냄' };
+        return { icon: '📤', color: 'text-orange-500', bg: 'bg-orange-100 dark:bg-orange-900/30', label: '보냄' };
       default:
-        return { icon: <CoinIcon />, color: '#94a3b8', label: type };
+        return { icon: '💰', color: 'text-gray-500', bg: 'bg-gray-100 dark:bg-gray-800', label: type };
     }
   };
 
-  // 날짜 포맷
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     const now = new Date();
@@ -287,247 +201,344 @@ const PointShop: React.FC = () => {
     return date.toLocaleDateString();
   };
 
+  const tabs = [
+    { id: 'shop' as TabType, label: '상점', icon: '🏪' },
+    { id: 'history' as TabType, label: '거래 내역', icon: '📜' },
+    { id: 'transfer' as TabType, label: '전송', icon: '📤' },
+  ];
+
   return (
-    <div className="point-shop">
-      {/* 헤더 */}
-      <header className="shop-header">
-        <button className="btn-back" onClick={() => navigate(-1)} aria-label="뒤로 가기">
-          <BackIcon />
-        </button>
-        <h1>포인트 상점</h1>
-        <div />
-      </header>
+    <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] relative overflow-hidden">
+      {/* Background Effects */}
+      <div
+        className="absolute top-20 left-10 w-72 h-72 bg-yellow-400/30 dark:bg-yellow-600/20 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite' }}
+      />
+      <div
+        className="absolute top-40 right-10 w-72 h-72 bg-violet-400/30 dark:bg-violet-600/20 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite 2s' }}
+      />
+      <div
+        className="absolute bottom-20 left-1/3 w-72 h-72 bg-pink-400/30 dark:bg-pink-600/20 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite 4s' }}
+      />
 
-      {/* 포인트 잔액 카드 */}
-      <div className="balance-card">
-        <div className="balance-main">
-          <CoinIcon />
-          <span className="balance-amount">{balance?.totalPoints?.toLocaleString() || 0}</span>
-          <span className="balance-unit">P</span>
-        </div>
-        <div className="balance-stats">
-          <div className="stat-item">
-            <span className="stat-label">누적 획득</span>
-            <span className="stat-value earn">{balance?.lifetimeEarned?.toLocaleString() || 0}P</span>
-          </div>
-          <div className="stat-divider" />
-          <div className="stat-item">
-            <span className="stat-label">누적 사용</span>
-            <span className="stat-value spend">{balance?.lifetimeSpent?.toLocaleString() || 0}P</span>
-          </div>
-        </div>
-        <div className="balance-extra">
-          <div className="extra-item">
-            <span>시즌 포인트</span>
-            <span>{balance?.seasonPoints?.toLocaleString() || 0}P</span>
-          </div>
-          <div className="extra-item">
-            <span>현재 순위</span>
-            <span>#{balance?.currentRank || '-'}</span>
-          </div>
-        </div>
-      </div>
+      <style>{`
+        @keyframes blob {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          25% { transform: translate(20px, -30px) scale(1.1); }
+          50% { transform: translate(-20px, 20px) scale(0.9); }
+          75% { transform: translate(30px, 10px) scale(1.05); }
+        }
+      `}</style>
 
-      {/* 탭 */}
-      <div className="tab-bar">
-        <button
-          className={`tab-item ${activeTab === 'shop' ? 'active' : ''}`}
-          onClick={() => setActiveTab('shop')}
-        >
-          <ShopIcon />
-          상점
-        </button>
-        <button
-          className={`tab-item ${activeTab === 'history' ? 'active' : ''}`}
-          onClick={() => setActiveTab('history')}
-        >
-          <HistoryIcon />
-          거래 내역
-        </button>
-        <button
-          className={`tab-item ${activeTab === 'transfer' ? 'active' : ''}`}
-          onClick={() => setActiveTab('transfer')}
-        >
-          <SendIcon />
-          전송
-        </button>
-      </div>
-
-      {/* 상점 탭 */}
-      {activeTab === 'shop' && (
-        <div className="tab-content">
-          <div className="coming-soon-banner">
-            <GiftIcon />
-            <h3>상점 준비 중</h3>
-            <p>다양한 아이템이 곧 출시됩니다!</p>
-          </div>
-
-          <div className="shop-items">
-            {shopItems.map(item => (
-              <article key={item.id} className={`shop-item ${!item.available ? 'disabled' : ''}`}>
-                <div className="item-icon">{item.icon}</div>
-                <div className="item-info">
-                  <h3>{item.name}</h3>
-                  <p>{item.description}</p>
-                </div>
-                <div className="item-price">
-                  <CoinIcon />
-                  <span>{item.price.toLocaleString()}P</span>
-                </div>
-                {!item.available && <span className="coming-soon-badge">준비 중</span>}
-              </article>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* 거래 내역 탭 */}
-      {activeTab === 'history' && (
-        <div className="tab-content">
-          {/* 필터 */}
-          <div className="filter-bar">
-            <button
-              className={`filter-btn ${selectedType === 'ALL' ? 'active' : ''}`}
-              onClick={() => setSelectedType('ALL')}
-            >
-              전체
-            </button>
-            <button
-              className={`filter-btn ${selectedType === 'EARN' ? 'active' : ''}`}
-              onClick={() => setSelectedType('EARN')}
-            >
-              획득
-            </button>
-            <button
-              className={`filter-btn ${selectedType === 'SPEND' ? 'active' : ''}`}
-              onClick={() => setSelectedType('SPEND')}
-            >
-              사용
-            </button>
-            <button
-              className={`filter-btn ${selectedType === 'TRANSFER_IN' ? 'active' : ''}`}
-              onClick={() => setSelectedType('TRANSFER_IN')}
-            >
-              받음
-            </button>
-            <button
-              className={`filter-btn ${selectedType === 'TRANSFER_OUT' ? 'active' : ''}`}
-              onClick={() => setSelectedType('TRANSFER_OUT')}
-            >
-              보냄
-            </button>
-          </div>
-
-          {transactions.length === 0 && !isLoading ? (
-            <div className="empty-state">
-              <HistoryIcon />
-              <h3>거래 내역이 없습니다</h3>
-              <p>NFT를 수집하거나 활동하여 포인트를 획득해보세요!</p>
+      {/* Navigation */}
+      <nav className="fixed top-0 w-full z-50 px-4 py-3">
+        <div className="max-w-4xl mx-auto bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-2xl px-6 py-3 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => navigate(-1)}
+                className="p-2 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                aria-label="뒤로 가기"
+              >
+                <span className="text-lg">←</span>
+              </button>
+              <Logo />
             </div>
-          ) : (
-            <div className="transaction-list">
-              {transactions.map(tx => {
-                const style = getTransactionStyle(tx.type);
-                return (
-                  <article key={tx.id} className="transaction-item">
-                    <div className="tx-icon" style={{ backgroundColor: `${style.color}20`, color: style.color }}>
-                      {style.icon}
-                    </div>
-                    <div className="tx-info">
-                      <h4>{tx.description}</h4>
-                      <span className="tx-time">{formatDate(tx.createdAt)}</span>
-                    </div>
-                    <div className="tx-amount" style={{ color: style.color }}>
-                      {tx.type === 'EARN' || tx.type === 'TRANSFER_IN' ? '+' : '-'}
-                      {tx.amount.toLocaleString()}P
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          )}
-
-          {hasMore && !isLoading && (
-            <button className="btn-load-more" onClick={loadMore}>
-              더 보기
-            </button>
-          )}
-
-          {isLoading && (
-            <div className="loading-state">
-              <div className="loading-spinner" />
-            </div>
-          )}
+            <ThemeToggle />
+          </div>
         </div>
-      )}
+      </nav>
 
-      {/* 전송 탭 */}
-      {activeTab === 'transfer' && (
-        <div className="tab-content">
-          <form className="transfer-form" onSubmit={handleTransfer}>
-            <div className="form-group">
-              <label htmlFor="receiverId">수신자 ID</label>
-              <input
-                id="receiverId"
-                type="number"
-                placeholder="포인트를 받을 사용자 ID"
-                value={receiverId}
-                onChange={(e) => setReceiverId(e.target.value)}
-                required
-              />
+      {/* Main Content */}
+      <div className="relative z-10 pt-24 pb-8 px-4">
+        <div className="max-w-4xl mx-auto">
+          {/* Header */}
+          <motion.header
+            className="text-center mb-6"
+            {...fadeInUp}
+          >
+            <div className="inline-flex items-center gap-3 px-4 py-2 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-full border border-gray-200/50 dark:border-gray-700/50 mb-4">
+              <span className="text-2xl">💰</span>
+              <span className="text-gray-600 dark:text-gray-300 font-medium">포인트 상점</span>
+            </div>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white">
+              포인트 상점
+            </h1>
+          </motion.header>
+
+          {/* Balance Card */}
+          <motion.div
+            className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-2xl p-6 mb-6 text-white shadow-xl"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <span className="text-4xl">💎</span>
+              <span className="text-4xl font-bold">{balance?.totalPoints?.toLocaleString() || 0}</span>
+              <span className="text-2xl font-medium">P</span>
             </div>
 
-            <div className="form-group">
-              <label htmlFor="transferAmount">전송 금액</label>
-              <div className="amount-input-wrapper">
-                <CoinIcon />
-                <input
-                  id="transferAmount"
-                  type="number"
-                  placeholder="전송할 포인트"
-                  value={transferAmount}
-                  onChange={(e) => setTransferAmount(e.target.value)}
-                  min="1"
-                  max={balance?.totalPoints || 0}
-                  required
-                />
-                <span>P</span>
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="bg-white/20 rounded-xl p-3 text-center">
+                <p className="text-sm opacity-80">누적 획득</p>
+                <p className="text-lg font-bold">{balance?.lifetimeEarned?.toLocaleString() || 0}P</p>
               </div>
-              <p className="input-hint">사용 가능: {balance?.totalPoints?.toLocaleString() || 0}P</p>
+              <div className="bg-white/20 rounded-xl p-3 text-center">
+                <p className="text-sm opacity-80">누적 사용</p>
+                <p className="text-lg font-bold">{balance?.lifetimeSpent?.toLocaleString() || 0}P</p>
+              </div>
             </div>
 
-            <div className="form-group">
-              <label htmlFor="transferMessage">메시지 (선택)</label>
-              <input
-                id="transferMessage"
-                type="text"
-                placeholder="함께 전달할 메시지"
-                value={transferMessage}
-                onChange={(e) => setTransferMessage(e.target.value)}
-                maxLength={100}
-              />
+            <div className="flex justify-between text-sm opacity-80">
+              <span>시즌 포인트: {balance?.seasonPoints?.toLocaleString() || 0}P</span>
+              <span>현재 순위: #{balance?.currentRank || '-'}</span>
             </div>
+          </motion.div>
 
-            <button
-              type="submit"
-              className="btn-transfer"
-              disabled={isTransferring || !balance || balance.totalPoints < parseInt(transferAmount || '0')}
-            >
-              <SendIcon />
-              {isTransferring ? '전송 중...' : '포인트 전송'}
-            </button>
-          </form>
+          {/* Tabs */}
+          <motion.div
+            className="flex gap-2 mb-6 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-2 border border-gray-200/50 dark:border-gray-800/50"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-medium transition-all ${
+                  activeTab === tab.id
+                    ? 'bg-gradient-to-r from-violet-600 to-pink-600 text-white'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                }`}
+              >
+                <span>{tab.icon}</span>
+                <span className="hidden sm:inline">{tab.label}</span>
+              </button>
+            ))}
+          </motion.div>
 
-          <div className="transfer-info">
-            <h4>포인트 전송 안내</h4>
-            <ul>
-              <li>전송된 포인트는 취소할 수 없습니다.</li>
-              <li>최소 전송 금액은 1P입니다.</li>
-              <li>자기 자신에게는 전송할 수 없습니다.</li>
-            </ul>
-          </div>
+          {/* Tab Content */}
+          <AnimatePresence mode="wait">
+            {activeTab === 'shop' && (
+              <motion.div
+                key="shop"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="space-y-4"
+              >
+                {/* Coming Soon Banner */}
+                <div className="bg-gradient-to-r from-violet-100 to-pink-100 dark:from-violet-900/30 dark:to-pink-900/30 rounded-2xl p-6 text-center border border-violet-200/50 dark:border-violet-800/50">
+                  <span className="text-4xl mb-3 block">🎁</span>
+                  <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">상점 준비 중</h3>
+                  <p className="text-gray-600 dark:text-gray-400">다양한 아이템이 곧 출시됩니다!</p>
+                </div>
+
+                {/* Shop Items */}
+                <div className="grid gap-4">
+                  {shopItems.map(item => (
+                    <div
+                      key={item.id}
+                      className={`bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-4 border border-gray-200/50 dark:border-gray-800/50 shadow-lg ${
+                        !item.available ? 'opacity-60' : ''
+                      }`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-14 h-14 rounded-xl bg-gradient-to-r from-violet-100 to-pink-100 dark:from-violet-900/30 dark:to-pink-900/30 flex items-center justify-center text-2xl">
+                          {item.icon}
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-bold text-gray-800 dark:text-white">{item.name}</h3>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">{item.description}</p>
+                        </div>
+                        <div className="text-right">
+                          <div className="flex items-center gap-1 text-yellow-600 dark:text-yellow-400 font-bold">
+                            <span>💰</span>
+                            <span>{item.price.toLocaleString()}P</span>
+                          </div>
+                          {!item.available && (
+                            <span className="text-xs text-pink-500 font-medium">준비 중</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {activeTab === 'history' && (
+              <motion.div
+                key="history"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="space-y-4"
+              >
+                {/* Filter */}
+                <div className="flex gap-2 overflow-x-auto pb-2">
+                  {[
+                    { id: 'ALL' as const, label: '전체' },
+                    { id: 'EARN' as PointTransactionType, label: '획득' },
+                    { id: 'SPEND' as PointTransactionType, label: '사용' },
+                    { id: 'TRANSFER_IN' as PointTransactionType, label: '받음' },
+                    { id: 'TRANSFER_OUT' as PointTransactionType, label: '보냄' },
+                  ].map(filter => (
+                    <button
+                      key={filter.id}
+                      onClick={() => setSelectedType(filter.id)}
+                      className={`px-4 py-2 rounded-xl font-medium whitespace-nowrap transition-all ${
+                        selectedType === filter.id
+                          ? 'bg-gradient-to-r from-violet-600 to-pink-600 text-white'
+                          : 'bg-white/80 dark:bg-gray-900/80 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                      }`}
+                    >
+                      {filter.label}
+                    </button>
+                  ))}
+                </div>
+
+                {transactions.length === 0 && !isLoading ? (
+                  <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-8 border border-gray-200/50 dark:border-gray-800/50 text-center">
+                    <span className="text-4xl mb-4 block">📜</span>
+                    <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">거래 내역이 없습니다</h3>
+                    <p className="text-gray-500 dark:text-gray-400">NFT를 수집하거나 활동하여 포인트를 획득해보세요!</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {transactions.map(tx => {
+                      const style = getTransactionStyle(tx.type);
+                      return (
+                        <div
+                          key={tx.id}
+                          className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-4 border border-gray-200/50 dark:border-gray-800/50 shadow-lg"
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className={`w-12 h-12 rounded-xl ${style.bg} flex items-center justify-center text-xl`}>
+                              {style.icon}
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="font-medium text-gray-800 dark:text-white">{tx.description}</h4>
+                              <span className="text-sm text-gray-500 dark:text-gray-400">{formatDate(tx.createdAt)}</span>
+                            </div>
+                            <div className={`font-bold ${style.color}`}>
+                              {tx.type === 'EARN' || tx.type === 'TRANSFER_IN' ? '+' : '-'}
+                              {tx.amount.toLocaleString()}P
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {hasMore && !isLoading && (
+                  <button
+                    onClick={loadMore}
+                    className="w-full py-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    더 보기
+                  </button>
+                )}
+
+                {isLoading && (
+                  <div className="text-center py-8">
+                    <div className="w-10 h-10 border-4 border-violet-200 border-t-violet-600 rounded-full animate-spin mx-auto" />
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {activeTab === 'transfer' && (
+              <motion.div
+                key="transfer"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="space-y-4"
+              >
+                <form onSubmit={handleTransfer} className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-800/50 shadow-lg space-y-4">
+                  <div>
+                    <label htmlFor="receiverId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      수신자 ID
+                    </label>
+                    <input
+                      id="receiverId"
+                      type="number"
+                      placeholder="포인트를 받을 사용자 ID"
+                      value={receiverId}
+                      onChange={(e) => setReceiverId(e.target.value)}
+                      className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-violet-500/50 transition-all"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="transferAmount" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      전송 금액
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2">💰</span>
+                      <input
+                        id="transferAmount"
+                        type="number"
+                        placeholder="전송할 포인트"
+                        value={transferAmount}
+                        onChange={(e) => setTransferAmount(e.target.value)}
+                        min="1"
+                        max={balance?.totalPoints || 0}
+                        className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 pl-12 pr-8 outline-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-violet-500/50 transition-all"
+                        required
+                      />
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">P</span>
+                    </div>
+                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                      사용 가능: {balance?.totalPoints?.toLocaleString() || 0}P
+                    </p>
+                  </div>
+
+                  <div>
+                    <label htmlFor="transferMessage" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      메시지 (선택)
+                    </label>
+                    <input
+                      id="transferMessage"
+                      type="text"
+                      placeholder="함께 전달할 메시지"
+                      value={transferMessage}
+                      onChange={(e) => setTransferMessage(e.target.value)}
+                      maxLength={100}
+                      className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-violet-500/50 transition-all"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isTransferring || !balance || balance.totalPoints < parseInt(transferAmount || '0')}
+                    className="w-full py-4 bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-violet-500/25 transition-all duration-300 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:transform-none flex items-center justify-center gap-2"
+                  >
+                    <span>📤</span>
+                    {isTransferring ? '전송 중...' : '포인트 전송'}
+                  </button>
+                </form>
+
+                <div className="bg-violet-50 dark:bg-violet-900/20 rounded-2xl p-4 border border-violet-200/50 dark:border-violet-800/50">
+                  <h4 className="font-bold text-gray-800 dark:text-white mb-2">포인트 전송 안내</h4>
+                  <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                    <li>• 전송된 포인트는 취소할 수 없습니다.</li>
+                    <li>• 최소 전송 금액은 1P입니다.</li>
+                    <li>• 자기 자신에게는 전송할 수 없습니다.</li>
+                  </ul>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-      )}
+      </div>
     </div>
   );
 };

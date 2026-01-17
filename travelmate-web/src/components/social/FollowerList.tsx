@@ -63,12 +63,12 @@ const FollowerItem: React.FC<FollowerItemProps> = ({
           {user.profileImageUrl ? (
             <img src={user.profileImageUrl} alt={user.nickname} />
           ) : (
-            <div className="avatar-placeholder">
+            <div className="avatar-placeholder" data-testid={`avatar-placeholder-${user.id}`}>
               <UserIcon />
             </div>
           )}
           {user.isMutual && (
-            <div className="mutual-badge" title="맞팔로우">
+            <div className="mutual-badge" title="맞팔로우" data-testid="mutual-badge">
               <UsersIcon />
             </div>
           )}

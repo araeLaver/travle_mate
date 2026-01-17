@@ -3,6 +3,14 @@ import SockJS from 'sockjs-client';
 import { authService } from './authService';
 import { WebSocketError, WebSocketErrorCallback } from '../types';
 
+// 개발 환경에서만 로그 출력
+const isDev = process.env.NODE_ENV === 'development';
+const logger = {
+  log: (...args: unknown[]) => isDev && console.log(...args),
+  warn: (...args: unknown[]) => isDev && console.warn(...args),
+  error: (...args: unknown[]) => isDev && console.error(...args),
+};
+
 export interface ChatMessage {
   id?: string;
   chatRoomId: string;
@@ -47,25 +55,23 @@ class WebSocketService {
         return new SockJS(wsUrl) as WebSocket;
       },
       debug: (str) => {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[WebSocket Debug]', str);
-        }
+        logger.log('[WebSocket Debug]', str);
       },
       reconnectDelay: this.reconnectDelay,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
       connectHeaders: this.getConnectHeaders(),
       onConnect: () => {
-        console.log('WebSocket Connected');
+        logger.log('WebSocket Connected');
         this.reconnectAttempts = 0;
         this.onConnectCallbacks.forEach((cb) => cb());
       },
       onDisconnect: () => {
-        console.log('WebSocket Disconnected');
+        logger.log('WebSocket Disconnected');
         this.onDisconnectCallbacks.forEach((cb) => cb());
       },
       onStompError: (frame: IFrame) => {
-        console.error('STOMP Error:', frame);
+        logger.error('STOMP Error:', frame);
         const error: WebSocketError = {
           message: frame.headers?.message || 'STOMP Error',
           code: frame.command,
@@ -74,7 +80,7 @@ class WebSocketService {
         this.onErrorCallbacks.forEach((cb) => cb(error));
       },
       onWebSocketError: (event: Event) => {
-        console.error('WebSocket Error:', event);
+        logger.error('WebSocket Error:', event);
         const error: WebSocketError = {
           message: 'WebSocket connection error',
           timestamp: new Date(),
@@ -153,7 +159,7 @@ class WebSocketService {
 
     // 이미 구독 중이면 새로 구독하지 않음
     if (this.subscriptions.has(destination)) {
-      console.warn(`Already subscribed to ${destination}`);
+      logger.warn(`Already subscribed to ${destination}`);
       return () => this.unsubscribeFromRoom(roomId);
     }
 
@@ -167,7 +173,7 @@ class WebSocketService {
           }
           onMessage(parsedMessage);
         } catch (error) {
-          console.error('Failed to parse message:', error);
+          logger.error('Failed to parse message:', error);
         }
       }
     );
@@ -186,7 +192,7 @@ class WebSocketService {
     if (subscription) {
       subscription.unsubscribe();
       this.subscriptions.delete(destination);
-      console.log(`Unsubscribed from ${destination}`);
+      logger.log(`Unsubscribed from ${destination}`);
     }
   }
 
@@ -257,7 +263,7 @@ class WebSocketService {
   // 일반 구독 (외부에서 client 직접 접근 대신 사용)
   subscribe(destination: string, callback: (message: IMessage) => void): StompSubscription | undefined {
     if (!this.client?.active) {
-      console.warn('WebSocket is not connected');
+      logger.warn('WebSocket is not connected');
       return undefined;
     }
 

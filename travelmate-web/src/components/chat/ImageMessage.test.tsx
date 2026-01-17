@@ -34,14 +34,14 @@ describe('ImageMessage', () => {
   test('내 메시지 스타일 적용', () => {
     render(<ImageMessage imageUrl={mockImageUrl} isMyMessage={true} />);
 
-    const container = document.querySelector('.image-message.my-message');
-    expect(container).toBeInTheDocument();
+    const container = screen.getByTestId('image-message-container');
+    expect(container).toHaveClass('my-message');
   });
 
   test('로딩 중 로딩 스피너 표시', () => {
     render(<ImageMessage imageUrl={mockImageUrl} />);
 
-    const loading = document.querySelector('.image-loading');
+    const loading = screen.getByTestId('image-loading');
     expect(loading).toBeInTheDocument();
   });
 
@@ -52,8 +52,7 @@ describe('ImageMessage', () => {
     fireEvent.load(image);
 
     await waitFor(() => {
-      const loading = document.querySelector('.image-loading');
-      expect(loading).not.toBeInTheDocument();
+      expect(screen.queryByTestId('image-loading')).not.toBeInTheDocument();
     });
   });
 
@@ -74,12 +73,11 @@ describe('ImageMessage', () => {
     const image = screen.getByAltText('이미지 메시지');
     fireEvent.load(image);
 
-    const container = document.querySelector('.image-message');
-    fireEvent.click(container!);
+    const container = screen.getByTestId('image-message-container');
+    fireEvent.click(container);
 
     await waitFor(() => {
-      const modal = document.querySelector('.image-modal-overlay');
-      expect(modal).toBeInTheDocument();
+      expect(screen.getByTestId('image-modal-overlay')).toBeInTheDocument();
     });
   });
 
@@ -89,13 +87,12 @@ describe('ImageMessage', () => {
     const image = screen.getByAltText('이미지 메시지');
     fireEvent.load(image);
 
-    const container = document.querySelector('.image-message');
-    fireEvent.click(container!);
+    const container = screen.getByTestId('image-message-container');
+    fireEvent.click(container);
 
     await waitFor(() => {
-      const modalImages = document.querySelectorAll('.modal-content img');
-      expect(modalImages.length).toBeGreaterThan(0);
-      expect(modalImages[0]).toHaveAttribute('src', mockImageUrl);
+      const modalImage = screen.getByTestId('modal-image');
+      expect(modalImage).toHaveAttribute('src', mockImageUrl);
     });
   });
 
@@ -105,20 +102,18 @@ describe('ImageMessage', () => {
     const image = screen.getByAltText('이미지 메시지');
     fireEvent.load(image);
 
-    const container = document.querySelector('.image-message');
-    fireEvent.click(container!);
+    const container = screen.getByTestId('image-message-container');
+    fireEvent.click(container);
 
     await waitFor(() => {
-      const closeBtn = document.querySelector('.close-btn');
-      expect(closeBtn).toBeInTheDocument();
+      expect(screen.getByTestId('modal-close-btn')).toBeInTheDocument();
     });
 
-    const closeBtn = document.querySelector('.close-btn');
-    fireEvent.click(closeBtn!);
+    const closeBtn = screen.getByTestId('modal-close-btn');
+    fireEvent.click(closeBtn);
 
     await waitFor(() => {
-      const modal = document.querySelector('.image-modal-overlay');
-      expect(modal).not.toBeInTheDocument();
+      expect(screen.queryByTestId('image-modal-overlay')).not.toBeInTheDocument();
     });
   });
 
@@ -128,20 +123,18 @@ describe('ImageMessage', () => {
     const image = screen.getByAltText('이미지 메시지');
     fireEvent.load(image);
 
-    const container = document.querySelector('.image-message');
-    fireEvent.click(container!);
+    const container = screen.getByTestId('image-message-container');
+    fireEvent.click(container);
 
     await waitFor(() => {
-      const overlay = document.querySelector('.image-modal-overlay');
-      expect(overlay).toBeInTheDocument();
+      expect(screen.getByTestId('image-modal-overlay')).toBeInTheDocument();
     });
 
-    const overlay = document.querySelector('.image-modal-overlay');
-    fireEvent.click(overlay!);
+    const overlay = screen.getByTestId('image-modal-overlay');
+    fireEvent.click(overlay);
 
     await waitFor(() => {
-      const modal = document.querySelector('.image-modal-overlay');
-      expect(modal).not.toBeInTheDocument();
+      expect(screen.queryByTestId('image-modal-overlay')).not.toBeInTheDocument();
     });
   });
 
@@ -151,12 +144,11 @@ describe('ImageMessage', () => {
     const image = screen.getByAltText('이미지 메시지');
     fireEvent.error(image);
 
-    const container = document.querySelector('.image-message');
-    fireEvent.click(container!);
+    const container = screen.getByTestId('image-message-container');
+    fireEvent.click(container);
 
     await waitFor(() => {
-      const modal = document.querySelector('.image-modal-overlay');
-      expect(modal).not.toBeInTheDocument();
+      expect(screen.queryByTestId('image-modal-overlay')).not.toBeInTheDocument();
     });
   });
 
@@ -166,12 +158,11 @@ describe('ImageMessage', () => {
     const image = screen.getByAltText('이미지 메시지');
     fireEvent.load(image);
 
-    const container = document.querySelector('.image-message');
-    fireEvent.click(container!);
+    const container = screen.getByTestId('image-message-container');
+    fireEvent.click(container);
 
     await waitFor(() => {
-      const downloadBtn = document.querySelector('.download-btn');
-      expect(downloadBtn).toBeInTheDocument();
+      expect(screen.getByTestId('modal-download-btn')).toBeInTheDocument();
     });
   });
 });

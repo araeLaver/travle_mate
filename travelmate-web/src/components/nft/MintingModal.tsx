@@ -218,11 +218,11 @@ const MintingModal: React.FC<MintingModalProps> = ({
   const status = mintStatus?.mintStatus || currentMintStatus;
 
   return (
-    <div className="minting-modal-overlay" onClick={onClose}>
-      <div className="minting-modal" onClick={(e) => e.stopPropagation()}>
+    <div className="minting-modal-overlay" onClick={onClose} data-testid="minting-modal-overlay">
+      <div className="minting-modal" onClick={(e) => e.stopPropagation()} data-testid="minting-modal">
         <div className="minting-modal-header">
           <h2>NFT 민팅</h2>
-          <button className="close-btn" onClick={onClose}>
+          <button className="close-btn" onClick={onClose} data-testid="minting-close-btn">
             <CloseIcon />
           </button>
         </div>
@@ -233,13 +233,14 @@ const MintingModal: React.FC<MintingModalProps> = ({
             {nftImageUrl ? (
               <img src={nftImageUrl} alt={locationName} />
             ) : (
-              <div className="nft-placeholder">
+              <div className="nft-placeholder" data-testid="nft-placeholder">
                 <WalletIcon />
               </div>
             )}
             <div
               className="rarity-badge"
               style={{ backgroundColor: getRarityColor(rarity) }}
+              data-testid="rarity-badge"
             >
               {rarity}
             </div>
@@ -248,13 +249,14 @@ const MintingModal: React.FC<MintingModalProps> = ({
           <h3 className="nft-name">{locationName}</h3>
 
           {/* 진행 단계 */}
-          <div className="minting-steps">
+          <div className="minting-steps" data-testid="minting-steps">
             {STEP_LABELS.map((label, index) => (
               <div
                 key={label}
                 className={`step ${index < currentStep ? 'completed' : ''} ${
                   index === currentStep ? 'active' : ''
                 }`}
+                data-testid={`minting-step-${index}`}
               >
                 <div className="step-indicator">
                   {index < currentStep ? (
@@ -263,7 +265,7 @@ const MintingModal: React.FC<MintingModalProps> = ({
                     <span>{index + 1}</span>
                   )}
                 </div>
-                <span className="step-label">{label}</span>
+                <span className="step-label" data-testid={`step-label-${index}`}>{label}</span>
               </div>
             ))}
           </div>
@@ -356,6 +358,7 @@ const MintingModal: React.FC<MintingModalProps> = ({
                 className="action-btn primary"
                 onClick={handleConnect}
                 disabled={isConnecting}
+                data-testid="connect-wallet-btn"
               >
                 {isConnecting ? (
                   <>

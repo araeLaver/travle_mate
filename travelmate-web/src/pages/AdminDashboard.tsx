@@ -1,8 +1,16 @@
+/**
+ * Admin Dashboard Page
+ * 관리자 대시보드 페이지
+ */
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { adminService } from '../services/adminService';
 import { useToast } from '../components/Toast';
 import { AdminOverview, UserManagement } from '../components/admin';
+import Logo from '../components/Logo';
+import ThemeToggle from '../components/ThemeToggle';
 import {
   CollectibleLocationAdminResponse,
   LocationStatsResponse,
@@ -12,7 +20,6 @@ import {
   LocationCategory,
   PaginatedResponse,
 } from '../types';
-import './AdminDashboard.css';
 
 type TabType = 'overview' | 'users' | 'locations';
 type FilterRarity = Rarity | 'ALL';
@@ -64,18 +71,11 @@ const CATEGORY_OPTIONS: LocationCategory[] = [
   'FOOD', 'SHOPPING', 'NATURE', 'HIDDEN_GEM'
 ];
 
-const RARITY_COLORS: Record<Rarity, string> = {
-  COMMON: '#9ca3af',
-  RARE: '#3b82f6',
-  EPIC: '#a855f7',
-  LEGENDARY: '#f59e0b',
-};
-
-const RARITY_LABELS: Record<Rarity, string> = {
-  COMMON: '일반',
-  RARE: '레어',
-  EPIC: '에픽',
-  LEGENDARY: '전설',
+const RARITY_CONFIG: Record<Rarity, { color: string; label: string; emoji: string }> = {
+  COMMON: { color: '#9ca3af', label: '일반', emoji: '⚪' },
+  RARE: { color: '#3b82f6', label: '레어', emoji: '🔵' },
+  EPIC: { color: '#a855f7', label: '에픽', emoji: '🟣' },
+  LEGENDARY: { color: '#f59e0b', label: '전설', emoji: '🟡' },
 };
 
 const CATEGORY_LABELS: Record<LocationCategory, string> = {
@@ -94,10 +94,23 @@ const CATEGORY_LABELS: Record<LocationCategory, string> = {
   HIDDEN_GEM: '숨겨진 명소',
 };
 
+const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -20 },
+  transition: { duration: 0.3 },
+};
+
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { showToast } = useToast();
+
+  const tabs: { id: TabType; label: string; icon: string }[] = [
+    { id: 'overview', label: '개요', icon: '📊' },
+    { id: 'users', label: '사용자 관리', icon: '👥' },
+    { id: 'locations', label: '장소 관리', icon: '📍' },
+  ];
 
   // Tab state
   const [activeTab, setActiveTab] = useState<TabType>(() => {
@@ -297,575 +310,630 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
-  // Render location management content
-  const renderLocationManagement = () => (
-    <>
-      {/* Stats Cards */}
-      {stats && (
-        <section className="stats-section">
-          <div className="stats-grid">
-            <div className="stat-card">
-              <div className="stat-icon total">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                  <circle cx="12" cy="10" r="3"/>
-                </svg>
-              </div>
-              <div className="stat-info">
-                <span className="stat-value">{stats.totalLocations}</span>
-                <span className="stat-label">전체 장소</span>
-              </div>
-            </div>
-
-            <div className="stat-card">
-              <div className="stat-icon active">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                  <polyline points="22 4 12 14.01 9 11.01"/>
-                </svg>
-              </div>
-              <div className="stat-info">
-                <span className="stat-value">{stats.activeLocations}</span>
-                <span className="stat-label">활성 장소</span>
-              </div>
-            </div>
-
-            <div className="stat-card">
-              <div className="stat-icon event">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                </svg>
-              </div>
-              <div className="stat-info">
-                <span className="stat-value">{stats.seasonalEvents}</span>
-                <span className="stat-label">시즌 이벤트</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Rarity Distribution */}
-          <div className="rarity-distribution">
-            <h3>희귀도별 분포</h3>
-            <div className="rarity-bars">
-              {(['COMMON', 'RARE', 'EPIC', 'LEGENDARY'] as Rarity[]).map((rarity) => {
-                const count = stats[`${rarity.toLowerCase()}Count` as keyof LocationStatsResponse] as number;
-                const maxCount = Math.max(stats.commonCount, stats.rareCount, stats.epicCount, stats.legendaryCount);
-                const percentage = maxCount > 0 ? (count / maxCount) * 100 : 0;
-
-                return (
-                  <div key={rarity} className="rarity-bar-item">
-                    <div className="rarity-bar-label">
-                      <span className="rarity-name" style={{ color: RARITY_COLORS[rarity] }}>
-                        {RARITY_LABELS[rarity]}
-                      </span>
-                      <span className="rarity-count">{count}</span>
-                    </div>
-                    <div className="rarity-bar-bg">
-                      <div
-                        className="rarity-bar-fill"
-                        style={{
-                          width: `${percentage}%`,
-                          backgroundColor: RARITY_COLORS[rarity],
-                        }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Controls */}
-      <section className="controls-section">
-        <div className="controls-row">
-          <button className="btn-create" onClick={handleCreate}>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"/>
-              <line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-            장소 추가
-          </button>
-
-          <div className="search-box">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8"/>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
-            <input
-              type="text"
-              placeholder="장소 검색..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-        </div>
-
-        <div className="filters-row">
-          <select
-            value={filterRarity}
-            onChange={(e) => setFilterRarity(e.target.value as FilterRarity)}
-          >
-            <option value="ALL">모든 희귀도</option>
-            {RARITY_OPTIONS.map((r) => (
-              <option key={r} value={r}>{RARITY_LABELS[r]}</option>
-            ))}
-          </select>
-
-          <select
-            value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value as FilterCategory)}
-          >
-            <option value="ALL">모든 카테고리</option>
-            {CATEGORY_OPTIONS.map((c) => (
-              <option key={c} value={c}>{CATEGORY_LABELS[c]}</option>
-            ))}
-          </select>
-
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value as FilterStatus)}
-          >
-            <option value="ALL">모든 상태</option>
-            <option value="ACTIVE">활성</option>
-            <option value="INACTIVE">비활성</option>
-          </select>
-        </div>
-      </section>
-
-      {/* Locations Table */}
-      <section className="table-section">
-        {loading ? (
-          <div className="loading-state">
-            <div className="loading-spinner" />
-          </div>
-        ) : filteredLocations.length === 0 ? (
-          <div className="empty-state">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="8" x2="12" y2="12"/>
-              <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            <h3>장소가 없습니다</h3>
-            <p>새 장소를 추가해주세요.</p>
-          </div>
-        ) : (
-          <>
-            <div className="table-wrapper">
-              <table className="locations-table">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>이름</th>
-                    <th>카테고리</th>
-                    <th>희귀도</th>
-                    <th>위치</th>
-                    <th>포인트</th>
-                    <th>상태</th>
-                    <th>액션</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredLocations.map((loc) => (
-                    <tr key={loc.id} className={!loc.isActive ? 'inactive' : ''}>
-                      <td className="id-cell">{loc.id}</td>
-                      <td className="name-cell">
-                        <div className="name-content">
-                          {loc.imageUrl && (
-                            <img src={loc.imageUrl} alt="" className="location-thumb" />
-                          )}
-                          <div>
-                            <span className="location-name">{loc.name}</span>
-                            {loc.isSeasonalEvent && (
-                              <span className="event-badge">이벤트</span>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <span className="category-badge">
-                          {CATEGORY_LABELS[loc.category]}
-                        </span>
-                      </td>
-                      <td>
-                        <span
-                          className="rarity-badge"
-                          style={{ backgroundColor: RARITY_COLORS[loc.rarity] }}
-                        >
-                          {RARITY_LABELS[loc.rarity]}
-                        </span>
-                      </td>
-                      <td className="location-cell">
-                        {loc.city || loc.country || '-'}
-                      </td>
-                      <td className="points-cell">{loc.pointReward}P</td>
-                      <td>
-                        <button
-                          className={`status-toggle ${loc.isActive ? 'active' : ''}`}
-                          onClick={() => handleToggleActive(loc.id)}
-                        >
-                          {loc.isActive ? '활성' : '비활성'}
-                        </button>
-                      </td>
-                      <td className="actions-cell">
-                        <button
-                          className="btn-action edit"
-                          onClick={() => handleEdit(loc)}
-                          title="수정"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                          </svg>
-                        </button>
-                        {deleteConfirm === loc.id ? (
-                          <>
-                            <button
-                              className="btn-action confirm"
-                              onClick={() => handleDelete(loc.id)}
-                              title="확인"
-                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <polyline points="20 6 9 17 4 12"/>
-                              </svg>
-                            </button>
-                            <button
-                              className="btn-action cancel"
-                              onClick={() => setDeleteConfirm(null)}
-                              title="취소"
-                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <line x1="18" y1="6" x2="6" y2="18"/>
-                                <line x1="6" y1="6" x2="18" y2="18"/>
-                              </svg>
-                            </button>
-                          </>
-                        ) : (
-                          <button
-                            className="btn-action delete"
-                            onClick={() => setDeleteConfirm(loc.id)}
-                            title="삭제"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <polyline points="3 6 5 6 21 6"/>
-                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                            </svg>
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="pagination">
-                <button
-                  className="page-btn"
-                  disabled={page === 0}
-                  onClick={() => setPage(page - 1)}
-                >
-                  이전
-                </button>
-                <span className="page-info">
-                  {page + 1} / {totalPages} ({totalElements}개)
-                </span>
-                <button
-                  className="page-btn"
-                  disabled={page >= totalPages - 1}
-                  onClick={() => setPage(page + 1)}
-                >
-                  다음
-                </button>
-              </div>
-            )}
-          </>
-        )}
-      </section>
-    </>
-  );
-
   return (
-    <div className="admin-dashboard">
+    <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] relative overflow-hidden">
+      {/* Background Effects */}
+      <div
+        className="absolute top-20 left-10 w-72 h-72 bg-indigo-400/30 dark:bg-indigo-600/20 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite' }}
+      />
+      <div
+        className="absolute top-40 right-10 w-96 h-96 bg-purple-400/20 dark:bg-purple-600/10 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite 2s' }}
+      />
+      <div
+        className="absolute bottom-20 left-1/3 w-80 h-80 bg-pink-400/20 dark:bg-pink-600/10 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite 4s' }}
+      />
+
+      <style>{`
+        @keyframes blob {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          33% { transform: translate(30px, -50px) scale(1.1); }
+          66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+      `}</style>
+
       {/* Header */}
-      <header className="admin-header">
-        <button className="btn-back" onClick={() => navigate(-1)}>
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 12H5M12 19l-7-7 7-7"/>
-          </svg>
-        </button>
-        <h1>관리자 대시보드</h1>
-        <div className="header-spacer" />
-      </header>
+      <motion.header
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white relative z-10"
+      >
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => navigate(-1)}
+                className="p-2 rounded-xl hover:bg-white/10 transition-colors"
+              >
+                <span className="text-xl">←</span>
+              </button>
+              <Logo size="sm" />
+            </div>
+            <ThemeToggle />
+          </div>
+          <h1 className="text-3xl font-bold flex items-center gap-3">
+            <span className="text-4xl">⚙️</span>
+            관리자 대시보드
+          </h1>
+          <p className="mt-2 text-indigo-100">시스템 관리 및 모니터링</p>
+        </div>
+      </motion.header>
 
-      {/* Tab Navigation */}
-      <nav className="admin-tabs">
-        <button
-          className={`admin-tab ${activeTab === 'overview' ? 'active' : ''}`}
-          onClick={() => handleTabChange('overview')}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="3" width="7" height="9"/>
-            <rect x="14" y="3" width="7" height="5"/>
-            <rect x="14" y="12" width="7" height="9"/>
-            <rect x="3" y="16" width="7" height="5"/>
-          </svg>
-          개요
-        </button>
-        <button
-          className={`admin-tab ${activeTab === 'users' ? 'active' : ''}`}
-          onClick={() => handleTabChange('users')}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-            <circle cx="9" cy="7" r="4"/>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-          </svg>
-          사용자 관리
-        </button>
-        <button
-          className={`admin-tab ${activeTab === 'locations' ? 'active' : ''}`}
-          onClick={() => handleTabChange('locations')}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-            <circle cx="12" cy="10" r="3"/>
-          </svg>
-          장소 관리
-        </button>
-      </nav>
-
-      {/* Tab Content */}
-      <div className="admin-content">
-        {activeTab === 'overview' && <AdminOverview />}
-        {activeTab === 'users' && <UserManagement />}
-        {activeTab === 'locations' && renderLocationManagement()}
+      {/* Tabs */}
+      <div className="sticky top-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex overflow-x-auto scrollbar-hide">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => handleTabChange(tab.id)}
+                className={`flex items-center gap-2 px-6 py-4 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+                  activeTab === tab.id
+                    ? 'text-indigo-600 dark:text-indigo-400 border-indigo-600 dark:border-indigo-400'
+                    : 'text-gray-600 dark:text-gray-400 border-transparent hover:text-gray-900 dark:hover:text-gray-200'
+                }`}
+              >
+                <span>{tab.icon}</span>
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
+      {/* Content */}
+      <main className="max-w-7xl mx-auto px-4 py-8 relative z-10">
+        <AnimatePresence mode="wait">
+          {/* Overview Tab */}
+          {activeTab === 'overview' && (
+            <motion.div key="overview" {...fadeInUp}>
+              <AdminOverview />
+            </motion.div>
+          )}
+
+          {/* Users Tab */}
+          {activeTab === 'users' && (
+            <motion.div key="users" {...fadeInUp}>
+              <UserManagement />
+            </motion.div>
+          )}
+
+          {/* Locations Tab */}
+          {activeTab === 'locations' && (
+            <motion.div key="locations" {...fadeInUp} className="space-y-6">
+              {/* Stats Cards */}
+              {stats && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50">
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                        <span className="text-3xl">📍</span>
+                      </div>
+                      <div>
+                        <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.totalLocations}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">전체 장소</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50">
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                        <span className="text-3xl">✅</span>
+                      </div>
+                      <div>
+                        <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.activeLocations}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">활성 장소</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50">
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                        <span className="text-3xl">⭐</span>
+                      </div>
+                      <div>
+                        <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.seasonalEvents}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">시즌 이벤트</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Rarity Distribution */}
+              {stats && (
+                <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50">
+                  <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4">희귀도별 분포</h3>
+                  <div className="space-y-3">
+                    {RARITY_OPTIONS.map((rarity) => {
+                      const count = stats[`${rarity.toLowerCase()}Count` as keyof LocationStatsResponse] as number;
+                      const maxCount = Math.max(stats.commonCount, stats.rareCount, stats.epicCount, stats.legendaryCount);
+                      const percentage = maxCount > 0 ? (count / maxCount) * 100 : 0;
+
+                      return (
+                        <div key={rarity}>
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-sm font-medium flex items-center gap-2">
+                              <span>{RARITY_CONFIG[rarity].emoji}</span>
+                              <span style={{ color: RARITY_CONFIG[rarity].color }}>{RARITY_CONFIG[rarity].label}</span>
+                            </span>
+                            <span className="text-sm font-bold text-gray-800 dark:text-white">{count}</span>
+                          </div>
+                          <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                            <div
+                              className="h-full rounded-full transition-all duration-500"
+                              style={{ width: `${percentage}%`, backgroundColor: RARITY_CONFIG[rarity].color }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Controls */}
+              <div className="flex flex-col md:flex-row gap-4">
+                <button
+                  onClick={handleCreate}
+                  className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl hover:opacity-90 transition-opacity shadow-lg"
+                >
+                  <span>➕</span>
+                  장소 추가
+                </button>
+
+                <div className="flex-1 relative">
+                  <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">🔍</span>
+                  <input
+                    type="text"
+                    placeholder="장소 검색..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-12 pr-4 py-3 bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+              </div>
+
+              {/* Filters */}
+              <div className="flex flex-wrap gap-3">
+                <select
+                  value={filterRarity}
+                  onChange={(e) => setFilterRarity(e.target.value as FilterRarity)}
+                  className="px-4 py-2 bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="ALL">모든 희귀도</option>
+                  {RARITY_OPTIONS.map((r) => (
+                    <option key={r} value={r}>{RARITY_CONFIG[r].emoji} {RARITY_CONFIG[r].label}</option>
+                  ))}
+                </select>
+
+                <select
+                  value={filterCategory}
+                  onChange={(e) => setFilterCategory(e.target.value as FilterCategory)}
+                  className="px-4 py-2 bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="ALL">모든 카테고리</option>
+                  {CATEGORY_OPTIONS.map((c) => (
+                    <option key={c} value={c}>{CATEGORY_LABELS[c]}</option>
+                  ))}
+                </select>
+
+                <select
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value as FilterStatus)}
+                  className="px-4 py-2 bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="ALL">모든 상태</option>
+                  <option value="ACTIVE">✅ 활성</option>
+                  <option value="INACTIVE">⛔ 비활성</option>
+                </select>
+              </div>
+
+              {/* Locations Table */}
+              {loading ? (
+                <div className="flex justify-center py-12">
+                  <div className="w-10 h-10 border-4 border-indigo-200 dark:border-indigo-800 border-t-indigo-600 rounded-full animate-spin" />
+                </div>
+              ) : filteredLocations.length === 0 ? (
+                <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-12 border border-gray-200/50 dark:border-gray-700/50 text-center">
+                  <span className="text-6xl mb-4 block">📍</span>
+                  <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">장소가 없습니다</h3>
+                  <p className="text-gray-500 dark:text-gray-400">새 장소를 추가해주세요.</p>
+                </div>
+              ) : (
+                <>
+                  <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b border-gray-200/50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50">
+                            <th className="text-left py-4 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">ID</th>
+                            <th className="text-left py-4 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">이름</th>
+                            <th className="text-left py-4 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">카테고리</th>
+                            <th className="text-left py-4 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">희귀도</th>
+                            <th className="text-left py-4 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">위치</th>
+                            <th className="text-left py-4 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">포인트</th>
+                            <th className="text-left py-4 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">상태</th>
+                            <th className="text-left py-4 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">액션</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredLocations.map((loc, index) => (
+                            <motion.tr
+                              key={loc.id}
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: index * 0.03 }}
+                              className={`border-b border-gray-100/50 dark:border-gray-800/50 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors ${!loc.isActive ? 'opacity-60' : ''}`}
+                            >
+                              <td className="py-3 px-4 text-sm text-gray-500 dark:text-gray-400 font-mono">{loc.id}</td>
+                              <td className="py-3 px-4">
+                                <div className="flex items-center gap-3">
+                                  {loc.imageUrl && (
+                                    <img src={loc.imageUrl} alt="" className="w-10 h-10 rounded-lg object-cover" />
+                                  )}
+                                  <div>
+                                    <p className="font-medium text-gray-900 dark:text-white">{loc.name}</p>
+                                    {loc.isSeasonalEvent && (
+                                      <span className="text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 px-2 py-0.5 rounded-full">
+                                        ⭐ 이벤트
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="py-3 px-4">
+                                <span className="text-sm text-gray-600 dark:text-gray-400">{CATEGORY_LABELS[loc.category]}</span>
+                              </td>
+                              <td className="py-3 px-4">
+                                <span
+                                  className="px-3 py-1 rounded-full text-xs font-bold text-white"
+                                  style={{ backgroundColor: RARITY_CONFIG[loc.rarity].color }}
+                                >
+                                  {RARITY_CONFIG[loc.rarity].emoji} {RARITY_CONFIG[loc.rarity].label}
+                                </span>
+                              </td>
+                              <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">{loc.city || loc.country || '-'}</td>
+                              <td className="py-3 px-4 text-sm font-semibold text-gray-900 dark:text-white">{loc.pointReward}P</td>
+                              <td className="py-3 px-4">
+                                <button
+                                  onClick={() => handleToggleActive(loc.id)}
+                                  className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                                    loc.isActive
+                                      ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50'
+                                      : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50'
+                                  }`}
+                                >
+                                  {loc.isActive ? '✅ 활성' : '⛔ 비활성'}
+                                </button>
+                              </td>
+                              <td className="py-3 px-4">
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() => handleEdit(loc)}
+                                    className="p-2 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 transition-colors"
+                                    title="수정"
+                                  >
+                                    ✏️
+                                  </button>
+                                  {deleteConfirm === loc.id ? (
+                                    <>
+                                      <button
+                                        onClick={() => handleDelete(loc.id)}
+                                        className="p-2 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 text-green-600 dark:text-green-400 transition-colors"
+                                        title="확인"
+                                      >
+                                        ✓
+                                      </button>
+                                      <button
+                                        onClick={() => setDeleteConfirm(null)}
+                                        className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 transition-colors"
+                                        title="취소"
+                                      >
+                                        ✕
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <button
+                                      onClick={() => setDeleteConfirm(loc.id)}
+                                      className="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 transition-colors"
+                                      title="삭제"
+                                    >
+                                      🗑️
+                                    </button>
+                                  )}
+                                </div>
+                              </td>
+                            </motion.tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Pagination */}
+                  {totalPages > 1 && (
+                    <div className="flex justify-center items-center gap-4">
+                      <button
+                        disabled={page === 0}
+                        onClick={() => setPage(page - 1)}
+                        className="px-4 py-2 bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:border-indigo-300 dark:hover:border-indigo-600 transition-colors"
+                      >
+                        ← 이전
+                      </button>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        {page + 1} / {totalPages} ({totalElements}개)
+                      </span>
+                      <button
+                        disabled={page >= totalPages - 1}
+                        onClick={() => setPage(page + 1)}
+                        className="px-4 py-2 bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:border-indigo-300 dark:hover:border-indigo-600 transition-colors"
+                      >
+                        다음 →
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
+
       {/* Modal */}
-      {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>{editingLocation ? '장소 수정' : '새 장소 추가'}</h2>
-              <button className="btn-close" onClick={() => setShowModal(false)}>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18"/>
-                  <line x1="6" y1="6" x2="18" y2="18"/>
-                </svg>
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="location-form">
-              <div className="form-grid">
-                <div className="form-group full-width">
-                  <label>장소명 *</label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-
-                <div className="form-group full-width">
-                  <label>설명</label>
-                  <textarea
-                    name="description"
-                    value={formData.description}
-                    onChange={handleInputChange}
-                    rows={3}
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>위도 *</label>
-                  <input
-                    type="number"
-                    name="latitude"
-                    value={formData.latitude}
-                    onChange={handleInputChange}
-                    step="any"
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>경도 *</label>
-                  <input
-                    type="number"
-                    name="longitude"
-                    value={formData.longitude}
-                    onChange={handleInputChange}
-                    step="any"
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>수집 반경 (m)</label>
-                  <input
-                    type="number"
-                    name="collectRadius"
-                    value={formData.collectRadius}
-                    onChange={handleInputChange}
-                    min="10"
-                    max="1000"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>포인트 보상</label>
-                  <input
-                    type="number"
-                    name="pointReward"
-                    value={formData.pointReward}
-                    onChange={handleInputChange}
-                    min="0"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>카테고리 *</label>
-                  <select
-                    name="category"
-                    value={formData.category}
-                    onChange={handleInputChange}
-                    required
-                  >
-                    {CATEGORY_OPTIONS.map((c) => (
-                      <option key={c} value={c}>{CATEGORY_LABELS[c]}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label>희귀도 *</label>
-                  <select
-                    name="rarity"
-                    value={formData.rarity}
-                    onChange={handleInputChange}
-                    required
-                  >
-                    {RARITY_OPTIONS.map((r) => (
-                      <option key={r} value={r}>{RARITY_LABELS[r]}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label>국가</label>
-                  <input
-                    type="text"
-                    name="country"
-                    value={formData.country}
-                    onChange={handleInputChange}
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>도시</label>
-                  <input
-                    type="text"
-                    name="city"
-                    value={formData.city}
-                    onChange={handleInputChange}
-                  />
-                </div>
-
-                <div className="form-group full-width">
-                  <label>지역</label>
-                  <input
-                    type="text"
-                    name="region"
-                    value={formData.region}
-                    onChange={handleInputChange}
-                  />
-                </div>
-
-                <div className="form-group full-width">
-                  <label>이미지 URL</label>
-                  <input
-                    type="url"
-                    name="imageUrl"
-                    value={formData.imageUrl}
-                    onChange={handleInputChange}
-                    placeholder="https://..."
-                  />
-                </div>
-
-                <div className="form-group full-width">
-                  <label>NFT 이미지 URL</label>
-                  <input
-                    type="url"
-                    name="nftImageUrl"
-                    value={formData.nftImageUrl}
-                    onChange={handleInputChange}
-                    placeholder="https://..."
-                  />
-                </div>
-
-                <div className="form-group full-width">
-                  <label className="checkbox-label">
-                    <input
-                      type="checkbox"
-                      name="isSeasonalEvent"
-                      checked={formData.isSeasonalEvent}
-                      onChange={handleInputChange}
-                    />
-                    시즌 이벤트 장소
-                  </label>
-                </div>
-
-                {formData.isSeasonalEvent && (
-                  <>
-                    <div className="form-group">
-                      <label>이벤트 시작일</label>
-                      <input
-                        type="date"
-                        name="eventStartAt"
-                        value={formData.eventStartAt}
-                        onChange={handleInputChange}
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>이벤트 종료일</label>
-                      <input
-                        type="date"
-                        name="eventEndAt"
-                        value={formData.eventEndAt}
-                        onChange={handleInputChange}
-                      />
-                    </div>
-                  </>
-                )}
-              </div>
-
-              <div className="form-actions">
+      <AnimatePresence>
+        {showModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+            onClick={() => setShowModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-200/50 dark:border-gray-700/50"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-6 border-b border-gray-200/50 dark:border-gray-700/50 flex justify-between items-center sticky top-0 bg-white dark:bg-gray-900 z-10">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                  {editingLocation ? '장소 수정' : '새 장소 추가'}
+                </h2>
                 <button
-                  type="button"
-                  className="btn-cancel"
                   onClick={() => setShowModal(false)}
+                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
                 >
-                  취소
-                </button>
-                <button
-                  type="submit"
-                  className="btn-submit"
-                  disabled={submitting}
-                >
-                  {submitting ? '저장 중...' : editingLocation ? '수정' : '생성'}
+                  ✕
                 </button>
               </div>
-            </form>
-          </div>
-        </div>
-      )}
+
+              <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">장소명 *</label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">설명</label>
+                    <textarea
+                      name="description"
+                      value={formData.description}
+                      onChange={handleInputChange}
+                      rows={3}
+                      className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">위도 *</label>
+                    <input
+                      type="number"
+                      name="latitude"
+                      value={formData.latitude}
+                      onChange={handleInputChange}
+                      step="any"
+                      required
+                      className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">경도 *</label>
+                    <input
+                      type="number"
+                      name="longitude"
+                      value={formData.longitude}
+                      onChange={handleInputChange}
+                      step="any"
+                      required
+                      className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">수집 반경 (m)</label>
+                    <input
+                      type="number"
+                      name="collectRadius"
+                      value={formData.collectRadius}
+                      onChange={handleInputChange}
+                      min="10"
+                      max="1000"
+                      className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">포인트 보상</label>
+                    <input
+                      type="number"
+                      name="pointReward"
+                      value={formData.pointReward}
+                      onChange={handleInputChange}
+                      min="0"
+                      className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">카테고리 *</label>
+                    <select
+                      name="category"
+                      value={formData.category}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      {CATEGORY_OPTIONS.map((c) => (
+                        <option key={c} value={c}>{CATEGORY_LABELS[c]}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">희귀도 *</label>
+                    <select
+                      name="rarity"
+                      value={formData.rarity}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      {RARITY_OPTIONS.map((r) => (
+                        <option key={r} value={r}>{RARITY_CONFIG[r].emoji} {RARITY_CONFIG[r].label}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">국가</label>
+                    <input
+                      type="text"
+                      name="country"
+                      value={formData.country}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">도시</label>
+                    <input
+                      type="text"
+                      name="city"
+                      value={formData.city}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">지역</label>
+                    <input
+                      type="text"
+                      name="region"
+                      value={formData.region}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">이미지 URL</label>
+                    <input
+                      type="url"
+                      name="imageUrl"
+                      value={formData.imageUrl}
+                      onChange={handleInputChange}
+                      placeholder="https://..."
+                      className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">NFT 이미지 URL</label>
+                    <input
+                      type="url"
+                      name="nftImageUrl"
+                      value={formData.nftImageUrl}
+                      onChange={handleInputChange}
+                      placeholder="https://..."
+                      className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        name="isSeasonalEvent"
+                        checked={formData.isSeasonalEvent}
+                        onChange={handleInputChange}
+                        className="w-5 h-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                      />
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">시즌 이벤트 장소</span>
+                    </label>
+                  </div>
+
+                  {formData.isSeasonalEvent && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">이벤트 시작일</label>
+                        <input
+                          type="date"
+                          name="eventStartAt"
+                          value={formData.eventStartAt}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">이벤트 종료일</label>
+                        <input
+                          type="date"
+                          name="eventEndAt"
+                          value={formData.eventEndAt}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowModal(false)}
+                    className="flex-1 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    취소
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="flex-1 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50"
+                  >
+                    {submitting ? '저장 중...' : editingLocation ? '수정' : '생성'}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

@@ -59,15 +59,15 @@ describe('LocationMessage', () => {
   test('내 메시지 스타일 적용', () => {
     render(<LocationMessage {...mockProps} isMyMessage={true} />);
 
-    const container = document.querySelector('.location-message.my-message');
-    expect(container).toBeInTheDocument();
+    const container = screen.getByTestId('location-message-container');
+    expect(container).toHaveClass('my-message');
   });
 
   test('Google Maps 버튼 클릭', () => {
     render(<LocationMessage {...mockProps} />);
 
-    const googleBtn = screen.getByText('Google').closest('button');
-    fireEvent.click(googleBtn!);
+    const googleBtn = screen.getByRole('button', { name: /Google/i });
+    fireEvent.click(googleBtn);
 
     expect(mockWindowOpen).toHaveBeenCalledWith(
       expect.stringContaining('google.com/maps'),
@@ -78,8 +78,8 @@ describe('LocationMessage', () => {
   test('네이버 지도 버튼 클릭', () => {
     render(<LocationMessage {...mockProps} />);
 
-    const naverBtn = screen.getByText('네이버').closest('button');
-    fireEvent.click(naverBtn!);
+    const naverBtn = screen.getByRole('button', { name: /네이버/i });
+    fireEvent.click(naverBtn);
 
     expect(mockWindowOpen).toHaveBeenCalledWith(
       expect.stringContaining('map.naver.com'),
@@ -90,8 +90,8 @@ describe('LocationMessage', () => {
   test('카카오맵 버튼 클릭', () => {
     render(<LocationMessage {...mockProps} />);
 
-    const kakaoBtn = screen.getByText('카카오').closest('button');
-    fireEvent.click(kakaoBtn!);
+    const kakaoBtn = screen.getByRole('button', { name: /카카오/i });
+    fireEvent.click(kakaoBtn);
 
     expect(mockWindowOpen).toHaveBeenCalledWith(
       expect.stringContaining('map.kakao.com'),
@@ -110,8 +110,8 @@ describe('LocationMessage', () => {
   test('카드 클릭 시 Google Maps 열기', () => {
     render(<LocationMessage {...mockProps} />);
 
-    const container = document.querySelector('.location-message');
-    fireEvent.click(container!);
+    const container = screen.getByTestId('location-message-container');
+    fireEvent.click(container);
 
     expect(mockWindowOpen).toHaveBeenCalledWith(
       expect.stringContaining('google.com/maps'),
@@ -128,8 +128,7 @@ describe('LocationMessage', () => {
       />
     );
 
-    const address = document.querySelector('.location-address');
-    expect(address).not.toBeInTheDocument();
+    expect(screen.queryByTestId('location-address')).not.toBeInTheDocument();
   });
 
   test('지도 이미지 로드 실패 처리', () => {

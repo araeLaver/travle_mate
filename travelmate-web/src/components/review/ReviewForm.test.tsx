@@ -38,8 +38,8 @@ describe('ReviewForm', () => {
   test('별점 클릭시 상태 변경', () => {
     render(<ReviewForm {...defaultProps} />);
 
-    const stars = document.querySelectorAll('.star-btn');
-    fireEvent.click(stars[3]); // 4점 클릭
+    const star4 = screen.getByTestId('star-btn-4');
+    fireEvent.click(star4);
 
     expect(screen.getByText('4점')).toBeInTheDocument();
   });
@@ -47,13 +47,15 @@ describe('ReviewForm', () => {
   test('별점 호버시 미리보기', () => {
     render(<ReviewForm {...defaultProps} />);
 
-    const stars = document.querySelectorAll('.star-btn');
-    fireEvent.mouseEnter(stars[4]); // 5번째 별 호버
+    const star5 = screen.getByTestId('star-btn-5');
+    fireEvent.mouseEnter(star5);
 
-    const filledStars = document.querySelectorAll('.star-btn.filled');
-    expect(filledStars.length).toBe(5);
+    // All 5 stars should be filled
+    for (let i = 1; i <= 5; i++) {
+      expect(screen.getByTestId(`star-btn-${i}`)).toHaveClass('filled');
+    }
 
-    fireEvent.mouseLeave(stars[4]);
+    fireEvent.mouseLeave(star5);
   });
 
   test('계절 선택', () => {
@@ -82,7 +84,7 @@ describe('ReviewForm', () => {
     fireEvent.change(textarea, { target: { value: '좋은 장소입니다!' } });
 
     expect(textarea).toHaveValue('좋은 장소입니다!');
-    const charCount = document.querySelector('.char-count');
+    const charCount = screen.getByTestId('char-count');
     expect(charCount).toHaveTextContent('9/1000');
   });
 
@@ -102,8 +104,8 @@ describe('ReviewForm', () => {
     render(<ReviewForm {...defaultProps} />);
 
     // 별점 선택
-    const stars = document.querySelectorAll('.star-btn');
-    fireEvent.click(stars[4]); // 5점
+    const star5 = screen.getByTestId('star-btn-5');
+    fireEvent.click(star5);
 
     // 계절 선택
     const summerBtn = screen.getByText('여름');
@@ -123,8 +125,8 @@ describe('ReviewForm', () => {
         comment: '정말 좋았어요!',
         visitedSeason: 'SUMMER',
       });
-      expect(mockOnSubmit).toHaveBeenCalled();
     });
+    expect(mockOnSubmit).toHaveBeenCalled();
   });
 
   test('제출 실패 시 에러 메시지 표시', async () => {
@@ -133,8 +135,8 @@ describe('ReviewForm', () => {
     render(<ReviewForm {...defaultProps} />);
 
     // 별점 선택
-    const stars = document.querySelectorAll('.star-btn');
-    fireEvent.click(stars[4]);
+    const star5 = screen.getByTestId('star-btn-5');
+    fireEvent.click(star5);
 
     // 제출
     const submitBtn = screen.getByRole('button', { name: '리뷰 작성' });
@@ -151,8 +153,8 @@ describe('ReviewForm', () => {
     render(<ReviewForm {...defaultProps} />);
 
     // 별점 선택
-    const stars = document.querySelectorAll('.star-btn');
-    fireEvent.click(stars[4]);
+    const star5 = screen.getByTestId('star-btn-5');
+    fireEvent.click(star5);
 
     // 제출
     const submitBtn = screen.getByRole('button', { name: '리뷰 작성' });
@@ -175,8 +177,8 @@ describe('ReviewForm', () => {
   test('닫기 버튼(X) 동작', () => {
     render(<ReviewForm {...defaultProps} />);
 
-    const closeBtn = document.querySelector('.close-btn');
-    fireEvent.click(closeBtn!);
+    const closeBtn = screen.getByTestId('close-btn');
+    fireEvent.click(closeBtn);
 
     expect(mockOnClose).toHaveBeenCalled();
   });
@@ -184,8 +186,8 @@ describe('ReviewForm', () => {
   test('오버레이 클릭 시 닫기', () => {
     render(<ReviewForm {...defaultProps} />);
 
-    const overlay = document.querySelector('.review-form-overlay');
-    fireEvent.click(overlay!);
+    const overlay = screen.getByTestId('review-form-overlay');
+    fireEvent.click(overlay);
 
     expect(mockOnClose).toHaveBeenCalled();
   });
@@ -193,8 +195,8 @@ describe('ReviewForm', () => {
   test('모달 내부 클릭 시 닫히지 않음', () => {
     render(<ReviewForm {...defaultProps} />);
 
-    const modal = document.querySelector('.review-form-modal');
-    fireEvent.click(modal!);
+    const modal = screen.getByTestId('review-form-modal');
+    fireEvent.click(modal);
 
     expect(mockOnClose).not.toHaveBeenCalled();
   });
@@ -205,8 +207,8 @@ describe('ReviewForm', () => {
     render(<ReviewForm {...defaultProps} />);
 
     // 별점만 선택
-    const stars = document.querySelectorAll('.star-btn');
-    fireEvent.click(stars[2]); // 3점
+    const star3 = screen.getByTestId('star-btn-3');
+    fireEvent.click(star3);
 
     // 제출
     const submitBtn = screen.getByRole('button', { name: '리뷰 작성' });
