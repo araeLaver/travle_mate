@@ -23,7 +23,7 @@ import java.util.List;
  */
 @Tag(name = "Payment", description = "결제 시스템 API")
 @RestController
-@RequestMapping("/api/payment")
+@RequestMapping("/payment")
 @RequiredArgsConstructor
 @Slf4j
 public class PaymentController {

@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/marketplace")
+@RequestMapping("/marketplace")
 @RequiredArgsConstructor
 @CrossOrigin(origins = {"${app.cors.allowed-origins:http://localhost:3000}"})
 public class MarketplaceController {

@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
  * All endpoints require ADMIN role.
  */
 @RestController
-@RequestMapping("/api/admin")
+@RequestMapping("/admin")
 @RequiredArgsConstructor
 @Tag(name = "Admin", description = "관리자 API")
 @PreAuthorize("hasRole('ADMIN')")

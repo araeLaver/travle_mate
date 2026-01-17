@@ -19,7 +19,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/nft/mint")
+@RequestMapping("/nft/mint")
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "NFT 민팅", description = "블록체인 NFT 민팅 관련 API")

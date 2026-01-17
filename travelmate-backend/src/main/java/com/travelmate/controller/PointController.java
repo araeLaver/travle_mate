@@ -16,7 +16,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/points")
+@RequestMapping("/points")
 @RequiredArgsConstructor
 @CrossOrigin(origins = {"${app.cors.allowed-origins:http://localhost:3000}"})
 public class PointController {

@@ -27,7 +27,7 @@ import java.util.List;
  */
 @Tag(name = "2FA", description = "2단계 인증 관리 API")
 @RestController
-@RequestMapping("/api/auth/2fa")
+@RequestMapping("/auth/2fa")
 @RequiredArgsConstructor
 public class TwoFactorAuthController {
 

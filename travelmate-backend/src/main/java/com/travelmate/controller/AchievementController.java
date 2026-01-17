@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/achievements")
+@RequestMapping("/achievements")
 @RequiredArgsConstructor
 @CrossOrigin(origins = {"${app.cors.allowed-origins:http://localhost:3000}"})
 public class AchievementController {

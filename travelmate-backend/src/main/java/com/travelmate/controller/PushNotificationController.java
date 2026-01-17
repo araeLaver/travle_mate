@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
  * Push Notification Controller
  */
 @RestController
-@RequestMapping("/api/push")
+@RequestMapping("/push")
 @RequiredArgsConstructor
 @Tag(name = "Push Notifications", description = "푸시 알림 관리 API")
 public class PushNotificationController {

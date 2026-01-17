@@ -19,7 +19,7 @@ import java.util.List;
  */
 @Tag(name = "AI Recommendation", description = "AI 기반 추천 시스템 API")
 @RestController
-@RequestMapping("/api/ai")
+@RequestMapping("/ai")
 @RequiredArgsConstructor
 @Slf4j
 public class AIRecommendationController {
