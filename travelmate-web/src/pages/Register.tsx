@@ -1,9 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { authService } from '../services/authService';
 import { useToast } from '../components/Toast';
 import { getErrorMessage, logError } from '../utils/errorHandler';
-import './Auth.css';
+import Logo from '../components/Logo';
+import ThemeToggle from '../components/ThemeToggle';
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
@@ -31,7 +33,6 @@ const Register: React.FC = () => {
     confirmPassword: false,
   });
 
-  // 실시간 유효성 검사
   const validation = useMemo(() => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
@@ -58,9 +59,9 @@ const Register: React.FC = () => {
     if (/[0-9]/.test(password)) strength++;
     if (/[^A-Za-z0-9]/.test(password)) strength++;
 
-    if (strength <= 2) return { level: 1, text: '약함', color: '#ef4444' };
-    if (strength <= 4) return { level: 2, text: '보통', color: '#f59e0b' };
-    return { level: 3, text: '강함', color: '#22c55e' };
+    if (strength <= 2) return { level: 1, text: '약함', color: 'bg-red-500' };
+    if (strength <= 4) return { level: 2, text: '보통', color: 'bg-amber-500' };
+    return { level: 3, text: '강함', color: 'bg-green-500' };
   }, [formData.password]);
 
   const handleBlur = (field: string) => {
@@ -69,10 +70,7 @@ const Register: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    setFormData({ ...formData, [name]: value });
 
     if (name === 'email') {
       setDuplicateCheck(prev => ({
@@ -93,10 +91,7 @@ const Register: React.FC = () => {
       return;
     }
 
-    setDuplicateCheck(prev => ({
-      ...prev,
-      email: { ...prev.email, loading: true },
-    }));
+    setDuplicateCheck(prev => ({ ...prev, email: { ...prev.email, loading: true } }));
 
     try {
       const exists = await authService.checkEmailDuplicate(formData.email);
@@ -120,10 +115,7 @@ const Register: React.FC = () => {
       return;
     }
 
-    setDuplicateCheck(prev => ({
-      ...prev,
-      username: { ...prev.username, loading: true },
-    }));
+    setDuplicateCheck(prev => ({ ...prev, username: { ...prev.username, loading: true } }));
 
     try {
       const exists = await authService.checkNicknameDuplicate(formData.username);
@@ -145,7 +137,6 @@ const Register: React.FC = () => {
     e.preventDefault();
     setError('');
 
-    // 모든 필드 터치 처리
     setTouched({
       name: true,
       username: true,
@@ -154,37 +145,30 @@ const Register: React.FC = () => {
       confirmPassword: true,
     });
 
-    // 유효성 검사
     if (!validation.name) {
       toast.warning('이름은 2자 이상 입력해주세요.');
       return;
     }
-
     if (!validation.username) {
       toast.warning('사용자명은 영문, 숫자, 밑줄만 사용 가능합니다 (3-20자).');
       return;
     }
-
     if (!validation.email) {
       toast.warning('올바른 이메일 형식을 입력해주세요.');
       return;
     }
-
     if (!validation.password) {
       toast.warning('비밀번호는 8자 이상 입력해주세요.');
       return;
     }
-
     if (!validation.confirmPassword) {
       toast.warning('비밀번호가 일치하지 않습니다.');
       return;
     }
-
     if (!duplicateCheck.email.checked || !duplicateCheck.email.available) {
       toast.warning('이메일 중복 확인을 해주세요.');
       return;
     }
-
     if (!duplicateCheck.username.checked || !duplicateCheck.username.available) {
       toast.warning('사용자명 중복 확인을 해주세요.');
       return;
@@ -211,12 +195,17 @@ const Register: React.FC = () => {
     }
   };
 
-  const getCheckButtonClass = (field: 'email' | 'username') => {
+  const fadeInUp = {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.5 },
+  };
+
+  const getCheckButtonStyle = (field: 'email' | 'username') => {
     const state = duplicateCheck[field];
-    if (state.checked) {
-      return state.available ? 'check-btn available' : 'check-btn unavailable';
-    }
-    return 'check-btn';
+    if (state.checked && state.available) return 'bg-green-500 hover:bg-green-600';
+    if (state.checked && !state.available) return 'bg-red-500 hover:bg-red-600';
+    return 'bg-violet-500 hover:bg-violet-600';
   };
 
   const getCheckButtonText = (field: 'email' | 'username') => {
@@ -226,394 +215,482 @@ const Register: React.FC = () => {
     return '중복확인';
   };
 
-  // Icon components
-  const UserIcon = () => (
-    <svg
-      className="input-icon"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      aria-hidden="true"
-    >
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-      <circle cx="12" cy="7" r="4" />
-    </svg>
-  );
-
-  const AtSignIcon = () => (
-    <svg
-      className="input-icon"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      aria-hidden="true"
-    >
-      <circle cx="12" cy="12" r="4" />
-      <path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94" />
-    </svg>
-  );
-
-  const MailIcon = () => (
-    <svg
-      className="input-icon"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      aria-hidden="true"
-    >
-      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-      <polyline points="22,6 12,13 2,6" />
-    </svg>
-  );
-
-  const LockIcon = () => (
-    <svg
-      className="input-icon"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      aria-hidden="true"
-    >
-      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-    </svg>
-  );
-
-  const EyeIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  );
-
-  const EyeOffIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-      <line x1="1" y1="1" x2="23" y2="23" />
-    </svg>
-  );
-
   return (
-    <div className="auth-container">
-      {/* Animated Background Blobs */}
-      <div className="blob-1" aria-hidden="true" />
-      <div className="blob-2" aria-hidden="true" />
-      <div className="blob-3" aria-hidden="true" />
+    <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background Effects */}
+      <div className="absolute inset-0 gradient-mesh opacity-60 dark:opacity-40" />
+      <div
+        className="absolute top-20 right-10 w-72 h-72 bg-pink-400/30 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite' }}
+      />
+      <div
+        className="absolute bottom-20 left-10 w-96 h-96 bg-violet-400/20 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite', animationDelay: '2s' }}
+      />
+      <div
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-cyan-400/10 rounded-full blur-3xl"
+        style={{ animation: 'glow 4s infinite' }}
+      />
 
-      <main className="auth-card">
-        <header className="auth-header">
-          <h1>TravelMate</h1>
-          <h2>Join Us</h2>
-          <p>여행 동반자와 함께할 모험을 시작하세요</p>
-        </header>
-
-        {error && (
-          <div className="auth-error" role="alert" aria-live="assertive">
-            <svg
-              className="error-icon"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              aria-hidden="true"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="8" x2="12" y2="12" />
-              <line x1="12" y1="16" x2="12.01" y2="16" />
-            </svg>
-            <span>{error}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="auth-form" aria-label="회원가입 양식" noValidate>
-          <div className="form-group">
-            <label htmlFor="name">
-              이름 <span className="sr-only">(필수)</span>
-            </label>
-            <div className="input-wrapper">
-              <UserIcon />
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                onBlur={() => handleBlur('name')}
-                placeholder="실명을 입력하세요"
-                required
-                aria-required="true"
-                autoComplete="name"
-                className={touched.name ? (validation.name ? 'valid' : 'invalid') : ''}
-                aria-invalid={touched.name && !validation.name}
-                aria-describedby={touched.name && !validation.name ? 'name-error' : undefined}
-              />
+      {/* Navigation */}
+      <nav className="fixed top-0 w-full z-50">
+        <div className="mx-4 mt-4">
+          <div className="max-w-6xl mx-auto bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-800/50 shadow-lg shadow-gray-200/20 dark:shadow-black/20">
+            <div className="flex items-center justify-between h-16 px-6">
+              <Link to="/" className="flex items-center gap-3 group">
+                <Logo
+                  variant="gradient"
+                  size="md"
+                  className="group-hover:scale-110 transition-transform duration-300"
+                />
+                <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
+                  TravelMate
+                </span>
+              </Link>
+              <div className="flex items-center gap-3">
+                <ThemeToggle />
+                <Link
+                  to="/login"
+                  className="px-5 py-2.5 text-sm font-semibold text-white bg-gray-900 dark:bg-white dark:text-gray-900 rounded-xl hover:bg-gray-800 dark:hover:bg-gray-100 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
+                >
+                  Login
+                </Link>
+              </div>
             </div>
-            {touched.name && !validation.name && (
-              <span id="name-error" className="validation-message error" role="alert">
-                이름은 2자 이상 입력해주세요
-              </span>
-            )}
           </div>
+        </div>
+      </nav>
 
-          <div className="form-group">
-            <label htmlFor="username">
-              사용자명 <span className="sr-only">(필수)</span>
-            </label>
-            <div className="input-with-button">
-              <div className="input-wrapper">
-                <AtSignIcon />
+      {/* Register Card */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="relative z-10 w-full max-w-md mt-24 mb-8"
+      >
+        <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl border border-gray-200/50 dark:border-gray-800/50 shadow-2xl shadow-gray-200/50 dark:shadow-black/30 p-8 md:p-10">
+          <motion.div {...fadeInUp} className="text-center mb-8">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">
+              Join TravelMate
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              여행 동반자와 함께할 모험을 시작하세요
+            </p>
+          </motion.div>
+
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center gap-3 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl mb-6"
+            >
+              <svg
+                className="w-5 h-5 text-red-500 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <span className="text-sm text-red-600 dark:text-red-400">{error}</span>
+            </motion.div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Name Field */}
+            <motion.div {...fadeInUp} transition={{ delay: 0.1 }}>
+              <label
+                htmlFor="name"
+                className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
+              >
+                이름
+              </label>
+              <div className="relative">
+                <svg
+                  className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
+                </svg>
                 <input
                   type="text"
-                  id="username"
-                  name="username"
-                  value={formData.username}
+                  id="name"
+                  name="name"
+                  value={formData.name}
                   onChange={handleChange}
-                  onBlur={() => handleBlur('username')}
-                  placeholder="사용자명을 입력하세요"
+                  onBlur={() => handleBlur('name')}
+                  placeholder="실명을 입력하세요"
                   required
-                  aria-required="true"
-                  autoComplete="username"
-                  className={touched.username ? (validation.username ? 'valid' : 'invalid') : ''}
-                  aria-invalid={touched.username && !validation.username}
-                  aria-describedby="username-hint username-status"
+                  className={`w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all ${
+                    touched.name
+                      ? validation.name
+                        ? 'border-green-500'
+                        : 'border-red-500'
+                      : 'border-gray-200 dark:border-gray-700'
+                  }`}
                 />
               </div>
-              <button
-                type="button"
-                className={getCheckButtonClass('username')}
-                onClick={checkUsernameDuplicate}
-                disabled={!formData.username || duplicateCheck.username.loading}
-                aria-busy={duplicateCheck.username.loading}
-                aria-label={`사용자명 중복확인 ${duplicateCheck.username.checked ? (duplicateCheck.username.available ? '사용 가능' : '중복됨') : ''}`}
-              >
-                {duplicateCheck.username.loading && (
-                  <span className="spinner small" aria-hidden="true" />
-                )}
-                {getCheckButtonText('username')}
-              </button>
-            </div>
-            <span id="username-hint" className="sr-only">
-              영문, 숫자, 밑줄만 사용 가능 (3-20자)
-            </span>
-            {touched.username && !validation.username && (
-              <span id="username-status" className="validation-message error" role="alert">
-                영문, 숫자, 밑줄만 사용 (3-20자)
-              </span>
-            )}
-            {duplicateCheck.username.checked && duplicateCheck.username.available && (
-              <span
-                id="username-status"
-                className="validation-message success"
-                role="status"
-                aria-live="polite"
-              >
-                사용 가능한 사용자명입니다
-              </span>
-            )}
-          </div>
+              {touched.name && !validation.name && (
+                <p className="mt-1 text-xs text-red-500">이름은 2자 이상 입력해주세요</p>
+              )}
+            </motion.div>
 
-          <div className="form-group">
-            <label htmlFor="email">
-              이메일 <span className="sr-only">(필수)</span>
-            </label>
-            <div className="input-with-button">
-              <div className="input-wrapper">
-                <MailIcon />
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  onBlur={() => handleBlur('email')}
-                  placeholder="your@email.com"
-                  required
-                  aria-required="true"
-                  autoComplete="email"
-                  className={touched.email ? (validation.email ? 'valid' : 'invalid') : ''}
-                  aria-invalid={touched.email && !validation.email}
-                  aria-describedby="email-status"
-                />
-              </div>
-              <button
-                type="button"
-                className={getCheckButtonClass('email')}
-                onClick={checkEmailDuplicate}
-                disabled={!formData.email || duplicateCheck.email.loading}
-                aria-busy={duplicateCheck.email.loading}
-                aria-label={`이메일 중복확인 ${duplicateCheck.email.checked ? (duplicateCheck.email.available ? '사용 가능' : '중복됨') : ''}`}
+            {/* Username Field */}
+            <motion.div {...fadeInUp} transition={{ delay: 0.15 }}>
+              <label
+                htmlFor="username"
+                className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
               >
-                {duplicateCheck.email.loading && (
-                  <span className="spinner small" aria-hidden="true" />
-                )}
-                {getCheckButtonText('email')}
-              </button>
-            </div>
-            {touched.email && !validation.email && (
-              <span id="email-status" className="validation-message error" role="alert">
-                올바른 이메일 형식을 입력해주세요
-              </span>
-            )}
-            {duplicateCheck.email.checked && duplicateCheck.email.available && (
-              <span
-                id="email-status"
-                className="validation-message success"
-                role="status"
-                aria-live="polite"
-              >
-                사용 가능한 이메일입니다
-              </span>
-            )}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="password">
-              비밀번호 <span className="sr-only">(필수)</span>
-            </label>
-            <div className="input-wrapper">
-              <LockIcon />
-              <input
-                type={showPassword ? 'text' : 'password'}
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                onBlur={() => handleBlur('password')}
-                placeholder="8자 이상의 비밀번호"
-                required
-                aria-required="true"
-                minLength={8}
-                autoComplete="new-password"
-                className={touched.password ? (validation.password ? 'valid' : 'invalid') : ''}
-                aria-invalid={touched.password && !validation.password}
-                aria-describedby="password-strength password-error"
-              />
-              <button
-                type="button"
-                className="password-toggle"
-                onClick={() => setShowPassword(!showPassword)}
-                aria-label={showPassword ? '비밀번호 숨기기' : '비밀번호 표시'}
-              >
-                {showPassword ? <EyeOffIcon /> : <EyeIcon />}
-              </button>
-            </div>
-            {formData.password && (
-              <div
-                className="password-strength"
-                id="password-strength"
-                role="status"
-                aria-live="polite"
-              >
-                <div className="strength-bars" aria-hidden="true">
-                  <div
-                    className={`strength-bar ${passwordStrength.level >= 1 ? 'active' : ''}`}
-                    style={{
-                      backgroundColor:
-                        passwordStrength.level >= 1 ? passwordStrength.color : undefined,
-                    }}
-                  />
-                  <div
-                    className={`strength-bar ${passwordStrength.level >= 2 ? 'active' : ''}`}
-                    style={{
-                      backgroundColor:
-                        passwordStrength.level >= 2 ? passwordStrength.color : undefined,
-                    }}
-                  />
-                  <div
-                    className={`strength-bar ${passwordStrength.level >= 3 ? 'active' : ''}`}
-                    style={{
-                      backgroundColor:
-                        passwordStrength.level >= 3 ? passwordStrength.color : undefined,
-                    }}
+                사용자명
+              </label>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <svg
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"
+                    />
+                  </svg>
+                  <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    value={formData.username}
+                    onChange={handleChange}
+                    onBlur={() => handleBlur('username')}
+                    placeholder="사용자명"
+                    required
+                    className={`w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all ${
+                      touched.username
+                        ? validation.username
+                          ? 'border-green-500'
+                          : 'border-red-500'
+                        : 'border-gray-200 dark:border-gray-700'
+                    }`}
                   />
                 </div>
-                <span className="strength-text" style={{ color: passwordStrength.color }}>
-                  비밀번호 강도: {passwordStrength.text}
-                </span>
+                <button
+                  type="button"
+                  onClick={checkUsernameDuplicate}
+                  disabled={!formData.username || duplicateCheck.username.loading}
+                  className={`px-4 py-3 text-white text-sm font-medium rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed ${getCheckButtonStyle('username')}`}
+                >
+                  {getCheckButtonText('username')}
+                </button>
               </div>
-            )}
-            {touched.password && !validation.password && (
-              <span id="password-error" className="validation-message error" role="alert">
-                비밀번호는 8자 이상 입력해주세요
-              </span>
-            )}
-          </div>
+              {touched.username && !validation.username && (
+                <p className="mt-1 text-xs text-red-500">영문, 숫자, 밑줄만 사용 (3-20자)</p>
+              )}
+              {duplicateCheck.username.checked && duplicateCheck.username.available && (
+                <p className="mt-1 text-xs text-green-500">사용 가능한 사용자명입니다</p>
+              )}
+            </motion.div>
 
-          <div className="form-group">
-            <label htmlFor="confirmPassword">
-              비밀번호 확인 <span className="sr-only">(필수)</span>
-            </label>
-            <div className="input-wrapper">
-              <LockIcon />
-              <input
-                type={showConfirmPassword ? 'text' : 'password'}
-                id="confirmPassword"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                onBlur={() => handleBlur('confirmPassword')}
-                placeholder="비밀번호를 다시 입력하세요"
-                required
-                aria-required="true"
-                autoComplete="new-password"
-                className={
-                  touched.confirmPassword ? (validation.confirmPassword ? 'valid' : 'invalid') : ''
-                }
-                aria-invalid={
-                  touched.confirmPassword &&
-                  !validation.confirmPassword &&
-                  !!formData.confirmPassword
-                }
-                aria-describedby="confirm-password-status"
-              />
-              <button
-                type="button"
-                className="password-toggle"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                aria-label={showConfirmPassword ? '비밀번호 숨기기' : '비밀번호 표시'}
+            {/* Email Field */}
+            <motion.div {...fadeInUp} transition={{ delay: 0.2 }}>
+              <label
+                htmlFor="email"
+                className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
               >
-                {showConfirmPassword ? <EyeOffIcon /> : <EyeIcon />}
-              </button>
-            </div>
-            {touched.confirmPassword && !validation.confirmPassword && formData.confirmPassword && (
-              <span id="confirm-password-status" className="validation-message error" role="alert">
-                비밀번호가 일치하지 않습니다
-              </span>
-            )}
-            {validation.confirmPassword && formData.confirmPassword && (
-              <span
-                id="confirm-password-status"
-                className="validation-message success"
-                role="status"
-                aria-live="polite"
+                이메일
+              </label>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <svg
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                    />
+                  </svg>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    onBlur={() => handleBlur('email')}
+                    placeholder="your@email.com"
+                    required
+                    className={`w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all ${
+                      touched.email
+                        ? validation.email
+                          ? 'border-green-500'
+                          : 'border-red-500'
+                        : 'border-gray-200 dark:border-gray-700'
+                    }`}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={checkEmailDuplicate}
+                  disabled={!formData.email || duplicateCheck.email.loading}
+                  className={`px-4 py-3 text-white text-sm font-medium rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed ${getCheckButtonStyle('email')}`}
+                >
+                  {getCheckButtonText('email')}
+                </button>
+              </div>
+              {touched.email && !validation.email && (
+                <p className="mt-1 text-xs text-red-500">올바른 이메일 형식을 입력해주세요</p>
+              )}
+              {duplicateCheck.email.checked && duplicateCheck.email.available && (
+                <p className="mt-1 text-xs text-green-500">사용 가능한 이메일입니다</p>
+              )}
+            </motion.div>
+
+            {/* Password Field */}
+            <motion.div {...fadeInUp} transition={{ delay: 0.25 }}>
+              <label
+                htmlFor="password"
+                className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
               >
-                비밀번호가 일치합니다
-              </span>
-            )}
-          </div>
+                비밀번호
+              </label>
+              <div className="relative">
+                <svg
+                  className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                  />
+                </svg>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  onBlur={() => handleBlur('password')}
+                  placeholder="8자 이상의 비밀번호"
+                  required
+                  className={`w-full pl-12 pr-12 py-3 bg-gray-50 dark:bg-gray-800 border rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all ${
+                    touched.password
+                      ? validation.password
+                        ? 'border-green-500'
+                        : 'border-red-500'
+                      : 'border-gray-200 dark:border-gray-700'
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                >
+                  {showPassword ? (
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
+                      />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                      />
+                    </svg>
+                  )}
+                </button>
+              </div>
+              {formData.password && (
+                <div className="mt-2 flex items-center gap-2">
+                  <div className="flex-1 flex gap-1">
+                    {[1, 2, 3].map(level => (
+                      <div
+                        key={level}
+                        className={`h-1 flex-1 rounded-full transition-all ${
+                          passwordStrength.level >= level
+                            ? passwordStrength.color
+                            : 'bg-gray-200 dark:bg-gray-700'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span
+                    className={`text-xs font-medium ${
+                      passwordStrength.level === 1
+                        ? 'text-red-500'
+                        : passwordStrength.level === 2
+                          ? 'text-amber-500'
+                          : 'text-green-500'
+                    }`}
+                  >
+                    {passwordStrength.text}
+                  </span>
+                </div>
+              )}
+            </motion.div>
 
-          <button type="submit" className="auth-btn" disabled={loading} aria-busy={loading}>
-            {loading ? (
-              <>
-                <span className="spinner" aria-hidden="true" />
-                <span>가입 중...</span>
-              </>
-            ) : (
-              <span>회원가입</span>
-            )}
-          </button>
-        </form>
+            {/* Confirm Password Field */}
+            <motion.div {...fadeInUp} transition={{ delay: 0.3 }}>
+              <label
+                htmlFor="confirmPassword"
+                className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
+              >
+                비밀번호 확인
+              </label>
+              <div className="relative">
+                <svg
+                  className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                  />
+                </svg>
+                <input
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  onBlur={() => handleBlur('confirmPassword')}
+                  placeholder="비밀번호를 다시 입력하세요"
+                  required
+                  className={`w-full pl-12 pr-12 py-3 bg-gray-50 dark:bg-gray-800 border rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all ${
+                    touched.confirmPassword && formData.confirmPassword
+                      ? validation.confirmPassword
+                        ? 'border-green-500'
+                        : 'border-red-500'
+                      : 'border-gray-200 dark:border-gray-700'
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                >
+                  {showConfirmPassword ? (
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
+                      />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                      />
+                    </svg>
+                  )}
+                </button>
+              </div>
+              {touched.confirmPassword &&
+                !validation.confirmPassword &&
+                formData.confirmPassword && (
+                  <p className="mt-1 text-xs text-red-500">비밀번호가 일치하지 않습니다</p>
+                )}
+              {validation.confirmPassword && formData.confirmPassword && (
+                <p className="mt-1 text-xs text-green-500">비밀번호가 일치합니다</p>
+              )}
+            </motion.div>
 
-        <div className="auth-footer">
-          <p>
-            이미 계정이 있으신가요? <Link to="/login">로그인</Link>
-          </p>
+            <motion.button
+              {...fadeInUp}
+              transition={{ delay: 0.35 }}
+              type="submit"
+              disabled={loading}
+              className="w-full py-4 mt-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-semibold rounded-xl hover:from-violet-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:shadow-lg hover:shadow-violet-500/25 hover:-translate-y-0.5 flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  <span>가입 중...</span>
+                </>
+              ) : (
+                <span>회원가입</span>
+              )}
+            </motion.button>
+          </form>
+
+          <motion.p
+            {...fadeInUp}
+            transition={{ delay: 0.4 }}
+            className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400"
+          >
+            이미 계정이 있으신가요?{' '}
+            <Link
+              to="/login"
+              className="font-semibold text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors"
+            >
+              로그인
+            </Link>
+          </motion.p>
         </div>
-      </main>
+      </motion.div>
     </div>
   );
 };
