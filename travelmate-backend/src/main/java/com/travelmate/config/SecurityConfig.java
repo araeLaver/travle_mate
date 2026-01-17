@@ -46,10 +46,10 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthenticationEntryPoint))
             .authorizeHttpRequests(auth -> auth
-                // 공개 엔드포인트 (context-path가 /api이므로 실제 path는 /users/register가 됨)
+                // 공개 엔드포인트
                 .requestMatchers("/", "/index.html", "/api", "/api/").permitAll()
                 .requestMatchers("/health", "/health/**").permitAll() // Health Check
-                .requestMatchers("/management/**").permitAll() // Management endpoints
+                .requestMatchers("/actuator/**").permitAll() // Actuator endpoints
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll() // Swagger UI
                 .requestMatchers("/users/register", "/users/login").permitAll()
                 .requestMatchers("/users/check-email", "/users/check-nickname").permitAll() // 중복체크 공개
