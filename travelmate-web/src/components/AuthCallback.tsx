@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from './Toast';
+import { authService } from '../services/authService';
 
 const LoadingIcon = () => (
   <svg
@@ -20,6 +21,7 @@ const AuthCallback: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const toast = useToast();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const handleAuthCallback = async () => {
@@ -27,7 +29,7 @@ const AuthCallback: React.FC = () => {
       const code = urlParams.get('code');
       const state = urlParams.get('state');
       const error = urlParams.get('error');
-      const provider = urlParams.get('provider') || state; // state에서 provider 정보 추출
+      const provider = urlParams.get('provider') || state;
 
       if (error) {
         toast.error(`로그인 중 오류가 발생했습니다: ${error}`);
@@ -35,102 +37,95 @@ const AuthCallback: React.FC = () => {
         return;
       }
 
-      if (code) {
+      if (code && provider) {
         try {
-          // 실제 구현에서는 백엔드 API를 호출하여 토큰을 교환해야 합니다
-          // 예시: POST /api/auth/oauth/callback
-          const response = await fetch('/api/auth/oauth/callback', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              code,
-              provider,
-              redirectUri: process.env.REACT_APP_REDIRECT_URI,
-            }),
+          // 백엔드에 authorization code 전달하여 토큰 교환
+          const response = await fetch(
+            `${process.env.REACT_APP_API_URL || 'http://localhost:8080/api'}/auth/oauth/callback`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              credentials: 'include',
+              body: JSON.stringify({
+                code,
+                provider,
+                redirectUri: `${window.location.origin}/auth/callback`,
+              }),
+            }
+          );
+
+          if (!response.ok) {
+            const errorData = await response.text();
+            throw new Error(errorData || 'OAuth 인증에 실패했습니다.');
+          }
+
+          const data = await response.json();
+
+          // authService.oauthLogin()을 사용하여 안전하게 토큰 저장
+          // 백엔드에서 이미 토큰 교환이 완료되었으므로 accessToken으로 로그인 처리
+          await authService.oauthLogin({
+            provider: provider as 'google' | 'kakao' | 'naver',
+            accessToken: data.accessToken,
           });
 
-          if (response.ok) {
-            const userData = await response.json();
-
-            // 로컬 저장소에 사용자 정보 저장
-            localStorage.setItem('socialUser', JSON.stringify(userData.user));
-            localStorage.setItem('isLoggedIn', 'true');
-            localStorage.setItem('loginProvider', provider || 'unknown');
-            localStorage.setItem('accessToken', userData.accessToken);
-
-            toast.success(
-              `${provider?.toUpperCase()} 로그인 성공! 환영합니다, ${userData.user?.name}님!`
-            );
-            navigate('/dashboard');
-          } else {
-            throw new Error('백엔드 인증 처리 실패');
-          }
-        } catch (error) {
-          // 백엔드 연결 실패 시 임시로 성공 처리 (개발용)
-          const mockUser = {
-            id: 'oauth_' + Date.now(),
-            email: 'oauth.user@example.com',
-            name: `${provider?.toUpperCase()} 사용자`,
-            provider: provider || 'unknown',
-          };
-
-          localStorage.setItem('socialUser', JSON.stringify(mockUser));
-          localStorage.setItem('isLoggedIn', 'true');
-          localStorage.setItem('loginProvider', provider || 'unknown');
-
-          toast.success(`${provider?.toUpperCase()} 로그인 성공! (개발 모드)`);
+          toast.success(
+            `${provider.charAt(0).toUpperCase() + provider.slice(1)} 로그인 성공! 환영합니다!`
+          );
           navigate('/dashboard');
+        } catch (err) {
+          const message = err instanceof Error ? err.message : 'OAuth 로그인에 실패했습니다.';
+          setErrorMessage(message);
+          toast.error(message);
+          setTimeout(() => navigate('/login'), 3000);
         }
       } else {
-        // 네이버 로그인의 경우 fragment 방식 처리
-        const hash = location.hash;
-        if (hash) {
-          const hashParams = new URLSearchParams(hash.substring(1));
-          const accessToken = hashParams.get('access_token');
-          const tokenType = hashParams.get('token_type');
-
-          if (accessToken) {
-            // 네이버 사용자 정보 API 호출
-            try {
-              const userResponse = await fetch('https://openapi.naver.com/v1/nid/me', {
-                headers: {
-                  Authorization: `${tokenType} ${accessToken}`,
-                },
-              });
-
-              if (userResponse.ok) {
-                const naverData = await userResponse.json();
-                const user = {
-                  id: naverData.response.id,
-                  email: naverData.response.email,
-                  name: naverData.response.nickname || naverData.response.name,
-                  profileImage: naverData.response.profile_image,
-                  provider: 'naver',
-                };
-
-                localStorage.setItem('socialUser', JSON.stringify(user));
-                localStorage.setItem('isLoggedIn', 'true');
-                localStorage.setItem('loginProvider', 'naver');
-
-                toast.success(`네이버 로그인 성공! 환영합니다, ${user.name}님!`);
-                navigate('/dashboard');
-                return;
-              }
-            } catch (error) {
-              // 네이버 사용자 정보 조회 실패
-            }
-          }
-        }
-
-        // 콜백 파라미터가 없는 경우 로그인 페이지로 리다이렉트
+        // 파라미터가 없는 경우 로그인 페이지로 리다이렉트
         navigate('/login');
       }
     };
 
     handleAuthCallback();
   }, [location, navigate, toast]);
+
+  if (errorMessage) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',
+          textAlign: 'center',
+          background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%)',
+          color: 'white',
+        }}
+      >
+        <div style={{ marginBottom: '20px', color: '#f87171' }}>
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            style={{ width: '48px', height: '48px' }}
+          >
+            <circle cx="12" cy="12" r="10" />
+            <line x1="15" y1="9" x2="9" y2="15" />
+            <line x1="9" y1="9" x2="15" y2="15" />
+          </svg>
+        </div>
+        <h2>로그인 실패</h2>
+        <p style={{ color: 'rgba(255, 255, 255, 0.7)', marginTop: '10px' }}>{errorMessage}</p>
+        <p style={{ color: 'rgba(255, 255, 255, 0.5)', marginTop: '20px', fontSize: '14px' }}>
+          잠시 후 로그인 페이지로 이동합니다...
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div

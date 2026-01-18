@@ -4,8 +4,8 @@ import { motion } from 'framer-motion';
 import { groupService, CreateGroupRequest } from '../services/groupService';
 import { useToast } from '../components/Toast';
 import { getErrorMessage, logError } from '../utils/errorHandler';
-import Logo from '../components/common/Logo';
-import ThemeToggle from '../components/common/ThemeToggle';
+import Logo from '../components/Logo';
+import ThemeToggle from '../components/ThemeToggle';
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -246,10 +246,7 @@ const CreateGroup: React.FC = () => {
       <div className="relative z-10 pt-24 pb-8 px-4">
         <div className="max-w-2xl mx-auto">
           {/* Header */}
-          <motion.header
-            className="text-center mb-8"
-            {...fadeInUp}
-          >
+          <motion.header className="text-center mb-8" {...fadeInUp}>
             <div className="inline-flex items-center gap-3 px-4 py-2 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-full border border-gray-200/50 dark:border-gray-700/50 mb-4">
               <span className="text-2xl">🗺️</span>
               <span className="text-gray-600 dark:text-gray-300 font-medium">새 그룹</span>
@@ -257,9 +254,7 @@ const CreateGroup: React.FC = () => {
             <h1 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white mb-2">
               새 여행 그룹 만들기
             </h1>
-            <p className="text-gray-500 dark:text-gray-400">
-              함께할 여행 메이트들을 모집해보세요!
-            </p>
+            <p className="text-gray-500 dark:text-gray-400">함께할 여행 메이트들을 모집해보세요!</p>
           </motion.header>
 
           {/* Form */}
@@ -280,7 +275,10 @@ const CreateGroup: React.FC = () => {
 
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label
+                    htmlFor="name"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
                     그룹명 <span className="text-pink-500">*</span>
                   </label>
                   <input
@@ -306,7 +304,10 @@ const CreateGroup: React.FC = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="destination" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label
+                    htmlFor="destination"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
                     목적지 <span className="text-pink-500">*</span>
                   </label>
                   <input
@@ -331,7 +332,10 @@ const CreateGroup: React.FC = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label
+                    htmlFor="description"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
                     그룹 설명
                   </label>
                   <textarea
@@ -355,7 +359,10 @@ const CreateGroup: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label
+                    htmlFor="startDate"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
                     시작일 <span className="text-pink-500">*</span>
                   </label>
                   <input
@@ -370,7 +377,10 @@ const CreateGroup: React.FC = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label
+                    htmlFor="endDate"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
                     종료일 <span className="text-pink-500">*</span>
                   </label>
                   <input
@@ -394,7 +404,10 @@ const CreateGroup: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="maxMembers" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label
+                    htmlFor="maxMembers"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
                     최대 인원
                   </label>
                   <select
@@ -412,7 +425,10 @@ const CreateGroup: React.FC = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="travelStyle" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label
+                    htmlFor="travelStyle"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
                     여행 스타일
                   </label>
                   <select
@@ -439,7 +455,10 @@ const CreateGroup: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="minBudget" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label
+                    htmlFor="minBudget"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
                     최소 예산 (원)
                   </label>
                   <input
@@ -454,7 +473,10 @@ const CreateGroup: React.FC = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="maxBudget" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label
+                    htmlFor="maxBudget"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
                     최대 예산 (원)
                   </label>
                   <input

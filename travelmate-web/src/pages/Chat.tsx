@@ -4,8 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { chatService, ChatMessage, ChatRoom } from '../services/chatService';
 import { useToast } from '../components/Toast';
 import { ImageMessage, LocationMessage, TypingIndicator } from '../components/chat';
-import Logo from '../components/common/Logo';
-import ThemeToggle from '../components/common/ThemeToggle';
+import Logo from '../components/Logo';
+import ThemeToggle from '../components/ThemeToggle';
 
 // Typing user interface
 interface TypingUser {
@@ -121,8 +121,7 @@ const Chat: React.FC = () => {
       const imageUrl = URL.createObjectURL(file);
       chatService.sendMessage(roomId, imageUrl, 'image');
       toast.success('이미지가 전송되었습니다.');
-    } catch (err) {
-      console.error('이미지 업로드 실패:', err);
+    } catch {
       toast.error('이미지 업로드에 실패했습니다.');
     } finally {
       setIsUploading(false);
@@ -143,7 +142,7 @@ const Chat: React.FC = () => {
     toast.info('현재 위치를 가져오는 중...');
 
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      position => {
         const { latitude, longitude } = position.coords;
         const locationData = JSON.stringify({
           latitude,
@@ -154,8 +153,7 @@ const Chat: React.FC = () => {
         chatService.sendMessage(roomId, locationData, 'location');
         toast.success('위치가 공유되었습니다.');
       },
-      (error) => {
-        console.error('위치 가져오기 실패:', error);
+      error => {
         switch (error.code) {
           case error.PERMISSION_DENIED:
             toast.error('위치 접근 권한이 거부되었습니다.');
@@ -182,11 +180,7 @@ const Chat: React.FC = () => {
     switch (message.type) {
       case 'image':
         return (
-          <ImageMessage
-            imageUrl={message.content}
-            isMyMessage={isMyMessage}
-            alt="전송된 이미지"
-          />
+          <ImageMessage imageUrl={message.content} isMyMessage={isMyMessage} alt="전송된 이미지" />
         );
       case 'location':
         try {
@@ -200,13 +194,15 @@ const Chat: React.FC = () => {
               isMyMessage={isMyMessage}
             />
           );
-        } catch (error) {
-          console.warn('Failed to parse location data:', error);
+        } catch {
           return <div className="text-gray-800 dark:text-white">{message.content}</div>;
         }
       case 'system':
         return (
-          <div className="text-center text-sm text-gray-500 dark:text-gray-400 italic py-2 px-4 bg-gray-100/50 dark:bg-gray-800/50 rounded-xl" role="status">
+          <div
+            className="text-center text-sm text-gray-500 dark:text-gray-400 italic py-2 px-4 bg-gray-100/50 dark:bg-gray-800/50 rounded-xl"
+            role="status"
+          >
             {message.content}
           </div>
         );
@@ -247,7 +243,11 @@ const Chat: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] flex items-center justify-center" role="status" aria-live="polite">
+      <div
+        className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] flex items-center justify-center"
+        role="status"
+        aria-live="polite"
+      >
         <motion.div
           className="text-center"
           initial={{ opacity: 0, scale: 0.9 }}
@@ -274,7 +274,9 @@ const Chat: React.FC = () => {
           <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
             <span className="text-3xl">😢</span>
           </div>
-          <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4">채팅방을 찾을 수 없습니다</h3>
+          <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4">
+            채팅방을 찾을 수 없습니다
+          </h3>
           <button
             onClick={() => navigate('/dashboard')}
             className="px-6 py-3 bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-violet-500/25 transition-all duration-300 hover:-translate-y-0.5"
@@ -289,7 +291,11 @@ const Chat: React.FC = () => {
   const otherParticipants = room.participants.filter(p => p.id !== chatService.getCurrentUserId());
 
   return (
-    <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] relative overflow-hidden" role="main" aria-label={`${room.name} 채팅방`}>
+    <div
+      className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] relative overflow-hidden"
+      role="main"
+      aria-label={`${room.name} 채팅방`}
+    >
       {/* Background Effects */}
       <div
         className="absolute top-20 left-10 w-72 h-72 bg-violet-400/30 dark:bg-violet-600/20 rounded-full blur-3xl"
@@ -338,10 +344,7 @@ const Chat: React.FC = () => {
       {/* Main Content */}
       <div className="relative z-10 pt-24 pb-36 h-screen flex flex-col">
         {/* Chat Header */}
-        <motion.header
-          className="px-4"
-          {...fadeInUp}
-        >
+        <motion.header className="px-4" {...fadeInUp}>
           <div className="max-w-4xl mx-auto bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-4 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-full bg-gradient-to-r from-violet-500 to-pink-500 flex items-center justify-center text-white text-xl font-bold">
@@ -359,14 +362,18 @@ const Chat: React.FC = () => {
                       }`}
                       aria-label={otherParticipants[0].isOnline ? '온라인 상태' : '오프라인 상태'}
                     >
-                      <span className={`w-2 h-2 rounded-full ${otherParticipants[0].isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
+                      <span
+                        className={`w-2 h-2 rounded-full ${otherParticipants[0].isOnline ? 'bg-green-500' : 'bg-gray-400'}`}
+                      />
                       {otherParticipants[0].isOnline ? '온라인' : '오프라인'}
                     </span>
                   )}
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                   <span>👥</span>
-                  <span aria-label={`참여자 ${room.participants.length}명`}>{room.participants.length}명 참여</span>
+                  <span aria-label={`참여자 ${room.participants.length}명`}>
+                    {room.participants.length}명 참여
+                  </span>
                 </div>
               </div>
             </div>
@@ -394,8 +401,12 @@ const Chat: React.FC = () => {
                 <div className="w-20 h-20 rounded-full bg-gradient-to-r from-violet-100 to-pink-100 dark:from-violet-900/30 dark:to-pink-900/30 flex items-center justify-center mb-4">
                   <span className="text-4xl">💬</span>
                 </div>
-                <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-2">아직 메시지가 없습니다</h2>
-                <p className="text-gray-500 dark:text-gray-400">첫 번째 메시지를 보내서 대화를 시작해보세요!</p>
+                <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
+                  아직 메시지가 없습니다
+                </h2>
+                <p className="text-gray-500 dark:text-gray-400">
+                  첫 번째 메시지를 보내서 대화를 시작해보세요!
+                </p>
               </motion.div>
             ) : (
               <>
@@ -437,9 +448,14 @@ const Chat: React.FC = () => {
                         )}
 
                         <div className={`flex ${isMyMessage ? 'justify-end' : 'justify-start'}`}>
-                          <div className={`max-w-[70%] ${isMyMessage ? 'items-end' : 'items-start'}`}>
+                          <div
+                            className={`max-w-[70%] ${isMyMessage ? 'items-end' : 'items-start'}`}
+                          >
                             {showSenderName && (
-                              <div className="text-xs text-gray-500 dark:text-gray-400 mb-1 px-3" aria-hidden="true">
+                              <div
+                                className="text-xs text-gray-500 dark:text-gray-400 mb-1 px-3"
+                                aria-hidden="true"
+                              >
                                 {message.senderName}
                               </div>
                             )}
@@ -454,7 +470,9 @@ const Chat: React.FC = () => {
                               {renderMessageContent(message, isMyMessage)}
                             </div>
 
-                            <div className={`flex items-center gap-2 mt-1 px-2 ${isMyMessage ? 'justify-end' : 'justify-start'}`}>
+                            <div
+                              className={`flex items-center gap-2 mt-1 px-2 ${isMyMessage ? 'justify-end' : 'justify-start'}`}
+                            >
                               <time
                                 dateTime={message.timestamp.toISOString()}
                                 className="text-xs text-gray-400 dark:text-gray-500"
@@ -480,9 +498,7 @@ const Chat: React.FC = () => {
                     );
                   })}
                 </AnimatePresence>
-                {typingUsers.length > 0 && (
-                  <TypingIndicator typingUsers={typingUsers} />
-                )}
+                {typingUsers.length > 0 && <TypingIndicator typingUsers={typingUsers} />}
                 <div ref={messagesEndRef} />
               </>
             )}
@@ -544,7 +560,11 @@ const Chat: React.FC = () => {
                 </button>
               </div>
 
-              <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-200/50 dark:border-gray-700/50" role="toolbar" aria-label="추가 옵션">
+              <div
+                className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-200/50 dark:border-gray-700/50"
+                role="toolbar"
+                aria-label="추가 옵션"
+              >
                 <button
                   type="button"
                   className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-colors"

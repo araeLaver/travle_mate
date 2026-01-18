@@ -2,6 +2,7 @@ import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { queryClient } from './lib/queryClient';
 import ErrorBoundary from './components/ErrorBoundary';
 import './styles/accessibility.css';
@@ -12,6 +13,8 @@ import { ProtectedRoute, AuthRequiredRoute } from './components/auth/ProtectedRo
 import { TutorialProvider, useTutorial } from './contexts/TutorialContext';
 import Tutorial from './components/Tutorial';
 import { ToastProvider } from './components/Toast';
+
+const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '';
 
 // Lazy loaded pages for code splitting
 const Home = lazy(() => import('./pages/Home'));
@@ -52,209 +55,211 @@ function App() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <ToastProvider>
-          <TutorialProvider>
-            <Router>
-              <GlobalTutorial />
-              <Suspense fallback={<PageLoader />}>
-              <Routes>
-                {/* 인증이 필요 없는 페이지 */}
-                <Route path="/" element={<Home />} />
-                <Route path="/portfolio" element={<Portfolio />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/auth/callback" element={<AuthCallback />} />
-                <Route
-                  path="/dashboard"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <Dashboard />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
+        <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+          <ToastProvider>
+            <TutorialProvider>
+              <Router>
+                <GlobalTutorial />
+                <Suspense fallback={<PageLoader />}>
+                  <Routes>
+                    {/* 인증이 필요 없는 페이지 */}
+                    <Route path="/" element={<Home />} />
+                    <Route path="/portfolio" element={<Portfolio />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/auth/callback" element={<AuthCallback />} />
+                    <Route
+                      path="/dashboard"
+                      element={
+                        <ProtectedRoute>
+                          <Layout>
+                            <Dashboard />
+                          </Layout>
+                        </ProtectedRoute>
+                      }
+                    />
 
-                {/* 채팅 목록 페이지 */}
-                <Route
-                  path="/chat"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <ChatList />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
+                    {/* 채팅 목록 페이지 */}
+                    <Route
+                      path="/chat"
+                      element={
+                        <ProtectedRoute>
+                          <Layout>
+                            <ChatList />
+                          </Layout>
+                        </ProtectedRoute>
+                      }
+                    />
 
-                {/* 개별 채팅 페이지 */}
-                <Route
-                  path="/chat/:roomId"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <Chat />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
+                    {/* 개별 채팅 페이지 */}
+                    <Route
+                      path="/chat/:roomId"
+                      element={
+                        <ProtectedRoute>
+                          <Layout>
+                            <Chat />
+                          </Layout>
+                        </ProtectedRoute>
+                      }
+                    />
 
-                {/* 그룹 목록 페이지 (비회원 접근 가능) */}
-                <Route
-                  path="/groups"
-                  element={
-                    <Layout>
-                      <Groups />
-                    </Layout>
-                  }
-                />
+                    {/* 그룹 목록 페이지 (비회원 접근 가능) */}
+                    <Route
+                      path="/groups"
+                      element={
+                        <Layout>
+                          <Groups />
+                        </Layout>
+                      }
+                    />
 
-                {/* 그룹 생성 페이지 (로그인 필수) */}
-                <Route
-                  path="/groups/create"
-                  element={
-                    <AuthRequiredRoute>
-                      <Layout>
-                        <CreateGroup />
-                      </Layout>
-                    </AuthRequiredRoute>
-                  }
-                />
+                    {/* 그룹 생성 페이지 (로그인 필수) */}
+                    <Route
+                      path="/groups/create"
+                      element={
+                        <AuthRequiredRoute>
+                          <Layout>
+                            <CreateGroup />
+                          </Layout>
+                        </AuthRequiredRoute>
+                      }
+                    />
 
-                {/* 프로필 페이지 */}
-                <Route
-                  path="/profile"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <Profile />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
+                    {/* 프로필 페이지 */}
+                    <Route
+                      path="/profile"
+                      element={
+                        <ProtectedRoute>
+                          <Layout>
+                            <Profile />
+                          </Layout>
+                        </ProtectedRoute>
+                      }
+                    />
 
-                {/* NFT 수집 지도 페이지 */}
-                <Route
-                  path="/nft"
-                  element={
-                    <ProtectedRoute>
-                      <NFTMap />
-                    </ProtectedRoute>
-                  }
-                />
+                    {/* NFT 수집 지도 페이지 */}
+                    <Route
+                      path="/nft"
+                      element={
+                        <ProtectedRoute>
+                          <NFTMap />
+                        </ProtectedRoute>
+                      }
+                    />
 
-                {/* NFT 컬렉션 페이지 */}
-                <Route
-                  path="/nft/collection"
-                  element={
-                    <ProtectedRoute>
-                      <NFTCollection />
-                    </ProtectedRoute>
-                  }
-                />
+                    {/* NFT 컬렉션 페이지 */}
+                    <Route
+                      path="/nft/collection"
+                      element={
+                        <ProtectedRoute>
+                          <NFTCollection />
+                        </ProtectedRoute>
+                      }
+                    />
 
-                {/* 포인트/리더보드 페이지 */}
-                <Route
-                  path="/leaderboard"
-                  element={
-                    <ProtectedRoute>
-                      <Leaderboard />
-                    </ProtectedRoute>
-                  }
-                />
+                    {/* 포인트/리더보드 페이지 */}
+                    <Route
+                      path="/leaderboard"
+                      element={
+                        <ProtectedRoute>
+                          <Leaderboard />
+                        </ProtectedRoute>
+                      }
+                    />
 
-                {/* 포인트 페이지 (리더보드 별칭) */}
-                <Route
-                  path="/points"
-                  element={
-                    <ProtectedRoute>
-                      <Leaderboard />
-                    </ProtectedRoute>
-                  }
-                />
+                    {/* 포인트 페이지 (리더보드 별칭) */}
+                    <Route
+                      path="/points"
+                      element={
+                        <ProtectedRoute>
+                          <Leaderboard />
+                        </ProtectedRoute>
+                      }
+                    />
 
-                {/* 지갑 연결 페이지 */}
-                <Route
-                  path="/wallet"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <WalletConnect />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
+                    {/* 지갑 연결 페이지 */}
+                    <Route
+                      path="/wallet"
+                      element={
+                        <ProtectedRoute>
+                          <Layout>
+                            <WalletConnect />
+                          </Layout>
+                        </ProtectedRoute>
+                      }
+                    />
 
-                {/* NFT 마켓플레이스 페이지 */}
-                <Route
-                  path="/marketplace"
-                  element={
-                    <ProtectedRoute>
-                      <Marketplace />
-                    </ProtectedRoute>
-                  }
-                />
+                    {/* NFT 마켓플레이스 페이지 */}
+                    <Route
+                      path="/marketplace"
+                      element={
+                        <ProtectedRoute>
+                          <Marketplace />
+                        </ProtectedRoute>
+                      }
+                    />
 
-                {/* 포인트 상점 페이지 */}
-                <Route
-                  path="/shop"
-                  element={
-                    <ProtectedRoute>
-                      <PointShop />
-                    </ProtectedRoute>
-                  }
-                />
+                    {/* 포인트 상점 페이지 */}
+                    <Route
+                      path="/shop"
+                      element={
+                        <ProtectedRoute>
+                          <PointShop />
+                        </ProtectedRoute>
+                      }
+                    />
 
-                {/* 관리자 대시보드 */}
-                <Route
-                  path="/admin"
-                  element={
-                    <AdminRoute>
-                      <AdminDashboard />
-                    </AdminRoute>
-                  }
-                />
+                    {/* 관리자 대시보드 */}
+                    <Route
+                      path="/admin"
+                      element={
+                        <AdminRoute>
+                          <AdminDashboard />
+                        </AdminRoute>
+                      }
+                    />
 
-                {/* 알림 설정 페이지 */}
-                <Route
-                  path="/settings/notifications"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <NotificationSettings />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
+                    {/* 알림 설정 페이지 */}
+                    <Route
+                      path="/settings/notifications"
+                      element={
+                        <ProtectedRoute>
+                          <Layout>
+                            <NotificationSettings />
+                          </Layout>
+                        </ProtectedRoute>
+                      }
+                    />
 
-                {/* AI 추천 페이지 */}
-                <Route
-                  path="/ai"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <AIRecommendation />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
+                    {/* AI 추천 페이지 */}
+                    <Route
+                      path="/ai"
+                      element={
+                        <ProtectedRoute>
+                          <Layout>
+                            <AIRecommendation />
+                          </Layout>
+                        </ProtectedRoute>
+                      }
+                    />
 
-                {/* 결제 페이지 */}
-                <Route
-                  path="/payment"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <Payment />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-              </Routes>
-              </Suspense>
-            </Router>
-          </TutorialProvider>
-        </ToastProvider>
+                    {/* 결제 페이지 */}
+                    <Route
+                      path="/payment"
+                      element={
+                        <ProtectedRoute>
+                          <Layout>
+                            <Payment />
+                          </Layout>
+                        </ProtectedRoute>
+                      }
+                    />
+                  </Routes>
+                </Suspense>
+              </Router>
+            </TutorialProvider>
+          </ToastProvider>
+        </GoogleOAuthProvider>
         {/* React Query DevTools (개발 환경에서만 표시) */}
         {process.env.NODE_ENV === 'development' && <ReactQueryDevtools initialIsOpen={false} />}
       </QueryClientProvider>

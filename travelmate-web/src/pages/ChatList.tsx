@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { chatService, ChatRoom } from '../services/chatService';
-import Logo from '../components/common/Logo';
-import ThemeToggle from '../components/common/ThemeToggle';
+import Logo from '../components/Logo';
+import ThemeToggle from '../components/ThemeToggle';
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -89,7 +89,11 @@ const ChatList: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] flex items-center justify-center" role="status" aria-live="polite">
+      <div
+        className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] flex items-center justify-center"
+        role="status"
+        aria-live="polite"
+      >
         <motion.div
           className="text-center"
           initial={{ opacity: 0, scale: 0.9 }}
@@ -106,7 +110,11 @@ const ChatList: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] relative overflow-hidden" role="main" aria-label="채팅 목록">
+    <div
+      className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] relative overflow-hidden"
+      role="main"
+      aria-label="채팅 목록"
+    >
       {/* Background Effects */}
       <div
         className="absolute top-20 left-10 w-72 h-72 bg-violet-400/30 dark:bg-violet-600/20 rounded-full blur-3xl"
@@ -152,10 +160,7 @@ const ChatList: React.FC = () => {
       <div className="relative z-10 pt-24 pb-8 px-4">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
-          <motion.header
-            className="text-center mb-8"
-            {...fadeInUp}
-          >
+          <motion.header className="text-center mb-8" {...fadeInUp}>
             <div className="inline-flex items-center gap-3 px-4 py-2 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-full border border-gray-200/50 dark:border-gray-700/50 mb-4">
               <span className="text-2xl">💬</span>
               <span className="text-gray-600 dark:text-gray-300 font-medium">채팅</span>
@@ -207,7 +212,10 @@ const ChatList: React.FC = () => {
           >
             <div className="flex items-center justify-between mb-4 px-2">
               <h2 className="text-lg font-bold text-gray-800 dark:text-white">활성 채팅방</h2>
-              <span className="px-3 py-1 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-full text-sm font-medium" aria-label={`총 ${filteredRooms.length}개의 채팅방`}>
+              <span
+                className="px-3 py-1 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-full text-sm font-medium"
+                aria-label={`총 ${filteredRooms.length}개의 채팅방`}
+              >
                 {filteredRooms.length}개
               </span>
             </div>
@@ -224,13 +232,19 @@ const ChatList: React.FC = () => {
                 </div>
                 {searchQuery ? (
                   <>
-                    <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">검색 결과가 없습니다</h3>
+                    <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
+                      검색 결과가 없습니다
+                    </h3>
                     <p className="text-gray-500 dark:text-gray-400">다른 키워드로 검색해보세요.</p>
                   </>
                 ) : (
                   <>
-                    <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">아직 채팅방이 없습니다</h3>
-                    <p className="text-gray-500 dark:text-gray-400 mb-6">여행 메이트를 찾아서 첫 대화를 시작해보세요!</p>
+                    <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
+                      아직 채팅방이 없습니다
+                    </h3>
+                    <p className="text-gray-500 dark:text-gray-400 mb-6">
+                      여행 메이트를 찾아서 첫 대화를 시작해보세요!
+                    </p>
                     <button
                       onClick={() => navigate('/dashboard')}
                       className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-violet-500/25 transition-all duration-300 hover:-translate-y-0.5"
@@ -303,7 +317,9 @@ const ChatList: React.FC = () => {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between mb-1">
                             <div className="flex items-center gap-2">
-                              <h3 className="font-bold text-gray-800 dark:text-white truncate">{room.name}</h3>
+                              <h3 className="font-bold text-gray-800 dark:text-white truncate">
+                                {room.name}
+                              </h3>
                               {room.type === 'group' && (
                                 <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
                                   <span>👥</span>
@@ -337,14 +353,20 @@ const ChatList: React.FC = () => {
                                 </time>
                               )}
                               {room.unreadCount > 0 && (
-                                <span className="min-w-[20px] h-5 px-1.5 bg-gradient-to-r from-violet-600 to-pink-600 text-white text-xs font-bold rounded-full flex items-center justify-center" aria-hidden="true">
+                                <span
+                                  className="min-w-[20px] h-5 px-1.5 bg-gradient-to-r from-violet-600 to-pink-600 text-white text-xs font-bold rounded-full flex items-center justify-center"
+                                  aria-hidden="true"
+                                >
                                   {room.unreadCount > 99 ? '99+' : room.unreadCount}
                                 </span>
                               )}
                             </div>
                           </div>
 
-                          <div className="text-sm text-gray-500 dark:text-gray-400 truncate" aria-hidden="true">
+                          <div
+                            className="text-sm text-gray-500 dark:text-gray-400 truncate"
+                            aria-hidden="true"
+                          >
                             {room.lastMessage ? (
                               <>
                                 <span className="font-medium">
@@ -357,11 +379,15 @@ const ChatList: React.FC = () => {
                                   {room.lastMessage.type === 'text' ? (
                                     room.lastMessage.content
                                   ) : room.lastMessage.type === 'image' ? (
-                                    <span className="inline-flex items-center gap-1">📷 이미지</span>
+                                    <span className="inline-flex items-center gap-1">
+                                      📷 이미지
+                                    </span>
                                   ) : room.lastMessage.type === 'location' ? (
                                     <span className="inline-flex items-center gap-1">📍 위치</span>
                                   ) : (
-                                    <span className="inline-flex items-center gap-1">💬 메시지</span>
+                                    <span className="inline-flex items-center gap-1">
+                                      💬 메시지
+                                    </span>
                                   )}
                                 </span>
                               </>

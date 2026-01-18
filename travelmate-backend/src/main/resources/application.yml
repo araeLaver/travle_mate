@@ -261,9 +261,9 @@ spring:
     password: ${DB_PASSWORD:CHANGE_ME_IN_KOYEB}
     driver-class-name: org.postgresql.Driver
     hikari:
-      maximum-pool-size: 5
-      minimum-idle: 2
-      idle-timeout: 300000
+      maximum-pool-size: 3
+      minimum-idle: 1
+      idle-timeout: 120000
       connection-timeout: 30000
       max-lifetime: 1800000
       validation-timeout: 5000

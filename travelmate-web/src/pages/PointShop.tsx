@@ -3,13 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '../components/Toast';
 import { pointService } from '../services/pointService';
-import {
-  PointBalanceResponse,
-  PointTransactionResponse,
-  PointTransactionType,
-} from '../types';
-import Logo from '../components/common/Logo';
-import ThemeToggle from '../components/common/ThemeToggle';
+import { PointBalanceResponse, PointTransactionResponse, PointTransactionType } from '../types';
+import Logo from '../components/Logo';
+import ThemeToggle from '../components/ThemeToggle';
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -93,30 +89,33 @@ const PointShop: React.FC = () => {
     }
   }, [toast]);
 
-  const loadTransactions = useCallback(async (reset = false) => {
-    const currentPage = reset ? 0 : page;
-    setIsLoading(true);
-    try {
-      let response;
-      if (selectedType !== 'ALL') {
-        response = await pointService.getTransactionsByType(selectedType, currentPage, 20);
-      } else {
-        response = await pointService.getTransactions(currentPage, 20);
-      }
+  const loadTransactions = useCallback(
+    async (reset = false) => {
+      const currentPage = reset ? 0 : page;
+      setIsLoading(true);
+      try {
+        let response;
+        if (selectedType !== 'ALL') {
+          response = await pointService.getTransactionsByType(selectedType, currentPage, 20);
+        } else {
+          response = await pointService.getTransactions(currentPage, 20);
+        }
 
-      if (reset) {
-        setTransactions(response.content);
-      } else {
-        setTransactions(prev => [...prev, ...response.content]);
+        if (reset) {
+          setTransactions(response.content);
+        } else {
+          setTransactions(prev => [...prev, ...response.content]);
+        }
+        setHasMore(!response.last);
+        setPage(currentPage);
+      } catch {
+        toast.error('거래 내역을 불러오는데 실패했습니다.');
+      } finally {
+        setIsLoading(false);
       }
-      setHasMore(!response.last);
-      setPage(currentPage);
-    } catch {
-      toast.error('거래 내역을 불러오는데 실패했습니다.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [page, selectedType, toast]);
+    },
+    [page, selectedType, toast]
+  );
 
   useEffect(() => {
     loadBalance();
@@ -174,15 +173,40 @@ const PointShop: React.FC = () => {
   const getTransactionStyle = (type: PointTransactionType) => {
     switch (type) {
       case 'EARN':
-        return { icon: '📈', color: 'text-green-500', bg: 'bg-green-100 dark:bg-green-900/30', label: '획득' };
+        return {
+          icon: '📈',
+          color: 'text-green-500',
+          bg: 'bg-green-100 dark:bg-green-900/30',
+          label: '획득',
+        };
       case 'SPEND':
-        return { icon: '📉', color: 'text-red-500', bg: 'bg-red-100 dark:bg-red-900/30', label: '사용' };
+        return {
+          icon: '📉',
+          color: 'text-red-500',
+          bg: 'bg-red-100 dark:bg-red-900/30',
+          label: '사용',
+        };
       case 'TRANSFER_IN':
-        return { icon: '📥', color: 'text-blue-500', bg: 'bg-blue-100 dark:bg-blue-900/30', label: '받음' };
+        return {
+          icon: '📥',
+          color: 'text-blue-500',
+          bg: 'bg-blue-100 dark:bg-blue-900/30',
+          label: '받음',
+        };
       case 'TRANSFER_OUT':
-        return { icon: '📤', color: 'text-orange-500', bg: 'bg-orange-100 dark:bg-orange-900/30', label: '보냄' };
+        return {
+          icon: '📤',
+          color: 'text-orange-500',
+          bg: 'bg-orange-100 dark:bg-orange-900/30',
+          label: '보냄',
+        };
       default:
-        return { icon: '💰', color: 'text-gray-500', bg: 'bg-gray-100 dark:bg-gray-800', label: type };
+        return {
+          icon: '💰',
+          color: 'text-gray-500',
+          bg: 'bg-gray-100 dark:bg-gray-800',
+          label: type,
+        };
     }
   };
 
@@ -255,10 +279,7 @@ const PointShop: React.FC = () => {
       <div className="relative z-10 pt-24 pb-8 px-4">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
-          <motion.header
-            className="text-center mb-6"
-            {...fadeInUp}
-          >
+          <motion.header className="text-center mb-6" {...fadeInUp}>
             <div className="inline-flex items-center gap-3 px-4 py-2 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-full border border-gray-200/50 dark:border-gray-700/50 mb-4">
               <span className="text-2xl">💰</span>
               <span className="text-gray-600 dark:text-gray-300 font-medium">포인트 상점</span>
@@ -277,18 +298,24 @@ const PointShop: React.FC = () => {
           >
             <div className="flex items-center justify-center gap-3 mb-4">
               <span className="text-4xl">💎</span>
-              <span className="text-4xl font-bold">{balance?.totalPoints?.toLocaleString() || 0}</span>
+              <span className="text-4xl font-bold">
+                {balance?.totalPoints?.toLocaleString() || 0}
+              </span>
               <span className="text-2xl font-medium">P</span>
             </div>
 
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div className="bg-white/20 rounded-xl p-3 text-center">
                 <p className="text-sm opacity-80">누적 획득</p>
-                <p className="text-lg font-bold">{balance?.lifetimeEarned?.toLocaleString() || 0}P</p>
+                <p className="text-lg font-bold">
+                  {balance?.lifetimeEarned?.toLocaleString() || 0}P
+                </p>
               </div>
               <div className="bg-white/20 rounded-xl p-3 text-center">
                 <p className="text-sm opacity-80">누적 사용</p>
-                <p className="text-lg font-bold">{balance?.lifetimeSpent?.toLocaleString() || 0}P</p>
+                <p className="text-lg font-bold">
+                  {balance?.lifetimeSpent?.toLocaleString() || 0}P
+                </p>
               </div>
             </div>
 
@@ -334,7 +361,9 @@ const PointShop: React.FC = () => {
                 {/* Coming Soon Banner */}
                 <div className="bg-gradient-to-r from-violet-100 to-pink-100 dark:from-violet-900/30 dark:to-pink-900/30 rounded-2xl p-6 text-center border border-violet-200/50 dark:border-violet-800/50">
                   <span className="text-4xl mb-3 block">🎁</span>
-                  <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">상점 준비 중</h3>
+                  <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
+                    상점 준비 중
+                  </h3>
                   <p className="text-gray-600 dark:text-gray-400">다양한 아이템이 곧 출시됩니다!</p>
                 </div>
 
@@ -353,7 +382,9 @@ const PointShop: React.FC = () => {
                         </div>
                         <div className="flex-1">
                           <h3 className="font-bold text-gray-800 dark:text-white">{item.name}</h3>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">{item.description}</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {item.description}
+                          </p>
                         </div>
                         <div className="text-right">
                           <div className="flex items-center gap-1 text-yellow-600 dark:text-yellow-400 font-bold">
@@ -405,8 +436,12 @@ const PointShop: React.FC = () => {
                 {transactions.length === 0 && !isLoading ? (
                   <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-8 border border-gray-200/50 dark:border-gray-800/50 text-center">
                     <span className="text-4xl mb-4 block">📜</span>
-                    <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">거래 내역이 없습니다</h3>
-                    <p className="text-gray-500 dark:text-gray-400">NFT를 수집하거나 활동하여 포인트를 획득해보세요!</p>
+                    <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
+                      거래 내역이 없습니다
+                    </h3>
+                    <p className="text-gray-500 dark:text-gray-400">
+                      NFT를 수집하거나 활동하여 포인트를 획득해보세요!
+                    </p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -418,12 +453,18 @@ const PointShop: React.FC = () => {
                           className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-4 border border-gray-200/50 dark:border-gray-800/50 shadow-lg"
                         >
                           <div className="flex items-center gap-4">
-                            <div className={`w-12 h-12 rounded-xl ${style.bg} flex items-center justify-center text-xl`}>
+                            <div
+                              className={`w-12 h-12 rounded-xl ${style.bg} flex items-center justify-center text-xl`}
+                            >
                               {style.icon}
                             </div>
                             <div className="flex-1">
-                              <h4 className="font-medium text-gray-800 dark:text-white">{tx.description}</h4>
-                              <span className="text-sm text-gray-500 dark:text-gray-400">{formatDate(tx.createdAt)}</span>
+                              <h4 className="font-medium text-gray-800 dark:text-white">
+                                {tx.description}
+                              </h4>
+                              <span className="text-sm text-gray-500 dark:text-gray-400">
+                                {formatDate(tx.createdAt)}
+                              </span>
                             </div>
                             <div className={`font-bold ${style.color}`}>
                               {tx.type === 'EARN' || tx.type === 'TRANSFER_IN' ? '+' : '-'}
@@ -461,9 +502,15 @@ const PointShop: React.FC = () => {
                 exit={{ opacity: 0, y: -20 }}
                 className="space-y-4"
               >
-                <form onSubmit={handleTransfer} className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-800/50 shadow-lg space-y-4">
+                <form
+                  onSubmit={handleTransfer}
+                  className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-800/50 shadow-lg space-y-4"
+                >
                   <div>
-                    <label htmlFor="receiverId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label
+                      htmlFor="receiverId"
+                      className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    >
                       수신자 ID
                     </label>
                     <input
@@ -471,14 +518,17 @@ const PointShop: React.FC = () => {
                       type="number"
                       placeholder="포인트를 받을 사용자 ID"
                       value={receiverId}
-                      onChange={(e) => setReceiverId(e.target.value)}
+                      onChange={e => setReceiverId(e.target.value)}
                       className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-violet-500/50 transition-all"
                       required
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="transferAmount" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label
+                      htmlFor="transferAmount"
+                      className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    >
                       전송 금액
                     </label>
                     <div className="relative">
@@ -488,13 +538,15 @@ const PointShop: React.FC = () => {
                         type="number"
                         placeholder="전송할 포인트"
                         value={transferAmount}
-                        onChange={(e) => setTransferAmount(e.target.value)}
+                        onChange={e => setTransferAmount(e.target.value)}
                         min="1"
                         max={balance?.totalPoints || 0}
                         className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 pl-12 pr-8 outline-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-violet-500/50 transition-all"
                         required
                       />
-                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">P</span>
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
+                        P
+                      </span>
                     </div>
                     <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                       사용 가능: {balance?.totalPoints?.toLocaleString() || 0}P
@@ -502,7 +554,10 @@ const PointShop: React.FC = () => {
                   </div>
 
                   <div>
-                    <label htmlFor="transferMessage" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label
+                      htmlFor="transferMessage"
+                      className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    >
                       메시지 (선택)
                     </label>
                     <input
@@ -510,7 +565,7 @@ const PointShop: React.FC = () => {
                       type="text"
                       placeholder="함께 전달할 메시지"
                       value={transferMessage}
-                      onChange={(e) => setTransferMessage(e.target.value)}
+                      onChange={e => setTransferMessage(e.target.value)}
                       maxLength={100}
                       className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-violet-500/50 transition-all"
                     />
@@ -518,7 +573,11 @@ const PointShop: React.FC = () => {
 
                   <button
                     type="submit"
-                    disabled={isTransferring || !balance || balance.totalPoints < parseInt(transferAmount || '0')}
+                    disabled={
+                      isTransferring ||
+                      !balance ||
+                      balance.totalPoints < parseInt(transferAmount || '0')
+                    }
                     className="w-full py-4 bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-violet-500/25 transition-all duration-300 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:transform-none flex items-center justify-center gap-2"
                   >
                     <span>📤</span>
