@@ -29,14 +29,11 @@ RUN chown travelmate:travelmate app.jar
 
 USER travelmate
 
-ENV JAVA_OPTS="-Xms64m -Xmx192m -XX:+UseSerialGC -XX:MaxMetaspaceSize=96m -XX:CompressedClassSpaceSize=32m -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:MaxRAM=400m -XX:+ExitOnOutOfMemoryError -Dspring.jpa.open-in-view=false"
+ENV JAVA_OPTS="-Xms48m -Xmx180m -XX:+UseSerialGC -XX:MaxMetaspaceSize=80m -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+ExitOnOutOfMemoryError -Dspring.jpa.open-in-view=false -Dfile.encoding=UTF-8"
 
 ENV SPRING_PROFILES_ACTIVE=prod
 
 EXPOSE 8080
-
-HEALTHCHECK --interval=30s --timeout=10s --start-period=180s --retries=6 \
-    CMD curl -f http://localhost:8080/api/health/live || exit 1
 
 ENTRYPOINT ["tini", "--"]
 
