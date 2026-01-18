@@ -210,7 +210,7 @@ const Groups: React.FC = () => {
         <div className="max-w-6xl mx-auto bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-2xl px-6 py-3 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
           <div className="flex items-center justify-between">
             <button onClick={() => navigate('/')} className="flex items-center gap-2">
-              <Logo size={32} />
+              <Logo size="md" />
               <span className="font-bold text-gray-900 dark:text-white">TravelMate</span>
             </button>
             <div className="flex items-center gap-3">
@@ -249,8 +249,7 @@ const Groups: React.FC = () => {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
-            <span className="text-xl">✨</span>
-            새 그룹 만들기
+            <span className="text-xl">✨</span>새 그룹 만들기
           </motion.button>
         </motion.header>
 
@@ -344,10 +343,7 @@ const Groups: React.FC = () => {
 
         {/* Groups List */}
         {isLoading ? (
-          <motion.div
-            className="flex flex-col items-center justify-center py-20"
-            {...fadeInUp}
-          >
+          <motion.div className="flex flex-col items-center justify-center py-20" {...fadeInUp}>
             <div className="w-16 h-16 rounded-full border-4 border-violet-200 dark:border-violet-800 border-t-violet-600 animate-spin mb-4" />
             <p className="text-gray-500 dark:text-gray-400">여행 그룹을 불러오는 중...</p>
           </motion.div>
@@ -359,7 +355,9 @@ const Groups: React.FC = () => {
             <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-violet-400/20 to-pink-400/20 dark:from-violet-500/30 dark:to-pink-500/30 flex items-center justify-center text-4xl">
               🗺️
             </div>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">검색 결과가 없습니다</h2>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+              검색 결과가 없습니다
+            </h2>
             <p className="text-gray-500 dark:text-gray-400">다른 검색어나 필터를 시도해보세요.</p>
           </motion.div>
         ) : (
@@ -408,15 +406,11 @@ const Groups: React.FC = () => {
 
                   {/* Info */}
                   <div className="space-y-2 mb-4 text-sm text-gray-600 dark:text-gray-400">
-                    <p className="flex items-center gap-2">
-                      📍 {group.destination}
-                    </p>
+                    <p className="flex items-center gap-2">📍 {group.destination}</p>
                     <p className="flex items-center gap-2">
                       📅 {formatDate(group.startDate)} - {formatDate(group.endDate)}
                     </p>
-                    <p className="flex items-center gap-2">
-                      💰 {formatBudget(group.budget)}
-                    </p>
+                    <p className="flex items-center gap-2">💰 {formatBudget(group.budget)}</p>
                   </div>
 
                   {/* Description */}
@@ -455,7 +449,8 @@ const Groups: React.FC = () => {
                         >
                           그룹 보기
                         </button>
-                        {group.members.find(m => m.id === groupService.getCurrentUserId())?.role !== 'leader' && (
+                        {group.members.find(m => m.id === groupService.getCurrentUserId())?.role !==
+                          'leader' && (
                           <button
                             onClick={() => handleLeaveGroup(group.id)}
                             disabled={actionLoading === `leave-${group.id}`}

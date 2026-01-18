@@ -3,7 +3,7 @@
  * 결제 및 구독 관리 페이지
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -34,10 +34,14 @@ const Payment: React.FC = () => {
   const [subscriptionInfo, setSubscriptionInfo] = useState<SubscriptionInfo | null>(null);
   const [paymentHistory, setPaymentHistory] = useState<Page<PaymentHistory> | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedProduct, setSelectedProduct] = useState<PointProduct | SubscriptionProduct | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<PointProduct | SubscriptionProduct | null>(
+    null
+  );
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [couponCode, setCouponCode] = useState('');
-  const [couponResult, setCouponResult] = useState<{ discount: number; message: string } | null>(null);
+  const [couponResult, setCouponResult] = useState<{ discount: number; message: string } | null>(
+    null
+  );
 
   const tabs: { id: TabType; label: string; icon: string }[] = [
     { id: 'points', label: '포인트 충전', icon: '💰' },
@@ -45,11 +49,7 @@ const Payment: React.FC = () => {
     { id: 'history', label: '결제 내역', icon: '📋' },
   ];
 
-  useEffect(() => {
-    loadData();
-  }, [activeTab]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
       if (activeTab === 'points') {
@@ -67,21 +67,27 @@ const Payment: React.FC = () => {
         setPaymentHistory(history);
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to load data:', error);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [activeTab]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleApplyCoupon = async () => {
     if (!couponCode || !selectedProduct) return;
 
     try {
-      const price = 'points' in selectedProduct
-        ? (selectedProduct as PointProduct).price
-        : billingCycle === 'yearly'
-          ? (selectedProduct as SubscriptionProduct).yearlyPrice
-          : (selectedProduct as SubscriptionProduct).monthlyPrice;
+      const price =
+        'points' in selectedProduct
+          ? (selectedProduct as PointProduct).price
+          : billingCycle === 'yearly'
+            ? (selectedProduct as SubscriptionProduct).yearlyPrice
+            : (selectedProduct as SubscriptionProduct).monthlyPrice;
 
       const result = await paymentService.applyCoupon(couponCode, price);
       setCouponResult({
@@ -105,8 +111,11 @@ const Payment: React.FC = () => {
         couponCode: couponResult?.discount ? couponCode : undefined,
       });
 
-      alert(`결제 준비 완료\n주문번호: ${response.orderId}\n결제금액: ${paymentService.formatCurrency(response.finalAmount)}`);
+      alert(
+        `결제 준비 완료\n주문번호: ${response.orderId}\n결제금액: ${paymentService.formatCurrency(response.finalAmount)}`
+      );
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Payment failed:', error);
       alert('결제 준비에 실패했습니다.');
     }
@@ -120,6 +129,7 @@ const Payment: React.FC = () => {
       setSubscriptionInfo(result);
       alert('구독이 취소되었습니다.');
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Cancel failed:', error);
       alert('구독 취소에 실패했습니다.');
     }
@@ -187,7 +197,7 @@ const Payment: React.FC = () => {
       <div className="sticky top-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex overflow-x-auto scrollbar-hide">
-            {tabs.map((tab) => (
+            {tabs.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
@@ -215,7 +225,11 @@ const Payment: React.FC = () => {
           <AnimatePresence mode="wait">
             {/* Points Tab */}
             {activeTab === 'points' && (
-              <motion.div key="points" {...fadeInUp} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <motion.div
+                key="points"
+                {...fadeInUp}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
+              >
                 {pointProducts.map((product, index) => (
                   <motion.div
                     key={product.productId}
@@ -241,7 +255,9 @@ const Payment: React.FC = () => {
                     )}
 
                     <div className="text-center">
-                      <h3 className="text-lg font-bold text-gray-900 dark:text-white">{product.name}</h3>
+                      <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                        {product.name}
+                      </h3>
                       <p className="text-4xl font-bold text-green-600 dark:text-green-400 mt-3">
                         {product.points.toLocaleString()}
                       </p>
@@ -278,11 +294,13 @@ const Payment: React.FC = () => {
                       <div>
                         <p className="text-sm opacity-80">현재 구독</p>
                         <h3 className="text-2xl font-bold flex items-center gap-2">
-                          {paymentService.getSubscriptionTierInfo(subscriptionInfo.tier).icon} {subscriptionInfo.tier}
+                          {paymentService.getSubscriptionTierInfo(subscriptionInfo.tier).icon}{' '}
+                          {subscriptionInfo.tier}
                         </h3>
                         {subscriptionInfo.endDate && (
                           <p className="text-sm mt-1">
-                            {paymentService.getDaysRemaining(subscriptionInfo.endDate)}일 남음 ({paymentService.formatDate(subscriptionInfo.endDate)}까지)
+                            {paymentService.getDaysRemaining(subscriptionInfo.endDate)}일 남음 (
+                            {paymentService.formatDate(subscriptionInfo.endDate)}까지)
                           </p>
                         )}
                       </div>
@@ -319,7 +337,8 @@ const Payment: React.FC = () => {
                           : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
                       }`}
                     >
-                      연간 <span className="text-green-400 dark:text-green-300 ml-1">2개월 무료</span>
+                      연간{' '}
+                      <span className="text-green-400 dark:text-green-300 ml-1">2개월 무료</span>
                     </button>
                   </div>
                 </div>
@@ -327,8 +346,12 @@ const Payment: React.FC = () => {
                 {/* Products */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {subscriptionProducts.map((product, index) => {
-                    const monthlyEquivalent = billingCycle === 'yearly' ? product.yearlyPrice / 12 : product.monthlyPrice;
-                    const savings = paymentService.calculateYearlySavings(product.monthlyPrice, product.yearlyPrice);
+                    const monthlyEquivalent =
+                      billingCycle === 'yearly' ? product.yearlyPrice / 12 : product.monthlyPrice;
+                    const savings = paymentService.calculateYearlySavings(
+                      product.monthlyPrice,
+                      product.yearlyPrice
+                    );
 
                     return (
                       <motion.div
@@ -352,7 +375,9 @@ const Payment: React.FC = () => {
                         )}
 
                         <div className="text-center">
-                          <h3 className="text-xl font-bold text-gray-900 dark:text-white">{product.name}</h3>
+                          <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                            {product.name}
+                          </h3>
 
                           <div className="mt-4">
                             <p className="text-3xl font-bold text-gray-900 dark:text-white">
@@ -368,7 +393,10 @@ const Payment: React.FC = () => {
 
                           <ul className="mt-6 space-y-3 text-left">
                             {product.features.map((feature, idx) => (
-                              <li key={idx} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                              <li
+                                key={idx}
+                                className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400"
+                              >
                                 <span className="text-green-500">✓</span>
                                 {feature}
                               </li>
@@ -391,10 +419,18 @@ const Payment: React.FC = () => {
                       <table className="w-full">
                         <thead>
                           <tr className="border-b border-gray-200/50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50">
-                            <th className="text-left py-4 px-6 text-sm font-medium text-gray-500 dark:text-gray-400">날짜</th>
-                            <th className="text-left py-4 px-6 text-sm font-medium text-gray-500 dark:text-gray-400">상품</th>
-                            <th className="text-left py-4 px-6 text-sm font-medium text-gray-500 dark:text-gray-400">금액</th>
-                            <th className="text-left py-4 px-6 text-sm font-medium text-gray-500 dark:text-gray-400">상태</th>
+                            <th className="text-left py-4 px-6 text-sm font-medium text-gray-500 dark:text-gray-400">
+                              날짜
+                            </th>
+                            <th className="text-left py-4 px-6 text-sm font-medium text-gray-500 dark:text-gray-400">
+                              상품
+                            </th>
+                            <th className="text-left py-4 px-6 text-sm font-medium text-gray-500 dark:text-gray-400">
+                              금액
+                            </th>
+                            <th className="text-left py-4 px-6 text-sm font-medium text-gray-500 dark:text-gray-400">
+                              상태
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
@@ -410,20 +446,26 @@ const Payment: React.FC = () => {
                                 {paymentService.formatDateTime(item.createdAt)}
                               </td>
                               <td className="py-4 px-6">
-                                <p className="text-sm font-medium text-gray-900 dark:text-white">{item.productName}</p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 font-mono">{item.orderId}</p>
+                                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                  {item.productName}
+                                </p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 font-mono">
+                                  {item.orderId}
+                                </p>
                               </td>
                               <td className="py-4 px-6 text-sm font-semibold text-gray-900 dark:text-white">
                                 {paymentService.formatCurrency(item.amount)}
                               </td>
                               <td className="py-4 px-6">
-                                <span className={`inline-flex px-3 py-1 text-xs font-medium rounded-full ${
-                                  item.status === 'COMPLETED'
-                                    ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-                                    : item.status === 'PENDING'
-                                      ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
-                                      : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-                                }`}>
+                                <span
+                                  className={`inline-flex px-3 py-1 text-xs font-medium rounded-full ${
+                                    item.status === 'COMPLETED'
+                                      ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                                      : item.status === 'PENDING'
+                                        ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+                                        : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                                  }`}
+                                >
                                   {paymentService.getPaymentStatusLabel(item.status)}
                                 </span>
                               </td>
@@ -436,8 +478,12 @@ const Payment: React.FC = () => {
                 ) : (
                   <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-12 border border-gray-200/50 dark:border-gray-700/50 text-center">
                     <span className="text-6xl mb-4 block">📋</span>
-                    <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">결제 내역이 없습니다</h3>
-                    <p className="text-gray-500 dark:text-gray-400">포인트를 충전하거나 구독을 시작해보세요!</p>
+                    <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
+                      결제 내역이 없습니다
+                    </h3>
+                    <p className="text-gray-500 dark:text-gray-400">
+                      포인트를 충전하거나 구독을 시작해보세요!
+                    </p>
                   </div>
                 )}
               </motion.div>
@@ -463,7 +509,10 @@ const Payment: React.FC = () => {
                     <p className="font-bold text-gray-900 dark:text-white">
                       {'points' in selectedProduct
                         ? (selectedProduct as PointProduct).name
-                        : (selectedProduct as SubscriptionProduct).name + ' (' + (billingCycle === 'yearly' ? '연간' : '월간') + ')'}
+                        : (selectedProduct as SubscriptionProduct).name +
+                          ' (' +
+                          (billingCycle === 'yearly' ? '연간' : '월간') +
+                          ')'}
                     </p>
                   </div>
 
@@ -484,9 +533,12 @@ const Payment: React.FC = () => {
                     </button>
                   </div>
                   {couponResult && (
-                    <p className={`text-sm ${couponResult.discount > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                    <p
+                      className={`text-sm ${couponResult.discount > 0 ? 'text-green-500' : 'text-red-500'}`}
+                    >
                       {couponResult.message}
-                      {couponResult.discount > 0 && ` (-${paymentService.formatCurrency(couponResult.discount)})`}
+                      {couponResult.discount > 0 &&
+                        ` (-${paymentService.formatCurrency(couponResult.discount)})`}
                     </p>
                   )}
                 </div>
@@ -501,7 +553,7 @@ const Payment: React.FC = () => {
                           : billingCycle === 'yearly'
                             ? (selectedProduct as SubscriptionProduct).yearlyPrice
                             : (selectedProduct as SubscriptionProduct).monthlyPrice) -
-                        (couponResult?.discount || 0)
+                          (couponResult?.discount || 0)
                       )}
                     </p>
                   </div>

@@ -176,12 +176,22 @@ const Dashboard: React.FC = () => {
 
   const quickActions = [
     { label: 'NFT 수집', icon: '🎨', path: '/nft', gradient: 'from-violet-500 to-purple-500' },
-    { label: '그룹 만들기', icon: '🗺️', path: '/groups/create', gradient: 'from-blue-500 to-cyan-500' },
+    {
+      label: '그룹 만들기',
+      icon: '🗺️',
+      path: '/groups/create',
+      gradient: 'from-blue-500 to-cyan-500',
+    },
     { label: '그룹 찾기', icon: '🔍', path: '/groups', gradient: 'from-emerald-500 to-teal-500' },
     { label: '채팅방', icon: '💬', path: '/chat', gradient: 'from-pink-500 to-rose-500' },
     { label: '내 프로필', icon: '👤', path: '/profile', gradient: 'from-amber-500 to-orange-500' },
     { label: '지갑 연결', icon: '💰', path: '/wallet', gradient: 'from-indigo-500 to-violet-500' },
-    { label: '마켓플레이스', icon: '🛒', path: '/marketplace', gradient: 'from-cyan-500 to-blue-500' },
+    {
+      label: '마켓플레이스',
+      icon: '🛒',
+      path: '/marketplace',
+      gradient: 'from-cyan-500 to-blue-500',
+    },
     { label: '포인트 상점', icon: '💎', path: '/shop', gradient: 'from-rose-500 to-pink-500' },
   ];
 
@@ -206,7 +216,7 @@ const Dashboard: React.FC = () => {
         <div className="max-w-6xl mx-auto bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-2xl px-6 py-3 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
           <div className="flex items-center justify-between">
             <button onClick={() => navigate('/')} className="flex items-center gap-2">
-              <Logo size={32} />
+              <Logo size="md" />
               <span className="font-bold text-gray-900 dark:text-white">TravelMate</span>
             </button>
             <div className="flex items-center gap-3">
@@ -246,7 +256,12 @@ const Dashboard: React.FC = () => {
         >
           {[
             { label: '발견된 메이트', value: nearbyUsers.length, icon: '👥', color: 'violet' },
-            { label: '온라인', value: nearbyUsers.filter(u => u.isOnline).length, icon: '🟢', color: 'emerald' },
+            {
+              label: '온라인',
+              value: nearbyUsers.filter(u => u.isOnline).length,
+              icon: '🟢',
+              color: 'emerald',
+            },
             { label: '탐색 횟수', value: discoveryCount, icon: '🧭', color: 'blue' },
           ].map((stat, idx) => (
             <motion.div
@@ -255,11 +270,15 @@ const Dashboard: React.FC = () => {
               variants={fadeInUp}
             >
               <div className="flex items-center gap-4">
-                <div className={`w-14 h-14 rounded-xl bg-gradient-to-br from-${stat.color}-400/20 to-${stat.color}-500/20 dark:from-${stat.color}-500/30 dark:to-${stat.color}-600/30 flex items-center justify-center text-2xl`}>
+                <div
+                  className={`w-14 h-14 rounded-xl bg-gradient-to-br from-${stat.color}-400/20 to-${stat.color}-500/20 dark:from-${stat.color}-500/30 dark:to-${stat.color}-600/30 flex items-center justify-center text-2xl`}
+                >
                   {stat.icon}
                 </div>
                 <div>
-                  <div className="text-3xl font-bold text-gray-900 dark:text-white">{stat.value}</div>
+                  <div className="text-3xl font-bold text-gray-900 dark:text-white">
+                    {stat.value}
+                  </div>
                   <div className="text-sm text-gray-500 dark:text-gray-400">{stat.label}</div>
                 </div>
               </div>
@@ -268,11 +287,7 @@ const Dashboard: React.FC = () => {
         </motion.section>
 
         {/* Location Card */}
-        <motion.section
-          className="mb-8"
-          {...fadeInUp}
-          transition={{ delay: 0.2 }}
-        >
+        <motion.section className="mb-8" {...fadeInUp} transition={{ delay: 0.2 }}>
           {isInitialLoading ? (
             <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
               <div className="flex items-center gap-4 animate-pulse">
@@ -283,62 +298,71 @@ const Dashboard: React.FC = () => {
                 </div>
               </div>
             </div>
-          ) : currentLocation && (
-            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
-              <div className="flex flex-col md:flex-row md:items-start gap-4">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-amber-400/20 to-orange-500/20 dark:from-amber-500/30 dark:to-orange-600/30 flex items-center justify-center text-2xl flex-shrink-0">
-                  📍
-                </div>
-                <div className="flex-1">
-                  <div className={`text-sm font-semibold mb-1 ${isLocationEnabled ? 'text-emerald-500' : 'text-amber-500'}`}>
-                    {isLocationEnabled ? '실제 GPS 위치' : '기본 위치 사용 중'}
+          ) : (
+            currentLocation && (
+              <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
+                <div className="flex flex-col md:flex-row md:items-start gap-4">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-amber-400/20 to-orange-500/20 dark:from-amber-500/30 dark:to-orange-600/30 flex items-center justify-center text-2xl flex-shrink-0">
+                    📍
                   </div>
-                  <div className="text-gray-900 dark:text-white font-medium mb-2">
-                    {currentLocation.address ||
-                      `${currentLocation.latitude.toFixed(4)}, ${currentLocation.longitude.toFixed(4)}`}
-                  </div>
-                  <div className="text-xs text-gray-400 dark:text-gray-500 font-mono mb-3">
-                    {currentLocation.latitude.toFixed(6)}, {currentLocation.longitude.toFixed(6)}
-                  </div>
-                  <div className="flex items-center gap-3 mb-4">
-                    <label htmlFor="radius-select" className="text-sm text-gray-600 dark:text-gray-400">검색 반경:</label>
-                    <select
-                      id="radius-select"
-                      value={searchRadius}
-                      onChange={e => setSearchRadius(Number(e.target.value))}
-                      className="px-4 py-2 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+                  <div className="flex-1">
+                    <div
+                      className={`text-sm font-semibold mb-1 ${isLocationEnabled ? 'text-emerald-500' : 'text-amber-500'}`}
                     >
-                      <option value={1}>1km 이내</option>
-                      <option value={3}>3km 이내</option>
-                      <option value={5}>5km 이내</option>
-                      <option value={10}>10km 이내</option>
-                      <option value={20}>20km 이내</option>
-                    </select>
+                      {isLocationEnabled ? '실제 GPS 위치' : '기본 위치 사용 중'}
+                    </div>
+                    <div className="text-gray-900 dark:text-white font-medium mb-2">
+                      {currentLocation.address ||
+                        `${currentLocation.latitude.toFixed(4)}, ${currentLocation.longitude.toFixed(4)}`}
+                    </div>
+                    <div className="text-xs text-gray-400 dark:text-gray-500 font-mono mb-3">
+                      {currentLocation.latitude.toFixed(6)}, {currentLocation.longitude.toFixed(6)}
+                    </div>
+                    <div className="flex items-center gap-3 mb-4">
+                      <label
+                        htmlFor="radius-select"
+                        className="text-sm text-gray-600 dark:text-gray-400"
+                      >
+                        검색 반경:
+                      </label>
+                      <select
+                        id="radius-select"
+                        value={searchRadius}
+                        onChange={e => setSearchRadius(Number(e.target.value))}
+                        className="px-4 py-2 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      >
+                        <option value={1}>1km 이내</option>
+                        <option value={3}>3km 이내</option>
+                        <option value={5}>5km 이내</option>
+                        <option value={10}>10km 이내</option>
+                        <option value={20}>20km 이내</option>
+                      </select>
+                    </div>
+                    {!isLocationEnabled && (
+                      <>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 italic mb-3">
+                          더 정확한 위치를 원하시면 브라우저에서 위치 권한을 허용해주세요
+                        </p>
+                        <div className="flex flex-wrap gap-3">
+                          <button
+                            onClick={requestLocationPermission}
+                            className="px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl text-sm font-semibold hover:shadow-lg transition-all duration-300 flex items-center gap-2"
+                          >
+                            📍 위치 권한 요청
+                          </button>
+                          <button
+                            onClick={setManualLocation}
+                            className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl text-sm font-semibold hover:shadow-lg transition-all duration-300"
+                          >
+                            경기광주로 설정
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
-                  {!isLocationEnabled && (
-                    <>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 italic mb-3">
-                        더 정확한 위치를 원하시면 브라우저에서 위치 권한을 허용해주세요
-                      </p>
-                      <div className="flex flex-wrap gap-3">
-                        <button
-                          onClick={requestLocationPermission}
-                          className="px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl text-sm font-semibold hover:shadow-lg transition-all duration-300 flex items-center gap-2"
-                        >
-                          📍 위치 권한 요청
-                        </button>
-                        <button
-                          onClick={setManualLocation}
-                          className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl text-sm font-semibold hover:shadow-lg transition-all duration-300"
-                        >
-                          경기광주로 설정
-                        </button>
-                      </div>
-                    </>
-                  )}
                 </div>
               </div>
-            </div>
+            )
           )}
         </motion.section>
 
@@ -357,7 +381,11 @@ const Dashboard: React.FC = () => {
             <legend className="text-center text-gray-600 dark:text-gray-400 font-medium mb-4">
               현재 나의 여행 기분
             </legend>
-            <div className="flex flex-wrap justify-center gap-3" role="radiogroup" aria-label="여행 기분 선택">
+            <div
+              className="flex flex-wrap justify-center gap-3"
+              role="radiogroup"
+              aria-label="여행 기분 선택"
+            >
               {moods.map(mood => (
                 <button
                   key={mood}
@@ -383,7 +411,9 @@ const Dashboard: React.FC = () => {
               <div className="absolute inset-4 rounded-full border-2 border-violet-300/40 dark:border-violet-500/40" />
               <div className="absolute inset-8 rounded-full border-2 border-violet-300/50 dark:border-violet-500/50" />
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className={`w-6 h-6 rounded-full bg-gradient-to-br from-violet-500 to-pink-500 shadow-lg ${isDiscovering ? 'animate-ping' : ''}`} />
+                <div
+                  className={`w-6 h-6 rounded-full bg-gradient-to-br from-violet-500 to-pink-500 shadow-lg ${isDiscovering ? 'animate-ping' : ''}`}
+                />
               </div>
               {isDiscovering && (
                 <div
@@ -431,7 +461,9 @@ const Dashboard: React.FC = () => {
             aria-label="발견된 여행 메이트 목록"
           >
             <div className="flex items-center gap-3 mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">발견된 여행 메이트</h2>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                발견된 여행 메이트
+              </h2>
               <span className="px-3 py-1 bg-gradient-to-r from-violet-600 to-pink-600 text-white text-sm font-semibold rounded-full">
                 {nearbyUsers.length}명
               </span>
@@ -448,14 +480,20 @@ const Dashboard: React.FC = () => {
                     <Avatar name={user.name} image={user.profileImage} size={72} />
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <h4 className="text-lg font-bold text-gray-900 dark:text-white">{user.name}</h4>
-                        <span className="text-sm text-gray-500 dark:text-gray-400">{user.age}세</span>
+                        <h4 className="text-lg font-bold text-gray-900 dark:text-white">
+                          {user.name}
+                        </h4>
+                        <span className="text-sm text-gray-500 dark:text-gray-400">
+                          {user.age}세
+                        </span>
                         <span
                           className={`w-2.5 h-2.5 rounded-full ml-auto ${user.isOnline ? 'bg-emerald-400 shadow-lg shadow-emerald-400/50' : 'bg-gray-300 dark:bg-gray-600'}`}
                           aria-label={user.isOnline ? '온라인' : '오프라인'}
                         />
                       </div>
-                      <p className="text-violet-500 dark:text-violet-400 font-medium mb-1">{user.mood}</p>
+                      <p className="text-violet-500 dark:text-violet-400 font-medium mb-1">
+                        {user.mood}
+                      </p>
                       <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
                         📍 {user.distance}km · {user.travelStyle}
                       </p>
@@ -478,7 +516,9 @@ const Dashboard: React.FC = () => {
                   <div className="mb-4">
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-sm text-gray-600 dark:text-gray-400">매칭도</span>
-                      <span className="text-violet-600 dark:text-violet-400 font-bold">{user.matchScore}%</span>
+                      <span className="text-violet-600 dark:text-violet-400 font-bold">
+                        {user.matchScore}%
+                      </span>
                     </div>
                     <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                       <div
@@ -517,8 +557,12 @@ const Dashboard: React.FC = () => {
             <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-violet-400/20 to-pink-400/20 dark:from-violet-500/30 dark:to-pink-500/30 flex items-center justify-center text-4xl">
               👥
             </div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">주변에 여행 메이트가 없어요</h3>
-            <p className="text-gray-500 dark:text-gray-400 mb-6">검색 반경을 넓히거나 다른 시간에 다시 시도해보세요</p>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+              주변에 여행 메이트가 없어요
+            </h3>
+            <p className="text-gray-500 dark:text-gray-400 mb-6">
+              검색 반경을 넓히거나 다른 시간에 다시 시도해보세요
+            </p>
             <button
               className="px-6 py-3 bg-gradient-to-r from-violet-600 to-pink-600 text-white rounded-full font-semibold hover:shadow-lg hover:shadow-violet-500/30 transition-all duration-300 flex items-center gap-2 mx-auto"
               onClick={discoverNearbyMates}
@@ -535,7 +579,9 @@ const Dashboard: React.FC = () => {
           transition={{ delay: 0.5 }}
           aria-label="빠른 액션"
         >
-          <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-8">빠른 액션</h2>
+          <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-8">
+            빠른 액션
+          </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {quickActions.map((action, idx) => (
               <motion.button
@@ -545,7 +591,9 @@ const Dashboard: React.FC = () => {
                 whileHover={{ scale: 1.02 }}
                 aria-label={action.label}
               >
-                <div className={`w-12 h-12 mx-auto mb-3 rounded-xl bg-gradient-to-br ${action.gradient} flex items-center justify-center text-2xl shadow-lg`}>
+                <div
+                  className={`w-12 h-12 mx-auto mb-3 rounded-xl bg-gradient-to-br ${action.gradient} flex items-center justify-center text-2xl shadow-lg`}
+                >
                   {action.icon}
                 </div>
                 <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">

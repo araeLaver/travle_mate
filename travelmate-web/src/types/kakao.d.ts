@@ -12,7 +12,3 @@ interface Kakao {
   isInitialized: () => boolean;
   Auth: KakaoAuth;
 }
-
-interface Window {
-  Kakao: Kakao;
-}

@@ -72,8 +72,8 @@ export const useKakaoSDK = (): UseKakaoSDKReturn => {
         success: (authObj: { access_token: string }) => {
           resolve(authObj.access_token);
         },
-        fail: (err: Error) => {
-          reject(err);
+        fail: (err: { error: string; error_description: string }) => {
+          reject(new Error(err.error_description || err.error));
         },
       });
     });
