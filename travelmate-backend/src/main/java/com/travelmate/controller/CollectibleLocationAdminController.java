@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/admin/locations")
+@RequestMapping("/admin/collectible-locations")
 @RequiredArgsConstructor
 @Tag(name = "Admin - Collectible Locations", description = "수집 가능 장소 관리 API (관리자 전용)")
 public class CollectibleLocationAdminController {
