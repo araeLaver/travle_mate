@@ -29,7 +29,7 @@ RUN chown travelmate:travelmate app.jar
 
 USER travelmate
 
-ENV JAVA_OPTS="-Xms64m -Xmx256m -XX:+UseSerialGC -XX:MaxMetaspaceSize=64m -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:MaxRAM=450m -XX:+ExitOnOutOfMemoryError -XX:+HeapDumpOnOutOfMemoryError -Dspring.jpa.open-in-view=false"
+ENV JAVA_OPTS="-Xms64m -Xmx192m -XX:+UseSerialGC -XX:MaxMetaspaceSize=96m -XX:CompressedClassSpaceSize=32m -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:MaxRAM=400m -XX:+ExitOnOutOfMemoryError -Dspring.jpa.open-in-view=false"
 
 ENV SPRING_PROFILES_ACTIVE=prod
 
