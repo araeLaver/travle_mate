@@ -1,272 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration scan="true" scanPeriod="30 seconds">
-    <!-- 컬러 출력 설정 -->
-    <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter" />
-    <conversionRule conversionWord="wex" converterClass="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter" />
-    <conversionRule conversionWord="wEx" converterClass="org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter" />
-
-    <!-- 프로퍼티 정의 -->
-    <springProperty scope="context" name="APP_NAME" source="spring.application.name" defaultValue="travelmate-backend"/>
-    <springProperty scope="context" name="LOG_LEVEL" source="logging.level.root" defaultValue="INFO"/>
-    <springProperty scope="context" name="LOG_PATH" source="logging.file.path" defaultValue="logs"/>
-    <springProperty scope="context" name="LOG_FILE" source="logging.file.name" defaultValue="travelmate"/>
-
-    <!-- 콘솔 Appender (개발환경) -->
+<configuration>
+    <!-- 콘솔 Appender만 사용 (Koyeb에서는 파일 로그 불필요) -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr([%15.15t]){faint} %clr(%logger{36}){cyan} : %msg%n%wEx</pattern>
+            <pattern>%d{HH:mm:ss} %-5level %logger{20} - %msg%n</pattern>
             <charset>UTF-8</charset>
         </encoder>
     </appender>
 
-    <!-- 파일 Appender (운영환경) -->
-    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_PATH}/${LOG_FILE}.log</file>
-        <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{requestId}] %logger{36} - %msg%n</pattern>
-            <charset>UTF-8</charset>
-        </encoder>
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <!-- 일별 로그 파일 생성 -->
-            <fileNamePattern>${LOG_PATH}/${LOG_FILE}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-            <!-- 파일당 최대 크기 -->
-            <maxFileSize>100MB</maxFileSize>
-            <!-- 최대 30일 보관 -->
-            <maxHistory>30</maxHistory>
-            <!-- 전체 로그 파일 크기 제한 (10GB) -->
-            <totalSizeCap>10GB</totalSizeCap>
-        </rollingPolicy>
-    </appender>
-
-    <!-- 에러 전용 파일 Appender -->
-    <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_PATH}/${LOG_FILE}-error.log</file>
-        <filter class="ch.qos.logback.classic.filter.LevelFilter">
-            <level>ERROR</level>
-            <onMatch>ACCEPT</onMatch>
-            <onMismatch>DENY</onMismatch>
-        </filter>
-        <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{requestId}] %logger{36} - %msg%n%wEx</pattern>
-            <charset>UTF-8</charset>
-        </encoder>
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_PATH}/${LOG_FILE}-error.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-            <maxFileSize>50MB</maxFileSize>
-            <maxHistory>90</maxHistory>
-            <totalSizeCap>5GB</totalSizeCap>
-        </rollingPolicy>
-    </appender>
-
-    <!-- 성능 로그 전용 Appender -->
-    <appender name="PERFORMANCE_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_PATH}/${LOG_FILE}-performance.log</file>
-        <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{requestId}] %logger{36} - %msg%n</pattern>
-            <charset>UTF-8</charset>
-        </encoder>
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_PATH}/${LOG_FILE}-performance.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-            <maxFileSize>50MB</maxFileSize>
-            <maxHistory>30</maxHistory>
-            <totalSizeCap>2GB</totalSizeCap>
-        </rollingPolicy>
-    </appender>
-
-    <!-- 보안 로그 전용 Appender -->
-    <appender name="SECURITY_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_PATH}/${LOG_FILE}-security.log</file>
-        <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{requestId}] %logger{36} - %msg%n</pattern>
-            <charset>UTF-8</charset>
-        </encoder>
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_PATH}/${LOG_FILE}-security.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-            <maxFileSize>50MB</maxFileSize>
-            <maxHistory>90</maxHistory>
-            <totalSizeCap>5GB</totalSizeCap>
-        </rollingPolicy>
-    </appender>
-
-    <!-- 프론트엔드 로그 전용 Appender -->
-    <appender name="FRONTEND_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_PATH}/${LOG_FILE}-frontend.log</file>
-        <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %msg%n</pattern>
-            <charset>UTF-8</charset>
-        </encoder>
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_PATH}/${LOG_FILE}-frontend.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-            <maxFileSize>50MB</maxFileSize>
-            <maxHistory>30</maxHistory>
-            <totalSizeCap>2GB</totalSizeCap>
-        </rollingPolicy>
-    </appender>
-
-    <!-- 애플리케이션별 Logger 설정 -->
-
-    <!-- TravelMate 애플리케이션 로거 -->
-    <logger name="com.travelmate" level="${LOG_LEVEL}" additivity="false">
-        <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="FILE"/>
-        <appender-ref ref="ERROR_FILE"/>
-    </logger>
-
-    <!-- 성능 로거 -->
-    <logger name="com.travelmate.performance" level="INFO" additivity="false">
-        <appender-ref ref="PERFORMANCE_FILE"/>
-        <appender-ref ref="CONSOLE"/>
-    </logger>
-
-    <!-- 보안 로거 -->
-    <logger name="com.travelmate.security" level="INFO" additivity="false">
-        <appender-ref ref="SECURITY_FILE"/>
-        <appender-ref ref="CONSOLE"/>
-    </logger>
-
-    <!-- 프론트엔드 로거 -->
-    <logger name="com.travelmate.frontend" level="INFO" additivity="false">
-        <appender-ref ref="FRONTEND_FILE"/>
-        <appender-ref ref="CONSOLE"/>
-    </logger>
-
-    <!-- Spring Security 로그 -->
-    <logger name="org.springframework.security" level="WARN" additivity="false">
-        <appender-ref ref="SECURITY_FILE"/>
-        <appender-ref ref="CONSOLE"/>
-    </logger>
-
-    <!-- SQL 로그 -->
-    <logger name="org.hibernate.SQL" level="DEBUG" additivity="false">
-        <appender-ref ref="FILE"/>
-    </logger>
-
-    <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE" additivity="false">
-        <appender-ref ref="FILE"/>
-    </logger>
-
-    <!-- HikariCP 로그 -->
-    <logger name="com.zaxxer.hikari" level="INFO" additivity="false">
-        <appender-ref ref="FILE"/>
-        <appender-ref ref="CONSOLE"/>
-    </logger>
-
-    <!-- Redis 로그 -->
-    <logger name="org.springframework.data.redis" level="INFO" additivity="false">
-        <appender-ref ref="FILE"/>
-        <appender-ref ref="CONSOLE"/>
-    </logger>
-
-    <!-- WebSocket 로그 -->
-    <logger name="org.springframework.web.socket" level="INFO" additivity="false">
-        <appender-ref ref="FILE"/>
-        <appender-ref ref="CONSOLE"/>
-    </logger>
-
-    <!-- HTTP 클라이언트 로그 -->
-    <logger name="org.apache.http" level="INFO" additivity="false">
-        <appender-ref ref="FILE"/>
-    </logger>
-
-    <!-- JSON 콘솔 Appender (운영환경용 - ELK 연동) -->
-    <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <includeMdc>true</includeMdc>
-            <includeContext>false</includeContext>
-            <includeTags>true</includeTags>
-            <shortenedLoggerNameLength>36</shortenedLoggerNameLength>
-            <customFields>{"service":"${APP_NAME}","environment":"${SPRING_PROFILES_ACTIVE:-dev}"}</customFields>
-            <fieldNames>
-                <timestamp>timestamp</timestamp>
-                <version>[ignore]</version>
-                <levelValue>[ignore]</levelValue>
-            </fieldNames>
-            <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
-                <maxDepthPerThrowable>30</maxDepthPerThrowable>
-                <maxLength>2048</maxLength>
-                <shortenedClassNameLength>20</shortenedClassNameLength>
-                <rootCauseFirst>true</rootCauseFirst>
-            </throwableConverter>
-        </encoder>
-    </appender>
-
-    <!-- JSON 파일 Appender (ELK Filebeat용) -->
-    <appender name="JSON_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_PATH}/${LOG_FILE}-json.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_PATH}/${LOG_FILE}-json.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-            <maxFileSize>100MB</maxFileSize>
-            <maxHistory>7</maxHistory>
-            <totalSizeCap>3GB</totalSizeCap>
-        </rollingPolicy>
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <includeMdc>true</includeMdc>
-            <includeContext>false</includeContext>
-            <customFields>{"service":"${APP_NAME}"}</customFields>
-        </encoder>
-    </appender>
-
-    <!-- Logstash TCP Appender - DISABLED for Koyeb deployment (no ELK stack available)
-         To enable: uncomment below and set logstash.host/logstash.port in application.yml
-    <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
-        <destination>${LOGSTASH_HOST}:${LOGSTASH_PORT}</destination>
-        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-            <includeMdc>true</includeMdc>
-            <includeContext>false</includeContext>
-            <customFields>{"service":"${APP_NAME}","environment":"${SPRING_PROFILES_ACTIVE:-dev}"}</customFields>
-        </encoder>
-        <keepAliveDuration>5 minutes</keepAliveDuration>
-        <reconnectionDelay>1 second</reconnectionDelay>
-        <writeBufferSize>16384</writeBufferSize>
-    </appender>
-
-    <appender name="ASYNC_LOGSTASH" class="ch.qos.logback.classic.AsyncAppender">
-        <discardingThreshold>0</discardingThreshold>
-        <queueSize>1024</queueSize>
-        <neverBlock>true</neverBlock>
-        <appender-ref ref="LOGSTASH"/>
-    </appender>
-    -->
-
-    <!-- Async JSON File Appender -->
-    <appender name="ASYNC_JSON_FILE" class="ch.qos.logback.classic.AsyncAppender">
-        <discardingThreshold>0</discardingThreshold>
-        <queueSize>512</queueSize>
-        <appender-ref ref="JSON_FILE"/>
-    </appender>
-
-    <!-- 환경별 설정 -->
+    <!-- 개발 환경 -->
     <springProfile name="dev">
-        <root level="DEBUG">
+        <logger name="com.travelmate" level="DEBUG"/>
+        <logger name="org.hibernate.SQL" level="DEBUG"/>
+        <root level="INFO">
             <appender-ref ref="CONSOLE"/>
-            <appender-ref ref="FILE"/>
-            <appender-ref ref="ASYNC_JSON_FILE"/>
         </root>
     </springProfile>
 
+    <!-- 테스트 환경 -->
     <springProfile name="test">
         <root level="WARN">
             <appender-ref ref="CONSOLE"/>
         </root>
     </springProfile>
 
+    <!-- 운영 환경 (Koyeb) - 최소 로깅 -->
     <springProfile name="prod">
-        <root level="INFO">
-            <appender-ref ref="CONSOLE_JSON"/>
-            <appender-ref ref="FILE"/>
-            <appender-ref ref="ERROR_FILE"/>
-            <appender-ref ref="ASYNC_JSON_FILE"/>
-            <!-- Logstash disabled for Koyeb deployment (no Logstash server available) -->
-            <!-- <appender-ref ref="ASYNC_LOGSTASH"/> -->
-        </root>
-    </springProfile>
-
-    <!-- 기본 루트 로거 -->
-    <springProfile name="!prod &amp; !test &amp; !dev">
-        <root level="INFO">
+        <logger name="com.travelmate" level="WARN"/>
+        <logger name="org.springframework" level="WARN"/>
+        <logger name="org.hibernate" level="ERROR"/>
+        <logger name="com.zaxxer.hikari" level="WARN"/>
+        <logger name="org.postgresql" level="ERROR"/>
+        <logger name="io.netty" level="ERROR"/>
+        <logger name="io.micrometer" level="ERROR"/>
+        <logger name="jdk.event.security" level="ERROR"/>
+        <root level="WARN">
             <appender-ref ref="CONSOLE"/>
-            <appender-ref ref="FILE"/>
-            <appender-ref ref="ERROR_FILE"/>
         </root>
     </springProfile>
 </configuration>
