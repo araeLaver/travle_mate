@@ -216,7 +216,7 @@ const Profile: React.FC = () => {
           <div className="flex items-center justify-between">
             <button onClick={() => navigate('/')} className="flex items-center gap-2">
               <Logo size="md" />
-              <span className="font-bold text-gray-900 dark:text-white">트리버디</span>
+              <span className="font-bold text-gray-900 dark:text-white">Fryndo</span>
             </button>
             <div className="flex items-center gap-3">
               <button

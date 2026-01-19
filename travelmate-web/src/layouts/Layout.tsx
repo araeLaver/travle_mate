@@ -130,7 +130,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       {/* 헤더 */}
       <header className="header">
         <div className="header-content">
-          <Link to="/dashboard" className="logo" aria-label="트리버디 홈으로 이동">
+          <Link to="/dashboard" className="logo" aria-label="Fryndo 홈으로 이동">
             <span className="logo-icon" aria-hidden="true">
               <GlobeIcon />
             </span>

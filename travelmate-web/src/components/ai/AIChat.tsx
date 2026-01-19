@@ -31,7 +31,7 @@ const AIChat: React.FC<AIChatProps> = ({ className = '', initialContext, onPlace
       id: 'welcome',
       type: 'ai',
       content:
-        '안녕하세요! 저는 트리버디 AI 어시스턴트입니다. 여행 계획, 장소 추천, 현지 정보 등 무엇이든 물어보세요!',
+        '안녕하세요! 저는 Fryndo AI 어시스턴트입니다. 여행 계획, 장소 추천, 현지 정보 등 무엇이든 물어보세요!',
       timestamp: new Date(),
     },
   ]);
@@ -131,7 +131,7 @@ const AIChat: React.FC<AIChatProps> = ({ className = '', initialContext, onPlace
           <span className="text-white text-xl">AI</span>
         </div>
         <div>
-          <h3 className="font-semibold text-gray-900 dark:text-white">트리버디 AI</h3>
+          <h3 className="font-semibold text-gray-900 dark:text-white">Fryndo AI</h3>
           <p className="text-sm text-gray-500 dark:text-gray-400">여행 어시스턴트</p>
         </div>
       </div>

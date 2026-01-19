@@ -39,7 +39,7 @@ const Portfolio: React.FC = () => {
                   className="group-hover:scale-110 transition-transform duration-300"
                 />
                 <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
-                  TravelMate
+                  Fryndo
                 </span>
               </Link>
 
@@ -572,7 +572,7 @@ const Portfolio: React.FC = () => {
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
               <Logo variant="gradient" size="md" />
-              <span className="text-xl font-bold text-gray-900 dark:text-white">트리버디</span>
+              <span className="text-xl font-bold text-gray-900 dark:text-white">Fryndo</span>
             </div>
 
             <div className="flex gap-8 text-sm">
@@ -587,7 +587,7 @@ const Portfolio: React.FC = () => {
               ))}
             </div>
 
-            <div className="text-sm text-gray-500 dark:text-gray-500">© 2025 Tribuddy</div>
+            <div className="text-sm text-gray-500 dark:text-gray-500">© 2025 Fryndo</div>
           </div>
         </div>
       </footer>

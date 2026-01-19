@@ -37,7 +37,7 @@ const About: React.FC = () => {
                   className="group-hover:scale-110 transition-transform duration-300"
                 />
                 <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
-                  트리버디
+                  Fryndo
                 </span>
               </Link>
 
@@ -84,7 +84,7 @@ const About: React.FC = () => {
           <div className="max-w-4xl mx-auto text-center">
             <motion.div {...fadeInUp}>
               <span className="inline-block px-4 py-1.5 bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 rounded-full text-sm font-semibold mb-6">
-                About Tribuddy
+                About Fryndo
               </span>
             </motion.div>
 
@@ -105,7 +105,7 @@ const About: React.FC = () => {
               transition={{ delay: 0.2 }}
               className="text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed"
             >
-              트리버디는 혼자가 아닌 함께하는 여행의 가치를 믿습니다. 전 세계 여행자들과 연결되어
+              Fryndo는 혼자가 아닌 함께하는 여행의 가치를 믿습니다. 전 세계 여행자들과 연결되어
               특별한 여행 경험을 만들어보세요.
             </motion.p>
           </div>
@@ -130,7 +130,7 @@ const About: React.FC = () => {
                 완벽한 동반자를
               </h2>
               <p className="text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
-                트리버디는 여행 스타일, 관심사, 일정이 맞는 여행 동반자를 찾아드립니다. AI 기반 매칭
+                Fryndo는 여행 스타일, 관심사, 일정이 맞는 여행 동반자를 찾아드립니다. AI 기반 매칭
                 시스템으로 최적의 여행 파트너를 추천받고, 실시간 채팅으로 소통하며, 함께 특별한
                 추억을 만들어보세요.
               </p>
@@ -210,7 +210,7 @@ const About: React.FC = () => {
               Our Values
             </span>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              트리버디가 추구하는 가치
+              Fryndo가 추구하는 가치
             </h2>
           </motion.div>
 
@@ -219,7 +219,7 @@ const About: React.FC = () => {
               {
                 icon: RocketLaunchIcon,
                 title: '모험',
-                desc: '새로운 장소, 새로운 사람, 새로운 경험. 트리버디와 함께라면 모든 여행이 모험이 됩니다.',
+                desc: '새로운 장소, 새로운 사람, 새로운 경험. Fryndo와 함께라면 모든 여행이 모험이 됩니다.',
                 gradient: 'from-violet-500 to-purple-500',
               },
               {
@@ -275,7 +275,7 @@ const About: React.FC = () => {
                 지금 바로 시작하세요
               </h2>
               <p className="text-lg text-white/80 mb-8">
-                트리버디와 함께 새로운 여행 동반자를 만나보세요.
+                Fryndo와 함께 새로운 여행 동반자를 만나보세요.
                 <br />
                 무료로 시작할 수 있습니다.
               </p>
@@ -297,7 +297,7 @@ const About: React.FC = () => {
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
               <Logo variant="gradient" size="md" />
-              <span className="text-xl font-bold text-gray-900 dark:text-white">트리버디</span>
+              <span className="text-xl font-bold text-gray-900 dark:text-white">Fryndo</span>
             </div>
 
             <div className="flex gap-8 text-sm">
@@ -312,7 +312,7 @@ const About: React.FC = () => {
               ))}
             </div>
 
-            <div className="text-sm text-gray-500 dark:text-gray-500">© 2025 Tribuddy</div>
+            <div className="text-sm text-gray-500 dark:text-gray-500">© 2025 Fryndo</div>
           </div>
         </div>
       </footer>

@@ -14,9 +14,9 @@ interface TutorialStep {
 const tutorialSteps: TutorialStep[] = [
   {
     id: 1,
-    title: '트리버디에 오신 것을 환영합니다!',
+    title: 'Fryndo에 오신 것을 환영합니다!',
     description:
-      '트리버디는 당신의 완벽한 여행 동반자를 찾아주는 스마트한 매칭 서비스입니다. 튜토리얼을 통해 주요 기능들을 둘러보세요! 하이라이트된 영역을 클릭하여 다음 단계로 진행하세요.',
+      'Fryndo는 당신의 완벽한 여행 동반자를 찾아주는 스마트한 매칭 서비스입니다. 튜토리얼을 통해 주요 기능들을 둘러보세요! 하이라이트된 영역을 클릭하여 다음 단계로 진행하세요.',
     path: '/',
     targetSelector: '.tutorial-guest-mode-btn',
     position: 'bottom',
