@@ -85,7 +85,7 @@
     "cypress": "^15.8.2",
     "cypress-real-events": "^1.13.0",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-react-hooks": "^4.6.2",
+    "eslint-plugin-react-hooks": "^7.0.1",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "postcss": "^8.4.49",
