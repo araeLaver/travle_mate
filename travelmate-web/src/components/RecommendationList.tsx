@@ -150,7 +150,7 @@ const RecommendationList: React.FC = () => {
         <div className="info-card">
           <h3>추천 알고리즘</h3>
           <p>
-            TravelMate는 고급 추천 알고리즘을 사용하여 회원님에게 가장 적합한 그룹과 동행자를
+            트리버디는 고급 추천 알고리즘을 사용하여 회원님에게 가장 적합한 그룹과 동행자를
             찾아드립니다.
           </p>
           <ul>

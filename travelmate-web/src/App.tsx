@@ -18,6 +18,7 @@ const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '';
 
 // Lazy loaded pages for code splitting
 const Home = lazy(() => import('./pages/Home'));
+const About = lazy(() => import('./pages/About'));
 const Portfolio = lazy(() => import('./pages/Portfolio'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
@@ -64,6 +65,7 @@ function App() {
                   <Routes>
                     {/* 인증이 필요 없는 페이지 */}
                     <Route path="/" element={<Home />} />
+                    <Route path="/about" element={<About />} />
                     <Route path="/portfolio" element={<Portfolio />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />

@@ -126,7 +126,7 @@ const Portfolio: React.FC = () => {
               className="flex flex-col sm:flex-row gap-4 justify-center"
             >
               <a
-                href="https://github.com/araeLaver/TravelMate"
+                href="https://github.com/araeLaver/travle_mate"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-white bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl hover:from-emerald-700 hover:to-teal-700 transition-all duration-300 hover:shadow-xl hover:shadow-emerald-500/25 hover:-translate-y-1"
@@ -552,7 +552,7 @@ const Portfolio: React.FC = () => {
                   <ArrowRightIcon className="h-5 w-5" />
                 </Link>
                 <a
-                  href="https://github.com/araeLaver/TravelMate"
+                  href="https://github.com/araeLaver/travle_mate"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-white bg-white/20 backdrop-blur border border-white/30 rounded-2xl hover:bg-white/30 transition-all duration-300"
@@ -572,7 +572,7 @@ const Portfolio: React.FC = () => {
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
               <Logo variant="gradient" size="md" />
-              <span className="text-xl font-bold text-gray-900 dark:text-white">TravelMate</span>
+              <span className="text-xl font-bold text-gray-900 dark:text-white">트리버디</span>
             </div>
 
             <div className="flex gap-8 text-sm">
@@ -587,7 +587,7 @@ const Portfolio: React.FC = () => {
               ))}
             </div>
 
-            <div className="text-sm text-gray-500 dark:text-gray-500">© 2025 TravelMate</div>
+            <div className="text-sm text-gray-500 dark:text-gray-500">© 2025 Tribuddy</div>
           </div>
         </div>
       </footer>

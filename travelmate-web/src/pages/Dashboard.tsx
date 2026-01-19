@@ -217,7 +217,7 @@ const Dashboard: React.FC = () => {
           <div className="flex items-center justify-between">
             <button onClick={() => navigate('/')} className="flex items-center gap-2">
               <Logo size="md" />
-              <span className="font-bold text-gray-900 dark:text-white">TravelMate</span>
+              <span className="font-bold text-gray-900 dark:text-white">트리버디</span>
             </button>
             <div className="flex items-center gap-3">
               <WalletButton variant="compact" />

@@ -4,7 +4,11 @@
  */
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { aiRecommendationService, ChatResponse, PlaceRecommendation } from '../../services/aiRecommendationService';
+import {
+  aiRecommendationService,
+  ChatResponse,
+  PlaceRecommendation,
+} from '../../services/aiRecommendationService';
 
 interface Message {
   id: string;
@@ -21,16 +25,13 @@ interface AIChatProps {
   onPlaceSelect?: (place: PlaceRecommendation) => void;
 }
 
-const AIChat: React.FC<AIChatProps> = ({
-  className = '',
-  initialContext,
-  onPlaceSelect,
-}) => {
+const AIChat: React.FC<AIChatProps> = ({ className = '', initialContext, onPlaceSelect }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'welcome',
       type: 'ai',
-      content: '안녕하세요! 저는 TravelMate AI 어시스턴트입니다. 여행 계획, 장소 추천, 현지 정보 등 무엇이든 물어보세요!',
+      content:
+        '안녕하세요! 저는 트리버디 AI 어시스턴트입니다. 여행 계획, 장소 추천, 현지 정보 등 무엇이든 물어보세요!',
       timestamp: new Date(),
     },
   ]);
@@ -121,14 +122,16 @@ const AIChat: React.FC<AIChatProps> = ({
   ];
 
   return (
-    <div className={`flex flex-col h-full bg-white dark:bg-gray-900 rounded-lg shadow-lg ${className}`}>
+    <div
+      className={`flex flex-col h-full bg-white dark:bg-gray-900 rounded-lg shadow-lg ${className}`}
+    >
       {/* Header */}
       <div className="flex items-center gap-3 p-4 border-b dark:border-gray-700">
         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
           <span className="text-white text-xl">AI</span>
         </div>
         <div>
-          <h3 className="font-semibold text-gray-900 dark:text-white">TravelMate AI</h3>
+          <h3 className="font-semibold text-gray-900 dark:text-white">트리버디 AI</h3>
           <p className="text-sm text-gray-500 dark:text-gray-400">여행 어시스턴트</p>
         </div>
       </div>
@@ -160,7 +163,9 @@ const AIChat: React.FC<AIChatProps> = ({
                       className="w-full text-left p-2 rounded bg-white/10 hover:bg-white/20 transition-colors"
                     >
                       <p className="font-medium">{place.name}</p>
-                      <p className="text-xs opacity-80">{place.category} | {place.distance?.toFixed(1)}km</p>
+                      <p className="text-xs opacity-80">
+                        {place.category} | {place.distance?.toFixed(1)}km
+                      </p>
                     </button>
                   ))}
                 </div>
@@ -182,7 +187,10 @@ const AIChat: React.FC<AIChatProps> = ({
               )}
 
               <p className="text-xs opacity-60 mt-2">
-                {message.timestamp.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                {message.timestamp.toLocaleTimeString('ko-KR', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
               </p>
             </div>
           </div>
@@ -193,9 +201,18 @@ const AIChat: React.FC<AIChatProps> = ({
           <div className="flex justify-start">
             <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3">
               <div className="flex space-x-2">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                <div
+                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                  style={{ animationDelay: '0ms' }}
+                />
+                <div
+                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                  style={{ animationDelay: '150ms' }}
+                />
+                <div
+                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                  style={{ animationDelay: '300ms' }}
+                />
               </div>
             </div>
           </div>
@@ -229,7 +246,7 @@ const AIChat: React.FC<AIChatProps> = ({
             ref={inputRef}
             type="text"
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={e => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="메시지를 입력하세요..."
             className="flex-1 px-4 py-2 border rounded-full dark:bg-gray-800 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -240,7 +257,12 @@ const AIChat: React.FC<AIChatProps> = ({
             disabled={!input.trim() || isLoading}
             className="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
               <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
             </svg>
           </button>
