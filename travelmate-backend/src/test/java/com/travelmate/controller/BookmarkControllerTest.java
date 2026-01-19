@@ -121,7 +121,7 @@ class BookmarkControllerTest {
                     .thenReturn(bookmarkResponse);
 
             // When & Then
-            mockMvc.perform(post("/api/bookmarks")
+            mockMvc.perform(post("/bookmarks")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -143,7 +143,7 @@ class BookmarkControllerTest {
                     .build();
 
             // When & Then
-            mockMvc.perform(post("/api/bookmarks")
+            mockMvc.perform(post("/bookmarks")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -171,7 +171,7 @@ class BookmarkControllerTest {
                     .thenReturn(toggleResponse);
 
             // When & Then
-            mockMvc.perform(post("/api/bookmarks/toggle")
+            mockMvc.perform(post("/bookmarks/toggle")
                             .with(csrf())
                             .param("targetType", "POST")
                             .param("targetId", "1"))
@@ -197,7 +197,7 @@ class BookmarkControllerTest {
                     .thenReturn(toggleResponse);
 
             // When & Then
-            mockMvc.perform(post("/api/bookmarks/toggle")
+            mockMvc.perform(post("/bookmarks/toggle")
                             .with(csrf())
                             .param("targetType", "POST")
                             .param("targetId", "1"))
@@ -234,7 +234,7 @@ class BookmarkControllerTest {
                     .thenReturn(updatedResponse);
 
             // When & Then
-            mockMvc.perform(put("/api/bookmarks/1")
+            mockMvc.perform(put("/bookmarks/1")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -256,7 +256,7 @@ class BookmarkControllerTest {
             doNothing().when(bookmarkService).deleteBookmark(1L, 1L);
 
             // When & Then
-            mockMvc.perform(delete("/api/bookmarks/1")
+            mockMvc.perform(delete("/bookmarks/1")
                             .with(csrf()))
                     .andDo(print())
                     .andExpect(status().isNoContent());
@@ -285,7 +285,7 @@ class BookmarkControllerTest {
                     .thenReturn(listResponse);
 
             // When & Then
-            mockMvc.perform(get("/api/bookmarks"))
+            mockMvc.perform(get("/bookmarks"))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.bookmarks[0].id").value(1))
@@ -309,7 +309,7 @@ class BookmarkControllerTest {
                     .thenReturn(listResponse);
 
             // When & Then
-            mockMvc.perform(get("/api/bookmarks")
+            mockMvc.perform(get("/bookmarks")
                             .param("page", "1")
                             .param("size", "10"))
                     .andDo(print())
@@ -334,7 +334,7 @@ class BookmarkControllerTest {
                     .thenReturn(listResponse);
 
             // When & Then
-            mockMvc.perform(get("/api/bookmarks/type/POST"))
+            mockMvc.perform(get("/bookmarks/type/POST"))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.bookmarks[0].targetType").value("POST"));
@@ -356,7 +356,7 @@ class BookmarkControllerTest {
                     .thenReturn(listResponse);
 
             // When & Then
-            mockMvc.perform(get("/api/bookmarks/folder/여행"))
+            mockMvc.perform(get("/bookmarks/folder/여행"))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.bookmarks[0].folderName").value("여행"));
@@ -383,7 +383,7 @@ class BookmarkControllerTest {
                     .thenReturn(statusResponse);
 
             // When & Then
-            mockMvc.perform(get("/api/bookmarks/status")
+            mockMvc.perform(get("/bookmarks/status")
                             .param("targetType", "POST")
                             .param("targetId", "1"))
                     .andDo(print())
@@ -409,7 +409,7 @@ class BookmarkControllerTest {
                     .thenReturn(statusResponse);
 
             // When & Then
-            mockMvc.perform(get("/api/bookmarks/status")
+            mockMvc.perform(get("/bookmarks/status")
                             .param("targetType", "POST")
                             .param("targetId", "1"))
                     .andDo(print())
@@ -441,7 +441,7 @@ class BookmarkControllerTest {
                     .thenReturn(batchResponse);
 
             // When & Then
-            mockMvc.perform(post("/api/bookmarks/status/batch")
+            mockMvc.perform(post("/bookmarks/status/batch")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -473,7 +473,7 @@ class BookmarkControllerTest {
                     .thenReturn(statsResponse);
 
             // When & Then
-            mockMvc.perform(get("/api/bookmarks/stats"))
+            mockMvc.perform(get("/bookmarks/stats"))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.userId").value(1))
@@ -501,7 +501,7 @@ class BookmarkControllerTest {
                     .thenReturn(5);
 
             // When & Then
-            mockMvc.perform(put("/api/bookmarks/folders/rename")
+            mockMvc.perform(put("/bookmarks/folders/rename")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -521,7 +521,7 @@ class BookmarkControllerTest {
                     .build();
 
             // When & Then
-            mockMvc.perform(put("/api/bookmarks/folders/rename")
+            mockMvc.perform(put("/bookmarks/folders/rename")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))

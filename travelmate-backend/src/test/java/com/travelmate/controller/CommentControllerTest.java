@@ -116,7 +116,7 @@ class CommentControllerTest {
                     .thenReturn(commentResponse);
 
             // When & Then
-            mockMvc.perform(post("/api/posts/1/comments")
+            mockMvc.perform(post("/posts/1/comments")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -154,7 +154,7 @@ class CommentControllerTest {
                     .thenReturn(replyResponse);
 
             // When & Then
-            mockMvc.perform(post("/api/posts/1/comments")
+            mockMvc.perform(post("/posts/1/comments")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -183,7 +183,7 @@ class CommentControllerTest {
                     .thenReturn(listResponse);
 
             // When & Then
-            mockMvc.perform(get("/api/posts/1/comments"))
+            mockMvc.perform(get("/posts/1/comments"))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.postId").value(1))
@@ -205,7 +205,7 @@ class CommentControllerTest {
                     .thenReturn(listResponse);
 
             // When & Then
-            mockMvc.perform(get("/api/posts/1/comments")
+            mockMvc.perform(get("/posts/1/comments")
                             .param("page", "1")
                             .param("size", "10"))
                     .andDo(print())
@@ -242,7 +242,7 @@ class CommentControllerTest {
                     .thenReturn(updatedResponse);
 
             // When & Then
-            mockMvc.perform(put("/api/comments/1")
+            mockMvc.perform(put("/comments/1")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -263,7 +263,7 @@ class CommentControllerTest {
             doNothing().when(commentService).deleteComment(1L, 1L);
 
             // When & Then
-            mockMvc.perform(delete("/api/comments/1")
+            mockMvc.perform(delete("/comments/1")
                             .with(csrf()))
                     .andDo(print())
                     .andExpect(status().isNoContent());
@@ -289,7 +289,7 @@ class CommentControllerTest {
             when(commentService.likeComment(1L, 1L)).thenReturn(likeResponse);
 
             // When & Then
-            mockMvc.perform(post("/api/comments/1/like")
+            mockMvc.perform(post("/comments/1/like")
                             .with(csrf()))
                     .andDo(print())
                     .andExpect(status().isOk())
@@ -311,7 +311,7 @@ class CommentControllerTest {
             when(commentService.unlikeComment(1L, 1L)).thenReturn(likeResponse);
 
             // When & Then
-            mockMvc.perform(delete("/api/comments/1/like")
+            mockMvc.perform(delete("/comments/1/like")
                             .with(csrf()))
                     .andDo(print())
                     .andExpect(status().isOk())
@@ -344,7 +344,7 @@ class CommentControllerTest {
             when(commentService.getReplies(1L, 1L)).thenReturn(List.of(reply));
 
             // When & Then
-            mockMvc.perform(get("/api/comments/1/replies"))
+            mockMvc.perform(get("/comments/1/replies"))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$[0].id").value(2))
@@ -358,7 +358,7 @@ class CommentControllerTest {
             when(commentService.getReplies(1L, 1L)).thenReturn(Collections.emptyList());
 
             // When & Then
-            mockMvc.perform(get("/api/comments/1/replies"))
+            mockMvc.perform(get("/comments/1/replies"))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$").isArray())

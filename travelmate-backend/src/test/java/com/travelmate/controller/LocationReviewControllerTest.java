@@ -126,7 +126,7 @@ class LocationReviewControllerTest {
             when(locationReviewService.createReview(eq(1L), eq(1L), any())).thenReturn(reviewResponse);
 
             // When & Then
-            mockMvc.perform(post("/api/locations/1/reviews")
+            mockMvc.perform(post("/locations/1/reviews")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -146,7 +146,7 @@ class LocationReviewControllerTest {
             request.setComment("좋은 장소입니다");
 
             // When & Then
-            mockMvc.perform(post("/api/locations/1/reviews")
+            mockMvc.perform(post("/locations/1/reviews")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -187,7 +187,7 @@ class LocationReviewControllerTest {
             when(locationReviewService.updateReview(eq(1L), eq(1L), any())).thenReturn(updatedResponse);
 
             // When & Then
-            mockMvc.perform(put("/api/reviews/1")
+            mockMvc.perform(put("/reviews/1")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -204,7 +204,7 @@ class LocationReviewControllerTest {
             doNothing().when(locationReviewService).deleteReview(1L, 1L);
 
             // When & Then
-            mockMvc.perform(delete("/api/reviews/1")
+            mockMvc.perform(delete("/reviews/1")
                             .with(csrf()))
                     .andDo(print())
                     .andExpect(status().isNoContent());
@@ -226,7 +226,7 @@ class LocationReviewControllerTest {
                     .thenReturn(page);
 
             // When & Then
-            mockMvc.perform(get("/api/locations/1/reviews")
+            mockMvc.perform(get("/locations/1/reviews")
                             .param("sort", "recent"))
                     .andDo(print())
                     .andExpect(status().isOk())
@@ -246,7 +246,7 @@ class LocationReviewControllerTest {
                     .thenReturn(page);
 
             // When & Then
-            mockMvc.perform(get("/api/locations/1/reviews")
+            mockMvc.perform(get("/locations/1/reviews")
                             .param("sort", "helpful"))
                     .andDo(print())
                     .andExpect(status().isOk())
@@ -264,7 +264,7 @@ class LocationReviewControllerTest {
                     .thenReturn(page);
 
             // When & Then
-            mockMvc.perform(get("/api/users/2/reviews"))
+            mockMvc.perform(get("/users/2/reviews"))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.content[0].reviewer.id").value(1));
@@ -277,7 +277,7 @@ class LocationReviewControllerTest {
             when(locationReviewService.getReview(1L, 1L)).thenReturn(reviewResponse);
 
             // When & Then
-            mockMvc.perform(get("/api/reviews/1"))
+            mockMvc.perform(get("/reviews/1"))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.id").value(1))
@@ -296,7 +296,7 @@ class LocationReviewControllerTest {
             when(locationReviewService.toggleHelpful(1L, 1L)).thenReturn(true);
 
             // When & Then
-            mockMvc.perform(post("/api/reviews/1/helpful")
+            mockMvc.perform(post("/reviews/1/helpful")
                             .with(csrf()))
                     .andDo(print())
                     .andExpect(status().isOk())
@@ -310,7 +310,7 @@ class LocationReviewControllerTest {
             when(locationReviewService.toggleHelpful(1L, 1L)).thenReturn(false);
 
             // When & Then
-            mockMvc.perform(post("/api/reviews/1/helpful")
+            mockMvc.perform(post("/reviews/1/helpful")
                             .with(csrf()))
                     .andDo(print())
                     .andExpect(status().isOk())
@@ -330,7 +330,7 @@ class LocationReviewControllerTest {
             when(locationReviewService.getLocationReviewStats(1L)).thenReturn(stats);
 
             // When & Then
-            mockMvc.perform(get("/api/locations/1/reviews/stats"))
+            mockMvc.perform(get("/locations/1/reviews/stats"))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.locationId").value(1))

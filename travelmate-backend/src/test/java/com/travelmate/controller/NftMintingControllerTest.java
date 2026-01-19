@@ -114,7 +114,7 @@ class NftMintingControllerTest {
             when(nftMintingService.requestMinting(eq(1L), eq(1L), anyString())).thenReturn(response);
 
             // When & Then
-            mockMvc.perform(post("/api/nft/mint/1")
+            mockMvc.perform(post("/nft/mint/1")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -142,7 +142,7 @@ class NftMintingControllerTest {
             when(nftMintingService.requestMinting(eq(1L), eq(1L), isNull())).thenReturn(response);
 
             // When & Then
-            mockMvc.perform(post("/api/nft/mint/1")
+            mockMvc.perform(post("/nft/mint/1")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON))
                     .andDo(print())
@@ -175,7 +175,7 @@ class NftMintingControllerTest {
             when(nftMintingService.getMintingStatus(1L, 1L)).thenReturn(response);
 
             // When & Then
-            mockMvc.perform(get("/api/nft/mint/status/1"))
+            mockMvc.perform(get("/nft/mint/status/1"))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.collectionId").value(1))
@@ -202,7 +202,7 @@ class NftMintingControllerTest {
             when(nftMintingService.getMintingStatus(1L, 1L)).thenReturn(response);
 
             // When & Then
-            mockMvc.perform(get("/api/nft/mint/status/1"))
+            mockMvc.perform(get("/nft/mint/status/1"))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.mintStatus").value("MINTING"))
@@ -248,7 +248,7 @@ class NftMintingControllerTest {
             when(nftMintingService.getMintableNfts(eq(1L), any())).thenReturn(page);
 
             // When & Then
-            mockMvc.perform(get("/api/nft/mint/mintable"))
+            mockMvc.perform(get("/nft/mint/mintable"))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.content").isArray())
@@ -269,7 +269,7 @@ class NftMintingControllerTest {
             when(nftMintingService.getMintableNfts(eq(1L), any())).thenReturn(page);
 
             // When & Then
-            mockMvc.perform(get("/api/nft/mint/mintable"))
+            mockMvc.perform(get("/nft/mint/mintable"))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.content").isEmpty())
@@ -297,7 +297,7 @@ class NftMintingControllerTest {
             when(nftMintingService.retryMinting(1L, 1L)).thenReturn(response);
 
             // When & Then
-            mockMvc.perform(post("/api/nft/mint/1/retry")
+            mockMvc.perform(post("/nft/mint/1/retry")
                             .with(csrf()))
                     .andDo(print())
                     .andExpect(status().isOk())
@@ -326,7 +326,7 @@ class NftMintingControllerTest {
             when(nftMintingService.getMintingStats(1L)).thenReturn(stats);
 
             // When & Then
-            mockMvc.perform(get("/api/nft/mint/stats"))
+            mockMvc.perform(get("/nft/mint/stats"))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.totalCollected").value(10))
@@ -351,7 +351,7 @@ class NftMintingControllerTest {
             when(nftMintingService.getMintingStats(1L)).thenReturn(stats);
 
             // When & Then
-            mockMvc.perform(get("/api/nft/mint/stats"))
+            mockMvc.perform(get("/nft/mint/stats"))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.totalCollected").value(0));

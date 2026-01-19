@@ -124,7 +124,7 @@ class PostControllerTest {
                     .thenReturn(postResponse);
 
             // When & Then
-            mockMvc.perform(post("/api/posts")
+            mockMvc.perform(post("/posts")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -152,7 +152,7 @@ class PostControllerTest {
                     .thenReturn(page);
 
             // When & Then
-            mockMvc.perform(get("/api/posts"))
+            mockMvc.perform(get("/posts"))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.content[0].id").value(1))
@@ -171,7 +171,7 @@ class PostControllerTest {
                     .thenReturn(page);
 
             // When & Then
-            mockMvc.perform(get("/api/posts")
+            mockMvc.perform(get("/posts")
                             .param("category", "TRAVEL_TIP"))
                     .andDo(print())
                     .andExpect(status().isOk())
@@ -189,7 +189,7 @@ class PostControllerTest {
                     .thenReturn(page);
 
             // When & Then
-            mockMvc.perform(get("/api/posts")
+            mockMvc.perform(get("/posts")
                             .param("keyword", "테스트"))
                     .andDo(print())
                     .andExpect(status().isOk())
@@ -208,7 +208,7 @@ class PostControllerTest {
             when(postService.getPostDetail(1L)).thenReturn(detailResponse);
 
             // When & Then
-            mockMvc.perform(get("/api/posts/1"))
+            mockMvc.perform(get("/posts/1"))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.id").value(1))
@@ -224,7 +224,7 @@ class PostControllerTest {
                     .thenThrow(new RuntimeException("게시글을 찾을 수 없습니다."));
 
             // When & Then
-            mockMvc.perform(get("/api/posts/999"))
+            mockMvc.perform(get("/posts/999"))
                     .andDo(print())
                     .andExpect(status().isInternalServerError());
         }
@@ -251,7 +251,7 @@ class PostControllerTest {
                     .thenReturn(postResponse);
 
             // When & Then
-            mockMvc.perform(put("/api/posts/1")
+            mockMvc.perform(put("/posts/1")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -273,7 +273,7 @@ class PostControllerTest {
             doNothing().when(postService).deletePost(anyLong(), eq(1L));
 
             // When & Then
-            mockMvc.perform(delete("/api/posts/1")
+            mockMvc.perform(delete("/posts/1")
                             .with(csrf()))
                     .andDo(print())
                     .andExpect(status().isNoContent());
@@ -293,7 +293,7 @@ class PostControllerTest {
             doNothing().when(postService).likePost(1L, 1L);
 
             // When & Then
-            mockMvc.perform(post("/api/posts/1/like")
+            mockMvc.perform(post("/posts/1/like")
                             .with(csrf()))
                     .andDo(print())
                     .andExpect(status().isOk());
@@ -308,7 +308,7 @@ class PostControllerTest {
             doNothing().when(postService).unlikePost(1L, 1L);
 
             // When & Then
-            mockMvc.perform(delete("/api/posts/1/like")
+            mockMvc.perform(delete("/posts/1/like")
                             .with(csrf()))
                     .andDo(print())
                     .andExpect(status().isOk());
@@ -331,7 +331,7 @@ class PostControllerTest {
             when(postService.getTrendingPosts()).thenReturn(List.of(postResponse));
 
             // When & Then
-            mockMvc.perform(get("/api/posts/trending"))
+            mockMvc.perform(get("/posts/trending"))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$[0].id").value(1))
@@ -351,7 +351,7 @@ class PostControllerTest {
                     .thenReturn(List.of(postResponse));
 
             // When & Then
-            mockMvc.perform(get("/api/posts/nearby")
+            mockMvc.perform(get("/posts/nearby")
                             .param("latitude", "37.5665")
                             .param("longitude", "126.9780")
                             .param("radiusKm", "5.0"))
@@ -365,7 +365,7 @@ class PostControllerTest {
         @DisplayName("GET /api/posts/nearby - 잘못된 위도")
         void getNearbyPosts_InvalidLatitude() throws Exception {
             // When & Then
-            mockMvc.perform(get("/api/posts/nearby")
+            mockMvc.perform(get("/posts/nearby")
                             .param("latitude", "100") // 유효하지 않은 위도
                             .param("longitude", "126.9780"))
                     .andDo(print())
@@ -376,7 +376,7 @@ class PostControllerTest {
         @DisplayName("GET /api/posts/nearby - 잘못된 경도")
         void getNearbyPosts_InvalidLongitude() throws Exception {
             // When & Then
-            mockMvc.perform(get("/api/posts/nearby")
+            mockMvc.perform(get("/posts/nearby")
                             .param("latitude", "37.5665")
                             .param("longitude", "200")) // 유효하지 않은 경도
                     .andDo(print())
@@ -387,7 +387,7 @@ class PostControllerTest {
         @DisplayName("GET /api/posts/nearby - 잘못된 반경")
         void getNearbyPosts_InvalidRadius() throws Exception {
             // When & Then
-            mockMvc.perform(get("/api/posts/nearby")
+            mockMvc.perform(get("/posts/nearby")
                             .param("latitude", "37.5665")
                             .param("longitude", "126.9780")
                             .param("radiusKm", "150")) // 100km 초과
@@ -413,7 +413,7 @@ class PostControllerTest {
                     .thenReturn(List.of("http://image1.jpg", "http://image2.jpg"));
 
             // When & Then
-            mockMvc.perform(multipart("/api/posts/1/images")
+            mockMvc.perform(multipart("/posts/1/images")
                             .file(file1)
                             .file(file2)
                             .with(csrf()))

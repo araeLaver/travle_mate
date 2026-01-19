@@ -77,7 +77,7 @@ class NotificationControllerTest {
                 .thenReturn(new PageImpl<>(List.of(dto)));
 
         // When & Then
-        mockMvc.perform(get("/api/notifications")
+        mockMvc.perform(get("/notifications")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -94,7 +94,7 @@ class NotificationControllerTest {
         when(notificationService.getUnreadCount(1L)).thenReturn(5L);
 
         // When & Then
-        mockMvc.perform(get("/api/notifications/unread/count")
+        mockMvc.perform(get("/notifications/unread/count")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.count").value(5));
@@ -109,7 +109,7 @@ class NotificationControllerTest {
         doNothing().when(notificationService).markAsRead(notificationIds, 1L);
 
         // When & Then
-        mockMvc.perform(post("/api/notifications/read")
+        mockMvc.perform(post("/notifications/read")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("[1, 2, 3]"))
@@ -124,7 +124,7 @@ class NotificationControllerTest {
         doNothing().when(notificationService).markAllAsRead(1L);
 
         // When & Then
-        mockMvc.perform(post("/api/notifications/read/all")
+        mockMvc.perform(post("/notifications/read/all")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
@@ -138,7 +138,7 @@ class NotificationControllerTest {
         doNothing().when(notificationService).deleteNotification(1L, 1L);
 
         // When & Then
-        mockMvc.perform(delete("/api/notifications/1")
+        mockMvc.perform(delete("/notifications/1")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());

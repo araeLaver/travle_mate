@@ -115,7 +115,7 @@ class FollowControllerTest {
             when(followService.follow(1L, 2L)).thenReturn(response);
 
             // When & Then
-            mockMvc.perform(post("/api/users/2/follow")
+            mockMvc.perform(post("/users/2/follow")
                             .with(csrf()))
                     .andDo(print())
                     .andExpect(status().isOk())
@@ -147,7 +147,7 @@ class FollowControllerTest {
             when(followService.unfollow(1L, 2L)).thenReturn(response);
 
             // When & Then
-            mockMvc.perform(delete("/api/users/2/follow")
+            mockMvc.perform(delete("/users/2/follow")
                             .with(csrf()))
                     .andDo(print())
                     .andExpect(status().isOk())
@@ -177,7 +177,7 @@ class FollowControllerTest {
             when(followService.getFollowers(eq(1L), eq(1L), any())).thenReturn(page);
 
             // When & Then
-            mockMvc.perform(get("/api/users/1/followers"))
+            mockMvc.perform(get("/users/1/followers"))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.content[0].id").value(2))
@@ -203,7 +203,7 @@ class FollowControllerTest {
             when(followService.getFollowing(eq(1L), eq(1L), any())).thenReturn(page);
 
             // When & Then
-            mockMvc.perform(get("/api/users/1/following"))
+            mockMvc.perform(get("/users/1/following"))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.content[0].id").value(3))
@@ -220,7 +220,7 @@ class FollowControllerTest {
             when(followService.getFollowers(eq(1L), eq(1L), any())).thenReturn(page);
 
             // When & Then
-            mockMvc.perform(get("/api/users/me/followers"))
+            mockMvc.perform(get("/users/me/followers"))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.content").isArray())
@@ -237,7 +237,7 @@ class FollowControllerTest {
             when(followService.getFollowing(eq(1L), eq(1L), any())).thenReturn(page);
 
             // When & Then
-            mockMvc.perform(get("/api/users/me/following"))
+            mockMvc.perform(get("/users/me/following"))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.content").isArray());
@@ -261,7 +261,7 @@ class FollowControllerTest {
             when(followService.getFollowStats(1L)).thenReturn(stats);
 
             // When & Then
-            mockMvc.perform(get("/api/users/1/follow-stats"))
+            mockMvc.perform(get("/users/1/follow-stats"))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.userId").value(1))
@@ -282,7 +282,7 @@ class FollowControllerTest {
             when(followService.getFollowStats(1L)).thenReturn(stats);
 
             // When & Then
-            mockMvc.perform(get("/api/users/me/follow-stats"))
+            mockMvc.perform(get("/users/me/follow-stats"))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.userId").value(1));
@@ -301,7 +301,7 @@ class FollowControllerTest {
             when(followService.getFollowStatus(1L, 2L)).thenReturn(status);
 
             // When & Then
-            mockMvc.perform(get("/api/users/2/follow-status"))
+            mockMvc.perform(get("/users/2/follow-status"))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.following").value(true))
@@ -330,7 +330,7 @@ class FollowControllerTest {
             when(followService.getMutualFollowers(eq(1L), any())).thenReturn(page);
 
             // When & Then
-            mockMvc.perform(get("/api/users/1/mutual-followers"))
+            mockMvc.perform(get("/users/1/mutual-followers"))
                     .andDo(print())
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.content[0].nickname").value("맞팔유저"))
@@ -359,7 +359,7 @@ class FollowControllerTest {
             Map<String, List<Long>> request = Map.of("userIds", List.of(2L, 3L));
 
             // When & Then
-            mockMvc.perform(post("/api/users/follow-status/batch")
+            mockMvc.perform(post("/users/follow-status/batch")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
@@ -378,7 +378,7 @@ class FollowControllerTest {
             Map<String, List<Long>> request = Map.of("userIds", List.of());
 
             // When & Then
-            mockMvc.perform(post("/api/users/follow-status/batch")
+            mockMvc.perform(post("/users/follow-status/batch")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
