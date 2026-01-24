@@ -18,6 +18,8 @@ import java.time.LocalDateTime;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.springframework.scheduling.annotation.Scheduled;
+
 @Component
 @Slf4j
 public class RateLimitingFilter extends OncePerRequestFilter {
@@ -31,7 +33,14 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     @Value("${app.security.rate-limit.login-requests-per-minute:5}")
     private int loginRequestsPerMinute;
 
+    @Value("${app.security.rate-limit.api-requests-per-minute:30}")
+    private int apiRequestsPerMinute;
+
+    @Value("${app.security.rate-limit.upload-requests-per-minute:10}")
+    private int uploadRequestsPerMinute;
+
     private final ConcurrentHashMap<String, RateLimitInfo> rateLimitMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, AtomicInteger> loginFailureMap = new ConcurrentHashMap<>();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private static class RateLimitInfo {
@@ -113,19 +122,60 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     }
 
     private int getRequestLimit(String requestPath) {
-        // 로그인/회원가입 엔드포인트는 더 엄격한 제한
-        if (requestPath.contains("/login") || requestPath.contains("/register")) {
+        // 인증 엔드포인트는 가장 엄격한 제한
+        if (requestPath.contains("/login") || requestPath.contains("/register") ||
+            requestPath.contains("/password") || requestPath.contains("/2fa")) {
             return loginRequestsPerMinute;
+        }
+
+        // 파일 업로드 엔드포인트
+        if (requestPath.contains("/upload") || requestPath.contains("/file")) {
+            return uploadRequestsPerMinute;
+        }
+
+        // API 엔드포인트
+        if (requestPath.startsWith("/api/")) {
+            return apiRequestsPerMinute;
         }
 
         return defaultRequestsPerMinute;
     }
 
     private String getRateLimitCategory(String requestPath) {
-        if (requestPath.contains("/login") || requestPath.contains("/register")) {
+        if (requestPath.contains("/login") || requestPath.contains("/register") ||
+            requestPath.contains("/password") || requestPath.contains("/2fa")) {
             return "auth";
         }
+        if (requestPath.contains("/upload") || requestPath.contains("/file")) {
+            return "upload";
+        }
+        if (requestPath.startsWith("/api/")) {
+            return "api";
+        }
         return "general";
+    }
+
+    /**
+     * 로그인 실패 기록 (UserController에서 호출)
+     */
+    public void recordLoginFailure(String clientIp) {
+        loginFailureMap.computeIfAbsent(clientIp, k -> new AtomicInteger(0)).incrementAndGet();
+        log.warn("로그인 실패 기록: IP={}, 실패 횟수={}", clientIp, loginFailureMap.get(clientIp).get());
+    }
+
+    /**
+     * 로그인 성공 시 실패 기록 초기화
+     */
+    public void clearLoginFailure(String clientIp) {
+        loginFailureMap.remove(clientIp);
+    }
+
+    /**
+     * IP 차단 여부 확인 (5회 이상 실패 시 15분 차단)
+     */
+    public boolean isBlocked(String clientIp) {
+        AtomicInteger failures = loginFailureMap.get(clientIp);
+        return failures != null && failures.get() >= 5;
     }
 
     private void handleRateLimitExceeded(HttpServletResponse response, RateLimitInfo rateLimitInfo,
@@ -166,12 +216,38 @@ public class RateLimitingFilter extends OncePerRequestFilter {
                "OPTIONS".equals(request.getMethod());
     }
 
-    // 주기적으로 오래된 rate limit 정보 정리 (메모리 누수 방지)
+    /**
+     * 주기적으로 오래된 rate limit 정보 정리 (메모리 누수 방지)
+     * 2분마다 실행
+     */
+    @Scheduled(fixedRate = 120000)
     public void cleanupExpiredEntries() {
         long currentTime = System.currentTimeMillis();
-        rateLimitMap.entrySet().removeIf(entry -> {
-            RateLimitInfo info = entry.getValue();
-            return currentTime - info.windowStart > 300000; // 5분 후 정리
-        });
+        int rateLimitRemoved = 0;
+        int loginFailureRemoved = 0;
+
+        // Rate limit 정보 정리 (5분 후)
+        var rateLimitIterator = rateLimitMap.entrySet().iterator();
+        while (rateLimitIterator.hasNext()) {
+            var entry = rateLimitIterator.next();
+            if (currentTime - entry.getValue().windowStart > 300000) {
+                rateLimitIterator.remove();
+                rateLimitRemoved++;
+            }
+        }
+
+        // 로그인 실패 기록 정리 (15분 후)
+        var loginFailureIterator = loginFailureMap.entrySet().iterator();
+        while (loginFailureIterator.hasNext()) {
+            loginFailureIterator.next();
+            // 모든 실패 기록 15분 후 초기화
+            loginFailureIterator.remove();
+            loginFailureRemoved++;
+        }
+
+        if (rateLimitRemoved > 0 || loginFailureRemoved > 0) {
+            log.debug("Rate limit 정리: rateLimitMap={}개 제거, loginFailureMap={}개 제거",
+                    rateLimitRemoved, loginFailureRemoved);
+        }
     }
 }

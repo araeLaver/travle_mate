@@ -3,11 +3,11 @@ package com.travelmate.service;
 import com.travelmate.dto.AIRecommendationDto;
 import com.travelmate.dto.AIRecommendationDto.*;
 import com.travelmate.entity.User;
-import com.travelmate.entity.nft.CollectibleLocation;
 import com.travelmate.entity.nft.UserNftCollection;
 import com.travelmate.repository.UserRepository;
-import com.travelmate.repository.nft.CollectibleLocationRepository;
 import com.travelmate.repository.nft.UserNftCollectionRepository;
+import com.travelmate.service.ai.ItineraryService;
+import com.travelmate.service.ai.PlaceRecommendationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,14 +17,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * AI 기반 추천 서비스
- * OpenAI API 또는 내부 알고리즘을 사용한 지능형 추천
+ * AI 기반 추천 서비스 (Facade)
+ * 일정 생성, 장소 추천은 각각 ItineraryService, PlaceRecommendationService에 위임
  */
 @Service
 @RequiredArgsConstructor
@@ -32,9 +30,10 @@ import java.util.stream.Collectors;
 public class AIRecommendationService {
 
     private final UserRepository userRepository;
-    private final CollectibleLocationRepository locationRepository;
     private final UserNftCollectionRepository collectionRepository;
     private final RestTemplate restTemplate;
+    private final ItineraryService itineraryService;
+    private final PlaceRecommendationService placeRecommendationService;
 
     @Value("${ai.openai.api-key:}")
     private String openaiApiKey;
@@ -44,73 +43,21 @@ public class AIRecommendationService {
 
     private static final String OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 
-    // 장소 카테고리별 추천 점수 가중치
-    private static final Map<String, Double> CATEGORY_WEIGHTS = Map.of(
-        "LANDMARK", 1.2,
-        "MUSEUM", 1.1,
-        "RESTAURANT", 1.0,
-        "NATURE", 1.15,
-        "SHOPPING", 0.9,
-        "ENTERTAINMENT", 1.0
-    );
-
     /**
-     * AI 기반 여행 일정 생성
+     * AI 기반 여행 일정 생성 (ItineraryService에 위임)
      */
     @Transactional(readOnly = true)
     public ItineraryResponse generateItinerary(Long userId, ItineraryRequest request) {
-        log.info("Generating AI itinerary for user {} to {}", userId, request.getDestination());
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-
-        // 여행 일수 계산
-        long days = ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate()) + 1;
-
-        // OpenAI API 사용 가능 시 AI 생성
-        if (openaiEnabled && openaiApiKey != null && !openaiApiKey.isEmpty()) {
-            try {
-                return generateItineraryWithAI(user, request, (int) days);
-            } catch (Exception e) {
-                log.warn("AI itinerary generation failed, falling back to rule-based: {}", e.getMessage());
-            }
-        }
-
-        // 규칙 기반 일정 생성
-        return generateRuleBasedItinerary(user, request, (int) days);
+        return itineraryService.generateItinerary(userId, request);
     }
 
     /**
-     * AI 기반 장소 추천
+     * AI 기반 장소 추천 (PlaceRecommendationService에 위임)
      */
     @Transactional(readOnly = true)
     @Cacheable(value = "aiPlaceRecommendations", key = "#userId + '_' + #request.latitude + '_' + #request.longitude")
     public List<PlaceRecommendation> getAIPlaceRecommendations(Long userId, PlaceRecommendationRequest request) {
-        log.info("Getting AI place recommendations for user {} at ({}, {})",
-                userId, request.getLatitude(), request.getLongitude());
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-
-        // 사용자가 이미 방문한 장소 조회
-        List<Long> visitedLocationIds = collectionRepository.findCollectedLocationIdsByUserId(userId);
-
-        // 근처 장소 조회
-        Double radiusKm = request.getRadiusKm() != null ? request.getRadiusKm() : 5.0;
-        List<CollectibleLocation> nearbyLocations = locationRepository.findNearbyActiveLocations(
-                request.getLatitude(), request.getLongitude(), radiusKm);
-
-        // 방문하지 않은 장소만 필터링
-        List<CollectibleLocation> unvisitedLocations = nearbyLocations.stream()
-                .filter(loc -> !visitedLocationIds.contains(loc.getId()))
-                .collect(Collectors.toList());
-
-        // AI 점수 계산 및 추천
-        return unvisitedLocations.stream()
-                .map(location -> calculatePlaceRecommendation(user, location, request))
-                .sorted((a, b) -> Double.compare(b.getAiScore(), a.getAiScore()))
-                .limit(10)
-                .collect(Collectors.toList());
+        return placeRecommendationService.getAIPlaceRecommendations(userId, request);
     }
 
     /**
@@ -123,24 +70,17 @@ public class AIRecommendationService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
-        // 사용자 분석
         UserAnalysis analysis = analyzeUser(userId);
 
-        // 장소 추천
         PlaceRecommendationRequest placeRequest = PlaceRecommendationRequest.builder()
                 .latitude(request.getLatitude())
                 .longitude(request.getLongitude())
                 .radiusKm(10.0)
                 .build();
-        List<PlaceRecommendation> places = getAIPlaceRecommendations(userId, placeRequest);
+        List<PlaceRecommendation> places = placeRecommendationService.getAIPlaceRecommendations(userId, placeRequest);
 
-        // 활동 제안
         List<ActivitySuggestion> activities = generateActivitySuggestions(user, request, analysis);
-
-        // AI 인사이트 생성
         String aiInsight = generatePersonalizedInsight(user, analysis, request);
-
-        // 팁 생성
         List<String> tips = generateContextualTips(user, request);
 
         return PersonalizedResponse.builder()
@@ -161,41 +101,34 @@ public class AIRecommendationService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
-        // 사용자의 NFT 수집 이력 분석
         List<UserNftCollection> collections = collectionRepository.findByUserId(userId);
 
-        // 카테고리별 수집 분석
         Map<String, Long> categoryCount = collections.stream()
                 .filter(c -> c.getLocation() != null && c.getLocation().getCategory() != null)
                 .collect(Collectors.groupingBy(
                         c -> c.getLocation().getCategory().name(),
                         Collectors.counting()));
 
-        // 지역별 수집 분석
         Map<String, Long> regionCount = collections.stream()
                 .filter(c -> c.getLocation() != null && c.getLocation().getRegion() != null)
                 .collect(Collectors.groupingBy(
                         c -> c.getLocation().getRegion(),
                         Collectors.counting()));
 
-        // 상위 관심사
         List<String> topInterests = categoryCount.entrySet().stream()
                 .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
                 .limit(3)
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
 
-        // 선호 지역
         List<String> preferredDestinations = regionCount.entrySet().stream()
                 .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
                 .limit(3)
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
 
-        // 여행 페르소나 결정
         String travelPersona = determineTravelPersona(user, categoryCount);
 
-        // 점수 계산
         double totalCollections = collections.size();
         double adventureScore = calculateCategoryScore(categoryCount, "NATURE", "ADVENTURE") / Math.max(1, totalCollections);
         double cultureScore = calculateCategoryScore(categoryCount, "MUSEUM", "LANDMARK", "HISTORICAL") / Math.max(1, totalCollections);
@@ -224,7 +157,6 @@ public class AIRecommendationService {
 
         List<TravelTip> tips = new ArrayList<>();
 
-        // 목적지별 기본 팁
         tips.add(TravelTip.builder()
                 .category("교통")
                 .title("현지 교통 이용")
@@ -241,40 +173,32 @@ public class AIRecommendationService {
                 .relatedPlaces(Collections.emptyList())
                 .build());
 
-        // 여행 스타일별 팁
         if (request.getTravelStyle() != null) {
             switch (request.getTravelStyle().toUpperCase()) {
-                case "ADVENTURE":
-                    tips.add(TravelTip.builder()
-                            .category("준비물")
-                            .title("모험 여행 장비")
-                            .content("편한 운동화, 방수 재킷, 선크림을 준비하세요.")
-                            .importance("MEDIUM")
-                            .relatedPlaces(Arrays.asList("등산로", "해변"))
-                            .build());
-                    break;
-                case "CULTURE":
-                    tips.add(TravelTip.builder()
-                            .category("문화")
-                            .title("현지 예절")
-                            .content("현지 문화와 에티켓을 미리 학습하면 좋습니다.")
-                            .importance("MEDIUM")
-                            .relatedPlaces(Arrays.asList("사원", "박물관"))
-                            .build());
-                    break;
-                case "FOOD":
-                    tips.add(TravelTip.builder()
-                            .category("음식")
-                            .title("로컬 맛집")
-                            .content("관광지보다 현지인이 자주 가는 식당을 찾아보세요.")
-                            .importance("MEDIUM")
-                            .relatedPlaces(Arrays.asList("시장", "골목"))
-                            .build());
-                    break;
+                case "ADVENTURE" -> tips.add(TravelTip.builder()
+                        .category("준비물")
+                        .title("모험 여행 장비")
+                        .content("편한 운동화, 방수 재킷, 선크림을 준비하세요.")
+                        .importance("MEDIUM")
+                        .relatedPlaces(Arrays.asList("등산로", "해변"))
+                        .build());
+                case "CULTURE" -> tips.add(TravelTip.builder()
+                        .category("문화")
+                        .title("현지 예절")
+                        .content("현지 문화와 에티켓을 미리 학습하면 좋습니다.")
+                        .importance("MEDIUM")
+                        .relatedPlaces(Arrays.asList("사원", "박물관"))
+                        .build());
+                case "FOOD" -> tips.add(TravelTip.builder()
+                        .category("음식")
+                        .title("로컬 맛집")
+                        .content("관광지보다 현지인이 자주 가는 식당을 찾아보세요.")
+                        .importance("MEDIUM")
+                        .relatedPlaces(Arrays.asList("시장", "골목"))
+                        .build());
             }
         }
 
-        // 계절별 팁
         if (request.getTravelDate() != null) {
             int month = request.getTravelDate().getMonthValue();
             if (month >= 6 && month <= 8) {
@@ -310,7 +234,6 @@ public class AIRecommendationService {
         String conversationId = request.getConversationId() != null ?
                 request.getConversationId() : UUID.randomUUID().toString();
 
-        // OpenAI API 사용 가능 시 AI 응답 생성
         if (openaiEnabled && openaiApiKey != null && !openaiApiKey.isEmpty()) {
             try {
                 String aiResponse = generateChatResponseWithAI(userId, request);
@@ -327,7 +250,6 @@ public class AIRecommendationService {
             }
         }
 
-        // 규칙 기반 응답 (폴백)
         String response = generateRuleBasedChatResponse(request.getMessage());
         suggestedActions.addAll(generateDefaultSuggestions(request.getMessage()));
 
@@ -353,9 +275,7 @@ public class AIRecommendationService {
         messages.add(Map.of(
             "role", "system",
             "content", "You are Fryndo AI, a friendly and helpful Korean travel assistant. " +
-                      "Always respond in Korean. Be concise but informative. " +
-                      "Help users with travel planning, destination recommendations, local tips, and itinerary suggestions. " +
-                      "If you don't have specific information, suggest general travel tips or ask clarifying questions."
+                      "Always respond in Korean. Be concise but informative."
         ));
 
         if (request.getContext() != null && !request.getContext().isEmpty()) {
@@ -446,459 +366,9 @@ public class AIRecommendationService {
         return suggestions;
     }
 
-    // ===== Private Helper Methods =====
-
-    private ItineraryResponse generateItineraryWithAI(User user, ItineraryRequest request, int days) {
-        try {
-            // OpenAI API 요청 구성
-            String prompt = buildItineraryPrompt(user, request, days);
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(openaiApiKey);
-
-            Map<String, Object> requestBody = new LinkedHashMap<>();
-            requestBody.put("model", "gpt-4o-mini");
-            requestBody.put("max_tokens", 4000);
-            requestBody.put("temperature", 0.7);
-
-            List<Map<String, String>> messages = new ArrayList<>();
-            messages.add(Map.of(
-                "role", "system",
-                "content", "You are an expert travel planner. Create detailed travel itineraries in JSON format. " +
-                          "Always respond with valid JSON that can be parsed. Include realistic activities, " +
-                          "estimated costs in KRW, and practical tips."
-            ));
-            messages.add(Map.of("role", "user", "content", prompt));
-            requestBody.put("messages", messages);
-
-            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
-
-            @SuppressWarnings("unchecked")
-            Map<String, Object> response = restTemplate.postForObject(OPENAI_API_URL, entity, Map.class);
-
-            if (response != null && response.containsKey("choices")) {
-                @SuppressWarnings("unchecked")
-                List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
-                if (!choices.isEmpty()) {
-                    @SuppressWarnings("unchecked")
-                    Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
-                    String content = (String) message.get("content");
-                    return parseAIItineraryResponse(content, request, days);
-                }
-            }
-
-            // API 응답 파싱 실패 시 규칙 기반으로 폴백
-            log.warn("Failed to parse OpenAI response, falling back to rule-based");
-            return generateRuleBasedItinerary(user, request, days);
-
-        } catch (Exception e) {
-            log.error("OpenAI API call failed: {}", e.getMessage());
-            throw e;
-        }
-    }
-
-    private String buildItineraryPrompt(User user, ItineraryRequest request, int days) {
-        StringBuilder prompt = new StringBuilder();
-        prompt.append(String.format("Create a detailed %d-day travel itinerary for %s.\n", days, request.getDestination()));
-        prompt.append(String.format("Travel dates: %s to %s\n", request.getStartDate(), request.getEndDate()));
-
-        if (request.getTravelStyle() != null) {
-            prompt.append(String.format("Travel style: %s\n", request.getTravelStyle()));
-        }
-        if (request.getBudgetRange() != null) {
-            prompt.append(String.format("Budget level: %s\n", request.getBudgetRange()));
-        }
-        if (request.getInterests() != null && !request.getInterests().isEmpty()) {
-            prompt.append(String.format("Interests: %s\n", String.join(", ", request.getInterests())));
-        }
-        if (request.getGroupSize() != null) {
-            prompt.append(String.format("Group size: %d people\n", request.getGroupSize()));
-        }
-
-        prompt.append("\nRespond in JSON format with this structure:\n");
-        prompt.append("{\n");
-        prompt.append("  \"summary\": \"Brief trip summary in Korean\",\n");
-        prompt.append("  \"dayPlans\": [\n");
-        prompt.append("    {\n");
-        prompt.append("      \"dayNumber\": 1,\n");
-        prompt.append("      \"theme\": \"Day theme in Korean\",\n");
-        prompt.append("      \"activities\": [\n");
-        prompt.append("        {\n");
-        prompt.append("          \"name\": \"Activity name in Korean\",\n");
-        prompt.append("          \"description\": \"Description in Korean\",\n");
-        prompt.append("          \"time\": \"09:00\",\n");
-        prompt.append("          \"durationMinutes\": 120,\n");
-        prompt.append("          \"category\": \"FOOD|CULTURE|NATURE|SIGHTSEEING|SHOPPING\",\n");
-        prompt.append("          \"estimatedCost\": 30000\n");
-        prompt.append("        }\n");
-        prompt.append("      ],\n");
-        prompt.append("      \"notes\": \"Day notes in Korean\"\n");
-        prompt.append("    }\n");
-        prompt.append("  ],\n");
-        prompt.append("  \"tips\": [\"Tip 1 in Korean\", \"Tip 2 in Korean\"]\n");
-        prompt.append("}\n");
-
-        return prompt.toString();
-    }
-
-    @SuppressWarnings("unchecked")
-    private ItineraryResponse parseAIItineraryResponse(String content, ItineraryRequest request, int days) {
-        try {
-            // JSON 부분만 추출
-            int jsonStart = content.indexOf("{");
-            int jsonEnd = content.lastIndexOf("}") + 1;
-            if (jsonStart < 0 || jsonEnd <= jsonStart) {
-                throw new RuntimeException("No valid JSON found in response");
-            }
-            String jsonContent = content.substring(jsonStart, jsonEnd);
-
-            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-            Map<String, Object> parsed = mapper.readValue(jsonContent, Map.class);
-
-            String summary = (String) parsed.getOrDefault("summary",
-                String.format("%s %d일 여행 일정입니다.", request.getDestination(), days));
-
-            List<DayPlan> dayPlans = new ArrayList<>();
-            List<Map<String, Object>> dayPlansData = (List<Map<String, Object>>) parsed.get("dayPlans");
-
-            if (dayPlansData != null) {
-                for (int i = 0; i < dayPlansData.size(); i++) {
-                    Map<String, Object> dayData = dayPlansData.get(i);
-                    LocalDate date = request.getStartDate().plusDays(i);
-
-                    List<Activity> activities = new ArrayList<>();
-                    List<Map<String, Object>> activitiesData = (List<Map<String, Object>>) dayData.get("activities");
-
-                    if (activitiesData != null) {
-                        for (Map<String, Object> actData : activitiesData) {
-                            activities.add(Activity.builder()
-                                .name((String) actData.getOrDefault("name", "활동"))
-                                .description((String) actData.getOrDefault("description", ""))
-                                .time((String) actData.getOrDefault("time", "09:00"))
-                                .durationMinutes(actData.get("durationMinutes") != null ?
-                                    ((Number) actData.get("durationMinutes")).intValue() : 60)
-                                .category((String) actData.getOrDefault("category", "SIGHTSEEING"))
-                                .estimatedCost(actData.get("estimatedCost") != null ?
-                                    ((Number) actData.get("estimatedCost")).doubleValue() : 20000.0)
-                                .build());
-                        }
-                    }
-
-                    dayPlans.add(DayPlan.builder()
-                        .dayNumber(i + 1)
-                        .date(date)
-                        .theme((String) dayData.getOrDefault("theme", "자유 일정"))
-                        .activities(activities)
-                        .notes((String) dayData.get("notes"))
-                        .build());
-                }
-            }
-
-            List<String> tips = (List<String>) parsed.getOrDefault("tips",
-                Arrays.asList("즐거운 여행 되세요!", "현지 문화를 존중해주세요."));
-
-            return ItineraryResponse.builder()
-                .destination(request.getDestination())
-                .startDate(request.getStartDate())
-                .endDate(request.getEndDate())
-                .dayPlans(dayPlans)
-                .tips(tips)
-                .budgetEstimate(estimateBudget(request, days))
-                .summary(summary)
-                .build();
-
-        } catch (Exception e) {
-            log.error("Failed to parse AI response: {}", e.getMessage());
-            throw new RuntimeException("Failed to parse AI response", e);
-        }
-    }
-
-    private ItineraryResponse generateRuleBasedItinerary(User user, ItineraryRequest request, int days) {
-        List<DayPlan> dayPlans = new ArrayList<>();
-
-        String[] themes = {"도착 및 탐험", "문화 체험", "자연 탐방", "미식 여행", "자유 시간", "쇼핑 및 휴식", "마무리"};
-
-        for (int i = 0; i < days; i++) {
-            LocalDate date = request.getStartDate().plusDays(i);
-            String theme = themes[i % themes.length];
-
-            List<Activity> activities = generateDayActivities(theme, request, i + 1);
-
-            dayPlans.add(DayPlan.builder()
-                    .dayNumber(i + 1)
-                    .date(date)
-                    .theme(theme)
-                    .activities(activities)
-                    .notes(generateDayNotes(theme))
-                    .build());
-        }
-
-        return ItineraryResponse.builder()
-                .destination(request.getDestination())
-                .startDate(request.getStartDate())
-                .endDate(request.getEndDate())
-                .dayPlans(dayPlans)
-                .tips(generateGeneralTips(request))
-                .budgetEstimate(estimateBudget(request, days))
-                .summary(String.format("%s에서의 %d일 여행 일정입니다. %s 스타일로 구성했습니다.",
-                        request.getDestination(), days, request.getTravelStyle()))
-                .build();
-    }
-
-    private List<Activity> generateDayActivities(String theme, ItineraryRequest request, int dayNumber) {
-        List<Activity> activities = new ArrayList<>();
-
-        // 아침 활동
-        activities.add(Activity.builder()
-                .name("아침 식사")
-                .description("현지 조식 또는 호텔 조식")
-                .time("08:00")
-                .durationMinutes(60)
-                .category("FOOD")
-                .estimatedCost(15000.0)
-                .build());
-
-        // 테마별 주요 활동
-        switch (theme) {
-            case "문화 체험":
-                activities.add(Activity.builder()
-                        .name("박물관 또는 유적지 방문")
-                        .description("현지 문화와 역사를 체험합니다")
-                        .time("10:00")
-                        .durationMinutes(180)
-                        .category("CULTURE")
-                        .estimatedCost(20000.0)
-                        .build());
-                break;
-            case "자연 탐방":
-                activities.add(Activity.builder()
-                        .name("자연 명소 탐방")
-                        .description("아름다운 자연 경관을 감상합니다")
-                        .time("10:00")
-                        .durationMinutes(240)
-                        .category("NATURE")
-                        .estimatedCost(10000.0)
-                        .build());
-                break;
-            case "미식 여행":
-                activities.add(Activity.builder()
-                        .name("현지 시장 탐방")
-                        .description("현지 음식과 문화를 체험합니다")
-                        .time("10:00")
-                        .durationMinutes(180)
-                        .category("FOOD")
-                        .estimatedCost(30000.0)
-                        .build());
-                break;
-            default:
-                activities.add(Activity.builder()
-                        .name("자유 관광")
-                        .description("개인 일정에 따라 자유롭게 관광합니다")
-                        .time("10:00")
-                        .durationMinutes(180)
-                        .category("SIGHTSEEING")
-                        .estimatedCost(20000.0)
-                        .build());
-        }
-
-        // 점심
-        activities.add(Activity.builder()
-                .name("점심 식사")
-                .description("현지 맛집에서 점심")
-                .time("13:00")
-                .durationMinutes(90)
-                .category("FOOD")
-                .estimatedCost(20000.0)
-                .build());
-
-        // 오후 활동
-        activities.add(Activity.builder()
-                .name("오후 관광")
-                .description("주변 명소 방문")
-                .time("15:00")
-                .durationMinutes(180)
-                .category("SIGHTSEEING")
-                .estimatedCost(15000.0)
-                .build());
-
-        // 저녁
-        activities.add(Activity.builder()
-                .name("저녁 식사")
-                .description("특별한 저녁 식사")
-                .time("19:00")
-                .durationMinutes(120)
-                .category("FOOD")
-                .estimatedCost(40000.0)
-                .build());
-
-        return activities;
-    }
-
-    private String generateDayNotes(String theme) {
-        return switch (theme) {
-            case "도착 및 탐험" -> "도착 후 충분한 휴식을 취하세요.";
-            case "문화 체험" -> "편한 신발을 신고 충분한 시간을 확보하세요.";
-            case "자연 탐방" -> "날씨를 확인하고 필요한 장비를 준비하세요.";
-            case "미식 여행" -> "현지인 추천 맛집을 미리 조사해두세요.";
-            default -> "여유롭게 즐기세요!";
-        };
-    }
-
-    private List<String> generateGeneralTips(ItineraryRequest request) {
-        List<String> tips = new ArrayList<>();
-        tips.add("현지 화폐를 미리 환전해두세요");
-        tips.add("여행자 보험에 가입하세요");
-        tips.add("중요한 연락처를 저장해두세요");
-        tips.add("현지 SIM 카드나 로밍 서비스를 준비하세요");
-        return tips;
-    }
-
-    private BudgetEstimate estimateBudget(ItineraryRequest request, int days) {
-        double accommodationPerDay = switch (request.getBudgetRange() != null ? request.getBudgetRange().toUpperCase() : "MEDIUM") {
-            case "LOW" -> 50000;
-            case "HIGH" -> 200000;
-            case "LUXURY" -> 400000;
-            default -> 100000;
-        };
-
-        double foodPerDay = switch (request.getBudgetRange() != null ? request.getBudgetRange().toUpperCase() : "MEDIUM") {
-            case "LOW" -> 30000;
-            case "HIGH" -> 100000;
-            case "LUXURY" -> 200000;
-            default -> 60000;
-        };
-
-        double transportationPerDay = 30000;
-        double activitiesPerDay = 50000;
-
-        Map<String, Double> breakdown = new LinkedHashMap<>();
-        breakdown.put("숙박", accommodationPerDay * days);
-        breakdown.put("식비", foodPerDay * days);
-        breakdown.put("교통", transportationPerDay * days);
-        breakdown.put("활동", activitiesPerDay * days);
-
-        return BudgetEstimate.builder()
-                .totalEstimate(breakdown.values().stream().mapToDouble(Double::doubleValue).sum())
-                .accommodationEstimate(accommodationPerDay * days)
-                .foodEstimate(foodPerDay * days)
-                .transportationEstimate(transportationPerDay * days)
-                .activitiesEstimate(activitiesPerDay * days)
-                .currency("KRW")
-                .breakdown(breakdown)
-                .build();
-    }
-
-    private PlaceRecommendation calculatePlaceRecommendation(User user, CollectibleLocation location, PlaceRecommendationRequest request) {
-        double baseScore = 50.0;
-
-        // 카테고리 가중치
-        String category = location.getCategory() != null ? location.getCategory().name() : "OTHER";
-        double categoryWeight = CATEGORY_WEIGHTS.getOrDefault(category, 1.0);
-        baseScore *= categoryWeight;
-
-        // 희귀도 보너스
-        if (location.getRarity() != null) {
-            baseScore += switch (location.getRarity()) {
-                case LEGENDARY -> 30;
-                case EPIC -> 20;
-                case RARE -> 10;
-                default -> 0;
-            };
-        }
-
-        // 평점 보너스
-        if (location.getAverageRating() != null && location.getAverageRating() > 0) {
-            baseScore += location.getAverageRating() * 5;
-        }
-
-        // 거리 패널티
-        double distance = calculateDistance(
-                request.getLatitude(), request.getLongitude(),
-                location.getLatitude(), location.getLongitude());
-        baseScore -= Math.min(20, distance * 2);
-
-        // 추천 이유 생성
-        List<String> reasons = generatePlaceReasons(location, user);
-
-        return PlaceRecommendation.builder()
-                .placeId(location.getId())
-                .name(location.getName())
-                .description(location.getDescription())
-                .category(category)
-                .latitude(location.getLatitude())
-                .longitude(location.getLongitude())
-                .distance(distance)
-                .rating(location.getAverageRating())
-                .reviewCount(location.getReviewCount())
-                .imageUrl(location.getImageUrl())
-                .aiScore(Math.min(100, Math.max(0, baseScore)))
-                .reasons(reasons)
-                .bestTimeToVisit(determineBestTime(location))
-                .estimatedDuration(estimateDuration(location))
-                .build();
-    }
-
-    private List<String> generatePlaceReasons(CollectibleLocation location, User user) {
-        List<String> reasons = new ArrayList<>();
-
-        if (location.getRarity() != null) {
-            switch (location.getRarity()) {
-                case LEGENDARY -> reasons.add("희귀한 전설적 장소입니다!");
-                case EPIC -> reasons.add("에픽 등급의 특별한 장소입니다");
-                case RARE -> reasons.add("레어한 장소입니다");
-            }
-        }
-
-        if (location.getAverageRating() != null && location.getAverageRating() >= 4.5) {
-            reasons.add("방문자들의 평점이 매우 높습니다");
-        }
-
-        if (user.getTravelStyle() != null) {
-            String style = user.getTravelStyle().name();
-            String category = location.getCategory() != null ? location.getCategory().name() : "";
-
-            if ((style.equals("CULTURE") && (category.contains("MUSEUM") || category.contains("LANDMARK"))) ||
-                (style.equals("NATURE") && category.contains("NATURE")) ||
-                (style.equals("FOOD") && category.contains("RESTAURANT"))) {
-                reasons.add("회원님의 여행 스타일과 잘 맞습니다");
-            }
-        }
-
-        if (reasons.isEmpty()) {
-            reasons.add("근처의 추천 장소입니다");
-        }
-
-        return reasons;
-    }
-
-    private String determineBestTime(CollectibleLocation location) {
-        String category = location.getCategory() != null ? location.getCategory().name() : "";
-        return switch (category) {
-            case "RESTAURANT" -> "점심 또는 저녁 시간";
-            case "MUSEUM" -> "오전 10시 이후";
-            case "NATURE" -> "이른 아침 또는 석양 무렵";
-            case "LANDMARK" -> "오전 또는 야경 시간";
-            default -> "언제든지";
-        };
-    }
-
-    private String estimateDuration(CollectibleLocation location) {
-        String category = location.getCategory() != null ? location.getCategory().name() : "";
-        return switch (category) {
-            case "RESTAURANT" -> "1-2시간";
-            case "MUSEUM" -> "2-3시간";
-            case "NATURE" -> "3-4시간";
-            case "LANDMARK" -> "1-2시간";
-            case "SHOPPING" -> "2-3시간";
-            default -> "1-2시간";
-        };
-    }
-
     private List<ActivitySuggestion> generateActivitySuggestions(User user, PersonalizedRequest request, UserAnalysis analysis) {
         List<ActivitySuggestion> suggestions = new ArrayList<>();
 
-        // 시간대별 제안
         int hours = request.getAvailableHours() != null ? request.getAvailableHours() : 4;
 
         if (hours >= 2) {
@@ -985,7 +455,6 @@ public class AIRecommendationService {
     }
 
     private double calculateConfidenceScore(UserAnalysis analysis) {
-        // 수집 데이터가 많을수록 신뢰도 증가
         double baseScore = 0.5;
         if (!analysis.getTopInterests().isEmpty()) baseScore += 0.15;
         if (!analysis.getPreferredDestinations().isEmpty()) baseScore += 0.15;
@@ -1022,7 +491,6 @@ public class AIRecommendationService {
     }
 
     private String predictNextDestination(Map<String, Long> regionCount, List<String> preferredDestinations) {
-        // 아직 방문하지 않은 인기 지역 추천
         List<String> popularRegions = Arrays.asList("서울", "부산", "제주도", "경주", "강릉");
 
         for (String region : popularRegions) {
@@ -1032,20 +500,5 @@ public class AIRecommendationService {
         }
 
         return preferredDestinations.isEmpty() ? "제주도" : preferredDestinations.get(0);
-    }
-
-    private double calculateDistance(Double lat1, Double lon1, Double lat2, Double lon2) {
-        if (lat1 == null || lon1 == null || lat2 == null || lon2 == null) {
-            return 999;
-        }
-
-        final int R = 6371; // 지구 반지름 (km)
-        double latDistance = Math.toRadians(lat2 - lat1);
-        double lonDistance = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
-                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
     }
 }

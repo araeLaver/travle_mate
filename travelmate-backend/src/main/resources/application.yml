@@ -378,8 +378,10 @@ app:
   security:
     rate-limit:
       enabled: true
-      requests-per-minute: 60
-      auth-requests-per-minute: 5
+      default-requests-per-minute: 60
+      login-requests-per-minute: 5
+      api-requests-per-minute: 30
+      upload-requests-per-minute: 10
     xss:
       enabled: true
     audit:

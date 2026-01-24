@@ -2,23 +2,24 @@ package com.travelmate.service.nft;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.travelmate.entity.nft.CollectibleLocation;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.*;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class IpfsService {
 
     private final ObjectMapper objectMapper;
+    private final RestTemplate restTemplate;
 
     @Value("${ipfs.gateway-url:https://ipfs.io/ipfs/}")
     private String ipfsGatewayUrl;
@@ -31,6 +32,14 @@ public class IpfsService {
 
     @Value("${ipfs.enabled:false}")
     private boolean ipfsEnabled;
+
+    public IpfsService(ObjectMapper objectMapper, RestTemplateBuilder restTemplateBuilder) {
+        this.objectMapper = objectMapper;
+        this.restTemplate = restTemplateBuilder
+                .connectTimeout(Duration.ofSeconds(10))
+                .readTimeout(Duration.ofSeconds(30))
+                .build();
+    }
 
     /**
      * NFT 메타데이터 생성 및 업로드
@@ -184,7 +193,6 @@ public class IpfsService {
 
         String jsonContent = objectMapper.writeValueAsString(metadata);
 
-        RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
@@ -223,7 +231,6 @@ public class IpfsService {
                 url = ipfsUri;
             }
 
-            RestTemplate restTemplate = new RestTemplate();
             ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
 
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
@@ -244,7 +251,6 @@ public class IpfsService {
         }
 
         try {
-            RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
