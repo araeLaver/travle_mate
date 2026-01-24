@@ -6,6 +6,8 @@ import com.travelmate.entity.TravelGroup;
 import com.travelmate.repository.UserRepository;
 import com.travelmate.repository.TravelGroupRepository;
 import com.travelmate.repository.UserReviewRepository;
+import com.travelmate.util.GeoUtils;
+import com.travelmate.util.TravelStyleMatcher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -126,54 +128,31 @@ public class AdvancedRecommendationService {
      */
     private UserScore calculateCompatibilityScore(User currentUser, User targetUser) {
         double score = 0.0;
-        
+
         // 1. 거리 점수 (40점 배점) - 가까울수록 높은 점수
-        double distance = calculateDistance(
+        double distance = GeoUtils.calculateDistance(
             currentUser.getCurrentLatitude(), currentUser.getCurrentLongitude(),
             targetUser.getCurrentLatitude(), targetUser.getCurrentLongitude()
         );
-        double distanceScore = Math.max(0, 40 - (distance * 4)); // 10km 이상이면 0점
+        double distanceScore = GeoUtils.calculateDistanceScore(distance, 10.0, 40.0);
         score += distanceScore;
-        
+
         // 2. 여행 스타일 호환성 (30점 배점)
-        double styleScore = calculateTravelStyleCompatibility(
+        double styleScore = TravelStyleMatcher.calculateCompatibilityScore(
             currentUser.getTravelStyle(), targetUser.getTravelStyle()
         );
         score += styleScore;
-        
+
         // 3. 평점 점수 (20점 배점)
-        double ratingScore = (targetUser.getRatingAverage() != null ? 
+        double ratingScore = (targetUser.getRatingAverage() != null ?
             targetUser.getRatingAverage() / 5.0 * 20 : 10); // 기본 10점
         score += ratingScore;
-        
+
         // 4. 활동성 점수 (10점 배점)
         double activityScore = calculateActivityScore(targetUser);
         score += activityScore;
-        
+
         return new UserScore(targetUser, Math.min(100.0, score));
-    }
-    
-    private double calculateTravelStyleCompatibility(User.TravelStyle style1, User.TravelStyle style2) {
-        if (style1 == null || style2 == null) return 15.0; // 중간 점수
-        
-        if (style1 == style2) return 30.0; // 완전 일치
-        
-        // 호환성 매트릭스
-        Map<User.TravelStyle, Set<User.TravelStyle>> compatibilityMap = Map.of(
-            User.TravelStyle.ADVENTURE, Set.of(User.TravelStyle.NATURE, User.TravelStyle.CULTURE),
-            User.TravelStyle.RELAXATION, Set.of(User.TravelStyle.CULTURE, User.TravelStyle.NATURE),
-            User.TravelStyle.CULTURE, Set.of(User.TravelStyle.RELAXATION, User.TravelStyle.ADVENTURE, User.TravelStyle.SHOPPING),
-            User.TravelStyle.FOOD, Set.of(User.TravelStyle.CULTURE, User.TravelStyle.SHOPPING, User.TravelStyle.RELAXATION),
-            User.TravelStyle.SHOPPING, Set.of(User.TravelStyle.CULTURE, User.TravelStyle.FOOD),
-            User.TravelStyle.NATURE, Set.of(User.TravelStyle.ADVENTURE, User.TravelStyle.RELAXATION)
-        );
-        
-        Set<User.TravelStyle> compatibleStyles = compatibilityMap.get(style1);
-        if (compatibleStyles != null && compatibleStyles.contains(style2)) {
-            return 20.0; // 호환
-        }
-        
-        return 10.0; // 약한 호환성
     }
     
     private double calculateActivityScore(User user) {
@@ -187,31 +166,8 @@ public class AdvancedRecommendationService {
         return 3.0; // 비활성
     }
     
-    private double calculateDistance(Double lat1, Double lon1, Double lat2, Double lon2) {
-        final int R = 6371; // 지구 반지름 (km)
-        
-        double latDistance = Math.toRadians(lat2 - lat1);
-        double lonDistance = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
-                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        
-        return R * c;
-    }
-    
     private boolean isActivityCompatible(String activity, User user) {
-        if (activity == null || user.getTravelStyle() == null) return false;
-        
-        return switch (activity.toLowerCase()) {
-            case "식사", "맛집" -> user.getTravelStyle() == User.TravelStyle.FOOD;
-            case "쇼핑", "시장" -> user.getTravelStyle() == User.TravelStyle.SHOPPING;
-            case "관광", "박물관" -> user.getTravelStyle() == User.TravelStyle.CULTURE;
-            case "하이킹", "등산" -> user.getTravelStyle() == User.TravelStyle.NATURE || 
-                                    user.getTravelStyle() == User.TravelStyle.ADVENTURE;
-            case "휴식", "카페" -> user.getTravelStyle() == User.TravelStyle.RELAXATION;
-            default -> true; // 기타 활동은 모두 호환
-        };
+        return TravelStyleMatcher.isActivityMatchingStyle(activity, user.getTravelStyle());
     }
     
     private List<User> findImmediateMatches(User currentUser) {

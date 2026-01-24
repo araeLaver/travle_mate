@@ -6,6 +6,7 @@ import com.travelmate.entity.nft.CollectibleLocation;
 import com.travelmate.repository.UserRepository;
 import com.travelmate.repository.nft.CollectibleLocationRepository;
 import com.travelmate.repository.nft.UserNftCollectionRepository;
+import com.travelmate.util.GeoUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
@@ -88,7 +89,7 @@ public class PlaceRecommendationService {
             baseScore += location.getAverageRating() * 5;
         }
 
-        double distance = calculateDistance(
+        double distance = GeoUtils.calculateDistance(
                 request.getLatitude(), request.getLongitude(),
                 location.getLatitude(), location.getLongitude());
         baseScore -= Math.min(20, distance * 2);
@@ -169,18 +170,4 @@ public class PlaceRecommendationService {
         };
     }
 
-    public double calculateDistance(Double lat1, Double lon1, Double lat2, Double lon2) {
-        if (lat1 == null || lon1 == null || lat2 == null || lon2 == null) {
-            return 999;
-        }
-
-        final int R = 6371;
-        double latDistance = Math.toRadians(lat2 - lat1);
-        double lonDistance = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
-                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
-    }
 }
