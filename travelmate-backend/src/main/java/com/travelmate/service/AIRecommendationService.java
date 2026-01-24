@@ -352,7 +352,7 @@ public class AIRecommendationService {
         List<Map<String, String>> messages = new ArrayList<>();
         messages.add(Map.of(
             "role", "system",
-            "content", "You are TravelMate AI, a friendly and helpful Korean travel assistant. " +
+            "content", "You are Fryndo AI, a friendly and helpful Korean travel assistant. " +
                       "Always respond in Korean. Be concise but informative. " +
                       "Help users with travel planning, destination recommendations, local tips, and itinerary suggestions. " +
                       "If you don't have specific information, suggest general travel tips or ask clarifying questions."
@@ -395,7 +395,7 @@ public class AIRecommendationService {
         } else if (message.contains("일정") || message.contains("계획")) {
             return "여행 일정을 도와드릴게요! 목적지와 여행 기간을 알려주세요.";
         } else if (message.contains("안녕") || message.contains("hello") || message.contains("hi")) {
-            return "안녕하세요! TravelMate AI입니다. 여행 계획, 장소 추천, 현지 정보 등 무엇이든 물어보세요!";
+            return "안녕하세요! Fryndo AI입니다. 여행 계획, 장소 추천, 현지 정보 등 무엇이든 물어보세요!";
         } else if (message.contains("고마") || message.contains("감사")) {
             return "도움이 되었다니 기뻐요! 더 궁금한 점이 있으시면 언제든 말씀해주세요.";
         }

@@ -1,6 +1,6 @@
 version: '3.8'
 
-# TravelMate Logging Stack (ELK + Filebeat)
+# Fryndo Logging Stack (ELK + Filebeat)
 # Usage: docker-compose -f docker-compose.logging.yml up -d
 
 services:

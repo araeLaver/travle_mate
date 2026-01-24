@@ -133,7 +133,7 @@ const LocationDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     try {
       await Share.share({
         title: location.name,
-        message: `TravelMate에서 ${location.name}을(를) 확인해보세요! 🗺️\n${location.description}`,
+        message: `Fryndo에서 ${location.name}을(를) 확인해보세요! 🗺️\n${location.description}`,
       });
     } catch (error) {
       console.log('Share error:', error);

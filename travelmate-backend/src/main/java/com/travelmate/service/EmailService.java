@@ -43,7 +43,7 @@ public class EmailService {
         String verificationLink = frontendUrl + "/verify-email?token=" + token;
 
         if (mailEnabled && mailSender.isPresent() && !mailFrom.isEmpty()) {
-            sendEmailAsync(email, "TravelMate 이메일 인증", buildVerificationEmailHtml(fullName, verificationLink));
+            sendEmailAsync(email, "Fryndo 이메일 인증", buildVerificationEmailHtml(fullName, verificationLink));
         } else {
             log.info("=================================================");
             log.info("[DEV] 이메일 인증 링크:");
@@ -62,7 +62,7 @@ public class EmailService {
         String resetLink = frontendUrl + "/reset-password?token=" + token;
 
         if (mailEnabled && mailSender.isPresent() && !mailFrom.isEmpty()) {
-            sendEmailAsync(email, "TravelMate 비밀번호 재설정", buildPasswordResetEmailHtml(resetLink));
+            sendEmailAsync(email, "Fryndo 비밀번호 재설정", buildPasswordResetEmailHtml(resetLink));
         } else {
             log.info("=================================================");
             log.info("[DEV] 비밀번호 재설정 링크:");
@@ -150,11 +150,11 @@ public class EmailService {
             <body>
                 <div class="container">
                     <div class="header">
-                        <h1>TravelMate</h1>
+                        <h1>Fryndo</h1>
                     </div>
                     <div class="content">
                         <p>안녕하세요, %s님!</p>
-                        <p>TravelMate에 가입해 주셔서 감사합니다.</p>
+                        <p>Fryndo에 가입해 주셔서 감사합니다.</p>
                         <p>아래 버튼을 클릭하여 이메일 인증을 완료해 주세요.</p>
                         <p style="text-align: center;">
                             <a href="%s" class="button">이메일 인증하기</a>
@@ -163,7 +163,7 @@ public class EmailService {
                     </div>
                     <div class="footer">
                         <p>본 메일은 발신 전용입니다.</p>
-                        <p>&copy; 2024 TravelMate. All rights reserved.</p>
+                        <p>&copy; 2024 Fryndo. All rights reserved.</p>
                     </div>
                 </div>
             </body>
@@ -191,7 +191,7 @@ public class EmailService {
             <body>
                 <div class="container">
                     <div class="header">
-                        <h1>TravelMate</h1>
+                        <h1>Fryndo</h1>
                     </div>
                     <div class="content">
                         <p>비밀번호 재설정 요청을 받았습니다.</p>
@@ -204,7 +204,7 @@ public class EmailService {
                     </div>
                     <div class="footer">
                         <p>본 메일은 발신 전용입니다.</p>
-                        <p>&copy; 2024 TravelMate. All rights reserved.</p>
+                        <p>&copy; 2024 Fryndo. All rights reserved.</p>
                     </div>
                 </div>
             </body>

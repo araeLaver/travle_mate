@@ -54,7 +54,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
       <View style={styles.content}>
         {/* Logo */}
         <View style={styles.logoContainer}>
-          <Text style={styles.logo}>TravelMate</Text>
+          <Text style={styles.logo}>Fryndo</Text>
           <Text style={styles.tagline}>AI 여행 동반자</Text>
         </View>
 

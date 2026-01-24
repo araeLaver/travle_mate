@@ -1,4 +1,4 @@
-# TravelMate 변경 내역
+# Fryndo 변경 내역
 
 ## 2026-01-02 - WCAG 2.1 AA 접근성(a11y) 전면 개선
 

@@ -1,4 +1,4 @@
-# Prometheus Configuration for TravelMate
+# Prometheus Configuration for Fryndo
 
 global:
   scrape_interval: 15s

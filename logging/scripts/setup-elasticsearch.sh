@@ -8,7 +8,7 @@ ES_PORT="${ES_PORT:-9200}"
 ES_URL="http://${ES_HOST}:${ES_PORT}"
 
 echo "=========================================="
-echo "TravelMate Elasticsearch Setup"
+echo "Fryndo Elasticsearch Setup"
 echo "=========================================="
 echo "Elasticsearch URL: ${ES_URL}"
 echo ""

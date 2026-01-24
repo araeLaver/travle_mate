@@ -4,7 +4,7 @@ const path = require("path");
 
 async function main() {
   console.log("========================================");
-  console.log("TravelMate NFT Contract Verification");
+  console.log("Fryndo NFT Contract Verification");
   console.log("========================================");
 
   // Get network

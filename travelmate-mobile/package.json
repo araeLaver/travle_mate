@@ -1,7 +1,7 @@
 {
   "name": "travelmate-mobile",
   "version": "1.0.0",
-  "description": "TravelMate - AI-powered Travel Companion Mobile App",
+  "description": "Fryndo - AI-powered Travel Companion Mobile App",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "start": "expo start",

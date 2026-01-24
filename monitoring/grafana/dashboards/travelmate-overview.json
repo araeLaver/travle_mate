@@ -15,7 +15,7 @@
       }
     ]
   },
-  "description": "TravelMate Application Overview Dashboard",
+  "description": "Fryndo Application Overview Dashboard",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
@@ -1282,7 +1282,7 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "TravelMate Overview",
+  "title": "Fryndo Overview",
   "uid": "travelmate-overview",
   "version": 1,
   "weekStart": ""

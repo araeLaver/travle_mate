@@ -1,4 +1,4 @@
-# TravelMate Logging Stack (ELK)
+# Fryndo Logging Stack (ELK)
 
 Elasticsearch, Logstash, Kibana, Filebeat를 사용한 중앙집중식 로깅 시스템
 
@@ -27,7 +27,7 @@ echo "vm.max_map_count=262144" | sudo tee -a /etc/sysctl.conf
 ### 2. 네트워크 생성 (최초 1회)
 
 ```bash
-# TravelMate 메인 스택 먼저 실행
+# Fryndo 메인 스택 먼저 실행
 cd ..
 docker-compose up -d
 

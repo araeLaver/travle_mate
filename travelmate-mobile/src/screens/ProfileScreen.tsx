@@ -235,7 +235,7 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
           <Text style={styles.logoutText}>로그아웃</Text>
         </TouchableOpacity>
 
-        <Text style={styles.versionText}>TravelMate v1.0.0</Text>
+        <Text style={styles.versionText}>Fryndo v1.0.0</Text>
       </View>
 
       <View style={styles.bottomPadding} />

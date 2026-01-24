@@ -99,10 +99,12 @@ const WalletConnect: React.FC = () => {
               <span className="text-5xl">👛</span>
             </motion.div>
 
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-3">MetaMask 지갑 연결</h2>
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-3">
+              MetaMask 지갑 연결
+            </h2>
             <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-md mx-auto">
-              TravelMate NFT 시스템은 Polygon 네트워크를 사용합니다.
-              MetaMask 지갑을 연결하여 NFT를 수집하고 관리하세요.
+              Fryndo NFT 시스템은 Polygon 네트워크를 사용합니다. MetaMask 지갑을 연결하여 NFT를
+              수집하고 관리하세요.
             </p>
 
             <motion.div
@@ -116,14 +118,18 @@ const WalletConnect: React.FC = () => {
                   className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-xl p-4 border border-gray-200/50 dark:border-gray-700/50 flex items-center gap-3"
                 >
                   <span className="text-2xl">{feature.icon}</span>
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{feature.label}</span>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {feature.label}
+                  </span>
                 </div>
               ))}
             </motion.div>
 
             {!isMetaMaskInstalled ? (
               <motion.div {...fadeInUp} transition={{ delay: 0.2 }}>
-                <p className="text-amber-600 dark:text-amber-400 mb-4">MetaMask가 설치되어 있지 않습니다.</p>
+                <p className="text-amber-600 dark:text-amber-400 mb-4">
+                  MetaMask가 설치되어 있지 않습니다.
+                </p>
                 <a
                   href="https://metamask.io/download/"
                   target="_blank"
@@ -259,7 +265,9 @@ const WalletConnect: React.FC = () => {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-500 dark:text-gray-400">통화</span>
-                    <span className="text-gray-800 dark:text-white">{networkInfo.currencySymbol}</span>
+                    <span className="text-gray-800 dark:text-white">
+                      {networkInfo.currencySymbol}
+                    </span>
                   </div>
                   {networkInfo.blockExplorerUrl && (
                     <a
@@ -309,7 +317,8 @@ const WalletConnect: React.FC = () => {
             <span>💜</span> Polygon 네트워크란?
           </h3>
           <p className="text-gray-600 dark:text-gray-400 text-sm mb-6">
-            Polygon은 이더리움과 호환되는 레이어2 블록체인으로, 빠른 트랜잭션 속도와 저렴한 가스비를 제공합니다. TravelMate는 Polygon Amoy 테스트넷을 사용합니다.
+            Polygon은 이더리움과 호환되는 레이어2 블록체인으로, 빠른 트랜잭션 속도와 저렴한 가스비를
+            제공합니다. Fryndo는 Polygon Amoy 테스트넷을 사용합니다.
           </p>
 
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-3 flex items-center gap-2">

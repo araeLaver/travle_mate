@@ -1,10 +1,10 @@
-# TravelMate NFT Smart Contracts
+# Fryndo NFT Smart Contracts
 
 Polygon 네트워크용 위치 기반 NFT 수집 스마트 컨트랙트
 
 ## 개요
 
-TravelMate NFT는 사용자가 특정 장소를 방문하여 수집하는 위치 기반 NFT입니다.
+Fryndo NFT는 사용자가 특정 장소를 방문하여 수집하는 위치 기반 NFT입니다.
 
 ### 주요 기능
 
@@ -169,7 +169,7 @@ function unpause()
   "name": "Seoul Tower",
   "description": "서울의 랜드마크 N서울타워에서 수집한 NFT",
   "image": "ipfs://QmXxx.../image.png",
-  "external_url": "https://travelmate.app/locations/1",
+  "external_url": "https://fryndo.app/locations/1",
   "attributes": [
     {
       "trait_type": "Location",

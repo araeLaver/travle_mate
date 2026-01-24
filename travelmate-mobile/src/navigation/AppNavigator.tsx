@@ -145,7 +145,7 @@ const AppNavigator = () => {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>TravelMate</Text>
+        <Text style={styles.loadingText}>Fryndo</Text>
       </View>
     );
   }

@@ -4,7 +4,7 @@ const path = require("path");
 
 async function main() {
   console.log("========================================");
-  console.log("TravelMate NFT Contract Deployment");
+  console.log("Fryndo NFT Contract Deployment");
   console.log("========================================");
 
   // Get deployer account
@@ -21,7 +21,7 @@ async function main() {
   }
 
   // Contract parameters
-  const name = "TravelMate Collectibles";
+  const name = "Fryndo Collectibles";
   const symbol = "TMCOL";
   const adminAddress = deployer.address;
   const minterAddress = process.env.MINTER_ADDRESS || deployer.address;

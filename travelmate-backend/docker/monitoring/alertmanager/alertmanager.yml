@@ -1,9 +1,9 @@
-# Alertmanager Configuration for TravelMate
+# Alertmanager Configuration for Fryndo
 
 global:
   resolve_timeout: 5m
   smtp_smarthost: 'smtp.gmail.com:587'
-  smtp_from: 'alerts@travelmate.app'
+  smtp_from: 'alerts@fryndo.app'
   smtp_auth_username: '${SMTP_USERNAME}'
   smtp_auth_password: '${SMTP_PASSWORD}'
 
@@ -46,8 +46,8 @@ receivers:
 
   - name: 'critical-receiver'
     email_configs:
-      - to: 'devops@travelmate.app'
-        subject: '[CRITICAL] TravelMate Alert: {{ .GroupLabels.alertname }}'
+      - to: 'devops@fryndo.app'
+        subject: '[CRITICAL] Fryndo Alert: {{ .GroupLabels.alertname }}'
         html: |
           <h2>Critical Alert</h2>
           <p><strong>Alert:</strong> {{ .GroupLabels.alertname }}</p>
@@ -65,7 +65,7 @@ receivers:
         send_resolved: true
     slack_configs:
       - api_url: '${SLACK_WEBHOOK_URL}'
-        channel: '#travelmate-alerts'
+        channel: '#fryndo-alerts'
         send_resolved: true
         title: '{{ if eq .Status "firing" }}:rotating_light: CRITICAL{{ else }}:white_check_mark: RESOLVED{{ end }} - {{ .GroupLabels.alertname }}'
         text: |
@@ -80,7 +80,7 @@ receivers:
   - name: 'warning-receiver'
     slack_configs:
       - api_url: '${SLACK_WEBHOOK_URL}'
-        channel: '#travelmate-alerts'
+        channel: '#fryndo-alerts'
         send_resolved: true
         title: '{{ if eq .Status "firing" }}:warning: WARNING{{ else }}:white_check_mark: RESOLVED{{ end }} - {{ .GroupLabels.alertname }}'
         text: |

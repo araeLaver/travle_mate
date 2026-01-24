@@ -1,6 +1,6 @@
-# TravelMate API 문서
+# Fryndo API 문서
 
-Base URL: `https://api.travelmate.com/api` (Production)
+Base URL: `https://api.fryndo.com/api` (Production)
 Local: `http://localhost:8080/api`
 
 ## 인증

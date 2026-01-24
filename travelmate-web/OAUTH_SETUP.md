@@ -1,6 +1,6 @@
 # SNS OAuth 설정 가이드
 
-이 가이드는 TravelMate 웹 애플리케이션에서 실제 SNS OAuth 로그인을 설정하는 방법을 안내합니다.
+이 가이드는 Fryndo 웹 애플리케이션에서 실제 SNS OAuth 로그인을 설정하는 방법을 안내합니다.
 
 ## 1. Google OAuth 설정
 
@@ -11,7 +11,7 @@
 3. "API 및 서비스" > "OAuth 동의 화면" 이동
 4. 사용자 유형을 "외부" 선택 (개인 개발자용)
 5. 앱 정보 입력:
-   - 앱 이름: TravelMate
+   - 앱 이름: Fryndo
    - 사용자 지원 이메일: 본인 이메일
    - 앱 도메인: http://localhost:3005
    - 개발자 연락처 정보: 본인 이메일
@@ -21,7 +21,7 @@
 1. "API 및 서비스" > "사용자 인증 정보" 이동
 2. "사용자 인증 정보 만들기" > "OAuth 2.0 클라이언트 ID" 선택
 3. 애플리케이션 유형: "웹 애플리케이션"
-4. 이름: "TravelMate Web Client"
+4. 이름: "Fryndo Web Client"
 5. 승인된 자바스크립트 원본:
    - http://localhost:3005
    - http://localhost:3000 (개발용)
@@ -43,7 +43,7 @@ REACT_APP_GOOGLE_CLIENT_ID=your_google_client_id_here.apps.googleusercontent.com
 1. [Kakao Developers](https://developers.kakao.com/)에 접속 후 로그인
 2. "내 애플리케이션" > "애플리케이션 추가하기"
 3. 앱 정보 입력:
-   - 앱 이름: TravelMate
+   - 앱 이름: Fryndo
    - 사업자명: 개인
 
 ### 2.2 플랫폼 설정
@@ -76,7 +76,7 @@ REACT_APP_KAKAO_CLIENT_ID=your_kakao_javascript_key_here
 1. [Naver Developers](https://developers.naver.com/)에 접속 후 로그인
 2. "Application" > "애플리케이션 등록"
 3. 애플리케이션 정보 입력:
-   - 애플리케이션 이름: TravelMate
+   - 애플리케이션 이름: Fryndo
    - 사용 API: 네아로 (네이버 아이디로 로그인)
 
 ### 3.2 서비스 URL 설정

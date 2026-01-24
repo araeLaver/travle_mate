@@ -72,7 +72,7 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const handleContactSupport = () => {
-    Linking.openURL('mailto:support@travelmate.com?subject=TravelMate 앱 문의');
+    Linking.openURL('mailto:support@fryndo.com?subject=Fryndo 앱 문의');
   };
 
   const handleOpenPrivacyPolicy = () => {

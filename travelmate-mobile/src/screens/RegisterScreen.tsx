@@ -88,7 +88,7 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
           {/* Header */}
           <View style={styles.header}>
             <Text style={styles.title}>회원가입</Text>
-            <Text style={styles.subtitle}>TravelMate와 함께 여행을 시작하세요</Text>
+            <Text style={styles.subtitle}>Fryndo와 함께 여행을 시작하세요</Text>
           </View>
 
           {/* Form */}

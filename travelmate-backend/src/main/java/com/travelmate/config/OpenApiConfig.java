@@ -46,11 +46,11 @@ public class OpenApiConfig {
 
     private Info apiInfo() {
         return new Info()
-            .title("TravelMate API")
+            .title("Fryndo API")
             .description("""
-                ## TravelMate 여행 메이트 API 문서
+                ## Fryndo 여행 메이트 API 문서
 
-                TravelMate는 위치 기반 NFT 수집과 소셜 여행 기능을 제공하는 서비스입니다.
+                Fryndo는 위치 기반 NFT 수집과 소셜 여행 기능을 제공하는 서비스입니다.
 
                 ### 주요 기능
                 - **인증**: JWT 기반 사용자 인증
@@ -80,9 +80,9 @@ public class OpenApiConfig {
                 """)
             .version("1.0.0")
             .contact(new Contact()
-                .name("TravelMate Team")
-                .email("support@travelmate.app")
-                .url("https://travelmate.app"))
+                .name("Fryndo Team")
+                .email("support@fryndo.com")
+                .url("https://fryndo.com"))
             .license(new License()
                 .name("MIT License")
                 .url("https://opensource.org/licenses/MIT"));

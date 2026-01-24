@@ -34,11 +34,11 @@ public class WalletService {
 
     private static final long NONCE_EXPIRY_SECONDS = 300; // 5분
     private static final String SIGN_MESSAGE_TEMPLATE =
-            "TravelMate 지갑 연결 인증\n\n" +
+            "Fryndo 지갑 연결 인증\n\n" +
             "지갑 주소: %s\n" +
             "Nonce: %s\n" +
             "Timestamp: %d\n\n" +
-            "이 메시지에 서명하면 지갑이 TravelMate 계정에 연결됩니다.";
+            "이 메시지에 서명하면 지갑이 Fryndo 계정에 연결됩니다.";
 
     /**
      * 서명용 메시지 생성

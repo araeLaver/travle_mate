@@ -1,4 +1,4 @@
-# TravelMate Alert Rules for Prometheus
+# Fryndo Alert Rules for Prometheus
 
 groups:
   # Application Health Alerts
@@ -10,8 +10,8 @@ groups:
         labels:
           severity: critical
         annotations:
-          summary: "TravelMate Backend is down"
-          description: "TravelMate Backend instance {{ $labels.instance }} has been down for more than 1 minute."
+          summary: "Fryndo Backend is down"
+          description: "Fryndo Backend instance {{ $labels.instance }} has been down for more than 1 minute."
 
       - alert: HighErrorRate
         expr: |

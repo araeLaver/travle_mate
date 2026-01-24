@@ -16,7 +16,7 @@ public class RootController {
     @GetMapping("/")
     public Map<String, Object> root() {
         Map<String, Object> response = new HashMap<>();
-        response.put("service", "TravelMate API Server");
+        response.put("service", "Fryndo API Server");
         response.put("version", "1.0.0");
         response.put("status", "running");
         response.put("documentation", "/api/swagger-ui/index.html");
@@ -27,7 +27,7 @@ public class RootController {
     @GetMapping("/api")
     public Map<String, Object> apiRoot() {
         Map<String, Object> response = new HashMap<>();
-        response.put("service", "TravelMate API");
+        response.put("service", "Fryndo API");
         response.put("version", "1.0.0");
         response.put("documentation", "/api/swagger-ui/index.html");
         response.put("endpoints", Map.of(

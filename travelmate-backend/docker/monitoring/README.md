@@ -1,4 +1,4 @@
-# TravelMate Monitoring Stack
+# Fryndo Monitoring Stack
 
 Prometheus + Grafana + Alertmanager 모니터링 스택
 
@@ -34,15 +34,15 @@ docker-compose logs -f
 ```bash
 # .env 파일 생성
 GRAFANA_PASSWORD=your_secure_password
-GRAFANA_ROOT_URL=https://grafana.travelmate.app
+GRAFANA_ROOT_URL=https://grafana.fryndo.app
 SLACK_WEBHOOK_URL=https://hooks.slack.com/services/xxx
-SMTP_USERNAME=alerts@travelmate.app
+SMTP_USERNAME=alerts@fryndo.app
 SMTP_PASSWORD=your_smtp_password
 ```
 
 ## 대시보드
 
-### TravelMate Overview
+### Fryndo Overview
 - 애플리케이션 상태
 - HTTP 요청/응답 메트릭
 - 비즈니스 메트릭 (사용자, NFT, 리뷰)

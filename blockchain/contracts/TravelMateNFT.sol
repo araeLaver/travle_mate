@@ -11,7 +11,7 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
  * @title TravelMateNFT
- * @dev NFT contract for TravelMate location-based collectibles
+ * @dev NFT contract for Fryndo location-based collectibles
  * @notice This contract manages location-based NFTs that users collect by visiting places
  */
 contract TravelMateNFT is

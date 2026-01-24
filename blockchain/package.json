@@ -1,7 +1,7 @@
 {
   "name": "travelmate-nft-contracts",
   "version": "1.0.0",
-  "description": "Smart contracts for TravelMate NFT system",
+  "description": "Smart contracts for Fryndo NFT system",
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test",

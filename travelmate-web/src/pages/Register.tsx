@@ -244,7 +244,7 @@ const Register: React.FC = () => {
                   className="group-hover:scale-110 transition-transform duration-300"
                 />
                 <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
-                  TravelMate
+                  Fryndo
                 </span>
               </Link>
               <div className="flex items-center gap-3">
@@ -271,7 +271,7 @@ const Register: React.FC = () => {
         <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl border border-gray-200/50 dark:border-gray-800/50 shadow-2xl shadow-gray-200/50 dark:shadow-black/30 p-8 md:p-10">
           <motion.div {...fadeInUp} className="text-center mb-8">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">
-              Join TravelMate
+              Join Fryndo
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
               여행 동반자와 함께할 모험을 시작하세요

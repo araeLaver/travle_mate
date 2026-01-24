@@ -1,4 +1,4 @@
-# Alertmanager Configuration for TravelMate
+# Alertmanager Configuration for Fryndo
 
 global:
   resolve_timeout: 5m
@@ -55,7 +55,7 @@ receivers:
       - to: 'oncall@travelmate.com'
         send_resolved: true
         headers:
-          subject: '🚨 [CRITICAL] TravelMate Alert: {{ .GroupLabels.alertname }}'
+          subject: '🚨 [CRITICAL] Fryndo Alert: {{ .GroupLabels.alertname }}'
 
   - name: 'warning-receiver'
     slack_configs:

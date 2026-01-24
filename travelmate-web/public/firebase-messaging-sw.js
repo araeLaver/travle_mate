@@ -30,7 +30,7 @@ messaging.onBackgroundMessage((payload) => {
   console.log('[firebase-messaging-sw.js] Background message:', payload);
 
   const { title, body, icon, image, data } = payload.notification || {};
-  const notificationTitle = title || 'TravelMate';
+  const notificationTitle = title || 'Fryndo';
   const notificationOptions = {
     body: body || '',
     icon: icon || '/icons/icon-192x192.png',

@@ -1,4 +1,4 @@
-# TravelMate Monitoring Stack
+# Fryndo Monitoring Stack
 
 Prometheus, Grafana, Alertmanager를 사용한 모니터링 시스템
 
@@ -32,7 +32,7 @@ SMTP_PASSWORD=your_app_password
 ### 2. 네트워크 생성 (최초 1회)
 
 ```bash
-# TravelMate 메인 스택 먼저 실행
+# Fryndo 메인 스택 먼저 실행
 cd ..
 docker-compose up -d
 
@@ -55,10 +55,10 @@ docker-compose -f docker-compose.monitoring.yml up -d
 
 ## 대시보드
 
-### TravelMate Overview
+### Fryndo Overview
 애플리케이션 상태, HTTP 요청 메트릭, JVM 메트릭, 데이터베이스 연결 상태
 
-### TravelMate Infrastructure
+### Fryndo Infrastructure
 노드 리소스 사용량, 컨테이너 메트릭, Redis 상태
 
 ## 알림 규칙

@@ -8,7 +8,7 @@ describe("TravelMateNFT", function () {
   let user1;
   let user2;
 
-  const NAME = "TravelMate Collectibles";
+  const NAME = "Fryndo Collectibles";
   const SYMBOL = "TMCOL";
 
   beforeEach(async function () {

@@ -3,9 +3,9 @@
 apiVersion: 1
 
 providers:
-  - name: 'TravelMate Dashboards'
+  - name: 'Fryndo Dashboards'
     orgId: 1
-    folder: 'TravelMate'
+    folder: 'Fryndo'
     folderUid: 'travelmate'
     type: file
     disableDeletion: false

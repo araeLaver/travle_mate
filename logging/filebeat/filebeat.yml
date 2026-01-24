@@ -1,4 +1,4 @@
-# Filebeat Configuration for TravelMate
+# Filebeat Configuration for Fryndo
 
 filebeat.inputs:
 

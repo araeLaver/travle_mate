@@ -1,4 +1,4 @@
-# Prometheus Configuration for TravelMate
+# Prometheus Configuration for Fryndo
 
 global:
   scrape_interval: 15s
@@ -25,7 +25,7 @@ scrape_configs:
       - targets: ['localhost:9090']
     metrics_path: /metrics
 
-  # TravelMate Backend Application (Development)
+  # Fryndo Backend Application (Development)
   - job_name: 'travelmate-backend-dev'
     metrics_path: '/api/actuator/prometheus'
     static_configs:
@@ -35,12 +35,12 @@ scrape_configs:
           application: 'travelmate-backend'
     scrape_interval: 10s
 
-  # TravelMate Backend Application (Production)
+  # Fryndo Backend Application (Production)
   - job_name: 'travelmate-backend-prod'
     metrics_path: '/api/actuator/prometheus'
     scheme: https
     static_configs:
-      - targets: ['api.travelmate.app']
+      - targets: ['api.fryndo.app']
         labels:
           environment: 'production'
           application: 'travelmate-backend'

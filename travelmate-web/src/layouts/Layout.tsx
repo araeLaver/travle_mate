@@ -134,7 +134,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <span className="logo-icon" aria-hidden="true">
               <GlobeIcon />
             </span>
-            TravelMate
+            Fryndo
           </Link>
           <div className="header-actions">
             {authService.isAuthenticated() ? (

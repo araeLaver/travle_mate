@@ -1,4 +1,4 @@
-# TravelMate
+# Fryndo
 
 여행 동반자를 찾는 소셜 플랫폼 + NFT 위치 수집 시스템
 
@@ -121,7 +121,7 @@ docker run -p 80:80 travelmate-web
 ## 프로젝트 구조
 
 ```
-TravelMate/
+Fryndo/
 ├── travelmate-backend/         # Spring Boot API 서버
 │   ├── src/main/java/
 │   │   └── com/travelmate/
@@ -432,4 +432,4 @@ mvn clean verify
 
 ---
 
-Made by TravelMate Team
+Made by Fryndo Team

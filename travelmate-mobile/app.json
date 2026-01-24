@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "TravelMate",
+    "name": "Fryndo",
     "slug": "travelmate",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -31,10 +31,10 @@
         "applinks:travelmate.app"
       ],
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "TravelMate는 주변 NFT 수집 장소를 찾기 위해 위치 정보가 필요합니다.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "TravelMate는 백그라운드에서도 주변 장소 알림을 받기 위해 위치 정보가 필요합니다.",
-        "NSCameraUsageDescription": "TravelMate는 프로필 사진을 촬영하기 위해 카메라 접근이 필요합니다.",
-        "NSPhotoLibraryUsageDescription": "TravelMate는 프로필 사진을 선택하기 위해 사진 라이브러리 접근이 필요합니다.",
+        "NSLocationWhenInUseUsageDescription": "Fryndo는 주변 NFT 수집 장소를 찾기 위해 위치 정보가 필요합니다.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Fryndo는 백그라운드에서도 주변 장소 알림을 받기 위해 위치 정보가 필요합니다.",
+        "NSCameraUsageDescription": "Fryndo는 프로필 사진을 촬영하기 위해 카메라 접근이 필요합니다.",
+        "NSPhotoLibraryUsageDescription": "Fryndo는 프로필 사진을 선택하기 위해 사진 라이브러리 접근이 필요합니다.",
         "UIBackgroundModes": [
           "location",
           "remote-notification"
@@ -98,7 +98,7 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "TravelMate가 백그라운드에서도 주변 장소 알림을 받을 수 있도록 위치 정보 접근을 허용해주세요.",
+          "locationAlwaysAndWhenInUsePermission": "Fryndo가 백그라운드에서도 주변 장소 알림을 받을 수 있도록 위치 정보 접근을 허용해주세요.",
           "isIosBackgroundLocationEnabled": true,
           "isAndroidBackgroundLocationEnabled": true
         }

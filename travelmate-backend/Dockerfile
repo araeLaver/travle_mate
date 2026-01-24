@@ -10,9 +10,9 @@ RUN mvn clean package -Dmaven.test.skip=true -B
 
 FROM eclipse-temurin:17-jre-alpine
 
-LABEL maintainer="TravelMate Team"
+LABEL maintainer="Fryndo Team"
 LABEL version="1.0"
-LABEL description="TravelMate Backend API Server"
+LABEL description="Fryndo Backend API Server"
 
 RUN addgroup -S travelmate && adduser -S travelmate -G travelmate
 

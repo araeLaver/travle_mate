@@ -34,7 +34,7 @@ public class TwoFactorAuthController {
     private final TwoFactorAuthService twoFactorAuthService;
     private final UserRepository userRepository;
 
-    private static final String ISSUER = "TravelMate";
+    private static final String ISSUER = "Fryndo";
 
     /**
      * 2FA 상태 조회
