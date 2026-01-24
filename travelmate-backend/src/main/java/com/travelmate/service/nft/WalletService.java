@@ -5,8 +5,10 @@ import com.travelmate.dto.WalletDto;
 import com.travelmate.entity.User;
 import com.travelmate.repository.UserRepository;
 import com.travelmate.repository.nft.UserNftCollectionRepository;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -252,6 +254,35 @@ public class WalletService {
         byte[] bytes = new byte[32];
         new SecureRandom().nextBytes(bytes);
         return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+    }
+
+    /**
+     * 만료된 Nonce 정리 스케줄러 (1분마다 실행)
+     */
+    @Scheduled(fixedRate = 60000)
+    public void cleanupExpiredNonces() {
+        long now = Instant.now().getEpochSecond();
+        int removedCount = 0;
+
+        var iterator = nonceStore.entrySet().iterator();
+        while (iterator.hasNext()) {
+            var entry = iterator.next();
+            if (entry.getValue().expiresAt() < now) {
+                iterator.remove();
+                removedCount++;
+            }
+        }
+
+        if (removedCount > 0) {
+            log.debug("만료된 Nonce 정리 완료: {}개 제거, 현재 저장소 크기: {}", removedCount, nonceStore.size());
+        }
+    }
+
+    /**
+     * 현재 Nonce 저장소 크기 반환 (모니터링용)
+     */
+    public int getNonceStoreSize() {
+        return nonceStore.size();
     }
 
     /**

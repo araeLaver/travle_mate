@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -25,12 +26,17 @@ public class JwtService {
     }
 
     public String generateToken(Long userId, String email) {
+        return generateToken(userId, email, "USER");
+    }
+
+    public String generateToken(Long userId, String email, String role) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpiration);
 
         return Jwts.builder()
             .subject(userId.toString())
             .claim("email", email)
+            .claim("role", role)
             .issuedAt(now)
             .expiration(expiryDate)
             .signWith(getSigningKey())
@@ -55,6 +61,22 @@ public class JwtService {
             .getPayload();
 
         return claims.get("email", String.class);
+    }
+
+    public String getRoleFromToken(String token) {
+        Claims claims = Jwts.parser()
+            .verifyWith(getSigningKey())
+            .build()
+            .parseSignedClaims(token)
+            .getPayload();
+
+        String role = claims.get("role", String.class);
+        return role != null ? role : "USER";
+    }
+
+    public List<String> getAuthoritiesFromToken(String token) {
+        String role = getRoleFromToken(token);
+        return List.of("ROLE_" + role);
     }
 
     public boolean validateToken(String authToken) {
