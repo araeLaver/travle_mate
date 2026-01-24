@@ -50,6 +50,16 @@ public interface TravelGroupRepository extends JpaRepository<TravelGroup, Long> 
     
     List<TravelGroup> findByStatus(TravelGroup.Status status);
 
+    /**
+     * 추천용 그룹 목록 조회 (정원 미달 + 모집중)
+     * N+1 방지를 위해 creator만 먼저 조회, 멤버는 별도 배치 조회
+     */
+    @Query("SELECT tg FROM TravelGroup tg " +
+           "LEFT JOIN FETCH tg.creator " +
+           "WHERE tg.currentMembers < tg.maxMembers " +
+           "AND (tg.status = 'RECRUITING' OR tg.status = 'ACTIVE')")
+    List<TravelGroup> findAvailableGroupsForRecommendation();
+
     // ===== Admin Dashboard Queries =====
 
     /**

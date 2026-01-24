@@ -2,10 +2,13 @@ package com.travelmate.repository;
 
 import com.travelmate.entity.UserGroupMembership;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * 사용자-그룹 멤버십 레포지토리
@@ -22,6 +25,22 @@ public interface UserGroupMembershipRepository extends JpaRepository<UserGroupMe
      * 그룹 ID로 멤버십 조회
      */
     List<UserGroupMembership> findByTravelGroupId(Long travelGroupId);
+
+    /**
+     * 여러 그룹의 멤버십을 한 번에 조회 (N+1 방지)
+     */
+    @Query("SELECT m FROM UserGroupMembership m " +
+           "LEFT JOIN FETCH m.user " +
+           "WHERE m.travelGroup.id IN :groupIds " +
+           "AND m.status = 'ACCEPTED'")
+    List<UserGroupMembership> findByTravelGroupIdInWithUser(@Param("groupIds") Set<Long> groupIds);
+
+    /**
+     * 사용자가 가입한 그룹 ID 목록 조회 (배치 조회용)
+     */
+    @Query("SELECT m.travelGroup.id FROM UserGroupMembership m " +
+           "WHERE m.user.id = :userId AND m.status = 'ACCEPTED'")
+    Set<Long> findJoinedGroupIdsByUserId(@Param("userId") Long userId);
 
     /**
      * 사용자 ID와 그룹 ID로 멤버십 조회
