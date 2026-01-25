@@ -7,7 +7,7 @@ import com.travelmate.entity.nft.LocationCategory;
 import com.travelmate.entity.nft.UserNftCollection;
 import com.travelmate.repository.UserRepository;
 import com.travelmate.repository.nft.UserNftCollectionRepository;
-import com.travelmate.service.ai.ItineraryService;
+import com.travelmate.service.ai.AiItineraryService;
 import com.travelmate.service.ai.PlaceRecommendationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -41,7 +41,7 @@ class AIRecommendationServiceTest {
     private RestTemplate restTemplate;
 
     @Mock
-    private ItineraryService itineraryService;
+    private AiItineraryService aiItineraryService;
 
     @Mock
     private PlaceRecommendationService placeRecommendationService;
@@ -114,14 +114,14 @@ class AIRecommendationServiceTest {
                     .dayPlans(List.of())
                     .build();
 
-            when(itineraryService.generateItinerary(1L, request)).thenReturn(expectedResponse);
+            when(aiItineraryService.generateItinerary(1L, request)).thenReturn(expectedResponse);
 
             // When
             ItineraryResponse result = aiRecommendationService.generateItinerary(1L, request);
 
             // Then
             assertThat(result).isEqualTo(expectedResponse);
-            verify(itineraryService).generateItinerary(1L, request);
+            verify(aiItineraryService).generateItinerary(1L, request);
         }
     }
 

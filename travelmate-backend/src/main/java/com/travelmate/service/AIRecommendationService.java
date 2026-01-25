@@ -6,7 +6,7 @@ import com.travelmate.entity.User;
 import com.travelmate.entity.nft.UserNftCollection;
 import com.travelmate.repository.UserRepository;
 import com.travelmate.repository.nft.UserNftCollectionRepository;
-import com.travelmate.service.ai.ItineraryService;
+import com.travelmate.service.ai.AiItineraryService;
 import com.travelmate.service.ai.PlaceRecommendationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +32,7 @@ public class AIRecommendationService {
     private final UserRepository userRepository;
     private final UserNftCollectionRepository collectionRepository;
     private final RestTemplate restTemplate;
-    private final ItineraryService itineraryService;
+    private final AiItineraryService aiItineraryService;
     private final PlaceRecommendationService placeRecommendationService;
 
     @Value("${ai.openai.api-key:}")
@@ -48,7 +48,7 @@ public class AIRecommendationService {
      */
     @Transactional(readOnly = true)
     public ItineraryResponse generateItinerary(Long userId, ItineraryRequest request) {
-        return itineraryService.generateItinerary(userId, request);
+        return aiItineraryService.generateItinerary(userId, request);
     }
 
     /**

@@ -21,7 +21,7 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ItineraryService {
+public class AiItineraryService {
 
     private final UserRepository userRepository;
     private final RestTemplate restTemplate;
