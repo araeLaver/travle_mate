@@ -8,7 +8,7 @@ RUN mvn dependency:go-offline -B
 COPY src src
 RUN mvn clean package -Dmaven.test.skip=true -B
 
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:25-jre-alpine
 
 LABEL maintainer="Fryndo Team"
 LABEL version="1.0"
