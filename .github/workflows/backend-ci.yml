@@ -33,7 +33,8 @@ jobs:
     - name: Run tests
       working-directory: ./travelmate-backend
       run: mvn test
-      continue-on-error: true
+      env:
+        SPRING_PROFILES_ACTIVE: test
       
     - name: Upload build artifacts
       if: success()
