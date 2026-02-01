@@ -2,6 +2,8 @@ package com.travelmate.service;
 
 import com.travelmate.dto.ChatDto;
 import com.travelmate.entity.*;
+import com.travelmate.exception.BusinessException;
+import com.travelmate.exception.ChatException;
 import com.travelmate.repository.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -174,7 +176,7 @@ class ChatServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> chatService.createChatRoom(1L, request))
-                    .isInstanceOf(RuntimeException.class)
+                    .isInstanceOf(BusinessException.class)
                     .hasMessageContaining("사용자를 찾을 수 없습니다");
         }
     }
@@ -410,8 +412,8 @@ class ChatServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> chatService.leaveChatRoom(request))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessageContaining("채팅방 참가자를 찾을 수 없습니다");
+                    .isInstanceOf(ChatException.UnauthorizedChatAccessException.class)
+                    .hasMessageContaining("채팅 참여자가 아닙니다");
         }
     }
 
@@ -491,8 +493,8 @@ class ChatServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> chatService.getChatRoomDetail(100L, 999L))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessageContaining("채팅방 접근 권한이 없습니다");
+                    .isInstanceOf(ChatException.UnauthorizedChatAccessException.class)
+                    .hasMessageContaining("채팅 참여자가 아닙니다");
         }
     }
 
@@ -565,8 +567,8 @@ class ChatServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> chatService.deleteMessage(1L, 1L))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessageContaining("메시지 삭제 권한이 없습니다");
+                    .isInstanceOf(ChatException.UnauthorizedChatAccessException.class)
+                    .hasMessageContaining("채팅 참여자가 아닙니다");
         }
 
         @Test

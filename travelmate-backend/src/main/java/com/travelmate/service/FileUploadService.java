@@ -67,7 +67,7 @@ public class FileUploadService {
                 Files.createDirectories(uploadDir);
             }
         } catch (IOException e) {
-            throw new RuntimeException("Could not initialize upload directory", e);
+            throw new com.travelmate.exception.BusinessException(com.travelmate.exception.ErrorCode.FILE_STORAGE_INIT_FAILED);
         }
     }
     
@@ -171,7 +171,7 @@ public class FileUploadService {
             return fileUrl;
         } catch (IOException e) {
             log.error("파일 업로드 실패: {}", file.getOriginalFilename(), e);
-            throw new RuntimeException("파일 업로드에 실패했습니다.", e);
+            throw new com.travelmate.exception.BusinessException(com.travelmate.exception.ErrorCode.FILE_UPLOAD_FAILED);
         }
     }
 

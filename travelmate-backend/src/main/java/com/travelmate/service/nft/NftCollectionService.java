@@ -119,7 +119,7 @@ public class NftCollectionService {
     public NftDto.CollectNftResponse collectNft(Long userId, NftDto.CollectNftRequest request) {
         // 1. 장소 조회
         CollectibleLocation location = collectibleLocationRepository.findById(request.getLocationId())
-                .orElseThrow(() -> new RuntimeException("수집 가능한 장소를 찾을 수 없습니다"));
+                .orElseThrow(() -> new com.travelmate.exception.BusinessException(com.travelmate.exception.ErrorCode.LOCATION_NOT_FOUND));
 
         if (!location.getIsActive()) {
             throw new IllegalStateException("현재 수집이 불가능한 장소입니다");
@@ -167,7 +167,7 @@ public class NftCollectionService {
 
         // 5. 사용자 조회
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다"));
+                .orElseThrow(() -> new com.travelmate.exception.BusinessException(com.travelmate.exception.ErrorCode.USER_NOT_FOUND));
 
         // 6. NFT 컬렉션 생성
         UserNftCollection nftCollection = UserNftCollection.builder()
@@ -265,10 +265,10 @@ public class NftCollectionService {
     @Transactional(readOnly = true)
     public NftDto.UserNftCollectionResponse getNftDetail(Long userId, Long collectionId) {
         UserNftCollection collection = userNftCollectionRepository.findById(collectionId)
-                .orElseThrow(() -> new RuntimeException("NFT를 찾을 수 없습니다"));
+                .orElseThrow(() -> new com.travelmate.exception.BusinessException(com.travelmate.exception.ErrorCode.RESOURCE_NOT_FOUND));
 
         if (!collection.getUser().getId().equals(userId)) {
-            throw new RuntimeException("접근 권한이 없습니다");
+            throw new com.travelmate.exception.BusinessException(com.travelmate.exception.ErrorCode.FORBIDDEN);
         }
 
         return toUserNftCollectionResponse(collection);
@@ -344,7 +344,7 @@ public class NftCollectionService {
     @Cacheable(value = "nftStats", key = "#userId")
     public NftDto.UserNftStatsResponse getUserNftStats(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다"));
+                .orElseThrow(() -> new com.travelmate.exception.BusinessException(com.travelmate.exception.ErrorCode.USER_NOT_FOUND));
 
         NftDto.CollectionBookResponse collectionBook = getCollectionBook(userId);
 

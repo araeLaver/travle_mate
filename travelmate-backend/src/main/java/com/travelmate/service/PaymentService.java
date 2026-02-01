@@ -330,7 +330,7 @@ public class PaymentService {
             String receiptUrl = (String) result.get("receipt");
             payment.complete(paymentKey, receiptUrl);
         } else {
-            throw new RuntimeException("Toss 결제 승인 실패");
+            throw new com.travelmate.exception.BusinessException(com.travelmate.exception.ErrorCode.PAYMENT_APPROVAL_FAILED);
         }
     }
 
@@ -449,7 +449,7 @@ public class PaymentService {
 
         } catch (Exception e) {
             log.error("Refund failed: orderId={}, error={}", request.getOrderId(), e.getMessage());
-            throw new RuntimeException("환불 처리에 실패했습니다: " + e.getMessage());
+            throw new com.travelmate.exception.BusinessException(com.travelmate.exception.ErrorCode.PAYMENT_REFUND_FAILED);
         }
     }
 
@@ -475,7 +475,7 @@ public class PaymentService {
                 url, HttpMethod.POST, entity, Map.class);
 
         if (!response.getStatusCode().is2xxSuccessful()) {
-            throw new RuntimeException("Toss 환불 요청 실패");
+            throw new com.travelmate.exception.BusinessException(com.travelmate.exception.ErrorCode.PAYMENT_REFUND_FAILED);
         }
     }
 

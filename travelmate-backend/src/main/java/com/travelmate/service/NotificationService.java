@@ -231,10 +231,10 @@ public class NotificationService {
     @Transactional
     public void deleteNotification(Long notificationId, Long userId) {
         Notification notification = notificationRepository.findById(notificationId)
-                .orElseThrow(() -> new RuntimeException("Notification not found"));
+                .orElseThrow(() -> new com.travelmate.exception.BusinessException(com.travelmate.exception.ErrorCode.RESOURCE_NOT_FOUND));
 
         if (!notification.getUser().getId().equals(userId)) {
-            throw new RuntimeException("Unauthorized");
+            throw new com.travelmate.exception.BusinessException(com.travelmate.exception.ErrorCode.UNAUTHORIZED);
         }
 
         notificationRepository.delete(notification);

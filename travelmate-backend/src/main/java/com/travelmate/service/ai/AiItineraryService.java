@@ -155,7 +155,7 @@ public class AiItineraryService {
             int jsonStart = content.indexOf("{");
             int jsonEnd = content.lastIndexOf("}") + 1;
             if (jsonStart < 0 || jsonEnd <= jsonStart) {
-                throw new RuntimeException("No valid JSON found in response");
+                throw new com.travelmate.exception.BusinessException(com.travelmate.exception.ErrorCode.AI_RESPONSE_PARSE_FAILED);
             }
             String jsonContent = content.substring(jsonStart, jsonEnd);
 
@@ -216,7 +216,7 @@ public class AiItineraryService {
 
         } catch (Exception e) {
             log.error("Failed to parse AI response: {}", e.getMessage());
-            throw new RuntimeException("Failed to parse AI response", e);
+            throw new com.travelmate.exception.BusinessException(com.travelmate.exception.ErrorCode.AI_RESPONSE_PARSE_FAILED);
         }
     }
 

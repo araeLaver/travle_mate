@@ -3,6 +3,9 @@ package com.travelmate.service;
 import com.travelmate.dto.ChatDto;
 import com.travelmate.dto.UserDto;
 import com.travelmate.entity.*;
+import com.travelmate.exception.BusinessException;
+import com.travelmate.exception.ChatException;
+import com.travelmate.exception.ErrorCode;
 import com.travelmate.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +39,7 @@ public class ChatService {
     
     public ChatDto.ChatRoomResponse createChatRoom(Long creatorId, ChatDto.CreateChatRoomRequest request) {
         User creator = userRepository.findById(creatorId)
-            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+            .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
         
         ChatRoom chatRoom = new ChatRoom();
         chatRoom.setRoomName(request.getRoomName());
@@ -46,7 +49,7 @@ public class ChatService {
         // 여행 그룹 채팅인 경우
         if (request.getTravelGroupId() != null) {
             TravelGroup travelGroup = travelGroupRepository.findById(request.getTravelGroupId())
-                .orElseThrow(() -> new RuntimeException("여행 그룹을 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.GROUP_NOT_FOUND));
             chatRoom.setTravelGroup(travelGroup);
             chatRoom.setRoomName(travelGroup.getTitle() + " 채팅");
         }
@@ -59,7 +62,7 @@ public class ChatService {
         if (request.getParticipantIds() != null) {
             for (Long participantId : request.getParticipantIds()) {
                 User participant = userRepository.findById(participantId)
-                    .orElseThrow(() -> new RuntimeException("참가자를 찾을 수 없습니다: " + participantId));
+                    .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
                 addParticipantToRoom(savedRoom, participant);
             }
         }
@@ -114,10 +117,10 @@ public class ChatService {
     
     public void processMessage(ChatDto.MessageRequest request) {
         ChatRoom chatRoom = chatRoomRepository.findById(request.getChatRoomId())
-            .orElseThrow(() -> new RuntimeException("채팅방을 찾을 수 없습니다."));
-        
+            .orElseThrow(() -> new ChatException.ChatRoomNotFoundException());
+
         User sender = userRepository.findById(request.getSenderId())
-            .orElseThrow(() -> new RuntimeException("발신자를 찾을 수 없습니다."));
+            .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
         
         ChatMessage message = new ChatMessage();
         message.setChatRoom(chatRoom);
@@ -146,10 +149,10 @@ public class ChatService {
     
     public void joinChatRoom(ChatDto.JoinRequest request) {
         ChatRoom chatRoom = chatRoomRepository.findById(request.getChatRoomId())
-            .orElseThrow(() -> new RuntimeException("채팅방을 찾을 수 없습니다."));
-        
+            .orElseThrow(() -> new ChatException.ChatRoomNotFoundException());
+
         User user = userRepository.findById(request.getUserId())
-            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+            .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
         
         // 이미 참가자인지 확인
         if (!chatParticipantRepository.existsByChatRoomIdAndUserId(request.getChatRoomId(), request.getUserId())) {
@@ -170,8 +173,8 @@ public class ChatService {
     public void leaveChatRoom(ChatDto.LeaveRequest request) {
         ChatParticipant participant = chatParticipantRepository.findByChatRoomIdAndUserId(
             request.getChatRoomId(), request.getUserId())
-            .orElseThrow(() -> new RuntimeException("채팅방 참가자를 찾을 수 없습니다."));
-        
+            .orElseThrow(() -> new ChatException.UnauthorizedChatAccessException());
+
         participant.setIsActive(false);
         chatParticipantRepository.save(participant);
         
@@ -183,8 +186,8 @@ public class ChatService {
     
     public void markAsRead(Long roomId, Long userId) {
         ChatParticipant participant = chatParticipantRepository.findByChatRoomIdAndUserId(roomId, userId)
-            .orElseThrow(() -> new RuntimeException("채팅방 참가자를 찾을 수 없습니다."));
-        
+            .orElseThrow(() -> new ChatException.UnauthorizedChatAccessException());
+
         // 최신 메시지 ID 조회
         ChatMessage latestMessage = chatMessageRepository.findTopByChatRoomIdOrderBySentAtDesc(roomId);
         if (latestMessage != null) {
@@ -294,11 +297,11 @@ public class ChatService {
     @Transactional(readOnly = true)
     public ChatDto.ChatRoomDetailResponse getChatRoomDetail(Long roomId, Long userId) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId)
-            .orElseThrow(() -> new RuntimeException("채팅방을 찾을 수 없습니다."));
-        
+            .orElseThrow(() -> new ChatException.ChatRoomNotFoundException());
+
         // 참가자 권한 확인
         if (!chatParticipantRepository.existsByChatRoomIdAndUserId(roomId, userId)) {
-            throw new RuntimeException("채팅방 접근 권한이 없습니다.");
+            throw new ChatException.UnauthorizedChatAccessException();
         }
         
         ChatDto.ChatRoomDetailResponse response = new ChatDto.ChatRoomDetailResponse();
@@ -371,29 +374,29 @@ public class ChatService {
     
     public void deleteMessage(Long messageId, Long userId) {
         ChatMessage message = chatMessageRepository.findById(messageId)
-            .orElseThrow(() -> new RuntimeException("메시지를 찾을 수 없습니다."));
-        
+            .orElseThrow(() -> new ChatException.MessageNotFoundException());
+
         // 메시지 작성자 또는 시스템 메시지만 삭제 가능
         if (message.getSender() == null || message.getSender().getId().equals(userId)) {
             message.setIsDeleted(true);
             message.setContent("[삭제된 메시지입니다]");
             chatMessageRepository.save(message);
-            
+
             // 삭제 알림 브로드캐스트
             ChatDto.MessageResponse deletedMessage = convertMessageToDto(message);
             messagingTemplate.convertAndSend("/topic/chat/" + message.getChatRoom().getId() + "/delete", deletedMessage);
-            
+
             log.info("메시지 삭제: {} by {}", messageId, userId);
         } else {
-            throw new RuntimeException("메시지 삭제 권한이 없습니다.");
+            throw new ChatException.UnauthorizedChatAccessException();
         }
     }
     
     @Transactional(readOnly = true)
     public List<ChatDto.ReadStatusDto> getMessageReadStatus(Long messageId) {
         ChatMessage message = chatMessageRepository.findById(messageId)
-            .orElseThrow(() -> new RuntimeException("메시지를 찾을 수 없습니다."));
-        
+            .orElseThrow(() -> new ChatException.MessageNotFoundException());
+
         List<ChatParticipant> participants = chatParticipantRepository.findByChatRoomId(message.getChatRoom().getId());
         
         return participants.stream()

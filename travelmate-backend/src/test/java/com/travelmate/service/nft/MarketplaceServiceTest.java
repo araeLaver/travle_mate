@@ -4,6 +4,7 @@ import com.travelmate.dto.NftDto;
 import com.travelmate.dto.NftDto.*;
 import com.travelmate.entity.User;
 import com.travelmate.entity.nft.*;
+import com.travelmate.exception.BusinessException;
 import com.travelmate.repository.UserRepository;
 import com.travelmate.repository.nft.NftMarketplaceListingRepository;
 import com.travelmate.repository.nft.UserNftCollectionRepository;
@@ -259,8 +260,8 @@ class MarketplaceServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> marketplaceService.createListing(1L, request))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessage("NFT를 찾을 수 없습니다");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("요청한 리소스를 찾을 수 없습니다");
         }
 
         @Test
@@ -275,8 +276,8 @@ class MarketplaceServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> marketplaceService.createListing(999L, request))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessage("해당 NFT의 소유자가 아닙니다");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("해당 NFT의 소유자가 아닙니다");
         }
 
         @Test

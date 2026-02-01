@@ -19,6 +19,7 @@ public enum ErrorCode {
     FORBIDDEN("C1004", "접근 권한이 없습니다", HttpStatus.FORBIDDEN),
     RATE_LIMIT_EXCEEDED("C1005", "요청 한도를 초과했습니다", HttpStatus.TOO_MANY_REQUESTS),
     VALIDATION_FAILED("C1006", "입력 데이터 검증에 실패했습니다", HttpStatus.BAD_REQUEST),
+    DUPLICATE_ACTION("C1007", "이미 수행한 작업입니다", HttpStatus.CONFLICT),
 
     // 사용자 관련 에러 (2000-2999)
     USER_NOT_FOUND("U2001", "사용자를 찾을 수 없습니다", HttpStatus.NOT_FOUND),
@@ -47,6 +48,9 @@ public enum ErrorCode {
     NFT_MINT_FAILED("N5004", "NFT 발행에 실패했습니다", HttpStatus.INTERNAL_SERVER_ERROR),
     WALLET_NOT_CONNECTED("N5005", "지갑 연결이 필요합니다", HttpStatus.BAD_REQUEST),
     INVALID_SIGNATURE("N5006", "유효하지 않은 서명입니다", HttpStatus.BAD_REQUEST),
+    NFT_NOT_OWNER("N5007", "해당 NFT의 소유자가 아닙니다", HttpStatus.FORBIDDEN),
+    NFT_TRANSFER_FAILED("N5008", "NFT 전송에 실패했습니다", HttpStatus.INTERNAL_SERVER_ERROR),
+    BLOCKCHAIN_TX_FAILED("N5009", "블록체인 트랜잭션 전송에 실패했습니다", HttpStatus.INTERNAL_SERVER_ERROR),
 
     // 외부 서비스 관련 에러 (6000-6999)
     IPFS_UPLOAD_FAILED("E6001", "IPFS 업로드에 실패했습니다", HttpStatus.SERVICE_UNAVAILABLE),
@@ -55,12 +59,17 @@ public enum ErrorCode {
     KAKAO_API_FAILED("E6004", "카카오 API 호출 실패", HttpStatus.SERVICE_UNAVAILABLE),
     EMAIL_SEND_FAILED("E6005", "이메일 전송에 실패했습니다", HttpStatus.SERVICE_UNAVAILABLE),
     PUSH_NOTIFICATION_FAILED("E6006", "푸시 알림 전송에 실패했습니다", HttpStatus.SERVICE_UNAVAILABLE),
+    AI_RESPONSE_PARSE_FAILED("E6007", "AI 응답 파싱에 실패했습니다", HttpStatus.INTERNAL_SERVER_ERROR),
+    AI_RESPONSE_FAILED("E6008", "AI 응답을 받지 못했습니다", HttpStatus.SERVICE_UNAVAILABLE),
+    PAYMENT_APPROVAL_FAILED("E6009", "결제 승인에 실패했습니다", HttpStatus.BAD_GATEWAY),
+    PAYMENT_REFUND_FAILED("E6010", "환불 처리에 실패했습니다", HttpStatus.INTERNAL_SERVER_ERROR),
 
     // 파일 관련 에러 (7000-7999)
     FILE_UPLOAD_FAILED("F7001", "파일 업로드에 실패했습니다", HttpStatus.INTERNAL_SERVER_ERROR),
     FILE_TOO_LARGE("F7002", "파일 크기가 제한을 초과했습니다", HttpStatus.PAYLOAD_TOO_LARGE),
     INVALID_FILE_TYPE("F7003", "지원하지 않는 파일 형식입니다", HttpStatus.BAD_REQUEST),
     FILE_NOT_FOUND("F7004", "파일을 찾을 수 없습니다", HttpStatus.NOT_FOUND),
+    FILE_STORAGE_INIT_FAILED("F7005", "파일 저장소 초기화에 실패했습니다", HttpStatus.INTERNAL_SERVER_ERROR),
 
     // 추천 관련 에러 (8000-8999)
     RECOMMENDATION_FAILED("R8001", "추천 생성에 실패했습니다", HttpStatus.INTERNAL_SERVER_ERROR),

@@ -6,6 +6,7 @@ import com.travelmate.entity.PostImage;
 import com.travelmate.entity.PostLike;
 import com.travelmate.entity.User;
 import com.travelmate.exception.BusinessException;
+import com.travelmate.exception.ErrorCode;
 import com.travelmate.repository.PostImageRepository;
 import com.travelmate.repository.PostLikeRepository;
 import com.travelmate.repository.PostRepository;
@@ -262,8 +263,8 @@ class PostServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> postService.getPostDetail(999L))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessageContaining("게시글을 찾을 수 없습니다");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("요청한 리소스를 찾을 수 없습니다");
         }
     }
 
@@ -306,8 +307,8 @@ class PostServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> postService.updatePost(1L, 999L, request))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessageContaining("게시글을 찾을 수 없습니다");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("요청한 리소스를 찾을 수 없습니다");
         }
 
         @Test
@@ -351,8 +352,8 @@ class PostServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> postService.deletePost(1L, 999L))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessageContaining("게시글을 찾을 수 없습니다");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("요청한 리소스를 찾을 수 없습니다");
         }
 
         @Test
@@ -401,8 +402,8 @@ class PostServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> postService.likePost(1L, 2L))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessageContaining("이미 좋아요한 게시글");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("이미 수행한 작업입니다");
         }
 
         @Test
@@ -413,8 +414,8 @@ class PostServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> postService.likePost(999L, 2L))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessageContaining("게시글을 찾을 수 없습니다");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("요청한 리소스를 찾을 수 없습니다");
         }
     }
 
@@ -453,8 +454,8 @@ class PostServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> postService.unlikePost(1L, 2L))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessageContaining("좋아요 기록을 찾을 수 없습니다");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("요청한 리소스를 찾을 수 없습니다");
         }
     }
 

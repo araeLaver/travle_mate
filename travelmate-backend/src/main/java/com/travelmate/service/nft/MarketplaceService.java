@@ -66,11 +66,11 @@ public class MarketplaceService {
     public NftDto.MarketplaceListingResponse createListing(Long sellerId, NftDto.CreateListingRequest request) {
         // 1. NFT 컬렉션 조회
         UserNftCollection nftCollection = userNftCollectionRepository.findById(request.getNftCollectionId())
-                .orElseThrow(() -> new RuntimeException("NFT를 찾을 수 없습니다"));
+                .orElseThrow(() -> new com.travelmate.exception.BusinessException(com.travelmate.exception.ErrorCode.RESOURCE_NOT_FOUND));
 
         // 2. 소유권 확인
         if (!nftCollection.getUser().getId().equals(sellerId)) {
-            throw new RuntimeException("해당 NFT의 소유자가 아닙니다");
+            throw new com.travelmate.exception.BusinessException(com.travelmate.exception.ErrorCode.NFT_NOT_OWNER);
         }
 
         // 3. 이미 판매 중인지 확인

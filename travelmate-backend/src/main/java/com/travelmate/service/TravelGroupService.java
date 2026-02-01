@@ -31,7 +31,7 @@ public class TravelGroupService {
     
     public TravelGroupDto.Response createGroup(Long creatorId, TravelGroupDto.CreateRequest request) {
         User creator = userRepository.findById(creatorId)
-            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+            .orElseThrow(() -> new TravelGroupException.GroupNotFoundException("사용자를 찾을 수 없습니다."));
         
         TravelGroup group = new TravelGroup();
         group.setTitle(request.getTitle());
@@ -123,22 +123,22 @@ public class TravelGroupService {
             .orElseThrow(() -> new TravelGroupException("그룹을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
         
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-        
+            .orElseThrow(() -> new TravelGroupException.GroupNotFoundException("사용자를 찾을 수 없습니다."));
+
         // 이미 참여중인지 확인
         if (groupMemberRepository.existsByTravelGroupIdAndUserId(groupId, userId)) {
-            throw new RuntimeException("이미 참여중인 그룹입니다.");
+            throw new TravelGroupException.AlreadyJoinedException();
         }
-        
+
         // 인원 제한 확인
         long currentMembers = groupMemberRepository.countAcceptedMembersByGroupId(groupId);
         if (currentMembers >= group.getMaxMembers()) {
-            throw new RuntimeException("그룹 인원이 가득 찼습니다.");
+            throw new TravelGroupException.GroupFullException();
         }
-        
+
         // 그룹 상태 확인
         if (group.getStatus() != TravelGroup.Status.RECRUITING) {
-            throw new RuntimeException("모집중인 그룹이 아닙니다.");
+            throw new TravelGroupException.GroupNotRecruitingException();
         }
         
         GroupMember member = new GroupMember();
@@ -159,10 +159,10 @@ public class TravelGroupService {
     
     public void leaveGroup(Long groupId, Long userId) {
         GroupMember member = groupMemberRepository.findByTravelGroupIdAndUserId(groupId, userId)
-            .orElseThrow(() -> new RuntimeException("그룹 멤버를 찾을 수 없습니다."));
-        
+            .orElseThrow(() -> new TravelGroupException.GroupNotFoundException("그룹 멤버를 찾을 수 없습니다."));
+
         if (member.getRole() == GroupMember.Role.CREATOR) {
-            throw new RuntimeException("그룹 생성자는 그룹을 떠날 수 없습니다.");
+            throw new TravelGroupException.CreatorCannotLeaveException();
         }
         
         groupMemberRepository.delete(member);
@@ -176,7 +176,7 @@ public class TravelGroupService {
         
         // 그룹 생성자만 상태 변경 가능
         if (!group.getCreator().getId().equals(userId)) {
-            throw new RuntimeException("그룹 생성자만 상태를 변경할 수 있습니다.");
+            throw new TravelGroupException.UnauthorizedGroupAccessException();
         }
         
         group.setStatus(status);
@@ -270,7 +270,7 @@ public class TravelGroupService {
         
         // 그룹 생성자만 수정 가능
         if (!group.getCreator().getId().equals(userId)) {
-            throw new RuntimeException("그룹 생성자만 수정할 수 있습니다.");
+            throw new TravelGroupException.UnauthorizedGroupAccessException();
         }
         
         if (request.getTitle() != null) {
@@ -307,7 +307,7 @@ public class TravelGroupService {
         
         // 그룹 생성자만 삭제 가능
         if (!group.getCreator().getId().equals(userId)) {
-            throw new RuntimeException("그룹 생성자만 삭제할 수 있습니다.");
+            throw new TravelGroupException.UnauthorizedGroupAccessException();
         }
         
         // 모든 멤버에게 삭제 알림
@@ -331,14 +331,14 @@ public class TravelGroupService {
             .orElseThrow(() -> new TravelGroupException("그룹을 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
         
         User inviter = userRepository.findById(inviterId)
-            .orElseThrow(() -> new RuntimeException("초대자를 찾을 수 없습니다."));
-        
+            .orElseThrow(() -> new TravelGroupException.GroupNotFoundException("초대자를 찾을 수 없습니다."));
+
         User invitee = userRepository.findById(request.getInviteeId())
-            .orElseThrow(() -> new RuntimeException("초대받을 사용자를 찾을 수 없습니다."));
-        
+            .orElseThrow(() -> new TravelGroupException.GroupNotFoundException("초대받을 사용자를 찾을 수 없습니다."));
+
         // 이미 참여중인지 확인
         if (groupMemberRepository.existsByTravelGroupIdAndUserId(groupId, request.getInviteeId())) {
-            throw new RuntimeException("이미 참여중인 사용자입니다.");
+            throw new TravelGroupException.AlreadyJoinedException();
         }
         
         // 초대 알림 전송

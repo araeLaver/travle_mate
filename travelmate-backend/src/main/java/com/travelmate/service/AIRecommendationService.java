@@ -300,7 +300,7 @@ public class AIRecommendationService {
             }
         }
 
-        throw new RuntimeException("Failed to get AI response");
+        throw new com.travelmate.exception.BusinessException(com.travelmate.exception.ErrorCode.AI_RESPONSE_FAILED);
     }
 
     private String generateRuleBasedChatResponse(String userMessage) {

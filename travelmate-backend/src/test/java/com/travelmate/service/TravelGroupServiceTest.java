@@ -141,7 +141,7 @@ class TravelGroupServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> travelGroupService.createGroup(999L, createRequest))
-                    .isInstanceOf(RuntimeException.class);
+                    .isInstanceOf(TravelGroupException.GroupNotFoundException.class);
         }
     }
 
@@ -181,8 +181,8 @@ class TravelGroupServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> travelGroupService.joinGroup(1L, 2L))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessageContaining("이미");
+                    .isInstanceOf(TravelGroupException.AlreadyJoinedException.class)
+                    .hasMessageContaining("이미 그룹에 가입되어 있습니다");
         }
 
         @Test
@@ -197,8 +197,8 @@ class TravelGroupServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> travelGroupService.joinGroup(1L, 2L))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessageContaining("가득");
+                    .isInstanceOf(TravelGroupException.GroupFullException.class)
+                    .hasMessageContaining("그룹 정원이 초과되었습니다");
         }
 
         @Test
@@ -213,8 +213,8 @@ class TravelGroupServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> travelGroupService.joinGroup(1L, 2L))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessageContaining("모집");
+                    .isInstanceOf(TravelGroupException.GroupNotRecruitingException.class)
+                    .hasMessageContaining("모집중인 그룹이 아닙니다");
         }
     }
 
@@ -250,8 +250,8 @@ class TravelGroupServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> travelGroupService.leaveGroup(1L, 1L))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessageContaining("생성자");
+                    .isInstanceOf(TravelGroupException.CreatorCannotLeaveException.class)
+                    .hasMessageContaining("그룹 생성자는 그룹을 떠날 수 없습니다");
         }
     }
 
@@ -329,8 +329,8 @@ class TravelGroupServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> travelGroupService.updateGroupStatus(1L, 2L, TravelGroup.Status.ACTIVE))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessageContaining("생성자");
+                    .isInstanceOf(TravelGroupException.UnauthorizedGroupAccessException.class)
+                    .hasMessageContaining("그룹 관리자 권한이 필요합니다");
         }
     }
 
@@ -359,8 +359,8 @@ class TravelGroupServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> travelGroupService.deleteGroup(1L, 2L))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessageContaining("생성자");
+                    .isInstanceOf(TravelGroupException.UnauthorizedGroupAccessException.class)
+                    .hasMessageContaining("그룹 관리자 권한이 필요합니다");
         }
     }
 }

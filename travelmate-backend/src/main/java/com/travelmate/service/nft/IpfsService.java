@@ -213,7 +213,7 @@ public class IpfsService {
             return (String) response.getBody().get("IpfsHash");
         }
 
-        throw new RuntimeException("IPFS 업로드 실패: " + response.getStatusCode());
+        throw new com.travelmate.exception.BusinessException(com.travelmate.exception.ErrorCode.IPFS_UPLOAD_FAILED);
     }
 
     /**

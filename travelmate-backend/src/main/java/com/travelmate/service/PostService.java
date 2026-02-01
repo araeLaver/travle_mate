@@ -70,7 +70,7 @@ public class PostService {
     @Transactional(readOnly = true)
     public PostDto.DetailResponse getPostDetail(Long postId) {
         Post post = postRepository.findById(postId)
-            .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
+            .orElseThrow(() -> new BusinessException(com.travelmate.exception.ErrorCode.RESOURCE_NOT_FOUND));
 
         post.setViewCount(post.getViewCount() + 1);
         postRepository.save(post);
@@ -100,7 +100,7 @@ public class PostService {
 
     public PostDto.Response updatePost(Long userId, Long postId, PostDto.UpdateRequest request) {
         Post post = postRepository.findById(postId)
-            .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
+            .orElseThrow(() -> new BusinessException(com.travelmate.exception.ErrorCode.RESOURCE_NOT_FOUND));
 
         // 작성자 검증
         if (!post.getAuthor().getId().equals(userId)) {
@@ -122,7 +122,7 @@ public class PostService {
 
     public void deletePost(Long userId, Long postId) {
         Post post = postRepository.findById(postId)
-            .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
+            .orElseThrow(() -> new BusinessException(com.travelmate.exception.ErrorCode.RESOURCE_NOT_FOUND));
 
         // 작성자 검증
         if (!post.getAuthor().getId().equals(userId)) {
@@ -135,13 +135,13 @@ public class PostService {
 
     public void likePost(Long postId, Long userId) {
         Post post = postRepository.findById(postId)
-            .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
+            .orElseThrow(() -> new BusinessException(com.travelmate.exception.ErrorCode.RESOURCE_NOT_FOUND));
 
         User user = userRepository.findById(userId)
             .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         if (postLikeRepository.existsByPostIdAndUserId(postId, userId)) {
-            throw new RuntimeException("이미 좋아요한 게시글입니다.");
+            throw new BusinessException(com.travelmate.exception.ErrorCode.DUPLICATE_ACTION);
         }
 
         PostLike like = new PostLike();
@@ -157,12 +157,12 @@ public class PostService {
 
     public void unlikePost(Long postId, Long userId) {
         PostLike like = postLikeRepository.findByPostIdAndUserId(postId, userId)
-            .orElseThrow(() -> new RuntimeException("좋아요 기록을 찾을 수 없습니다."));
+            .orElseThrow(() -> new BusinessException(com.travelmate.exception.ErrorCode.RESOURCE_NOT_FOUND));
 
         postLikeRepository.delete(like);
 
         Post post = postRepository.findById(postId)
-            .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
+            .orElseThrow(() -> new BusinessException(com.travelmate.exception.ErrorCode.RESOURCE_NOT_FOUND));
 
         post.setLikeCount(Math.max(0, post.getLikeCount() - 1));
         postRepository.save(post);
@@ -172,7 +172,7 @@ public class PostService {
 
     public List<String> uploadImages(Long userId, Long postId, List<MultipartFile> images) {
         Post post = postRepository.findById(postId)
-            .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
+            .orElseThrow(() -> new BusinessException(com.travelmate.exception.ErrorCode.RESOURCE_NOT_FOUND));
 
         // 작성자 검증
         if (!post.getAuthor().getId().equals(userId)) {

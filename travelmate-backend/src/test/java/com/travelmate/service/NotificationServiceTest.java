@@ -5,6 +5,7 @@ import com.travelmate.entity.Notification.NotificationType;
 import com.travelmate.entity.User;
 import com.travelmate.entity.Post;
 import com.travelmate.entity.Comment;
+import com.travelmate.exception.BusinessException;
 import com.travelmate.repository.NotificationRepository;
 import com.travelmate.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -307,8 +308,8 @@ class NotificationServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> notificationService.deleteNotification(100L, 1L))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessageContaining("Notification not found");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("요청한 리소스를 찾을 수 없습니다");
         }
 
         @Test
@@ -319,8 +320,8 @@ class NotificationServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> notificationService.deleteNotification(100L, 999L))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessageContaining("Unauthorized");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("인증이 필요합니다");
         }
     }
 

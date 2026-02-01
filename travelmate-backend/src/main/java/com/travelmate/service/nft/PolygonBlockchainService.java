@@ -179,7 +179,7 @@ public class PolygonBlockchainService {
             EthSendTransaction ethSendTransaction = web3j.ethSendRawTransaction(hexValue).send();
 
             if (ethSendTransaction.hasError()) {
-                throw new RuntimeException("트랜잭션 전송 실패: " + ethSendTransaction.getError().getMessage());
+                throw new com.travelmate.exception.BusinessException(com.travelmate.exception.ErrorCode.BLOCKCHAIN_TX_FAILED);
             }
 
             String transactionHash = ethSendTransaction.getTransactionHash();
@@ -369,14 +369,14 @@ public class PolygonBlockchainService {
             EthSendTransaction ethSendTransaction = web3j.ethSendRawTransaction(hexValue).send();
 
             if (ethSendTransaction.hasError()) {
-                throw new RuntimeException("NFT 전송 실패: " + ethSendTransaction.getError().getMessage());
+                throw new com.travelmate.exception.BusinessException(com.travelmate.exception.ErrorCode.NFT_TRANSFER_FAILED);
             }
 
             return ethSendTransaction.getTransactionHash();
 
         } catch (Exception e) {
             log.error("NFT 전송 중 오류 발생", e);
-            throw new RuntimeException("NFT 전송 실패", e);
+            throw new com.travelmate.exception.BusinessException(com.travelmate.exception.ErrorCode.NFT_TRANSFER_FAILED);
         }
     }
 
