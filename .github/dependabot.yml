@@ -80,6 +80,11 @@ updates:
       - "docker"
     commit-message:
       prefix: "chore(docker)"
+    ignore:
+      - dependency-name: "maven"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "eclipse-temurin"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "docker"
     directory: "/travelmate-web"
@@ -90,6 +95,11 @@ updates:
       - "docker"
     commit-message:
       prefix: "chore(docker)"
+    ignore:
+      - dependency-name: "node"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "nginx"
+        update-types: ["version-update:semver-major"]
 
   # Mobile App (npm)
   - package-ecosystem: "npm"
