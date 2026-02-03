@@ -18,8 +18,7 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-dev}
       - SERVER_PORT=8080
-      # SECURITY: 환경변수 필수 설정 (.env 파일 또는 환경변수로 제공)
-      - JWT_SECRET=${JWT_SECRET:?JWT_SECRET is required - run: openssl rand -base64 32}
+      - JWT_SECRET=${JWT_SECRET:?JWT_SECRET is required}
       - JWT_EXPIRATION=${JWT_EXPIRATION:-86400000}
       - DB_URL=jdbc:postgresql://postgres:5432/travelmate
       - DB_USERNAME=${DB_USERNAME:-travelmate_user}
@@ -44,8 +43,8 @@ services:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/api/health/live"]
       interval: 30s
       timeout: 10s
-      retries: 5
-      start_period: 120s
+      retries: 10
+      start_period: 300s
     networks:
       - travelmate-network
 

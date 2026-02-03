@@ -6,8 +6,8 @@ import com.travelmate.entity.DeviceToken;
 import com.travelmate.entity.User;
 import com.travelmate.repository.DeviceTokenRepository;
 import com.travelmate.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,13 +19,21 @@ import java.util.stream.Collectors;
  * Firebase Cloud Messaging Service
  */
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class FcmService {
 
     private final FirebaseMessaging firebaseMessaging;
     private final DeviceTokenRepository deviceTokenRepository;
     private final UserRepository userRepository;
+
+    @Autowired
+    public FcmService(@Autowired(required = false) FirebaseMessaging firebaseMessaging,
+                      DeviceTokenRepository deviceTokenRepository,
+                      UserRepository userRepository) {
+        this.firebaseMessaging = firebaseMessaging;
+        this.deviceTokenRepository = deviceTokenRepository;
+        this.userRepository = userRepository;
+    }
 
     private static final int BATCH_SIZE = 500; // FCM limit
 

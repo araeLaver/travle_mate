@@ -3,8 +3,6 @@ FROM maven:3-eclipse-temurin-17-alpine AS builder
 WORKDIR /app
 
 COPY pom.xml .
-RUN mvn dependency:go-offline -B
-
 COPY src src
 RUN mvn clean package -Dmaven.test.skip=true -B
 
@@ -29,7 +27,7 @@ RUN chown travelmate:travelmate app.jar
 
 USER travelmate
 
-ENV JAVA_OPTS="-Xms128m -Xmx256m -XX:+UseSerialGC -XX:MaxMetaspaceSize=128m -XX:ReservedCodeCacheSize=64m -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+ExitOnOutOfMemoryError -Dspring.jpa.open-in-view=false -Dfile.encoding=UTF-8"
+ENV JAVA_OPTS="-Xms256m -Xmx512m -XX:+UseSerialGC -XX:MaxMetaspaceSize=192m -XX:ReservedCodeCacheSize=64m -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+ExitOnOutOfMemoryError -Dspring.jpa.open-in-view=false -Dfile.encoding=UTF-8"
 
 ENV SPRING_PROFILES_ACTIVE=prod
 
