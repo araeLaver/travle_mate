@@ -84,4 +84,8 @@ public interface TravelItineraryRepository extends JpaRepository<TravelItinerary
             @Param("userId") Long userId,
             @Param("startDate") java.time.LocalDate startDate,
             @Param("endDate") java.time.LocalDate endDate);
+
+    // ID 목록으로 일정 조회 (좋아요한 일정 조회용)
+    @Query("SELECT ti FROM TravelItinerary ti WHERE ti.id IN :ids ORDER BY ti.createdAt DESC")
+    Page<TravelItinerary> findByIdIn(@Param("ids") List<Long> ids, Pageable pageable);
 }

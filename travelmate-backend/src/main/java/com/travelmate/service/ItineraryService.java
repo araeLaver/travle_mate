@@ -1,7 +1,12 @@
 package com.travelmate.service;
 
 import com.travelmate.dto.itinerary.*;
-import com.travelmate.entity.*;
+import com.travelmate.entity.ItineraryCollaborator;
+import com.travelmate.entity.ItineraryComment;
+import com.travelmate.entity.ItineraryItem;
+import com.travelmate.entity.ItineraryLike;
+import com.travelmate.entity.TravelItinerary;
+import com.travelmate.entity.User;
 import com.travelmate.entity.ItineraryCollaborator.CollaboratorRole;
 import com.travelmate.entity.ItineraryCollaborator.InviteStatus;
 import com.travelmate.entity.TravelItinerary.ItineraryVisibility;
@@ -28,6 +33,8 @@ public class ItineraryService {
     private final TravelItineraryRepository itineraryRepository;
     private final ItineraryItemRepository itemRepository;
     private final ItineraryCollaboratorRepository collaboratorRepository;
+    private final ItineraryLikeRepository likeRepository;
+    private final ItineraryCommentRepository commentRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
 
@@ -279,11 +286,11 @@ public class ItineraryService {
         collaboratorRepository.save(collaborator);
 
         // 알림 발송
-        notificationService.createNotification(
+        notificationService.notifyItineraryCollaboratorInvite(
                 invitee.getId(),
-                "일정 초대",
-                inviter.getNickname() + "님이 '" + itinerary.getTitle() + "' 일정에 초대했습니다.",
-                "ITINERARY_INVITE"
+                itineraryId,
+                itinerary.getTitle(),
+                inviter.getNickname()
         );
 
         log.info("User {} invited to itinerary {} by {}", invitee.getId(), itineraryId, userId);
@@ -304,11 +311,20 @@ public class ItineraryService {
 
         if (accept) {
             collaborator.accept();
+            collaboratorRepository.save(collaborator);
+
+            // 초대자에게 수락 알림 발송
+            notificationService.notifyItineraryCollaboratorAccepted(
+                    collaborator.getInvitedBy().getId(),
+                    collaborator.getItinerary().getId(),
+                    collaborator.getItinerary().getTitle(),
+                    collaborator.getUser().getNickname()
+            );
         } else {
             collaborator.decline();
+            collaboratorRepository.save(collaborator);
         }
 
-        collaboratorRepository.save(collaborator);
         log.info("User {} {} invitation for itinerary {}",
                 userId, accept ? "accepted" : "declined", collaborator.getItinerary().getId());
     }
@@ -420,6 +436,236 @@ public class ItineraryService {
         return toResponse(copy, userId);
     }
 
+    // ==================== 좋아요 기능 ====================
+
+    @Transactional
+    public boolean toggleLike(Long userId, Long itineraryId) {
+        TravelItinerary itinerary = itineraryRepository.findById(itineraryId)
+                .orElseThrow(() -> new IllegalArgumentException("Itinerary not found"));
+
+        // 접근 권한 확인
+        if (!canViewItinerary(itinerary, userId)) {
+            throw new IllegalArgumentException("Access denied");
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        // 이미 좋아요 했는지 확인
+        if (likeRepository.existsByItineraryIdAndUserId(itineraryId, userId)) {
+            // 좋아요 취소
+            likeRepository.deleteByItineraryIdAndUserId(itineraryId, userId);
+            itineraryRepository.decrementLikeCount(itineraryId);
+            log.info("User {} unliked itinerary {}", userId, itineraryId);
+            return false;
+        } else {
+            // 좋아요 추가
+            ItineraryLike like = ItineraryLike.builder()
+                    .user(user)
+                    .itinerary(itinerary)
+                    .build();
+            likeRepository.save(like);
+            itineraryRepository.incrementLikeCount(itineraryId);
+            log.info("User {} liked itinerary {}", userId, itineraryId);
+
+            // 알림 발송 (본인이 아닌 경우)
+            if (!itinerary.getOwner().getId().equals(userId)) {
+                notificationService.notifyItineraryLike(
+                        itinerary.getOwner().getId(),
+                        itineraryId,
+                        itinerary.getTitle(),
+                        user.getNickname()
+                );
+            }
+
+            return true;
+        }
+    }
+
+    public boolean isLiked(Long userId, Long itineraryId) {
+        if (userId == null) {
+            return false;
+        }
+        return likeRepository.existsByItineraryIdAndUserId(itineraryId, userId);
+    }
+
+    public Page<ItineraryResponse> getLikedItineraries(Long userId, Pageable pageable) {
+        List<Long> likedIds = likeRepository.findLikedItineraryIdsByUserId(userId);
+        if (likedIds.isEmpty()) {
+            return Page.empty(pageable);
+        }
+
+        return itineraryRepository.findByIdIn(likedIds, pageable)
+                .map(it -> toResponse(it, userId));
+    }
+
+    // ==================== 댓글 기능 ====================
+
+    @Transactional
+    public CommentResponse addComment(Long userId, Long itineraryId, CreateCommentRequest request) {
+        TravelItinerary itinerary = itineraryRepository.findById(itineraryId)
+                .orElseThrow(() -> new IllegalArgumentException("Itinerary not found"));
+
+        // 접근 권한 확인
+        if (!canViewItinerary(itinerary, userId)) {
+            throw new IllegalArgumentException("Access denied");
+        }
+
+        User author = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        ItineraryComment comment = ItineraryComment.builder()
+                .itinerary(itinerary)
+                .author(author)
+                .content(request.getContent())
+                .build();
+
+        // 대댓글인 경우
+        if (request.getParentId() != null) {
+            ItineraryComment parent = commentRepository.findById(request.getParentId())
+                    .orElseThrow(() -> new IllegalArgumentException("Parent comment not found"));
+
+            if (!parent.getItinerary().getId().equals(itineraryId)) {
+                throw new IllegalArgumentException("Parent comment does not belong to this itinerary");
+            }
+
+            comment.setParent(parent);
+        }
+
+        comment = commentRepository.save(comment);
+
+        // 알림 발송
+        if (request.getParentId() != null) {
+            // 대댓글인 경우: 부모 댓글 작성자에게 알림 (본인이 아닌 경우)
+            ItineraryComment parent = comment.getParent();
+            if (!parent.getAuthor().getId().equals(userId)) {
+                notificationService.notifyItineraryCommentReply(
+                        parent.getAuthor().getId(),
+                        itineraryId,
+                        author.getNickname(),
+                        request.getContent()
+                );
+            }
+        } else {
+            // 일반 댓글인 경우: 일정 소유자에게 알림 (본인이 아닌 경우)
+            if (!itinerary.getOwner().getId().equals(userId)) {
+                notificationService.notifyItineraryComment(
+                        itinerary.getOwner().getId(),
+                        itineraryId,
+                        itinerary.getTitle(),
+                        author.getNickname(),
+                        request.getContent()
+                );
+            }
+        }
+
+        log.info("Comment {} added to itinerary {} by user {}", comment.getId(), itineraryId, userId);
+        return toCommentResponse(comment, userId);
+    }
+
+    @Transactional
+    public CommentResponse updateComment(Long userId, Long commentId, UpdateCommentRequest request) {
+        ItineraryComment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("Comment not found"));
+
+        // 작성자 확인
+        if (!comment.getAuthor().getId().equals(userId)) {
+            throw new IllegalArgumentException("Only author can update comment");
+        }
+
+        if (comment.getIsDeleted()) {
+            throw new IllegalArgumentException("Cannot update deleted comment");
+        }
+
+        comment.setContent(request.getContent());
+        comment = commentRepository.save(comment);
+
+        log.info("Comment {} updated by user {}", commentId, userId);
+        return toCommentResponse(comment, userId);
+    }
+
+    @Transactional
+    public void deleteComment(Long userId, Long commentId) {
+        ItineraryComment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("Comment not found"));
+
+        // 작성자 또는 일정 소유자만 삭제 가능
+        boolean isAuthor = comment.getAuthor().getId().equals(userId);
+        boolean isOwner = comment.getItinerary().getOwner().getId().equals(userId);
+
+        if (!isAuthor && !isOwner) {
+            throw new IllegalArgumentException("Permission denied");
+        }
+
+        // 대댓글이 있으면 소프트 삭제, 없으면 하드 삭제
+        if (!comment.getReplies().isEmpty()) {
+            comment.softDelete();
+            commentRepository.save(comment);
+        } else {
+            commentRepository.delete(comment);
+        }
+
+        log.info("Comment {} deleted by user {}", commentId, userId);
+    }
+
+    public Page<CommentResponse> getComments(Long itineraryId, Long userId, Pageable pageable) {
+        TravelItinerary itinerary = itineraryRepository.findById(itineraryId)
+                .orElseThrow(() -> new IllegalArgumentException("Itinerary not found"));
+
+        // 접근 권한 확인
+        if (!canViewItinerary(itinerary, userId)) {
+            throw new IllegalArgumentException("Access denied");
+        }
+
+        return commentRepository.findTopLevelCommentsByItineraryId(itineraryId, pageable)
+                .map(comment -> toCommentResponse(comment, userId));
+    }
+
+    public Long getCommentCount(Long itineraryId) {
+        return commentRepository.countByItineraryId(itineraryId);
+    }
+
+    private CommentResponse toCommentResponse(ItineraryComment comment, Long userId) {
+        List<CommentResponse> replies = comment.getReplies().stream()
+                .map(reply -> toCommentResponseWithoutReplies(reply, userId))
+                .collect(Collectors.toList());
+
+        return CommentResponse.builder()
+                .id(comment.getId())
+                .content(comment.getContent())
+                .author(CommentResponse.AuthorInfo.builder()
+                        .id(comment.getAuthor().getId())
+                        .nickname(comment.getAuthor().getNickname())
+                        .profileImage(comment.getAuthor().getProfileImageUrl())
+                        .build())
+                .parentId(comment.getParent() != null ? comment.getParent().getId() : null)
+                .replies(replies)
+                .replyCount(replies.size())
+                .isDeleted(comment.getIsDeleted())
+                .isAuthor(userId != null && comment.getAuthor().getId().equals(userId))
+                .createdAt(comment.getCreatedAt())
+                .updatedAt(comment.getUpdatedAt())
+                .build();
+    }
+
+    private CommentResponse toCommentResponseWithoutReplies(ItineraryComment comment, Long userId) {
+        return CommentResponse.builder()
+                .id(comment.getId())
+                .content(comment.getContent())
+                .author(CommentResponse.AuthorInfo.builder()
+                        .id(comment.getAuthor().getId())
+                        .nickname(comment.getAuthor().getNickname())
+                        .profileImage(comment.getAuthor().getProfileImageUrl())
+                        .build())
+                .parentId(comment.getParent() != null ? comment.getParent().getId() : null)
+                .replyCount(comment.getReplies().size())
+                .isDeleted(comment.getIsDeleted())
+                .isAuthor(userId != null && comment.getAuthor().getId().equals(userId))
+                .createdAt(comment.getCreatedAt())
+                .updatedAt(comment.getUpdatedAt())
+                .build();
+    }
+
     // ==================== Helper Methods ====================
 
     private boolean canViewItinerary(TravelItinerary itinerary, Long userId) {
@@ -527,6 +773,7 @@ public class ItineraryService {
                 .itemCount((int) itemRepository.countByItinerary(itinerary))
                 .owner(toOwnerInfo(itinerary.getOwner()))
                 .isOwner(userId != null && itinerary.getOwner().getId().equals(userId))
+                .isLiked(isLiked(userId, itinerary.getId()))
                 .createdAt(itinerary.getCreatedAt())
                 .build();
     }

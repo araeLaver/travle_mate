@@ -504,6 +504,85 @@ public class NotificationService {
         );
     }
 
+    // ===== 여행 일정(Itinerary) 관련 알림 =====
+
+    /**
+     * 여행 일정 좋아요 알림
+     */
+    public void notifyItineraryLike(Long ownerId, Long itineraryId, String itineraryTitle, String likerName) {
+        createAndSendNotification(
+                ownerId,
+                Notification.NotificationType.LIKE,
+                "일정 좋아요",
+                likerName + "님이 '" + itineraryTitle + "' 일정을 좋아합니다.",
+                "/itineraries/" + itineraryId,
+                itineraryId,
+                "ITINERARY"
+        );
+    }
+
+    /**
+     * 여행 일정 댓글 알림 (일정 작성자에게)
+     */
+    public void notifyItineraryComment(Long ownerId, Long itineraryId, String itineraryTitle, String commenterName, String commentPreview) {
+        String preview = commentPreview.length() > 30 ? commentPreview.substring(0, 30) + "..." : commentPreview;
+        createAndSendNotification(
+                ownerId,
+                Notification.NotificationType.COMMENT,
+                "새 댓글",
+                commenterName + "님이 '" + itineraryTitle + "'에 댓글을 남겼습니다: " + preview,
+                "/itineraries/" + itineraryId,
+                itineraryId,
+                "ITINERARY_COMMENT"
+        );
+    }
+
+    /**
+     * 여행 일정 댓글 답글 알림 (부모 댓글 작성자에게)
+     */
+    public void notifyItineraryCommentReply(Long parentCommentAuthorId, Long itineraryId, String replierName, String replyPreview) {
+        String preview = replyPreview.length() > 30 ? replyPreview.substring(0, 30) + "..." : replyPreview;
+        createAndSendNotification(
+                parentCommentAuthorId,
+                Notification.NotificationType.COMMENT,
+                "새 답글",
+                replierName + "님이 답글을 남겼습니다: " + preview,
+                "/itineraries/" + itineraryId,
+                itineraryId,
+                "ITINERARY_COMMENT_REPLY"
+        );
+    }
+
+    /**
+     * 여행 일정 협업 초대 알림
+     */
+    public void notifyItineraryCollaboratorInvite(Long inviteeId, Long itineraryId, String itineraryTitle, String inviterName) {
+        createAndSendNotification(
+                inviteeId,
+                Notification.NotificationType.GROUP_INVITE,
+                "일정 협업 초대",
+                inviterName + "님이 '" + itineraryTitle + "' 일정에 초대했습니다.",
+                "/itineraries/" + itineraryId,
+                itineraryId,
+                "ITINERARY_INVITE"
+        );
+    }
+
+    /**
+     * 여행 일정 협업 초대 수락 알림 (초대자에게)
+     */
+    public void notifyItineraryCollaboratorAccepted(Long inviterId, Long itineraryId, String itineraryTitle, String accepterName) {
+        createAndSendNotification(
+                inviterId,
+                Notification.NotificationType.GROUP_JOIN,
+                "협업 초대 수락",
+                accepterName + "님이 '" + itineraryTitle + "' 일정 협업 초대를 수락했습니다.",
+                "/itineraries/" + itineraryId,
+                itineraryId,
+                "ITINERARY_INVITE_ACCEPTED"
+        );
+    }
+
     private NotificationDto convertToDto(Notification notification) {
         return NotificationDto.builder()
                 .id(notification.getId())

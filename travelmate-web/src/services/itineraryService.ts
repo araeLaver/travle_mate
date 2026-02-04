@@ -79,9 +79,42 @@ export interface Itinerary {
   itemCount: number;
   owner: OwnerInfo;
   isOwner: boolean;
+  isLiked: boolean;
   createdAt: string;
   items?: ItineraryItem[];
   collaborators?: Collaborator[];
+}
+
+export interface LikeResponse {
+  liked: boolean;
+}
+
+export interface CommentAuthorInfo {
+  id: number;
+  nickname: string;
+  profileImage?: string;
+}
+
+export interface Comment {
+  id: number;
+  content: string;
+  author: CommentAuthorInfo;
+  parentId?: number;
+  replies?: Comment[];
+  replyCount: number;
+  isDeleted: boolean;
+  isAuthor: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateCommentRequest {
+  content: string;
+  parentId?: number;
+}
+
+export interface UpdateCommentRequest {
+  content: string;
 }
 
 export interface CreateItineraryRequest {
@@ -307,6 +340,58 @@ export const updateCollaboratorRole = async (
   await apiClient.put(
     `/itineraries/${itineraryId}/collaborators/${collaboratorUserId}/role?role=${role}`
   );
+};
+
+// Likes
+export const toggleLike = async (itineraryId: number): Promise<LikeResponse> => {
+  return apiClient.post<LikeResponse>(`/itineraries/${itineraryId}/like`);
+};
+
+export const isLiked = async (itineraryId: number): Promise<LikeResponse> => {
+  return apiClient.get<LikeResponse>(`/itineraries/${itineraryId}/like`);
+};
+
+export const getLikedItineraries = async (
+  page = 0,
+  size = 10
+): Promise<PageResponse<Itinerary>> => {
+  return apiClient.get<PageResponse<Itinerary>>(`/itineraries/liked?page=${page}&size=${size}`);
+};
+
+// Comments
+export const addComment = async (
+  itineraryId: number,
+  data: CreateCommentRequest
+): Promise<Comment> => {
+  return apiClient.post<Comment, CreateCommentRequest>(
+    `/itineraries/${itineraryId}/comments`,
+    data
+  );
+};
+
+export const getComments = async (
+  itineraryId: number,
+  page = 0,
+  size = 20
+): Promise<PageResponse<Comment>> => {
+  return apiClient.get<PageResponse<Comment>>(
+    `/itineraries/${itineraryId}/comments?page=${page}&size=${size}`
+  );
+};
+
+export const updateComment = async (
+  commentId: number,
+  data: UpdateCommentRequest
+): Promise<Comment> => {
+  return apiClient.put<Comment, UpdateCommentRequest>(`/itineraries/comments/${commentId}`, data);
+};
+
+export const deleteComment = async (commentId: number): Promise<void> => {
+  await apiClient.delete(`/itineraries/comments/${commentId}`);
+};
+
+export const getCommentCount = async (itineraryId: number): Promise<number> => {
+  return apiClient.get<number>(`/itineraries/${itineraryId}/comments/count`);
 };
 
 // ==================== Helper Functions ====================

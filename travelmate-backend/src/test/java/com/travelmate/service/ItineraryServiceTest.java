@@ -45,6 +45,12 @@ class ItineraryServiceTest {
     private ItineraryCollaboratorRepository collaboratorRepository;
 
     @Mock
+    private ItineraryLikeRepository likeRepository;
+
+    @Mock
+    private ItineraryCommentRepository commentRepository;
+
+    @Mock
     private UserRepository userRepository;
 
     @Mock
@@ -621,7 +627,7 @@ class ItineraryServiceTest {
 
             // Then
             verify(collaboratorRepository).save(any(ItineraryCollaborator.class));
-            verify(notificationService).createNotification(eq(2L), anyString(), anyString(), eq("ITINERARY_INVITE"));
+            verify(notificationService).notifyItineraryCollaboratorInvite(eq(2L), eq(1L), anyString(), anyString());
         }
 
         @Test

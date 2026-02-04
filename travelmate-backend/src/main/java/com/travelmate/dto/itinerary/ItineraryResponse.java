@@ -59,6 +59,9 @@ public class ItineraryResponse {
     @Schema(description = "현재 사용자가 소유자인지 여부", example = "true")
     private boolean isOwner;
 
+    @Schema(description = "현재 사용자가 좋아요 했는지 여부", example = "false")
+    private boolean isLiked;
+
     @Schema(description = "생성 일시")
     private LocalDateTime createdAt;
 

@@ -243,4 +243,84 @@ public class ItineraryController {
         itineraryService.updateCollaboratorRole(userId, itineraryId, collaboratorUserId, role);
         return ResponseEntity.ok().build();
     }
+
+    // ==================== 좋아요 기능 ====================
+
+    @PostMapping("/{id}/like")
+    @Operation(summary = "좋아요 토글", description = "일정에 좋아요를 추가하거나 취소합니다.")
+    public ResponseEntity<LikeResponse> toggleLike(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long id) {
+        Long userId = Long.parseLong(userDetails.getUsername());
+        boolean isLiked = itineraryService.toggleLike(userId, id);
+        return ResponseEntity.ok(new LikeResponse(isLiked));
+    }
+
+    @GetMapping("/{id}/like")
+    @Operation(summary = "좋아요 여부 확인", description = "현재 사용자가 해당 일정에 좋아요를 했는지 확인합니다.")
+    public ResponseEntity<LikeResponse> isLiked(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long id) {
+        Long userId = userDetails != null ? Long.parseLong(userDetails.getUsername()) : null;
+        boolean isLiked = itineraryService.isLiked(userId, id);
+        return ResponseEntity.ok(new LikeResponse(isLiked));
+    }
+
+    @GetMapping("/liked")
+    @Operation(summary = "좋아요한 일정 목록", description = "현재 사용자가 좋아요한 일정 목록을 조회합니다.")
+    public ResponseEntity<Page<ItineraryResponse>> getLikedItineraries(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PageableDefault(size = 10) Pageable pageable) {
+        Long userId = Long.parseLong(userDetails.getUsername());
+        return ResponseEntity.ok(itineraryService.getLikedItineraries(userId, pageable));
+    }
+
+    // ==================== 댓글 기능 ====================
+
+    @PostMapping("/{itineraryId}/comments")
+    @Operation(summary = "댓글 작성", description = "일정에 댓글을 작성합니다.")
+    public ResponseEntity<CommentResponse> addComment(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long itineraryId,
+            @Valid @RequestBody CreateCommentRequest request) {
+        Long userId = Long.parseLong(userDetails.getUsername());
+        CommentResponse response = itineraryService.addComment(userId, itineraryId, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping("/{itineraryId}/comments")
+    @Operation(summary = "댓글 목록 조회", description = "일정의 댓글 목록을 조회합니다.")
+    public ResponseEntity<Page<CommentResponse>> getComments(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long itineraryId,
+            @PageableDefault(size = 20) Pageable pageable) {
+        Long userId = userDetails != null ? Long.parseLong(userDetails.getUsername()) : null;
+        return ResponseEntity.ok(itineraryService.getComments(itineraryId, userId, pageable));
+    }
+
+    @PutMapping("/comments/{commentId}")
+    @Operation(summary = "댓글 수정", description = "댓글을 수정합니다.")
+    public ResponseEntity<CommentResponse> updateComment(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long commentId,
+            @Valid @RequestBody UpdateCommentRequest request) {
+        Long userId = Long.parseLong(userDetails.getUsername());
+        return ResponseEntity.ok(itineraryService.updateComment(userId, commentId, request));
+    }
+
+    @DeleteMapping("/comments/{commentId}")
+    @Operation(summary = "댓글 삭제", description = "댓글을 삭제합니다.")
+    public ResponseEntity<Void> deleteComment(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long commentId) {
+        Long userId = Long.parseLong(userDetails.getUsername());
+        itineraryService.deleteComment(userId, commentId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{itineraryId}/comments/count")
+    @Operation(summary = "댓글 수 조회", description = "일정의 댓글 수를 조회합니다.")
+    public ResponseEntity<Long> getCommentCount(@PathVariable Long itineraryId) {
+        return ResponseEntity.ok(itineraryService.getCommentCount(itineraryId));
+    }
 }
