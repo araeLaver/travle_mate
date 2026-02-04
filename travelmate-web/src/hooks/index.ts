@@ -7,6 +7,25 @@
 // Authentication & User
 export { useFollow } from './useFollow';
 
+// Bookmarks
+export {
+  useMyBookmarks,
+  useBookmarksByType,
+  useBookmarksByFolder,
+  useBookmarkStatus,
+  useBatchBookmarkStatus,
+  useBookmarkStats,
+  useCreateBookmark,
+  useToggleBookmark,
+  useUpdateBookmark,
+  useDeleteBookmark,
+  useRenameFolder,
+  useLocationBookmarks,
+  useLocationBookmarkStatus,
+  useToggleLocationBookmark,
+  bookmarkKeys,
+} from './useBookmarks';
+
 // Geolocation
 export { useGeolocation } from './useGeolocation';
 
