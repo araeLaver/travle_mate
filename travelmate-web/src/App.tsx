@@ -38,6 +38,7 @@ const NotificationSettings = lazy(() => import('./pages/NotificationSettings'));
 const WalletConnect = lazy(() => import('./pages/WalletConnect'));
 const AIRecommendation = lazy(() => import('./pages/AIRecommendation'));
 const Payment = lazy(() => import('./pages/Payment'));
+const Matching = lazy(() => import('./pages/Matching'));
 
 // Loading fallback component
 const PageLoader: React.FC = () => (
@@ -252,6 +253,18 @@ function App() {
                         <ProtectedRoute>
                           <Layout>
                             <Payment />
+                          </Layout>
+                        </ProtectedRoute>
+                      }
+                    />
+
+                    {/* 동반자 매칭 페이지 */}
+                    <Route
+                      path="/matching"
+                      element={
+                        <ProtectedRoute>
+                          <Layout>
+                            <Matching />
                           </Layout>
                         </ProtectedRoute>
                       }

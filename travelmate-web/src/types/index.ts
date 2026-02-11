@@ -707,3 +707,72 @@ export interface BulkCreateResponse {
   total: number;
   created: number;
 }
+
+// ===== 동반자 매칭 관련 타입 =====
+
+export type MatchStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED' | 'EXPIRED';
+export type BudgetPreference = 'BUDGET' | 'MEDIUM' | 'COMFORT' | 'LUXURY';
+
+export interface MatchScoreBreakdown {
+  travelStyleScore: number;
+  scheduleOverlapScore: number;
+  budgetScore: number;
+  languageScore: number;
+  ratingScore: number;
+}
+
+export interface MatchUserSummary {
+  id: number;
+  nickname: string;
+  profileImageUrl?: string;
+  travelStyle?: string;
+  bio?: string;
+  age?: number;
+  gender?: string;
+  languages?: string[];
+  interests?: string[];
+  rating?: number;
+  reviewCount?: number;
+  budgetPreference?: string;
+}
+
+export interface MatchRecommendation {
+  user: MatchUserSummary;
+  totalScore: number;
+  scoreBreakdown: MatchScoreBreakdown;
+  matchReasons: string[];
+}
+
+export interface MatchRequestResponse {
+  id: number;
+  requester: MatchUserSummary;
+  receiver: MatchUserSummary;
+  status: MatchStatus;
+  totalScore: number;
+  scoreBreakdown: MatchScoreBreakdown;
+  message?: string;
+  expiresAt?: string;
+  respondedAt?: string;
+  createdAt: string;
+}
+
+export interface MatchHistoryResponse {
+  matchRequestId: number;
+  partner: MatchUserSummary;
+  totalScore: number;
+  scoreBreakdown: MatchScoreBreakdown;
+  matchedAt: string;
+}
+
+export interface SendMatchRequest {
+  receiverId: number;
+  message?: string;
+}
+
+export interface RespondMatchRequest {
+  accept: boolean;
+}
+
+export interface MatchPendingCount {
+  count: number;
+}

@@ -85,6 +85,10 @@ public class User {
     
     @Column(name = "is_matching_enabled", nullable = false)
     private Boolean isMatchingEnabled = false;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "budget_preference", length = 20)
+    private BudgetPreference budgetPreference = BudgetPreference.MEDIUM;
     
     @Column(name = "phone_number", length = 20)
     private String phoneNumber;
@@ -195,6 +199,10 @@ public class User {
 
     public enum Role {
         USER, ADMIN, MODERATOR
+    }
+
+    public enum BudgetPreference {
+        BUDGET, MEDIUM, COMFORT, LUXURY
     }
     
     public boolean isAccountLocked() {

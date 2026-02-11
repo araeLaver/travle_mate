@@ -83,7 +83,11 @@ public class Notification {
         MARKETPLACE_LISTING_EXPIRED("리스팅 만료"),
         // 포인트 알림
         POINTS_RECEIVED("포인트 획득"),
-        POINTS_SPENT("포인트 사용");
+        POINTS_SPENT("포인트 사용"),
+        // 매칭 알림
+        MATCH_REQUEST("매칭 요청"),
+        MATCH_ACCEPTED("매칭 수락"),
+        MATCH_REJECTED("매칭 거절");
 
         private final String displayName;
 
