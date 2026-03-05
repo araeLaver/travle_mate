@@ -140,7 +140,7 @@
         <dependency>
             <groupId>org.web3j</groupId>
             <artifactId>core</artifactId>
-            <version>5.0.2</version>
+            <version>4.10.3</version>
         </dependency>
 
         <!-- IPFS for NFT Metadata Storage -->
