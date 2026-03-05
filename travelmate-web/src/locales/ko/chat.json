@@ -21,7 +21,7 @@
     "name": "그룹명",
     "description": "그룹 설명",
     "members": "멤버",
-    "memberCount": "{{count}}명",
+    "memberCount": "{count}명",
     "admin": "관리자",
     "leave": "그룹 나가기",
     "delete": "그룹 삭제",
