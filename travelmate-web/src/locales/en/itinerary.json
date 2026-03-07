@@ -30,12 +30,12 @@
     "PUBLIC": "Public"
   },
   "detail": {
-    "duration": "{{nights}} nights {{days}} days",
+    "duration": "{nights} nights {days} days",
     "dayTrip": "Day Trip",
-    "day": "Day {{number}}",
-    "views": "{{count}} views",
-    "likes": "{{count}} likes",
-    "copies": "{{count}} copies",
+    "day": "Day {number}",
+    "views": "{count} views",
+    "likes": "{count} likes",
+    "copies": "{count} copies",
     "owner": "Owner",
     "collaborators": "Collaborators",
     "shareCode": "Share Code",

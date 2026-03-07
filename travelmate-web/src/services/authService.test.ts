@@ -41,7 +41,8 @@ describe('AuthService', () => {
 
       expect(result.accessToken).toBe('test-access-token');
       expect(result.user.email).toBe('test@example.com');
-      expect(localStorage.getItem('accessToken')).toBe('test-access-token');
+      // Tokens stored in memory (security), not localStorage
+      expect(authService.getToken()).toBe('test-access-token');
     });
 
     it('should throw error on invalid credentials', async () => {
@@ -150,8 +151,18 @@ describe('AuthService', () => {
 
   describe('logout', () => {
     it('should clear tokens on logout', async () => {
-      localStorage.setItem('accessToken', 'test-token');
-      localStorage.setItem('tokenExpiresAt', '9999999999999');
+      // Login first to set in-memory tokens
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          accessToken: 'test-token',
+          refreshToken: 'test-refresh',
+          expiresIn: 3600,
+          tokenType: 'Bearer',
+          user: { id: 1, email: 'test@example.com', nickname: 'test' },
+        }),
+      } as Response);
+      await authService.login({ email: 'test@example.com', password: 'pass' });
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -160,10 +171,10 @@ describe('AuthService', () => {
 
       await authService.logout();
 
-      // accessToken과 tokenExpiresAt은 localStorage에서 제거됨
-      // refreshToken은 httpOnly 쿠키로 서버에서 처리하므로 localStorage에서 제거하지 않음
+      // In-memory tokens should be cleared
+      expect(authService.getToken()).toBeNull();
+      // Legacy localStorage cleanup also runs
       expect(localStorage.getItem('accessToken')).toBeNull();
-      expect(localStorage.getItem('tokenExpiresAt')).toBeNull();
     });
   });
 

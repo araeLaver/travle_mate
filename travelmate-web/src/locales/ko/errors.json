@@ -38,7 +38,7 @@
     "messageSendFailed": "메시지 전송에 실패했습니다."
   },
   "upload": {
-    "fileTooLarge": "파일 크기가 너무 큽니다. (최대 {{size}}MB)",
+    "fileTooLarge": "파일 크기가 너무 큽니다. (최대 {size}MB)",
     "invalidFileType": "지원하지 않는 파일 형식입니다.",
     "uploadFailed": "파일 업로드에 실패했습니다."
   },
