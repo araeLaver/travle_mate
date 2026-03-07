@@ -1,12 +1,15 @@
 package com.travelmate.config;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
 
 @Configuration
+@Slf4j
 public class BlockchainConfig {
 
     @Value("${blockchain.polygon.rpc-url:https://polygon-amoy.g.alchemy.com/v2/demo}")
@@ -25,7 +28,9 @@ public class BlockchainConfig {
     private boolean blockchainEnabled;
 
     @Bean
+    @ConditionalOnProperty(name = "blockchain.enabled", havingValue = "true", matchIfMissing = false)
     public Web3j web3j() {
+        log.info("Initializing Web3j with RPC URL: {}", polygonRpcUrl);
         return Web3j.build(new HttpService(polygonRpcUrl));
     }
 

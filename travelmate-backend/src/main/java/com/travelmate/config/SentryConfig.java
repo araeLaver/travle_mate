@@ -54,7 +54,6 @@ public class SentryConfig {
 
             // Performance monitoring
             options.setTracesSampleRate(tracesSampleRate);
-            options.setEnableTracing(true);
 
             // Set server name
             options.setServerName(System.getenv("HOSTNAME"));

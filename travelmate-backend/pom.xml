@@ -9,7 +9,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.4.0</version>
+        <version>3.4.3</version>
         <relativePath/>
     </parent>
     
@@ -23,7 +23,7 @@
     
     <properties>
         <java.version>17</java.version>
-        <aws.sdk.version>2.41.10</aws.sdk.version>
+        <aws.sdk.version>2.42.4</aws.sdk.version>
     </properties>
 
     <dependencyManagement>
@@ -133,7 +133,7 @@
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>2.6.0</version>
+            <version>3.0.2</version>
         </dependency>
 
         <!-- Web3j for Polygon Blockchain Integration -->
@@ -157,14 +157,14 @@
         <dependency>
             <groupId>com.github.ipfs</groupId>
             <artifactId>java-ipfs-http-client</artifactId>
-            <version>1.4.4</version>
+            <version>1.5.1</version>
         </dependency>
 
         <!-- Firebase Admin SDK for Push Notifications -->
         <dependency>
             <groupId>com.google.firebase</groupId>
             <artifactId>firebase-admin</artifactId>
-            <version>9.7.0</version>
+            <version>9.8.0</version>
         </dependency>
 
         <!-- AWS SDK for S3 and CloudFront -->
@@ -192,12 +192,12 @@
         <dependency>
             <groupId>io.sentry</groupId>
             <artifactId>sentry-spring-boot-starter-jakarta</artifactId>
-            <version>7.0.0</version>
+            <version>8.33.0</version>
         </dependency>
         <dependency>
             <groupId>io.sentry</groupId>
             <artifactId>sentry-logback</artifactId>
-            <version>7.0.0</version>
+            <version>8.33.0</version>
         </dependency>
 
         <!-- Utility -->

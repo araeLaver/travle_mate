@@ -24,16 +24,17 @@ export const initSentry = () => {
     replaysSessionSampleRate: 0.1,
     replaysOnErrorSampleRate: 1.0,
 
-    // Integration options
+    // Trace propagation targets (Sentry v8+: must be top-level, not inside browserTracingIntegration)
+    tracePropagationTargets: [
+      'localhost',
+      /^https:\/\/api\.travelmate\.app/,
+      /^https:\/\/travelmate\.app/,
+    ],
+
+    // Integration options (Sentry v8+ API - migrated from v7)
     integrations: [
-      new Sentry.BrowserTracing({
-        tracePropagationTargets: [
-          'localhost',
-          /^https:\/\/api\.travelmate\.app/,
-          /^https:\/\/travelmate\.app/,
-        ],
-      }),
-      new Sentry.Replay({
+      Sentry.browserTracingIntegration(),
+      Sentry.replayIntegration({
         maskAllText: true,
         blockAllMedia: true,
       }),
