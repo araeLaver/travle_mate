@@ -1,6 +1,14 @@
 // Note: In test environment, NODE_ENV='test' so logToConsole is false
 // We test the core functionality without relying on console output
 
+import {
+  logger,
+  errorTracker,
+  performanceMonitor,
+  analytics,
+  initializeMonitoring,
+} from './monitoring';
+
 // Mock sessionStorage
 const mockSessionStorage = (() => {
   let store: Record<string, string> = {};
@@ -38,15 +46,6 @@ Object.defineProperty(window, 'performance', {
   writable: true,
 });
 
-// Import after mocks are set up
-import {
-  logger,
-  errorTracker,
-  performanceMonitor,
-  analytics,
-  initializeMonitoring,
-} from './monitoring';
-
 describe('monitoring', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -58,9 +57,9 @@ describe('monitoring', () => {
     // Note: In test environment, logToConsole is false, so we just verify
     // that the functions execute without errors (queue logs internally)
 
-    it('should queue debug messages without error', () => {
+    it('should queue log messages at all levels without error', () => {
       expect(() => {
-        logger.debug('Test debug message', { key: 'value' });
+        logger.info('Test message at info level', { key: 'value' });
       }).not.toThrow();
     });
 
