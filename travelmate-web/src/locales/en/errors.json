@@ -38,7 +38,7 @@
     "messageSendFailed": "Failed to send message."
   },
   "upload": {
-    "fileTooLarge": "File is too large. (Max {{size}}MB)",
+    "fileTooLarge": "File is too large. (Max {size}MB)",
     "invalidFileType": "Unsupported file type.",
     "uploadFailed": "File upload failed."
   },

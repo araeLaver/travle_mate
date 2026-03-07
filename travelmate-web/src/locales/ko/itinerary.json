@@ -30,12 +30,12 @@
     "PUBLIC": "전체 공개"
   },
   "detail": {
-    "duration": "{{nights}}박 {{days}}일",
+    "duration": "{nights}박 {days}일",
     "dayTrip": "당일치기",
-    "day": "Day {{number}}",
-    "views": "조회 {{count}}회",
-    "likes": "좋아요 {{count}}개",
-    "copies": "복사 {{count}}회",
+    "day": "Day {number}",
+    "views": "조회 {count}회",
+    "likes": "좋아요 {count}개",
+    "copies": "복사 {count}회",
     "owner": "작성자",
     "collaborators": "협업자",
     "shareCode": "공유 코드",

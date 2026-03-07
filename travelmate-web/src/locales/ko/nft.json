@@ -10,14 +10,14 @@
   "collect": {
     "title": "NFT 수집",
     "nearby": "주변 수집 장소",
-    "distance": "{{distance}}m 거리",
+    "distance": "{distance}m 거리",
     "collect": "수집하기",
     "collecting": "수집 중...",
     "collected": "수집 완료!",
     "alreadyCollected": "이미 수집함",
     "tooFar": "더 가까이 이동해주세요",
     "requirements": "수집 조건",
-    "withinRange": "{{distance}}m 이내",
+    "withinRange": "{distance}m 이내",
     "verifyLocation": "위치 확인 중..."
   },
   "mint": {

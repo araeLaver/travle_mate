@@ -10,14 +10,14 @@
   "collect": {
     "title": "Collect NFT",
     "nearby": "Nearby Collection Spots",
-    "distance": "{{distance}}m away",
+    "distance": "{distance}m away",
     "collect": "Collect",
     "collecting": "Collecting...",
     "collected": "Collected!",
     "alreadyCollected": "Already Collected",
     "tooFar": "Please move closer",
     "requirements": "Collection Requirements",
-    "withinRange": "Within {{distance}}m",
+    "withinRange": "Within {distance}m",
     "verifyLocation": "Verifying location..."
   },
   "mint": {

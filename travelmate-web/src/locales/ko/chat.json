@@ -11,8 +11,8 @@
     "sent": "전송됨",
     "delivered": "전달됨",
     "read": "읽음",
-    "typing": "{{name}}님이 입력 중...",
-    "typingMultiple": "{{name}} 외 {{count}}명이 입력 중...",
+    "typing": "{name}님이 입력 중...",
+    "typingMultiple": "{name} 외 {count}명이 입력 중...",
     "image": "이미지",
     "location": "위치",
     "file": "파일"
@@ -33,9 +33,9 @@
   },
   "notification": {
     "newMessage": "새 메시지",
-    "mentioned": "{{name}}님이 회원님을 언급했습니다",
-    "joined": "{{name}}님이 그룹에 참여했습니다",
-    "left": "{{name}}님이 그룹을 나갔습니다"
+    "mentioned": "{name}님이 회원님을 언급했습니다",
+    "joined": "{name}님이 그룹에 참여했습니다",
+    "left": "{name}님이 그룹을 나갔습니다"
   },
   "empty": {
     "groups": "참여 중인 그룹이 없습니다",
