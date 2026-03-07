@@ -6,6 +6,7 @@ import com.travelmate.entity.nft.UserNftCollection;
 import com.travelmate.repository.nft.UserNftCollectionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,7 +41,8 @@ import java.util.concurrent.CompletableFuture;
 @RequiredArgsConstructor
 public class PolygonBlockchainService {
 
-    private final Web3j web3j;
+    @Autowired(required = false)
+    private Web3j web3j;  // blockchain.enabled=false 시 null (prod 기본값)
     private final BlockchainConfig blockchainConfig;
     private final UserNftCollectionRepository nftCollectionRepository;
 
@@ -271,6 +273,10 @@ public class PolygonBlockchainService {
      * 지갑 잔액 조회 (MATIC)
      */
     public BigInteger getBalance(String walletAddress) {
+        if (web3j == null || !blockchainConfig.isBlockchainEnabled()) {
+            log.debug("블록체인 비활성화 상태: 잔액 0 반환");
+            return BigInteger.ZERO;
+        }
         try {
             return web3j.ethGetBalance(walletAddress, DefaultBlockParameterName.LATEST)
                     .send()

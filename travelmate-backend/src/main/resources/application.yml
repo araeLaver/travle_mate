@@ -244,6 +244,7 @@ spring:
       - io.sentry.spring.boot.jakarta.SentryAutoConfiguration
       - org.springframework.boot.autoconfigure.admin.SpringApplicationAdminJmxAutoConfiguration
       - org.springframework.boot.autoconfigure.jmx.JmxAutoConfiguration
+      - org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
 
   # Spring Boot 시작 최적화
   main:
