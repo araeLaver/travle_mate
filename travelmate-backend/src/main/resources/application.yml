@@ -50,6 +50,8 @@ management:
 spring:
   application:
     name: travel-mate-backend
+  main:
+    allow-bean-definition-overriding: true
 
 # OpenAPI/Swagger 설정
 springdoc:
@@ -250,6 +252,7 @@ spring:
   main:
     lazy-initialization: true
     banner-mode: off
+    allow-bean-definition-overriding: true
 
   jmx:
     enabled: false
