@@ -82,7 +82,7 @@
     "@testing-library/dom": "^10.4.1",
     "@types/sockjs-client": "^1.5.4",
     "autoprefixer": "^10.4.20",
-    "cypress": "^15.10.0",
+    "cypress": "^15.11.0",
     "cypress-real-events": "^1.13.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react-hooks": "^4.6.2",
