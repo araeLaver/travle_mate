@@ -50,11 +50,9 @@ spec:
           livenessProbe:
             exec:
               command:
-                - pg_isready
-                - -U
-                - travelmate_user
-                - -d
-                - travelmate
+                - sh
+                - -c
+                - pg_isready -U "$POSTGRES_USER" -d travelmate
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
@@ -62,11 +60,9 @@ spec:
           readinessProbe:
             exec:
               command:
-                - pg_isready
-                - -U
-                - travelmate_user
-                - -d
-                - travelmate
+                - sh
+                - -c
+                - pg_isready -U "$POSTGRES_USER" -d travelmate
             initialDelaySeconds: 5
             periodSeconds: 5
             timeoutSeconds: 3
