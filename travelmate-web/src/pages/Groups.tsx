@@ -6,6 +6,7 @@ import { useToast } from '../components/Toast';
 import { getErrorMessage, logError } from '../utils/errorHandler';
 import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
+import AdBanner from '../components/ads/AdBanner';
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -485,6 +486,10 @@ const Groups: React.FC = () => {
             ))}
           </motion.div>
         )}
+        {/* Ad Banner */}
+        <div className="mt-8">
+          <AdBanner adSlot="GROUPS_BOTTOM" adFormat="horizontal" />
+        </div>
       </main>
 
       {/* Blob animation keyframes */}

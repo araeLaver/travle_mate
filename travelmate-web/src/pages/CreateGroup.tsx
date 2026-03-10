@@ -6,6 +6,7 @@ import { useToast } from '../components/Toast';
 import { getErrorMessage, logError } from '../utils/errorHandler';
 import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
+import { trackEvent } from '../utils/analytics';
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -180,6 +181,7 @@ const CreateGroup: React.FC = () => {
         description: formData.description || '함께 여행할 메이트를 찾습니다!',
       });
 
+      trackEvent('group_created');
       toast.success('그룹이 성공적으로 생성되었습니다!');
       navigate(`/groups`);
     } catch (error) {

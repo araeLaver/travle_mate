@@ -5,6 +5,7 @@ import { useToast } from '../components/Toast';
 import { pointService } from '../services/pointService';
 import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
+import AdBanner from '../components/ads/AdBanner';
 import {
   PointBalanceResponse,
   PointTransactionResponse,
@@ -469,6 +470,11 @@ const Leaderboard: React.FC = () => {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Ad Banner */}
+        <div className="mt-8">
+          <AdBanner adSlot="LEADERBOARD_BOTTOM" adFormat="horizontal" />
+        </div>
       </main>
     </div>
   );

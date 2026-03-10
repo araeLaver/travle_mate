@@ -1,5 +1,5 @@
-import React, { Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React, { Suspense, lazy, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { GoogleOAuthProvider } from '@react-oauth/google';
@@ -13,6 +13,7 @@ import { ProtectedRoute, AuthRequiredRoute } from './components/auth/ProtectedRo
 import { TutorialProvider, useTutorial } from './contexts/TutorialContext';
 import Tutorial from './components/Tutorial';
 import { ToastProvider } from './components/Toast';
+import { trackPageView } from './utils/analytics';
 
 const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '';
 
@@ -28,16 +29,10 @@ const ChatList = lazy(() => import('./pages/ChatList'));
 const Groups = lazy(() => import('./pages/Groups'));
 const CreateGroup = lazy(() => import('./pages/CreateGroup'));
 const Profile = lazy(() => import('./pages/Profile'));
-const NFTMap = lazy(() => import('./pages/NFTMap'));
-const NFTCollection = lazy(() => import('./pages/NFTCollection'));
 const Leaderboard = lazy(() => import('./pages/Leaderboard'));
-const Marketplace = lazy(() => import('./pages/Marketplace'));
-const PointShop = lazy(() => import('./pages/PointShop'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const NotificationSettings = lazy(() => import('./pages/NotificationSettings'));
-const WalletConnect = lazy(() => import('./pages/WalletConnect'));
 const AIRecommendation = lazy(() => import('./pages/AIRecommendation'));
-const Payment = lazy(() => import('./pages/Payment'));
 const Matching = lazy(() => import('./pages/Matching'));
 
 // Loading fallback component
@@ -47,11 +42,23 @@ const PageLoader: React.FC = () => (
   </div>
 );
 
+// GA4 페이지 뷰 자동 추적
+const PageViewTracker: React.FC = () => {
+  const location = useLocation();
+  useEffect(() => {
+    trackPageView(location.pathname + location.search);
+  }, [location]);
+  return null;
+};
+
 // 전역 튜토리얼 컴포넌트 (Router 내부에서 사용)
 const GlobalTutorial: React.FC = () => {
   const { isOpen, completeTutorial } = useTutorial();
   return <Tutorial isOpen={isOpen} onComplete={completeTutorial} />;
 };
+
+// GoogleOAuthProvider는 항상 감싸줘야 useGoogleLogin 훅이 크래시하지 않음
+// clientId가 비어있으면 Google 로그인 버튼이 작동하지 않지만 앱은 정상 동작
 
 function App() {
   return (
@@ -61,6 +68,7 @@ function App() {
           <ToastProvider>
             <TutorialProvider>
               <Router>
+                <PageViewTracker />
                 <GlobalTutorial />
                 <Suspense fallback={<PageLoader />}>
                   <Routes>
@@ -140,26 +148,6 @@ function App() {
                       }
                     />
 
-                    {/* NFT 수집 지도 페이지 */}
-                    <Route
-                      path="/nft"
-                      element={
-                        <ProtectedRoute>
-                          <NFTMap />
-                        </ProtectedRoute>
-                      }
-                    />
-
-                    {/* NFT 컬렉션 페이지 */}
-                    <Route
-                      path="/nft/collection"
-                      element={
-                        <ProtectedRoute>
-                          <NFTCollection />
-                        </ProtectedRoute>
-                      }
-                    />
-
                     {/* 포인트/리더보드 페이지 */}
                     <Route
                       path="/leaderboard"
@@ -176,38 +164,6 @@ function App() {
                       element={
                         <ProtectedRoute>
                           <Leaderboard />
-                        </ProtectedRoute>
-                      }
-                    />
-
-                    {/* 지갑 연결 페이지 */}
-                    <Route
-                      path="/wallet"
-                      element={
-                        <ProtectedRoute>
-                          <Layout>
-                            <WalletConnect />
-                          </Layout>
-                        </ProtectedRoute>
-                      }
-                    />
-
-                    {/* NFT 마켓플레이스 페이지 */}
-                    <Route
-                      path="/marketplace"
-                      element={
-                        <ProtectedRoute>
-                          <Marketplace />
-                        </ProtectedRoute>
-                      }
-                    />
-
-                    {/* 포인트 상점 페이지 */}
-                    <Route
-                      path="/shop"
-                      element={
-                        <ProtectedRoute>
-                          <PointShop />
                         </ProtectedRoute>
                       }
                     />
@@ -241,18 +197,6 @@ function App() {
                         <ProtectedRoute>
                           <Layout>
                             <AIRecommendation />
-                          </Layout>
-                        </ProtectedRoute>
-                      }
-                    />
-
-                    {/* 결제 페이지 */}
-                    <Route
-                      path="/payment"
-                      element={
-                        <ProtectedRoute>
-                          <Layout>
-                            <Payment />
                           </Layout>
                         </ProtectedRoute>
                       }

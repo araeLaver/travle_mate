@@ -17,6 +17,7 @@ import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
 import { useTutorial } from '../contexts/TutorialContext';
 import { cn } from '../lib/utils';
+import AdBanner from '../components/ads/AdBanner';
 
 const Home: React.FC = () => {
   const { startTutorial } = useTutorial();
@@ -388,6 +389,11 @@ const Home: React.FC = () => {
         </div>
       </section>
 
+      {/* Ad Banner */}
+      <div className="container-custom py-8">
+        <AdBanner adSlot="HOME_TOP" adFormat="horizontal" className="max-w-4xl mx-auto" />
+      </div>
+
       {/* Travelers Section */}
       <section className="py-24 bg-gray-50 dark:bg-gray-900/50">
         <div className="container-custom">
@@ -666,7 +672,7 @@ const Home: React.FC = () => {
               ))}
             </div>
 
-            <div className="text-sm text-gray-500 dark:text-gray-500">© 2025 Fryndo</div>
+            <div className="text-sm text-gray-500 dark:text-gray-500">© 2026 Fryndo</div>
           </div>
         </div>
       </footer>

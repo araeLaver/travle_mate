@@ -6,6 +6,7 @@ import { useToast } from '../components/Toast';
 import { getErrorMessage, logError } from '../utils/errorHandler';
 import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
+import { trackEvent } from '../utils/analytics';
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
@@ -183,6 +184,7 @@ const Register: React.FC = () => {
         nickname: formData.username,
         fullName: formData.name,
       });
+      trackEvent('sign_up', { method: 'email' });
       toast.success('회원가입이 완료되었습니다! 로그인해주세요.');
       navigate('/login');
     } catch (err) {

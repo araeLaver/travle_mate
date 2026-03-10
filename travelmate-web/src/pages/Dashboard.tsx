@@ -5,9 +5,9 @@ import { chatService } from '../services/chatService';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../components/Toast';
 import { getErrorMessage, logError } from '../utils/errorHandler';
-import WalletButton from '../components/wallet/WalletButton';
 import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
+import AdBanner from '../components/ads/AdBanner';
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -175,7 +175,6 @@ const Dashboard: React.FC = () => {
   };
 
   const quickActions = [
-    { label: 'NFT 수집', icon: '🎨', path: '/nft', gradient: 'from-violet-500 to-purple-500' },
     {
       label: '그룹 만들기',
       icon: '🗺️',
@@ -185,14 +184,10 @@ const Dashboard: React.FC = () => {
     { label: '그룹 찾기', icon: '🔍', path: '/groups', gradient: 'from-emerald-500 to-teal-500' },
     { label: '채팅방', icon: '💬', path: '/chat', gradient: 'from-pink-500 to-rose-500' },
     { label: '내 프로필', icon: '👤', path: '/profile', gradient: 'from-amber-500 to-orange-500' },
-    { label: '지갑 연결', icon: '💰', path: '/wallet', gradient: 'from-indigo-500 to-violet-500' },
-    {
-      label: '마켓플레이스',
-      icon: '🛒',
-      path: '/marketplace',
-      gradient: 'from-cyan-500 to-blue-500',
-    },
-    { label: '포인트 상점', icon: '💎', path: '/shop', gradient: 'from-rose-500 to-pink-500' },
+    { label: '매칭', icon: '🤝', path: '/matching', gradient: 'from-violet-500 to-purple-500' },
+    { label: 'AI 추천', icon: '🤖', path: '/ai', gradient: 'from-cyan-500 to-blue-500' },
+    { label: '리더보드', icon: '🏆', path: '/leaderboard', gradient: 'from-rose-500 to-pink-500' },
+    { label: '알림 설정', icon: '🔔', path: '/settings/notifications', gradient: 'from-indigo-500 to-violet-500' },
   ];
 
   return (
@@ -220,7 +215,6 @@ const Dashboard: React.FC = () => {
               <span className="font-bold text-gray-900 dark:text-white">Fryndo</span>
             </button>
             <div className="flex items-center gap-3">
-              <WalletButton variant="compact" />
               <ThemeToggle />
             </div>
           </div>
@@ -571,6 +565,11 @@ const Dashboard: React.FC = () => {
             </button>
           </motion.div>
         ) : null}
+
+        {/* Ad Banner */}
+        <div className="mb-8">
+          <AdBanner adSlot="DASHBOARD_BOTTOM" adFormat="horizontal" />
+        </div>
 
         {/* Quick Actions */}
         <motion.nav

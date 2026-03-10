@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import MatchCard from '../components/MatchCard';
 import MatchRequestList from '../components/MatchRequestList';
 import MatchScoreBreakdown from '../components/MatchScoreBreakdown';
+import { trackEvent } from '../utils/analytics';
 import {
   useMatchRecommendations,
   useSendMatchRequest,
@@ -34,6 +35,7 @@ const Matching: React.FC = () => {
   const cancelRequest = useCancelMatchRequest();
 
   const handleSendRequest = (receiverId: number, message?: string) => {
+    trackEvent('match_initiated', { receiverId });
     sendRequest.mutate({ receiverId, message });
   };
 
