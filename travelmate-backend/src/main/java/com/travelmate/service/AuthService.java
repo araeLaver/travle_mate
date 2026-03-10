@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -439,8 +440,8 @@ public class AuthService {
             .currentLatitude(user.getCurrentLatitude())
             .currentLongitude(user.getCurrentLongitude())
             .travelStyle(user.getTravelStyle())
-            .interests(user.getInterests())
-            .languages(user.getLanguages())
+            .interests(user.getInterests() != null ? new ArrayList<>(user.getInterests()) : null)
+            .languages(user.getLanguages() != null ? new ArrayList<>(user.getLanguages()) : null)
             .rating(user.getRating())
             .reviewCount(user.getReviewCount())
             .isEmailVerified(user.getIsEmailVerified())
