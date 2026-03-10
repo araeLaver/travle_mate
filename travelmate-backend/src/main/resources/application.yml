@@ -291,6 +291,7 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_schema: travelmate
         format_sql: false
         jdbc:
           batch_size: 100
@@ -299,7 +300,7 @@ spring:
         cache:
           use_second_level_cache: false
           use_query_cache: false
-            
+
   cache:
     type: caffeine
     caffeine:
