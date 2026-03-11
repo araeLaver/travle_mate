@@ -280,9 +280,8 @@ const Register: React.FC = () => {
       });
       trackEvent('sign_up', { method: 'email' });
 
-      // 자동 로그인 시도 (트랜잭션 커밋 대기)
+      // 자동 로그인 시도
       try {
-        await new Promise(r => setTimeout(r, 500));
         await authService.login({ email: formData.email, password: formData.password });
         toast.success('회원가입이 완료되었습니다!');
         navigate('/dashboard');
