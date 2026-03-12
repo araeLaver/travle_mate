@@ -9,6 +9,7 @@ import { authService } from '../services/authService';
 import FollowerList from '../components/social/FollowerList';
 import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
+import { ReviewSummary } from '../components/review';
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -310,17 +311,25 @@ const Profile: React.FC = () => {
                     </div>
                   )
                 ) : (
-                  <button
-                    onClick={handleFollowToggle}
-                    disabled={isFollowLoading}
-                    className={`px-5 py-2.5 rounded-xl font-semibold transition-all flex items-center gap-2 ${
-                      followStatus?.isFollowing
-                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700'
-                        : 'bg-gradient-to-r from-violet-600 to-pink-600 text-white hover:shadow-lg'
-                    }`}
-                  >
-                    {followStatus?.isFollowing ? '✓ 팔로잉' : '➕ 팔로우'}
-                  </button>
+                  <>
+                    <button
+                      onClick={handleFollowToggle}
+                      disabled={isFollowLoading}
+                      className={`px-5 py-2.5 rounded-xl font-semibold transition-all flex items-center gap-2 ${
+                        followStatus?.isFollowing
+                          ? 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700'
+                          : 'bg-gradient-to-r from-violet-600 to-pink-600 text-white hover:shadow-lg'
+                      }`}
+                    >
+                      {followStatus?.isFollowing ? '✓ 팔로잉' : '➕ 팔로우'}
+                    </button>
+                    <button
+                      onClick={() => navigate(`/review/${viewedUserId}`)}
+                      className="px-5 py-2.5 rounded-xl font-semibold transition-all flex items-center gap-2 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-700 hover:bg-amber-200 dark:hover:bg-amber-900/50"
+                    >
+                      ⭐ 후기 작성
+                    </button>
+                  </>
                 )}
               </div>
             </div>
@@ -370,6 +379,17 @@ const Profile: React.FC = () => {
             <div className="text-sm text-gray-500 dark:text-gray-400">평균 평점</div>
           </div>
         </motion.div>
+
+        {/* 동행 평가 요약 */}
+        {viewedUserId && (
+          <motion.div
+            className="mb-8"
+            {...fadeInUp}
+            transition={{ delay: 0.15 }}
+          >
+            <ReviewSummary userId={viewedUserId} />
+          </motion.div>
+        )}
 
         {/* Tabs */}
         <motion.nav

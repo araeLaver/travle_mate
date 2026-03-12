@@ -34,6 +34,7 @@ const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const NotificationSettings = lazy(() => import('./pages/NotificationSettings'));
 const AIRecommendation = lazy(() => import('./pages/AIRecommendation'));
 const Matching = lazy(() => import('./pages/Matching'));
+const ReviewPage = lazy(() => import('./pages/ReviewPage'));
 
 // Loading fallback component
 const PageLoader: React.FC = () => (
@@ -210,6 +211,16 @@ function App() {
                           <Layout>
                             <Matching />
                           </Layout>
+                        </ProtectedRoute>
+                      }
+                    />
+
+                    {/* 동행 후기 작성 페이지 */}
+                    <Route
+                      path="/review/:userId"
+                      element={
+                        <ProtectedRoute>
+                          <ReviewPage />
                         </ProtectedRoute>
                       }
                     />
