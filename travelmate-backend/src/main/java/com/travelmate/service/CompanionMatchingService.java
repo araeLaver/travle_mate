@@ -11,6 +11,7 @@ import com.travelmate.entity.User.BudgetPreference;
 import com.travelmate.exception.BusinessException;
 import com.travelmate.repository.MatchRequestRepository;
 import com.travelmate.repository.TravelItineraryRepository;
+import com.travelmate.repository.UserBlockRepository;
 import com.travelmate.repository.UserRepository;
 import com.travelmate.util.TravelStyleMatcher;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +42,7 @@ public class CompanionMatchingService {
     private final MatchRequestRepository matchRequestRepository;
     private final TravelItineraryRepository travelItineraryRepository;
     private final NotificationService notificationService;
+    private final UserBlockRepository userBlockRepository;
 
     // ===== 추천 =====
 
@@ -85,6 +87,11 @@ public class CompanionMatchingService {
 
         if (!Boolean.TRUE.equals(requester.getIsMatchingEnabled())) {
             throw BusinessException.matchingNotEnabled();
+        }
+
+        // 차단 관계 확인 (양방향)
+        if (userBlockRepository.isBlockedEitherWay(requesterId, request.getReceiverId())) {
+            throw BusinessException.forbidden("차단 관계인 사용자에게는 매칭 요청을 보낼 수 없습니다.");
         }
 
         matchRequestRepository.findActiveRequestBetween(requesterId, request.getReceiverId())
@@ -366,6 +373,12 @@ public class CompanionMatchingService {
     // ===== 후보 조회 =====
 
     private List<User> getCandidates(User currentUser, List<Long> excludeIds) {
+        // 차단 관계 사용자 추가 제외
+        List<Long> blockedByMe = userBlockRepository.findBlockedUserIds(currentUser.getId());
+        List<Long> blockedMe = userBlockRepository.findBlockerUserIds(currentUser.getId());
+        excludeIds.addAll(blockedByMe);
+        excludeIds.addAll(blockedMe);
+
         if (Boolean.TRUE.equals(currentUser.getIsLocationEnabled())
                 && currentUser.getCurrentLatitude() != null
                 && currentUser.getCurrentLongitude() != null) {
