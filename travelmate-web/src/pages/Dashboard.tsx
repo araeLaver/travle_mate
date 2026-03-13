@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import SEOHead from '../components/SEOHead';
 import { locationService, TravelMate, Location } from '../services/locationService';
 import { chatService } from '../services/chatService';
 import { useNavigate } from 'react-router-dom';
@@ -192,6 +193,11 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] relative overflow-hidden">
+      <SEOHead
+        title="대시보드"
+        description="나의 여행 동반자 매칭 현황을 확인하세요."
+        noIndex={true}
+      />
       {/* Background Effects */}
       <div
         className="absolute top-20 left-10 w-72 h-72 bg-violet-400/30 dark:bg-violet-600/20 rounded-full blur-3xl"

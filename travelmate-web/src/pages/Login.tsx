@@ -1,5 +1,6 @@
 import React, { Component, useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import SEOHead from '../components/SEOHead';
 import { motion } from 'framer-motion';
 import { useGoogleLogin } from '@react-oauth/google';
 import { authService } from '../services/authService';
@@ -158,6 +159,11 @@ const Login: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] flex items-center justify-center p-4 relative overflow-hidden">
+      <SEOHead
+        title="로그인"
+        description="Fryndo에 로그인하고 나만의 여행 동반자를 찾아보세요."
+        noIndex={true}
+      />
       {/* Background Effects */}
       <div className="absolute inset-0 gradient-mesh opacity-60 dark:opacity-40" />
       <div

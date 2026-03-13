@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import SEOHead from '../components/SEOHead';
 import { useParams, useNavigate } from 'react-router-dom';
 import { profileService, UserProfile, UpdateProfileRequest } from '../services/profileService';
 import { useToast } from '../components/Toast';
@@ -196,6 +197,11 @@ const Profile: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] relative overflow-hidden">
+      <SEOHead
+        title="내 프로필"
+        description="나의 여행 스타일과 선호를 설정하고 최적의 여행 동반자를 찾아보세요."
+        canonical="https://fryndo.com/profile"
+      />
       {/* Background Effects */}
       <div
         className="absolute top-20 left-10 w-72 h-72 bg-violet-400/30 dark:bg-violet-600/20 rounded-full blur-3xl"

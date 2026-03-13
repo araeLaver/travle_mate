@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import SEOHead from '../components/SEOHead';
 import { motion } from 'framer-motion';
 import {
   UserGroupIcon,
@@ -28,8 +29,35 @@ const Home: React.FC = () => {
     transition: { duration: 0.6, ease: 'easeOut' as const },
   };
 
+  const homeJsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "url": "https://fryndo.com",
+        "name": "Fryndo",
+        "description": "솔로 여행자 동반자 매칭 플랫폼",
+        "inLanguage": "ko-KR"
+      },
+      {
+        "@type": "Service",
+        "name": "Fryndo 여행 동반자 매칭",
+        "description": "AI 기반 여행 동반자 매칭 서비스",
+        "provider": { "@type": "Organization", "name": "Fryndo" },
+        "areaServed": "KR",
+        "serviceType": "Travel Companion Matching"
+      }
+    ]
+  };
+
   return (
     <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] overflow-hidden">
+      <SEOHead
+        title="여행 동반자를 찾고 싶으세요?"
+        description="Fryndo에서 취향이 맞는 여행 동반자를 찾고 특별한 여행 경험을 함께 만들어보세요. 솔로 여행자 매칭 플랫폼."
+        canonical="https://fryndo.com/"
+        jsonLd={homeJsonLd}
+      />
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50">
         <div className="mx-4 mt-4">

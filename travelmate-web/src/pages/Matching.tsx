@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import SEOHead from '../components/SEOHead';
 import MatchCard from '../components/MatchCard';
 import MatchRequestList from '../components/MatchRequestList';
 import MatchScoreBreakdown from '../components/MatchScoreBreakdown';
@@ -55,6 +56,11 @@ const Matching: React.FC = () => {
 
   return (
     <div className="matching-page">
+      <SEOHead
+        title="여행 동반자 매칭"
+        description="AI가 추천하는 나와 딱 맞는 여행 동반자를 만나보세요. 여행스타일, 일정, 예산을 기반으로 매칭합니다."
+        canonical="https://fryndo.com/matching"
+      />
       <div className="matching-page-bg" />
       <div className="matching-content">
         <header className="matching-header">
