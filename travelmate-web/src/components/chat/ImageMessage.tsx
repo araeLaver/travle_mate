@@ -72,7 +72,7 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (err) {
-      console.error('이미지 다운로드 실패:', err);
+      // 이미지 다운로드 실패 시 무시
     }
   };
 

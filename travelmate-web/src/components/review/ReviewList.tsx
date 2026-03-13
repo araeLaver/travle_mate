@@ -53,13 +53,12 @@ const ReviewList: React.FC<ReviewListProps> = ({ locationId, onReviewDeleted }) 
 
   const currentUser = authService.getUser();
 
-  const loadReviews = useCallback(async (reset = false) => {
-    const currentPage = reset ? 0 : page;
+  const loadReviews = useCallback(async (targetPage: number, reset = false) => {
     setIsLoading(true);
 
     try {
       const [reviewsResponse, statsResponse] = await Promise.all([
-        locationReviewService.getLocationReviews(locationId, sort, currentPage),
+        locationReviewService.getLocationReviews(locationId, sort, targetPage),
         reset ? locationReviewService.getLocationReviewStats(locationId) : Promise.resolve(null),
       ]);
 
@@ -73,17 +72,17 @@ const ReviewList: React.FC<ReviewListProps> = ({ locationId, onReviewDeleted }) 
       }
 
       setHasMore(!reviewsResponse.last);
-      setPage(currentPage);
+      setPage(targetPage);
     } catch (err) {
-      console.error('리뷰 로딩 실패:', err);
+      // 리뷰 로딩 실패 시 무시 (UI에서 빈 목록으로 처리)
     } finally {
       setIsLoading(false);
     }
-  }, [locationId, sort, page]);
+  }, [locationId, sort]);
 
   useEffect(() => {
-    loadReviews(true);
-  }, [locationId, sort]);
+    loadReviews(0, true);
+  }, [locationId, sort, loadReviews]);
 
   const handleSortChange = (newSort: 'recent' | 'helpful') => {
     setSort(newSort);
@@ -91,8 +90,8 @@ const ReviewList: React.FC<ReviewListProps> = ({ locationId, onReviewDeleted }) 
   };
 
   const handleLoadMore = () => {
-    setPage(prev => prev + 1);
-    loadReviews();
+    const nextPage = page + 1;
+    loadReviews(nextPage);
   };
 
   const handleToggleHelpful = async (reviewId: number) => {
@@ -112,7 +111,7 @@ const ReviewList: React.FC<ReviewListProps> = ({ locationId, onReviewDeleted }) 
         )
       );
     } catch (err) {
-      console.error('도움됨 토글 실패:', err);
+      // 도움됨 토글 실패 시 무시
     }
   };
 
@@ -127,7 +126,7 @@ const ReviewList: React.FC<ReviewListProps> = ({ locationId, onReviewDeleted }) 
       }
       onReviewDeleted?.();
     } catch (err) {
-      console.error('리뷰 삭제 실패:', err);
+      // 리뷰 삭제 실패 시 무시
     }
   };
 

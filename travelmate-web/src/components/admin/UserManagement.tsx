@@ -210,7 +210,7 @@ const UserManagement: React.FC = () => {
       setTotalPages(data.totalPages);
       setTotalElements(data.totalElements);
     } catch (error) {
-      console.error('Failed to load users:', error);
+      // Failed to load users: leave list empty
     } finally {
       setLoading(false);
     }
@@ -250,7 +250,7 @@ const UserManagement: React.FC = () => {
       setSelectedUser(detail);
       setShowDetail(true);
     } catch (error) {
-      console.error('Failed to load user detail:', error);
+      // Failed to load user detail: modal will not open
     }
   };
 
@@ -259,7 +259,7 @@ const UserManagement: React.FC = () => {
       await adminService.updateUser(userId, data);
       loadUsers();
     } catch (error) {
-      console.error('Failed to update user:', error);
+      // Failed to update user
     }
   };
 
@@ -276,7 +276,7 @@ const UserManagement: React.FC = () => {
       setSelectedIds(new Set());
       loadUsers();
     } catch (error) {
-      console.error('Failed to perform bulk action:', error);
+      // Failed to perform bulk action
     } finally {
       setBulkLoading(false);
     }
