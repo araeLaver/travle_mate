@@ -49,16 +49,17 @@ public class UserReviewService {
             throw new BusinessException("이미 해당 사용자를 평가했습니다.");
         }
 
-        UserReview review = new UserReview(
-                null,
-                reviewer,
-                reviewee,
-                travelGroup,
-                request.getRating(),
-                request.getComment(),
-                request.getReviewType(),
-                null
-        );
+        UserReview review = new UserReview();
+        review.setReviewer(reviewer);
+        review.setReviewee(reviewee);
+        review.setTravelGroup(travelGroup);
+        review.setRating(request.getRating());
+        review.setComment(request.getComment());
+        review.setReviewType(request.getReviewType());
+        review.setPunctualityScore(request.getPunctualityScore());
+        review.setMannerScore(request.getMannerScore());
+        review.setCommunicationScore(request.getCommunicationScore());
+        review.setCompanionAgainScore(request.getCompanionAgainScore());
 
         UserReview saved = userReviewRepository.save(review);
         log.info("UserReview created: reviewer={}, reviewee={}, rating={}", reviewerId, revieweeId, request.getRating());
@@ -81,7 +82,7 @@ public class UserReviewService {
     }
 
     /**
-     * 특정 사용자의 평가 통계 조회 (평균 평점, 평가 수)
+     * 특정 사용자의 평가 통계 조회 (종합 평점 + 항목별 평균)
      */
     @Transactional(readOnly = true)
     public UserReviewDto.UserReviewStats getReviewStats(Long userId) {
@@ -91,10 +92,54 @@ public class UserReviewService {
         Double avg = userReviewRepository.getAverageRatingByUserId(userId);
         Integer count = userReviewRepository.getReviewCountByUserId(userId);
 
+        // 항목별 평균 (Java stream으로 계산)
+        java.util.List<com.travelmate.entity.UserReview> reviews =
+                userReviewRepository.findByRevieweeIdWithReviewer(userId);
+
+        Double avgPunctuality = reviews.stream()
+                .filter(r -> r.getPunctualityScore() != null)
+                .mapToInt(com.travelmate.entity.UserReview::getPunctualityScore)
+                .average().isPresent()
+                ? reviews.stream().filter(r -> r.getPunctualityScore() != null)
+                    .mapToInt(com.travelmate.entity.UserReview::getPunctualityScore)
+                    .average().getAsDouble()
+                : null;
+
+        Double avgManner = reviews.stream()
+                .filter(r -> r.getMannerScore() != null)
+                .mapToInt(com.travelmate.entity.UserReview::getMannerScore)
+                .average().isPresent()
+                ? reviews.stream().filter(r -> r.getMannerScore() != null)
+                    .mapToInt(com.travelmate.entity.UserReview::getMannerScore)
+                    .average().getAsDouble()
+                : null;
+
+        Double avgCommunication = reviews.stream()
+                .filter(r -> r.getCommunicationScore() != null)
+                .mapToInt(com.travelmate.entity.UserReview::getCommunicationScore)
+                .average().isPresent()
+                ? reviews.stream().filter(r -> r.getCommunicationScore() != null)
+                    .mapToInt(com.travelmate.entity.UserReview::getCommunicationScore)
+                    .average().getAsDouble()
+                : null;
+
+        Double avgCompanionAgain = reviews.stream()
+                .filter(r -> r.getCompanionAgainScore() != null)
+                .mapToInt(com.travelmate.entity.UserReview::getCompanionAgainScore)
+                .average().isPresent()
+                ? reviews.stream().filter(r -> r.getCompanionAgainScore() != null)
+                    .mapToInt(com.travelmate.entity.UserReview::getCompanionAgainScore)
+                    .average().getAsDouble()
+                : null;
+
         return UserReviewDto.UserReviewStats.builder()
                 .userId(userId)
                 .averageRating(avg != null ? avg : 0.0)
                 .reviewCount(count != null ? count : 0)
+                .avgPunctuality(avgPunctuality)
+                .avgManner(avgManner)
+                .avgCommunication(avgCommunication)
+                .avgCompanionAgain(avgCompanionAgain)
                 .build();
     }
 
@@ -127,6 +172,10 @@ public class UserReviewService {
                 .rating(review.getRating())
                 .comment(review.getComment())
                 .reviewType(review.getReviewType() != null ? review.getReviewType().name() : null)
+                .punctualityScore(review.getPunctualityScore())
+                .mannerScore(review.getMannerScore())
+                .communicationScore(review.getCommunicationScore())
+                .companionAgainScore(review.getCompanionAgainScore())
                 .createdAt(review.getCreatedAt())
                 .build();
     }

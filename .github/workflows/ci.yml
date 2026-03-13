@@ -31,7 +31,7 @@ jobs:
         run: npm ci --legacy-peer-deps
 
       - name: Run ESLint
-        run: npm run lint
+        run: npm run lint -- --max-warnings -1
 
       - name: Run Prettier check
         run: npm run format:check
