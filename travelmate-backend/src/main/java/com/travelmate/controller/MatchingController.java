@@ -24,7 +24,7 @@ public class MatchingController {
     @GetMapping("/recommendations")
     public ResponseEntity<List<MatchRecommendation>> getRecommendations(
             @AuthenticationPrincipal String userId,
-            @RequestParam(defaultValue = "10") int limit) {
+            @RequestParam(defaultValue = "20") int limit) {
         List<MatchRecommendation> recommendations = matchingService
                 .getMatchRecommendations(Long.parseLong(userId), limit);
         return ResponseEntity.ok(recommendations);
@@ -46,6 +46,24 @@ public class MatchingController {
             @Valid @RequestBody RespondMatchRequest request) {
         MatchRequestResponse response = matchingService
                 .respondToMatchRequest(Long.parseLong(userId), id, request.getAccept());
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/requests/{id}/accept")
+    public ResponseEntity<MatchRequestResponse> acceptRequest(
+            @AuthenticationPrincipal String userId,
+            @PathVariable Long id) {
+        MatchRequestResponse response = matchingService
+                .respondToMatchRequest(Long.parseLong(userId), id, true);
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/requests/{id}/reject")
+    public ResponseEntity<MatchRequestResponse> rejectRequest(
+            @AuthenticationPrincipal String userId,
+            @PathVariable Long id) {
+        MatchRequestResponse response = matchingService
+                .respondToMatchRequest(Long.parseLong(userId), id, false);
         return ResponseEntity.ok(response);
     }
 
