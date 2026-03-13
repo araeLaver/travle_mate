@@ -43,6 +43,7 @@ public class CompanionMatchingService {
     private final TravelItineraryRepository travelItineraryRepository;
     private final NotificationService notificationService;
     private final UserBlockRepository userBlockRepository;
+    private final MatchingStateGuard matchingStateGuard;
 
     // ===== 추천 =====
 
@@ -146,17 +147,20 @@ public class CompanionMatchingService {
             throw BusinessException.forbidden("해당 매칭 요청에 응답할 권한이 없습니다.");
         }
 
-        if (matchRequest.getStatus() != MatchStatus.PENDING) {
-            throw BusinessException.badRequest("이미 처리된 매칭 요청입니다.");
-        }
-
         if (matchRequest.getExpiresAt() != null && matchRequest.getExpiresAt().isBefore(LocalDateTime.now())) {
-            matchRequest.setStatus(MatchStatus.EXPIRED);
+            matchingStateGuard.validate(matchRequest.getStatus(), MatchStatus.CANCELLED, requestId);
+            matchRequest.setStatus(MatchStatus.CANCELLED);
             matchRequestRepository.save(matchRequest);
             throw BusinessException.badRequest("만료된 매칭 요청입니다.");
         }
 
-        matchRequest.setStatus(accept ? MatchStatus.ACCEPTED : MatchStatus.REJECTED);
+        MatchStatus nextStatus = accept ? MatchStatus.ACCEPTED : MatchStatus.REJECTED;
+        try {
+            matchingStateGuard.validate(matchRequest.getStatus(), nextStatus, requestId);
+        } catch (IllegalStateException e) {
+            throw BusinessException.badRequest("이미 처리된 매칭 요청입니다. 현재 상태: " + matchRequest.getStatus());
+        }
+        matchRequest.setStatus(nextStatus);
         matchRequest.setRespondedAt(LocalDateTime.now());
         matchRequest = matchRequestRepository.save(matchRequest);
 
@@ -199,8 +203,10 @@ public class CompanionMatchingService {
             throw BusinessException.forbidden("본인의 매칭 요청만 취소할 수 있습니다.");
         }
 
-        if (matchRequest.getStatus() != MatchStatus.PENDING) {
-            throw BusinessException.badRequest("대기 중인 요청만 취소할 수 있습니다.");
+        try {
+            matchingStateGuard.validate(matchRequest.getStatus(), MatchStatus.CANCELLED, requestId);
+        } catch (IllegalStateException e) {
+            throw BusinessException.badRequest("대기 중(PENDING) 또는 수락됨(ACCEPTED) 상태의 요청만 취소할 수 있습니다. 현재 상태: " + matchRequest.getStatus());
         }
 
         matchRequest.setStatus(MatchStatus.CANCELLED);
