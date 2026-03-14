@@ -91,7 +91,7 @@ const LocationMessage: React.FC<LocationMessageProps> = ({
         <img
           src={getStaticMapUrl()}
           alt="위치 미리보기"
-          onError={(e) => {
+          onError={e => {
             // 이미지 로드 실패 시 기본 배경으로 대체
             const target = e.target as HTMLImageElement;
             target.style.display = 'none';
@@ -108,11 +108,13 @@ const LocationMessage: React.FC<LocationMessageProps> = ({
       <div className="location-info">
         <div className="location-header">
           <MapPinIcon />
-          <span className="location-name">
-            {locationName || '공유된 위치'}
-          </span>
+          <span className="location-name">{locationName || '공유된 위치'}</span>
         </div>
-        {address && <p className="location-address" data-testid="location-address">{address}</p>}
+        {address && (
+          <p className="location-address" data-testid="location-address">
+            {address}
+          </p>
+        )}
         <p className="location-coords">
           {latitude.toFixed(6)}, {longitude.toFixed(6)}
         </p>

@@ -18,20 +18,15 @@ import {
  * Hook for announcing messages to screen readers
  */
 export function useAnnounce() {
-  return useCallback(
-    (message: string, priority: 'polite' | 'assertive' = 'polite') => {
-      announce(message, priority);
-    },
-    []
-  );
+  return useCallback((message: string, priority: 'polite' | 'assertive' = 'polite') => {
+    announce(message, priority);
+  }, []);
 }
 
 /**
  * Hook for trapping focus within a container (for modals/dialogs)
  */
-export function useFocusTrap(
-  isActive: boolean = true
-): React.RefObject<HTMLDivElement> {
+export function useFocusTrap(isActive: boolean = true): React.RefObject<HTMLDivElement> {
   const ref = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
 
@@ -113,10 +108,7 @@ export function useMediaPreferences(): MediaPreferences {
 /**
  * Hook for keyboard navigation in lists
  */
-export function useListNavigation(
-  itemCount: number,
-  onSelect?: (index: number) => void
-) {
+export function useListNavigation(itemCount: number, onSelect?: (index: number) => void) {
   const [activeIndex, setActiveIndex] = useState(0);
 
   const handleKeyDown = useCallback(
@@ -193,12 +185,7 @@ export function useLiveRegion() {
 
   const LiveRegion = useCallback(
     () => (
-      <div
-        aria-live={priority}
-        aria-atomic="true"
-        className="sr-only"
-        role="status"
-      >
+      <div aria-live={priority} aria-atomic="true" className="sr-only" role="status">
         {message}
       </div>
     ),

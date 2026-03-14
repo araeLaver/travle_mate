@@ -91,7 +91,7 @@ const AIRecommendation: React.FC = () => {
       <div className="sticky top-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex overflow-x-auto scrollbar-hide">
-            {tabs.map((tab) => (
+            {tabs.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
@@ -128,7 +128,11 @@ const AIRecommendation: React.FC = () => {
 
           {/* Chat Tab */}
           {activeTab === 'chat' && (
-            <motion.div key="chat" {...fadeInUp} className="max-w-3xl mx-auto h-[calc(100vh-280px)]">
+            <motion.div
+              key="chat"
+              {...fadeInUp}
+              className="max-w-3xl mx-auto h-[calc(100vh-280px)]"
+            >
               <AIChat className="h-full" onPlaceSelect={handlePlaceSelect} />
             </motion.div>
           )}
@@ -157,10 +161,12 @@ const AIRecommendation: React.FC = () => {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-lg w-full p-6 border border-gray-200/50 dark:border-gray-700/50"
-              onClick={(e) => e.stopPropagation()}
+              onClick={e => e.stopPropagation()}
             >
               <div className="flex justify-between items-start mb-4">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white">{selectedPlace.name}</h3>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                  {selectedPlace.name}
+                </h3>
                 <button
                   onClick={() => setSelectedPlace(null)}
                   className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
@@ -195,10 +201,15 @@ const AIRecommendation: React.FC = () => {
 
               {selectedPlace.reasons && selectedPlace.reasons.length > 0 && (
                 <div className="mb-4">
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">AI 추천 이유:</p>
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    AI 추천 이유:
+                  </p>
                   <ul className="space-y-1">
                     {selectedPlace.reasons.map((reason, idx) => (
-                      <li key={idx} className="text-sm text-gray-600 dark:text-gray-400 flex items-start gap-2">
+                      <li
+                        key={idx}
+                        className="text-sm text-gray-600 dark:text-gray-400 flex items-start gap-2"
+                      >
                         <span className="text-violet-500">•</span>
                         {reason}
                       </li>

@@ -16,7 +16,10 @@ import {
 } from '../types';
 
 // Rarity 색상 및 라벨 매핑
-const rarityConfig: Record<Rarity, { color: string; darkColor: string; label: string; emoji: string }> = {
+const rarityConfig: Record<
+  Rarity,
+  { color: string; darkColor: string; label: string; emoji: string }
+> = {
   COMMON: { color: '#9ca3af', darkColor: '#6b7280', label: '일반', emoji: '⚪' },
   RARE: { color: '#3b82f6', darkColor: '#60a5fa', label: '레어', emoji: '🔵' },
   EPIC: { color: '#8b5cf6', darkColor: '#a78bfa', label: '에픽', emoji: '🟣' },
@@ -133,7 +136,7 @@ const NFTMap: React.FC = () => {
         toast.success(response.message);
 
         if (response.unlockedAchievements && response.unlockedAchievements.length > 0) {
-          response.unlockedAchievements.forEach((achievement) => {
+          response.unlockedAchievements.forEach(achievement => {
             toast.success(`업적 달성! ${achievement.name} (+${achievement.pointReward}P)`);
           });
         }
@@ -161,12 +164,16 @@ const NFTMap: React.FC = () => {
 
   // 필터링된 장소
   const filteredLocations = nearbyLocations.filter(
-    (loc) => selectedCategory === 'ALL' || loc.category === selectedCategory
+    loc => selectedCategory === 'ALL' || loc.category === selectedCategory
   );
 
   // 수집 가능 여부 확인
   const canCollect = (location: CollectibleLocationResponse) => {
-    return !location.isCollected && location.distance !== undefined && location.distance <= location.collectRadius;
+    return (
+      !location.isCollected &&
+      location.distance !== undefined &&
+      location.distance <= location.collectRadius
+    );
   };
 
   // 로딩 상태
@@ -250,7 +257,9 @@ const NFTMap: React.FC = () => {
           >
             <span className="text-3xl">💰</span>
             <div>
-              <span className="text-2xl font-bold">{pointBalance.totalPoints.toLocaleString()}</span>
+              <span className="text-2xl font-bold">
+                {pointBalance.totalPoints.toLocaleString()}
+              </span>
               <span className="text-sm ml-1 opacity-80">P</span>
             </div>
             <span className="ml-auto text-sm opacity-80">보유 포인트</span>
@@ -284,16 +293,12 @@ const NFTMap: React.FC = () => {
         </motion.div>
 
         {/* 검색 옵션 */}
-        <motion.div
-          {...fadeInUp}
-          transition={{ delay: 0.15 }}
-          className="flex gap-3"
-        >
+        <motion.div {...fadeInUp} transition={{ delay: 0.15 }} className="flex gap-3">
           <div className="flex-1">
             <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">검색 반경</label>
             <select
               value={searchRadius}
-              onChange={(e) => setSearchRadius(Number(e.target.value))}
+              onChange={e => setSearchRadius(Number(e.target.value))}
               className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-gray-800 dark:text-white outline-none focus:ring-2 focus:ring-violet-500/50"
             >
               <option value={1}>1km</option>
@@ -307,7 +312,7 @@ const NFTMap: React.FC = () => {
             <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">카테고리</label>
             <select
               value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value as LocationCategory | 'ALL')}
+              onChange={e => setSelectedCategory(e.target.value as LocationCategory | 'ALL')}
               className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-gray-800 dark:text-white outline-none focus:ring-2 focus:ring-violet-500/50"
             >
               <option value="ALL">전체</option>
@@ -344,11 +349,18 @@ const NFTMap: React.FC = () => {
             <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
               주변에 수집 가능한 장소가 없습니다
             </h3>
-            <p className="text-gray-500 dark:text-gray-400">검색 반경을 넓히거나 다른 지역으로 이동해보세요</p>
+            <p className="text-gray-500 dark:text-gray-400">
+              검색 반경을 넓히거나 다른 지역으로 이동해보세요
+            </p>
           </div>
         ) : (
-          <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-4">
-            {filteredLocations.map((location) => (
+          <motion.div
+            variants={staggerContainer}
+            initial="initial"
+            animate="animate"
+            className="space-y-4"
+          >
+            {filteredLocations.map(location => (
               <motion.article
                 key={location.id}
                 variants={fadeInUp}
@@ -386,9 +398,12 @@ const NFTMap: React.FC = () => {
                   {/* 콘텐츠 */}
                   <div className="flex-1 p-4 flex flex-col">
                     <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-semibold text-gray-800 dark:text-white">{location.name}</h3>
+                      <h3 className="font-semibold text-gray-800 dark:text-white">
+                        {location.name}
+                      </h3>
                       <span className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs text-gray-600 dark:text-gray-400">
-                        {categoryLabels[location.category]?.emoji} {categoryLabels[location.category]?.label}
+                        {categoryLabels[location.category]?.emoji}{' '}
+                        {categoryLabels[location.category]?.label}
                       </span>
                     </div>
 
@@ -442,9 +457,7 @@ const NFTMap: React.FC = () => {
                           수집 중...
                         </>
                       ) : (
-                        <>
-                          ⭐ NFT 수집하기
-                        </>
+                        <>⭐ NFT 수집하기</>
                       )}
                     </button>
                   ) : (

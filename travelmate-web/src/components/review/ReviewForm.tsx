@@ -39,12 +39,7 @@ const SEASONS: { value: VisitedSeason; label: string }[] = [
   { value: 'WINTER', label: '겨울' },
 ];
 
-const ReviewForm: React.FC<ReviewFormProps> = ({
-  locationId,
-  locationName,
-  onSubmit,
-  onClose,
-}) => {
+const ReviewForm: React.FC<ReviewFormProps> = ({ locationId, locationName, onSubmit, onClose }) => {
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState('');
@@ -81,7 +76,11 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
 
   return (
     <div className="review-form-overlay" onClick={onClose} data-testid="review-form-overlay">
-      <div className="review-form-modal" onClick={(e) => e.stopPropagation()} data-testid="review-form-modal">
+      <div
+        className="review-form-modal"
+        onClick={e => e.stopPropagation()}
+        data-testid="review-form-modal"
+      >
         <div className="review-form-header">
           <h2>리뷰 작성</h2>
           <button className="close-btn" onClick={onClose} data-testid="close-btn">
@@ -96,7 +95,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
           <div className="form-group">
             <label>평점 *</label>
             <div className="star-rating" data-testid="star-rating">
-              {[1, 2, 3, 4, 5].map((star) => (
+              {[1, 2, 3, 4, 5].map(star => (
                 <button
                   key={star}
                   type="button"
@@ -109,9 +108,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
                   <StarIcon filled={star <= (hoverRating || rating)} />
                 </button>
               ))}
-              <span className="rating-text">
-                {rating > 0 ? `${rating}점` : '선택해주세요'}
-              </span>
+              <span className="rating-text">{rating > 0 ? `${rating}점` : '선택해주세요'}</span>
             </div>
           </div>
 
@@ -119,7 +116,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
           <div className="form-group">
             <label>방문 계절</label>
             <div className="season-options">
-              {SEASONS.map((season) => (
+              {SEASONS.map(season => (
                 <button
                   key={season.value}
                   type="button"
@@ -139,12 +136,14 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
             <label>리뷰 내용</label>
             <textarea
               value={comment}
-              onChange={(e) => setComment(e.target.value)}
+              onChange={e => setComment(e.target.value)}
               placeholder="이 장소에 대한 경험을 공유해주세요..."
               maxLength={1000}
               rows={5}
             />
-            <div className="char-count" data-testid="char-count">{comment.length}/1000</div>
+            <div className="char-count" data-testid="char-count">
+              {comment.length}/1000
+            </div>
           </div>
 
           {/* 에러 메시지 */}

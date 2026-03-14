@@ -41,9 +41,7 @@ export function useNetworkStatus(): NetworkStatus {
 
   const updateConnectionInfo = useCallback(() => {
     const connection =
-      navigator.connection ||
-      navigator.mozConnection ||
-      navigator.webkitConnection;
+      navigator.connection || navigator.mozConnection || navigator.webkitConnection;
 
     if (connection) {
       setConnectionInfo({
@@ -73,9 +71,7 @@ export function useNetworkStatus(): NetworkStatus {
 
     // Network Information API 지원 시
     const connection =
-      navigator.connection ||
-      navigator.mozConnection ||
-      navigator.webkitConnection;
+      navigator.connection || navigator.mozConnection || navigator.webkitConnection;
 
     if (connection) {
       updateConnectionInfo();
@@ -115,8 +111,7 @@ export function useOfflineStorage<T>(key: string, initialValue: T) {
   const setValue = useCallback(
     (value: T | ((val: T) => T)) => {
       try {
-        const valueToStore =
-          value instanceof Function ? value(storedValue) : value;
+        const valueToStore = value instanceof Function ? value(storedValue) : value;
         setStoredValue(valueToStore);
         localStorage.setItem(key, JSON.stringify(valueToStore));
       } catch (error) {
@@ -152,10 +147,7 @@ interface PendingRequest {
 }
 
 export function useOfflineQueue() {
-  const [queue, setQueue, clearQueue] = useOfflineStorage<PendingRequest[]>(
-    'tm_offline_queue',
-    []
-  );
+  const [queue, setQueue, clearQueue] = useOfflineStorage<PendingRequest[]>('tm_offline_queue', []);
   const { isOnline } = useNetworkStatus();
 
   const addToQueue = useCallback(
@@ -165,14 +157,14 @@ export function useOfflineQueue() {
         id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         timestamp: Date.now(),
       };
-      setQueue((prev) => [...prev, newRequest]);
+      setQueue(prev => [...prev, newRequest]);
     },
     [setQueue]
   );
 
   const removeFromQueue = useCallback(
     (id: string) => {
-      setQueue((prev) => prev.filter((item) => item.id !== id));
+      setQueue(prev => prev.filter(item => item.id !== id));
     },
     [setQueue]
   );

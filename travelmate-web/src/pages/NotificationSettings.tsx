@@ -87,8 +87,8 @@ const NotificationSettings: React.FC = () => {
   const handleMarkAsRead = async (id: number) => {
     try {
       await notificationService.markAsRead([id]);
-      setNotifications((prev) => prev.filter((n) => n.id !== id));
-      setUnreadCount((prev) => Math.max(0, prev - 1));
+      setNotifications(prev => prev.filter(n => n.id !== id));
+      setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Failed to mark as read:', error);
@@ -113,7 +113,7 @@ const NotificationSettings: React.FC = () => {
   const handleDelete = async (id: number) => {
     try {
       await notificationService.deleteNotification(id);
-      setNotifications((prev) => prev.filter((n) => n.id !== id));
+      setNotifications(prev => prev.filter(n => n.id !== id));
       showToast('알림이 삭제되었습니다.', 'success');
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -218,7 +218,10 @@ const NotificationSettings: React.FC = () => {
 
       <main className="max-w-4xl mx-auto px-4 py-6 relative z-10 space-y-6">
         {/* 푸시 알림 섹션 */}
-        <motion.section {...fadeInUp} className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
+        <motion.section
+          {...fadeInUp}
+          className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-700/50 overflow-hidden"
+        >
           <div className="p-4 border-b border-gray-200/50 dark:border-gray-700/50">
             <h2 className="text-lg font-semibold text-gray-800 dark:text-white">푸시 알림</h2>
           </div>
@@ -228,7 +231,9 @@ const NotificationSettings: React.FC = () => {
                 <span className="text-2xl">🔔</span>
                 <div>
                   <p className="font-medium text-gray-800 dark:text-white">푸시 알림 받기</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">모든 알림을 실시간으로 받습니다</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    모든 알림을 실시간으로 받습니다
+                  </p>
                 </div>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
@@ -254,7 +259,7 @@ const NotificationSettings: React.FC = () => {
             <h2 className="text-lg font-semibold text-gray-800 dark:text-white">알림 유형</h2>
           </div>
           <div className="divide-y divide-gray-200/50 dark:divide-gray-700/50">
-            {settingItems.map((item) => (
+            {settingItems.map(item => (
               <div key={item.key} className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <span className="text-xl">{item.icon}</span>
@@ -287,7 +292,8 @@ const NotificationSettings: React.FC = () => {
         >
           <div className="p-4 border-b border-gray-200/50 dark:border-gray-700/50 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
-              최근 알림 {unreadCount > 0 && <span className="text-violet-500">({unreadCount})</span>}
+              최근 알림{' '}
+              {unreadCount > 0 && <span className="text-violet-500">({unreadCount})</span>}
             </h2>
             {unreadCount > 0 && (
               <button
@@ -310,7 +316,7 @@ const NotificationSettings: React.FC = () => {
             </div>
           ) : (
             <div className="divide-y divide-gray-200/50 dark:divide-gray-700/50">
-              {notifications.map((notif) => (
+              {notifications.map(notif => (
                 <motion.div
                   key={notif.id}
                   initial={{ opacity: 0, x: -20 }}
@@ -322,9 +328,15 @@ const NotificationSettings: React.FC = () => {
                     {getNotificationIcon(notif.type)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-gray-800 dark:text-white truncate">{notif.title}</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">{notif.message}</p>
-                    <span className="text-xs text-gray-400 dark:text-gray-500">{formatDate(notif.createdAt)}</span>
+                    <h4 className="font-medium text-gray-800 dark:text-white truncate">
+                      {notif.title}
+                    </h4>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">
+                      {notif.message}
+                    </p>
+                    <span className="text-xs text-gray-400 dark:text-gray-500">
+                      {formatDate(notif.createdAt)}
+                    </span>
                   </div>
                   <div className="flex gap-2 flex-shrink-0">
                     <button

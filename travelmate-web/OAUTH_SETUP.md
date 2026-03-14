@@ -32,6 +32,7 @@
 ### 1.3 환경 변수 설정
 
 생성된 클라이언트 ID를 `.env.local` 파일에 추가:
+
 ```
 REACT_APP_GOOGLE_CLIENT_ID=your_google_client_id_here.apps.googleusercontent.com
 ```
@@ -65,6 +66,7 @@ REACT_APP_GOOGLE_CLIENT_ID=your_google_client_id_here.apps.googleusercontent.com
 ### 2.4 환경 변수 설정
 
 앱 키 중 "JavaScript 키"를 `.env.local` 파일에 추가:
+
 ```
 REACT_APP_KAKAO_CLIENT_ID=your_kakao_javascript_key_here
 ```
@@ -87,6 +89,7 @@ REACT_APP_KAKAO_CLIENT_ID=your_kakao_javascript_key_here
 ### 3.3 제공 정보 설정
 
 다음 정보 제공 설정:
+
 - 회원이름
 - 이메일 주소
 - 프로필 사진
@@ -94,6 +97,7 @@ REACT_APP_KAKAO_CLIENT_ID=your_kakao_javascript_key_here
 ### 3.4 환경 변수 설정
 
 Client ID와 Client Secret를 `.env.local` 파일에 추가:
+
 ```
 REACT_APP_NAVER_CLIENT_ID=your_naver_client_id_here
 REACT_APP_NAVER_CLIENT_SECRET=your_naver_client_secret_here
@@ -102,12 +106,13 @@ REACT_APP_NAVER_CLIENT_SECRET=your_naver_client_secret_here
 ## 4. 최종 환경 변수 파일
 
 `.env.local` 파일의 최종 형태:
+
 ```
 # OAuth Configuration
 # Google OAuth
 REACT_APP_GOOGLE_CLIENT_ID=your_google_client_id_here.apps.googleusercontent.com
 
-# Kakao OAuth  
+# Kakao OAuth
 REACT_APP_KAKAO_CLIENT_ID=your_kakao_javascript_key_here
 
 # Naver OAuth
@@ -121,6 +126,7 @@ REACT_APP_REDIRECT_URI=http://localhost:3005/auth/callback
 ## 5. 테스트 방법
 
 1. 환경 변수 설정 완료 후 개발 서버 재시작:
+
    ```bash
    npm start
    ```

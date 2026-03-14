@@ -90,10 +90,7 @@ function getNestedValue(obj: Translations, path: string): string | undefined {
  * Supports dot notation for nested keys: 'common.loading'
  * Supports interpolation: 'Hello, {name}!' with { name: 'John' }
  */
-export function t(
-  key: string,
-  params?: Record<string, string | number>
-): string {
+export function t(key: string, params?: Record<string, string | number>): string {
   const translation = getNestedValue(translations[currentLanguage], key);
 
   if (!translation) {
@@ -117,10 +114,7 @@ export function t(
 /**
  * Interpolate parameters into a string
  */
-function interpolate(
-  str: string,
-  params?: Record<string, string | number>
-): string {
+function interpolate(str: string, params?: Record<string, string | number>): string {
   if (!params) return str;
 
   return str.replace(/\{(\w+)\}/g, (match, key) => {
@@ -141,10 +135,7 @@ export function getAvailableLanguages(): { code: Language; name: string }[] {
 /**
  * Format date according to current locale
  */
-export function formatDate(
-  date: Date | string,
-  options?: Intl.DateTimeFormatOptions
-): string {
+export function formatDate(date: Date | string, options?: Intl.DateTimeFormatOptions): string {
   const d = typeof date === 'string' ? new Date(date) : date;
   const locale = currentLanguage === 'ko' ? 'ko-KR' : 'en-US';
 
@@ -159,10 +150,7 @@ export function formatDate(
 /**
  * Format number according to current locale
  */
-export function formatNumber(
-  num: number,
-  options?: Intl.NumberFormatOptions
-): string {
+export function formatNumber(num: number, options?: Intl.NumberFormatOptions): string {
   const locale = currentLanguage === 'ko' ? 'ko-KR' : 'en-US';
   return new Intl.NumberFormat(locale, options).format(num);
 }
@@ -170,10 +158,7 @@ export function formatNumber(
 /**
  * Format currency according to current locale
  */
-export function formatCurrency(
-  amount: number,
-  currency: string = 'KRW'
-): string {
+export function formatCurrency(amount: number, currency: string = 'KRW'): string {
   const locale = currentLanguage === 'ko' ? 'ko-KR' : 'en-US';
   return new Intl.NumberFormat(locale, {
     style: 'currency',

@@ -18,3 +18,23 @@ export function trackEvent(
     window.gtag('event', eventName, params);
   }
 }
+
+export function trackLoginSuccess(): void {
+  trackEvent('login_success');
+}
+
+export function trackSignUpComplete(): void {
+  trackEvent('sign_up_complete');
+}
+
+export function trackChatMessageSent(): void {
+  trackEvent('chat_message_sent');
+}
+
+export function trackMatchRequestSent(): void {
+  trackEvent('match_request_sent');
+}
+
+export function trackMatchRecommendationViewed(): void {
+  trackEvent('match_recommendation_viewed');
+}

@@ -46,10 +46,10 @@ describe('useGeolocation', () => {
   });
 
   it('should update position on successful geolocation', async () => {
-    mockGeolocation.getCurrentPosition.mockImplementation((success) => {
+    mockGeolocation.getCurrentPosition.mockImplementation(success => {
       success(mockPosition);
     });
-    mockGeolocation.watchPosition.mockImplementation((success) => {
+    mockGeolocation.watchPosition.mockImplementation(success => {
       success(mockPosition);
       return 1;
     });
@@ -180,7 +180,7 @@ describe('useGeolocation', () => {
       maximumAge: 60000,
     };
 
-    mockGeolocation.getCurrentPosition.mockImplementation((success) => {
+    mockGeolocation.getCurrentPosition.mockImplementation(success => {
       success(mockPosition);
     });
     mockGeolocation.watchPosition.mockReturnValue(1);
@@ -207,7 +207,7 @@ describe('useGeolocation', () => {
   });
 
   it('should provide refresh function', async () => {
-    mockGeolocation.getCurrentPosition.mockImplementation((success) => {
+    mockGeolocation.getCurrentPosition.mockImplementation(success => {
       success(mockPosition);
     });
     mockGeolocation.watchPosition.mockReturnValue(1);
@@ -243,12 +243,12 @@ describe('useGeolocation', () => {
       timestamp: Date.now(),
     };
 
-    mockGeolocation.getCurrentPosition.mockImplementation((success) => {
+    mockGeolocation.getCurrentPosition.mockImplementation(success => {
       success(initialPosition);
     });
 
     let watchCallback: (pos: GeolocationPosition) => void;
-    mockGeolocation.watchPosition.mockImplementation((success) => {
+    mockGeolocation.watchPosition.mockImplementation(success => {
       watchCallback = success;
       return 1;
     });

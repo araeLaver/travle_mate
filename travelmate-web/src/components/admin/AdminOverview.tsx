@@ -31,14 +31,12 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, trend, color = 
         <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
         {trend && (
           <p className={`text-sm mt-2 ${trend.value >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-            {trend.value >= 0 ? '+' : ''}{trend.value} {trend.label}
+            {trend.value >= 0 ? '+' : ''}
+            {trend.value} {trend.label}
           </p>
         )}
       </div>
-      <div
-        className="p-3 rounded-full"
-        style={{ backgroundColor: `${color}20` }}
-      >
+      <div className="p-3 rounded-full" style={{ backgroundColor: `${color}20` }}>
         <div style={{ color }}>{icon}</div>
       </div>
     </div>
@@ -87,10 +85,7 @@ interface LineChartProps {
 }
 
 const SimpleLineChart: React.FC<LineChartProps> = ({ data, title, label1, label2 }) => {
-  const maxValue = Math.max(
-    ...data.map(d => Math.max(d.value1, d.value2 || 0)),
-    1
-  );
+  const maxValue = Math.max(...data.map(d => Math.max(d.value1, d.value2 || 0)), 1);
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
@@ -108,7 +103,11 @@ const SimpleLineChart: React.FC<LineChartProps> = ({ data, title, label1, label2
         )}
       </div>
       <div className="relative h-48">
-        <svg className="w-full h-full" viewBox={`0 0 ${data.length * 30} 100`} preserveAspectRatio="none">
+        <svg
+          className="w-full h-full"
+          viewBox={`0 0 ${data.length * 30} 100`}
+          preserveAspectRatio="none"
+        >
           {/* Grid lines */}
           {[0, 25, 50, 75, 100].map(y => (
             <line
@@ -140,9 +139,13 @@ const SimpleLineChart: React.FC<LineChartProps> = ({ data, title, label1, label2
         </svg>
       </div>
       <div className="flex justify-between text-xs text-gray-500 mt-2">
-        {data.filter((_, i) => i % 5 === 0).map((d, i) => (
-          <span key={i}>{new Date(d.date).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}</span>
-        ))}
+        {data
+          .filter((_, i) => i % 5 === 0)
+          .map((d, i) => (
+            <span key={i}>
+              {new Date(d.date).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
+            </span>
+          ))}
       </div>
     </div>
   );
@@ -229,7 +232,12 @@ const AdminOverview: React.FC = () => {
           value={stats.totalUsers.toLocaleString()}
           icon={
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m3 5.197V21" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m3 5.197V21"
+              />
             </svg>
           }
           trend={{ value: stats.newUsersToday, label: '오늘' }}
@@ -240,7 +248,12 @@ const AdminOverview: React.FC = () => {
           value={stats.totalNfts.toLocaleString()}
           icon={
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
             </svg>
           }
           trend={{ value: stats.collectionsToday, label: '오늘 수집' }}
@@ -251,7 +264,12 @@ const AdminOverview: React.FC = () => {
           value={stats.activeGroups.toLocaleString()}
           icon={
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
+              />
             </svg>
           }
           color="#f59e0b"
@@ -261,7 +279,12 @@ const AdminOverview: React.FC = () => {
           value={stats.averageRating.toFixed(1)}
           icon={
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+              />
             </svg>
           }
           color="#ec4899"
@@ -276,10 +299,7 @@ const AdminOverview: React.FC = () => {
           label1="신규 사용자"
           label2="NFT 수집"
         />
-        <SimpleBarChart
-          data={rarityData}
-          title="희귀도별 NFT 분포"
-        />
+        <SimpleBarChart data={rarityData} title="희귀도별 NFT 분포" />
       </div>
 
       {/* Additional Stats */}
@@ -289,7 +309,12 @@ const AdminOverview: React.FC = () => {
           value={stats.mintedNfts.toLocaleString()}
           icon={
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
           }
           color="#8b5cf6"
@@ -299,7 +324,12 @@ const AdminOverview: React.FC = () => {
           value={stats.newUsersThisWeek.toLocaleString()}
           icon={
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+              />
             </svg>
           }
           color="#06b6d4"
@@ -309,7 +339,12 @@ const AdminOverview: React.FC = () => {
           value={stats.totalReviews.toLocaleString()}
           icon={
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+              />
             </svg>
           }
           color="#f97316"
@@ -322,7 +357,9 @@ const AdminOverview: React.FC = () => {
           <h3 className="text-lg font-semibold text-gray-900 mb-4">시스템 상태</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="flex items-center gap-4">
-              <div className={`w-3 h-3 rounded-full ${health.status === 'UP' ? 'bg-green-500' : 'bg-red-500'}`} />
+              <div
+                className={`w-3 h-3 rounded-full ${health.status === 'UP' ? 'bg-green-500' : 'bg-red-500'}`}
+              />
               <div>
                 <p className="text-sm text-gray-500">상태</p>
                 <p className="font-medium">{health.status === 'UP' ? '정상' : '이상'}</p>
@@ -349,9 +386,14 @@ const AdminOverview: React.FC = () => {
           {/* Services Status */}
           <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
             {Object.entries(health.services).map(([key, service]) => (
-              <div key={key} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div
+                key={key}
+                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+              >
                 <div className="flex items-center gap-3">
-                  <div className={`w-2 h-2 rounded-full ${service.status === 'UP' ? 'bg-green-500' : 'bg-red-500'}`} />
+                  <div
+                    className={`w-2 h-2 rounded-full ${service.status === 'UP' ? 'bg-green-500' : 'bg-red-500'}`}
+                  />
                   <span className="font-medium text-gray-900">{service.name}</span>
                 </div>
                 <span className="text-sm text-gray-500">{service.responseTime}ms</span>

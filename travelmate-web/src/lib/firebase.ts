@@ -18,9 +18,7 @@ export const vapidKey = process.env.REACT_APP_FIREBASE_VAPID_KEY;
 // Check if Firebase config is properly set
 export const isFirebaseConfigured = (): boolean => {
   return Boolean(
-    firebaseConfig.apiKey &&
-      firebaseConfig.projectId &&
-      firebaseConfig.messagingSenderId
+    firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.messagingSenderId
   );
 };
 

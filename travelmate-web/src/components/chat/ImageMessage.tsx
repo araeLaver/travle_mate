@@ -107,17 +107,25 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
 
       {/* 이미지 모달 */}
       {showModal && (
-        <div className="image-modal-overlay" onClick={handleClose} data-testid="image-modal-overlay">
+        <div
+          className="image-modal-overlay"
+          onClick={handleClose}
+          data-testid="image-modal-overlay"
+        >
           <div className="image-modal">
             <div className="modal-header">
               <button className="close-btn" onClick={handleClose} data-testid="modal-close-btn">
                 <CloseIcon />
               </button>
-              <button className="download-btn" onClick={handleDownload} data-testid="modal-download-btn">
+              <button
+                className="download-btn"
+                onClick={handleDownload}
+                data-testid="modal-download-btn"
+              >
                 <DownloadIcon />
               </button>
             </div>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-content" onClick={e => e.stopPropagation()}>
               <img src={imageUrl} alt={alt} data-testid="modal-image" />
             </div>
           </div>

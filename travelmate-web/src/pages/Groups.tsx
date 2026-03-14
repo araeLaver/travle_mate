@@ -7,6 +7,7 @@ import { getErrorMessage, logError } from '../utils/errorHandler';
 import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
 import AdBanner from '../components/ads/AdBanner';
+import SEOHead from '../components/SEOHead';
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -192,6 +193,11 @@ const Groups: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] relative overflow-hidden">
+      <SEOHead
+        title="여행 그룹 - 함께하는 여행"
+        description="Fryndo 여행 그룹에서 마음이 맞는 여행 메이트를 찾아보세요. 목적지별, 여행 스타일별 그룹을 검색하고 새로운 여행 동반자와 특별한 추억을 만드세요."
+        canonical="https://fryndo.com/groups"
+      />
       {/* Background Effects */}
       <div
         className="absolute top-20 left-10 w-72 h-72 bg-violet-400/30 dark:bg-violet-600/20 rounded-full blur-3xl"

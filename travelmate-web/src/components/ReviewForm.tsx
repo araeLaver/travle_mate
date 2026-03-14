@@ -17,7 +17,13 @@ const StarIcon = ({ filled }: { filled: boolean }) => (
 );
 
 const CloseIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 20, height: 20 }}>
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    style={{ width: 20, height: 20 }}
+  >
     <line x1="18" y1="6" x2="6" y2="18" />
     <line x1="6" y1="6" x2="18" y2="18" />
   </svg>
@@ -51,7 +57,7 @@ const StarRating: React.FC<StarRatingProps> = ({ label, value, onChange }) => {
     <div className="tr-form-group">
       <label className="tr-label">{label}</label>
       <div className="tr-star-row">
-        {[1, 2, 3, 4, 5].map((star) => (
+        {[1, 2, 3, 4, 5].map(star => (
           <button
             key={star}
             type="button"
@@ -64,9 +70,7 @@ const StarRating: React.FC<StarRatingProps> = ({ label, value, onChange }) => {
             <StarIcon filled={star <= (hovered || value)} />
           </button>
         ))}
-        <span className="tr-rating-text">
-          {value > 0 ? `${value}점` : '선택'}
-        </span>
+        <span className="tr-rating-text">{value > 0 ? `${value}점` : '선택'}</span>
       </div>
     </div>
   );
@@ -124,7 +128,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
     <div className="tr-overlay" onClick={onClose} data-testid="travel-review-overlay">
       <div
         className="tr-modal"
-        onClick={(e) => e.stopPropagation()}
+        onClick={e => e.stopPropagation()}
         data-testid="travel-review-modal"
       >
         {/* 헤더 */}
@@ -137,26 +141,12 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
 
         <form onSubmit={handleSubmit} className="tr-form">
           {/* 대상자 표시 */}
-          <div className="tr-reviewee-name">
-            {revieweeNickname} 님에 대한 평가
-          </div>
+          <div className="tr-reviewee-name">{revieweeNickname} 님에 대한 평가</div>
 
           {/* 별점 섹션 */}
-          <StarRating
-            label="시간 약속"
-            value={punctualityScore}
-            onChange={setPunctualityScore}
-          />
-          <StarRating
-            label="매너"
-            value={mannersScore}
-            onChange={setMannersScore}
-          />
-          <StarRating
-            label="소통"
-            value={communicationScore}
-            onChange={setCommunicationScore}
-          />
+          <StarRating label="시간 약속" value={punctualityScore} onChange={setPunctualityScore} />
+          <StarRating label="매너" value={mannersScore} onChange={setMannersScore} />
+          <StarRating label="소통" value={communicationScore} onChange={setCommunicationScore} />
 
           {/* 다시 함께 여행 */}
           <div className="tr-form-group">
@@ -164,7 +154,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
               <input
                 type="checkbox"
                 checked={wouldTravelAgain}
-                onChange={(e) => setWouldTravelAgain(e.target.checked)}
+                onChange={e => setWouldTravelAgain(e.target.checked)}
                 className="tr-checkbox"
               />
               <span>다시 함께 여행하고 싶습니다</span>
@@ -177,7 +167,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
             <textarea
               className="tr-textarea"
               value={comment}
-              onChange={(e) => setComment(e.target.value)}
+              onChange={e => setComment(e.target.value)}
               placeholder="동행에 대한 솔직한 후기를 남겨주세요..."
               maxLength={500}
               rows={4}
@@ -198,11 +188,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
             >
               취소
             </button>
-            <button
-              type="submit"
-              className="tr-btn-submit"
-              disabled={createReview.isPending}
-            >
+            <button type="submit" className="tr-btn-submit" disabled={createReview.isPending}>
               {createReview.isPending ? '제출 중...' : '평가 작성'}
             </button>
           </div>

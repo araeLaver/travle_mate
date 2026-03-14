@@ -11,7 +11,7 @@ describe('NFT Collection', () => {
       },
     }).as('getMe');
 
-    cy.window().then((win) => {
+    cy.window().then(win => {
       win.localStorage.setItem('accessToken', 'mock-access-token');
       win.localStorage.setItem('refreshToken', 'mock-refresh-token');
     });

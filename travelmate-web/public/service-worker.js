@@ -28,11 +28,11 @@ const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg'];
 /**
  * Install event - cache static assets
  */
-self.addEventListener('install', (event) => {
+self.addEventListener('install', event => {
   event.waitUntil(
     caches
       .open(STATIC_CACHE)
-      .then((cache) => {
+      .then(cache => {
         console.log('[SW] Caching static assets');
         return cache.addAll(STATIC_ASSETS);
       })
@@ -40,7 +40,7 @@ self.addEventListener('install', (event) => {
         // Skip waiting to activate immediately
         return self.skipWaiting();
       })
-      .catch((error) => {
+      .catch(error => {
         console.error('[SW] Error caching static assets:', error);
       })
   );
@@ -49,14 +49,14 @@ self.addEventListener('install', (event) => {
 /**
  * Activate event - clean up old caches
  */
-self.addEventListener('activate', (event) => {
+self.addEventListener('activate', event => {
   event.waitUntil(
     caches
       .keys()
-      .then((cacheNames) => {
+      .then(cacheNames => {
         return Promise.all(
           cacheNames
-            .filter((cacheName) => {
+            .filter(cacheName => {
               // Delete old version caches
               return (
                 cacheName.startsWith('travelmate-') &&
@@ -65,7 +65,7 @@ self.addEventListener('activate', (event) => {
                 cacheName !== IMAGE_CACHE
               );
             })
-            .map((cacheName) => {
+            .map(cacheName => {
               console.log('[SW] Deleting old cache:', cacheName);
               return caches.delete(cacheName);
             })
@@ -82,16 +82,14 @@ self.addEventListener('activate', (event) => {
  * Check if URL is an API request
  */
 function isApiRequest(url) {
-  return API_ROUTES.some((route) => url.pathname.startsWith(route));
+  return API_ROUTES.some(route => url.pathname.startsWith(route));
 }
 
 /**
  * Check if URL is an image request
  */
 function isImageRequest(url) {
-  return IMAGE_EXTENSIONS.some((ext) =>
-    url.pathname.toLowerCase().endsWith(ext)
-  );
+  return IMAGE_EXTENSIONS.some(ext => url.pathname.toLowerCase().endsWith(ext));
 }
 
 /**
@@ -111,13 +109,10 @@ async function networkFirst(request) {
       return cachedResponse;
     }
     // Return offline response for API requests
-    return new Response(
-      JSON.stringify({ error: 'Offline', message: 'No network connection' }),
-      {
-        status: 503,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
+    return new Response(JSON.stringify({ error: 'Offline', message: 'No network connection' }), {
+      status: 503,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 }
 
@@ -154,7 +149,7 @@ async function staleWhileRevalidate(request) {
   const cachedResponse = await cache.match(request);
 
   const fetchPromise = fetch(request)
-    .then((networkResponse) => {
+    .then(networkResponse => {
       if (networkResponse.ok) {
         cache.put(request, networkResponse.clone());
       }
@@ -170,7 +165,7 @@ async function staleWhileRevalidate(request) {
 /**
  * Fetch event - handle requests with appropriate caching strategy
  */
-self.addEventListener('fetch', (event) => {
+self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
   // Skip cross-origin requests
@@ -196,7 +191,7 @@ self.addEventListener('fetch', (event) => {
 /**
  * Push notification handler
  */
-self.addEventListener('push', (event) => {
+self.addEventListener('push', event => {
   if (!event.data) return;
 
   try {
@@ -221,13 +216,13 @@ self.addEventListener('push', (event) => {
 /**
  * Notification click handler
  */
-self.addEventListener('notificationclick', (event) => {
+self.addEventListener('notificationclick', event => {
   event.notification.close();
 
   const urlToOpen = event.notification.data?.url || '/';
 
   event.waitUntil(
-    self.clients.matchAll({ type: 'window' }).then((clientList) => {
+    self.clients.matchAll({ type: 'window' }).then(clientList => {
       // Focus existing window if available
       for (const client of clientList) {
         if (client.url === urlToOpen && 'focus' in client) {
@@ -245,7 +240,7 @@ self.addEventListener('notificationclick', (event) => {
 /**
  * Background sync handler
  */
-self.addEventListener('sync', (event) => {
+self.addEventListener('sync', event => {
   if (event.tag === 'sync-pending-data') {
     event.waitUntil(syncPendingData());
   }
@@ -262,18 +257,16 @@ async function syncPendingData() {
 /**
  * Message handler for communication with main thread
  */
-self.addEventListener('message', (event) => {
+self.addEventListener('message', event => {
   if (event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
 
   if (event.data.type === 'CLEAR_CACHE') {
     event.waitUntil(
-      caches.keys().then((cacheNames) => {
+      caches.keys().then(cacheNames => {
         return Promise.all(
-          cacheNames
-            .filter((name) => name.startsWith('travelmate-'))
-            .map((name) => caches.delete(name))
+          cacheNames.filter(name => name.startsWith('travelmate-')).map(name => caches.delete(name))
         );
       })
     );

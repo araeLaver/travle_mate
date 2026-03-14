@@ -40,7 +40,8 @@ function OptimizedImageComponent({
   const imgRef = useRef<HTMLImageElement>(null);
 
   // 블러 플레이스홀더 생성
-  const defaultPlaceholder = blurDataURL ||
+  const defaultPlaceholder =
+    blurDataURL ||
     'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjBmMGYwIi8+PC9zdmc+';
 
   // Hook은 항상 호출 (React Hooks 규칙 준수)
@@ -87,10 +88,7 @@ function OptimizedImageComponent({
   }
 
   return (
-    <div
-      className={`relative overflow-hidden ${className}`}
-      style={{ width, height }}
-    >
+    <div className={`relative overflow-hidden ${className}`} style={{ width, height }}>
       {/* 플레이스홀더 */}
       {!isLoaded && placeholder && (
         <img
@@ -165,7 +163,7 @@ function AvatarImageComponent({
   // 폴백 이니셜 생성
   const initials = alt
     .split(' ')
-    .map((word) => word[0])
+    .map(word => word[0])
     .join('')
     .toUpperCase()
     .slice(0, 2);
@@ -218,12 +216,7 @@ function ThumbnailComponent({
         selected ? 'ring-2 ring-indigo-500 ring-offset-2' : 'hover:opacity-80'
       } ${className}`}
     >
-      <OptimizedImage
-        src={src}
-        alt={alt}
-        className="w-full h-full"
-        objectFit="cover"
-      />
+      <OptimizedImage src={src} alt={alt} className="w-full h-full" objectFit="cover" />
     </button>
   );
 }

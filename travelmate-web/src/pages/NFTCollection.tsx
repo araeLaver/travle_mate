@@ -23,7 +23,10 @@ import {
 } from '../types';
 
 // Rarity config
-const rarityConfig: Record<Rarity, { color: string; darkColor: string; label: string; emoji: string }> = {
+const rarityConfig: Record<
+  Rarity,
+  { color: string; darkColor: string; label: string; emoji: string }
+> = {
   COMMON: { color: '#9ca3af', darkColor: '#6b7280', label: '일반', emoji: '⚪' },
   RARE: { color: '#3b82f6', darkColor: '#60a5fa', label: '레어', emoji: '🔵' },
   EPIC: { color: '#8b5cf6', darkColor: '#a78bfa', label: '에픽', emoji: '🟣' },
@@ -217,7 +220,7 @@ const NFTCollection: React.FC = () => {
       <div className="sticky top-[60px] z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50 shadow-sm">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex overflow-x-auto scrollbar-hide">
-            {tabs.map((tab) => (
+            {tabs.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
@@ -253,7 +256,7 @@ const NFTCollection: React.FC = () => {
                 >
                   전체
                 </button>
-                {(Object.keys(rarityConfig) as Rarity[]).map((rarity) => (
+                {(Object.keys(rarityConfig) as Rarity[]).map(rarity => (
                   <button
                     key={rarity}
                     onClick={() => setSelectedRarity(rarity)}
@@ -281,8 +284,12 @@ const NFTCollection: React.FC = () => {
                   className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-12 border border-gray-200/50 dark:border-gray-700/50 text-center"
                 >
                   <span className="text-6xl mb-4 block">🎨</span>
-                  <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">수집한 NFT가 없습니다</h3>
-                  <p className="text-gray-500 dark:text-gray-400 mb-6">주변 장소를 방문하여 NFT를 수집해보세요!</p>
+                  <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
+                    수집한 NFT가 없습니다
+                  </h3>
+                  <p className="text-gray-500 dark:text-gray-400 mb-6">
+                    주변 장소를 방문하여 NFT를 수집해보세요!
+                  </p>
                   <button
                     onClick={() => navigate('/nft')}
                     className="px-6 py-3 bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold rounded-xl hover:opacity-90 transition-opacity"
@@ -324,7 +331,8 @@ const NFTCollection: React.FC = () => {
                             className="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-bold text-white"
                             style={{ backgroundColor: rarityConfig[nft.location.rarity].color }}
                           >
-                            {rarityConfig[nft.location.rarity].emoji} {rarityConfig[nft.location.rarity].label}
+                            {rarityConfig[nft.location.rarity].emoji}{' '}
+                            {rarityConfig[nft.location.rarity].label}
                           </span>
                           {/* Mint Status Badge */}
                           {nft.mintStatus !== 'PENDING' && (
@@ -340,7 +348,9 @@ const NFTCollection: React.FC = () => {
 
                         {/* NFT Info */}
                         <div className="p-4">
-                          <h3 className="font-bold text-gray-800 dark:text-white mb-1 truncate">{nft.location.name}</h3>
+                          <h3 className="font-bold text-gray-800 dark:text-white mb-1 truncate">
+                            {nft.location.name}
+                          </h3>
                           <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
                             📍 {nft.location.city}, {nft.location.country}
                           </p>
@@ -440,7 +450,9 @@ const NFTCollection: React.FC = () => {
                       />
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-3xl font-bold">{collectionBook.stats.completionRate.toFixed(1)}%</span>
+                      <span className="text-3xl font-bold">
+                        {collectionBook.stats.completionRate.toFixed(1)}%
+                      </span>
                       <span className="text-sm opacity-80">완료율</span>
                     </div>
                   </div>
@@ -449,12 +461,16 @@ const NFTCollection: React.FC = () => {
                 {/* Stats Row */}
                 <div className="flex justify-center items-center gap-6 text-center">
                   <div>
-                    <span className="block text-3xl font-bold">{collectionBook.stats.collectedLocations}</span>
+                    <span className="block text-3xl font-bold">
+                      {collectionBook.stats.collectedLocations}
+                    </span>
                     <span className="text-sm opacity-80">수집</span>
                   </div>
                   <span className="text-2xl opacity-50">/</span>
                   <div>
-                    <span className="block text-3xl font-bold">{collectionBook.stats.totalLocations}</span>
+                    <span className="block text-3xl font-bold">
+                      {collectionBook.stats.totalLocations}
+                    </span>
                     <span className="text-sm opacity-80">전체</span>
                   </div>
                 </div>
@@ -462,30 +478,62 @@ const NFTCollection: React.FC = () => {
 
               {/* Rarity Stats */}
               <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50">
-                <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4">희귀도별 수집</h3>
+                <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4">
+                  희귀도별 수집
+                </h3>
                 <div className="grid grid-cols-4 gap-3">
-                  <div className="text-center p-4 rounded-xl border-2" style={{ borderColor: rarityConfig.COMMON.color }}>
-                    <span className="block text-2xl font-bold text-gray-800 dark:text-white">{collectionBook.stats.commonCollected}</span>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">{rarityConfig.COMMON.emoji} 일반</span>
+                  <div
+                    className="text-center p-4 rounded-xl border-2"
+                    style={{ borderColor: rarityConfig.COMMON.color }}
+                  >
+                    <span className="block text-2xl font-bold text-gray-800 dark:text-white">
+                      {collectionBook.stats.commonCollected}
+                    </span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                      {rarityConfig.COMMON.emoji} 일반
+                    </span>
                   </div>
-                  <div className="text-center p-4 rounded-xl border-2" style={{ borderColor: rarityConfig.RARE.color }}>
-                    <span className="block text-2xl font-bold text-gray-800 dark:text-white">{collectionBook.stats.rareCollected}</span>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">{rarityConfig.RARE.emoji} 레어</span>
+                  <div
+                    className="text-center p-4 rounded-xl border-2"
+                    style={{ borderColor: rarityConfig.RARE.color }}
+                  >
+                    <span className="block text-2xl font-bold text-gray-800 dark:text-white">
+                      {collectionBook.stats.rareCollected}
+                    </span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                      {rarityConfig.RARE.emoji} 레어
+                    </span>
                   </div>
-                  <div className="text-center p-4 rounded-xl border-2" style={{ borderColor: rarityConfig.EPIC.color }}>
-                    <span className="block text-2xl font-bold text-gray-800 dark:text-white">{collectionBook.stats.epicCollected}</span>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">{rarityConfig.EPIC.emoji} 에픽</span>
+                  <div
+                    className="text-center p-4 rounded-xl border-2"
+                    style={{ borderColor: rarityConfig.EPIC.color }}
+                  >
+                    <span className="block text-2xl font-bold text-gray-800 dark:text-white">
+                      {collectionBook.stats.epicCollected}
+                    </span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                      {rarityConfig.EPIC.emoji} 에픽
+                    </span>
                   </div>
-                  <div className="text-center p-4 rounded-xl border-2" style={{ borderColor: rarityConfig.LEGENDARY.color }}>
-                    <span className="block text-2xl font-bold text-gray-800 dark:text-white">{collectionBook.stats.legendaryCollected}</span>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">{rarityConfig.LEGENDARY.emoji} 전설</span>
+                  <div
+                    className="text-center p-4 rounded-xl border-2"
+                    style={{ borderColor: rarityConfig.LEGENDARY.color }}
+                  >
+                    <span className="block text-2xl font-bold text-gray-800 dark:text-white">
+                      {collectionBook.stats.legendaryCollected}
+                    </span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                      {rarityConfig.LEGENDARY.emoji} 전설
+                    </span>
                   </div>
                 </div>
               </div>
 
               {/* Region Progress */}
               <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50">
-                <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4">지역별 수집</h3>
+                <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4">
+                  지역별 수집
+                </h3>
                 <div className="space-y-4">
                   {collectionBook.regions.map(region => (
                     <div key={region.region}>
@@ -516,8 +564,12 @@ const NFTCollection: React.FC = () => {
               {achievements.length === 0 ? (
                 <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-12 border border-gray-200/50 dark:border-gray-700/50 text-center">
                   <span className="text-6xl mb-4 block">🏆</span>
-                  <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">아직 업적이 없습니다</h3>
-                  <p className="text-gray-500 dark:text-gray-400">NFT를 수집하여 업적을 달성해보세요!</p>
+                  <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
+                    아직 업적이 없습니다
+                  </h3>
+                  <p className="text-gray-500 dark:text-gray-400">
+                    NFT를 수집하여 업적을 달성해보세요!
+                  </p>
                 </div>
               ) : (
                 <motion.div
@@ -536,11 +588,13 @@ const NFTCollection: React.FC = () => {
                       }`}
                     >
                       {/* Icon */}
-                      <div className={`w-16 h-16 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                        achievement.isCompleted
-                          ? 'bg-gradient-to-br from-green-400 to-emerald-500'
-                          : 'bg-gray-100 dark:bg-gray-800'
-                      }`}>
+                      <div
+                        className={`w-16 h-16 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                          achievement.isCompleted
+                            ? 'bg-gradient-to-br from-green-400 to-emerald-500'
+                            : 'bg-gray-100 dark:bg-gray-800'
+                        }`}
+                      >
                         {achievement.iconUrl ? (
                           <img src={achievement.iconUrl} alt="" className="w-10 h-10" />
                         ) : (
@@ -550,8 +604,12 @@ const NFTCollection: React.FC = () => {
 
                       {/* Info */}
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-gray-800 dark:text-white mb-1">{achievement.name}</h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{achievement.description}</p>
+                        <h3 className="font-bold text-gray-800 dark:text-white mb-1">
+                          {achievement.name}
+                        </h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+                          {achievement.description}
+                        </p>
 
                         {/* Progress */}
                         <div className="flex items-center gap-3">
@@ -576,7 +634,9 @@ const NFTCollection: React.FC = () => {
                       {/* Reward */}
                       <div className="text-center flex-shrink-0">
                         <span className="text-2xl">⭐</span>
-                        <p className="text-sm font-bold text-violet-600 dark:text-violet-400">{achievement.pointReward}P</p>
+                        <p className="text-sm font-bold text-violet-600 dark:text-violet-400">
+                          {achievement.pointReward}P
+                        </p>
                       </div>
 
                       {/* Completed Badge */}

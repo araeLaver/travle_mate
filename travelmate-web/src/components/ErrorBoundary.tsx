@@ -100,9 +100,7 @@ class ErrorBoundary extends Component<Props, State> {
             </div>
 
             {this.state.errorId && (
-              <p className="mt-4 text-xs text-gray-400">
-                오류 ID: {this.state.errorId}
-              </p>
+              <p className="mt-4 text-xs text-gray-400">오류 ID: {this.state.errorId}</p>
             )}
 
             {process.env.NODE_ENV === 'development' && this.state.error && (

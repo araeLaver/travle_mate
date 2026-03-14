@@ -16,7 +16,13 @@ const StarIcon = ({ filled }: { filled: boolean }) => (
 );
 
 const UserIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 20, height: 20 }}>
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    style={{ width: 20, height: 20 }}
+  >
     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
     <circle cx="12" cy="7" r="4" />
   </svg>
@@ -38,7 +44,7 @@ const HeartIcon = ({ filled }: { filled: boolean }) => (
 
 const renderStars = (score: number) => (
   <div style={{ display: 'flex', gap: 2, color: '#fbbf24' }}>
-    {[1, 2, 3, 4, 5].map((s) => (
+    {[1, 2, 3, 4, 5].map(s => (
       <StarIcon key={s} filled={s <= score} />
     ))}
   </div>
@@ -90,8 +96,7 @@ const ReviewList: React.FC<ReviewListProps> = ({
   }
 
   // 평균 점수 계산 (전체 리뷰)
-  const overallAvg =
-    reviews.reduce((sum, r) => sum + r.averageScore, 0) / reviews.length;
+  const overallAvg = reviews.reduce((sum, r) => sum + r.averageScore, 0) / reviews.length;
 
   return (
     <div className="trl-container">
@@ -106,7 +111,7 @@ const ReviewList: React.FC<ReviewListProps> = ({
 
       {/* 리뷰 카드 목록 */}
       <div className="trl-list">
-        {reviews.map((review) => (
+        {reviews.map(review => (
           <div key={review.id} className="trl-card">
             {/* 카드 헤더: 작성자 정보 + 날짜 */}
             <div className="trl-card-header">
@@ -129,9 +134,7 @@ const ReviewList: React.FC<ReviewListProps> = ({
               </div>
 
               {/* 평균 점수 뱃지 */}
-              <div className="trl-avg-badge">
-                {review.averageScore.toFixed(1)}
-              </div>
+              <div className="trl-avg-badge">{review.averageScore.toFixed(1)}</div>
             </div>
 
             {/* 항목별 별점 */}
@@ -154,14 +157,14 @@ const ReviewList: React.FC<ReviewListProps> = ({
             <div className={`trl-travel-again ${review.wouldTravelAgain ? 'yes' : 'no'}`}>
               <HeartIcon filled={review.wouldTravelAgain} />
               <span>
-                {review.wouldTravelAgain ? '다시 함께 여행하고 싶어요' : '다시 여행하기 어려울 것 같아요'}
+                {review.wouldTravelAgain
+                  ? '다시 함께 여행하고 싶어요'
+                  : '다시 여행하기 어려울 것 같아요'}
               </span>
             </div>
 
             {/* 코멘트 */}
-            {review.comment && (
-              <p className="trl-comment">"{review.comment}"</p>
-            )}
+            {review.comment && <p className="trl-comment">"{review.comment}"</p>}
           </div>
         ))}
       </div>

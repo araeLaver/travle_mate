@@ -98,9 +98,7 @@ export const requestMinting = async (
 /**
  * 민팅 상태 조회
  */
-export const getMintingStatus = async (
-  collectionId: number
-): Promise<MintingStatusResponse> => {
+export const getMintingStatus = async (collectionId: number): Promise<MintingStatusResponse> => {
   const response = await fetch(`${API_BASE_URL}/nft/mint/status/${collectionId}`, {
     headers: getAuthHeaders(),
   });
@@ -120,12 +118,9 @@ export const getMintableNfts = async (
   page: number = 0,
   size: number = 20
 ): Promise<PageResponse<MintableNftResponse>> => {
-  const response = await fetch(
-    `${API_BASE_URL}/nft/mint/mintable?page=${page}&size=${size}`,
-    {
-      headers: getAuthHeaders(),
-    }
-  );
+  const response = await fetch(`${API_BASE_URL}/nft/mint/mintable?page=${page}&size=${size}`, {
+    headers: getAuthHeaders(),
+  });
 
   if (!response.ok) {
     throw new Error('민팅 가능한 NFT 목록을 불러오는데 실패했습니다.');

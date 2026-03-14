@@ -145,9 +145,7 @@ class AdminService {
   /**
    * 새 장소 생성
    */
-  async createLocation(
-    request: CreateLocationRequest
-  ): Promise<CollectibleLocationAdminResponse> {
+  async createLocation(request: CreateLocationRequest): Promise<CollectibleLocationAdminResponse> {
     return apiClient.post<CollectibleLocationAdminResponse, CreateLocationRequest>(
       this.baseUrl,
       request
@@ -313,10 +311,10 @@ class AdminService {
     locationId: number,
     request: Partial<CreateLocationRequest> & { isActive?: boolean }
   ): Promise<LocationManagement> {
-    return apiClient.put<LocationManagement, Partial<CreateLocationRequest> & { isActive?: boolean }>(
-      `${this.adminApiUrl}/locations/${locationId}`,
-      request
-    );
+    return apiClient.put<
+      LocationManagement,
+      Partial<CreateLocationRequest> & { isActive?: boolean }
+    >(`${this.adminApiUrl}/locations/${locationId}`, request);
   }
 
   /**

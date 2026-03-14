@@ -51,7 +51,7 @@ export function useFollowers(userId: number) {
     queryKey: followKeys.followers(userId),
     queryFn: ({ pageParam = 0 }) => followService.getFollowers(userId, pageParam as number),
     initialPageParam: 0,
-    getNextPageParam: (lastPage) => {
+    getNextPageParam: lastPage => {
       if (lastPage.last) return undefined;
       return lastPage.number + 1;
     },
@@ -67,7 +67,7 @@ export function useFollowing(userId: number) {
     queryKey: followKeys.following(userId),
     queryFn: ({ pageParam = 0 }) => followService.getFollowing(userId, pageParam as number),
     initialPageParam: 0,
-    getNextPageParam: (lastPage) => {
+    getNextPageParam: lastPage => {
       if (lastPage.last) return undefined;
       return lastPage.number + 1;
     },
@@ -83,7 +83,7 @@ export function useMutualFollowers(userId: number) {
     queryKey: followKeys.mutual(userId),
     queryFn: ({ pageParam = 0 }) => followService.getMutualFollowers(userId, pageParam as number),
     initialPageParam: 0,
-    getNextPageParam: (lastPage) => {
+    getNextPageParam: lastPage => {
       if (lastPage.last) return undefined;
       return lastPage.number + 1;
     },
@@ -117,13 +117,14 @@ export function useFollow() {
       queryClient.invalidateQueries({ queryKey: followKeys.myFollowing() });
 
       // 팔로우 상태 즉시 업데이트
-      queryClient.setQueryData<FollowStatusResponse>(
-        followKeys.status(userId),
-        (old) => old ? {
-          ...old,
-          isFollowing: true,
-          isMutual: data.isMutual,
-        } : undefined
+      queryClient.setQueryData<FollowStatusResponse>(followKeys.status(userId), old =>
+        old
+          ? {
+              ...old,
+              isFollowing: true,
+              isMutual: data.isMutual,
+            }
+          : undefined
       );
     },
   });
@@ -145,13 +146,14 @@ export function useUnfollow() {
       queryClient.invalidateQueries({ queryKey: followKeys.myFollowing() });
 
       // 팔로우 상태 즉시 업데이트
-      queryClient.setQueryData<FollowStatusResponse>(
-        followKeys.status(userId),
-        (old) => old ? {
-          ...old,
-          isFollowing: false,
-          isMutual: false,
-        } : undefined
+      queryClient.setQueryData<FollowStatusResponse>(followKeys.status(userId), old =>
+        old
+          ? {
+              ...old,
+              isFollowing: false,
+              isMutual: false,
+            }
+          : undefined
       );
     },
   });

@@ -21,10 +21,7 @@ interface VisibleRange {
  * 가상화된 리스트 컴포넌트
  * 대량의 아이템을 효율적으로 렌더링
  */
-function VirtualListInner<T>(
-  props: VirtualListProps<T>,
-  ref: React.ForwardedRef<HTMLDivElement>
-) {
+function VirtualListInner<T>(props: VirtualListProps<T>, ref: React.ForwardedRef<HTMLDivElement>) {
   const {
     items,
     itemHeight,
@@ -52,18 +49,21 @@ function VirtualListInner<T>(
   }, [scrollTop, itemHeight, containerHeight, items.length, overscan]);
 
   // 스크롤 핸들러
-  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    const target = e.currentTarget;
-    setScrollTop(target.scrollTop);
+  const handleScroll = useCallback(
+    (e: React.UIEvent<HTMLDivElement>) => {
+      const target = e.currentTarget;
+      setScrollTop(target.scrollTop);
 
-    // 끝에 도달 체크
-    if (onEndReached) {
-      const distanceFromEnd = totalHeight - (target.scrollTop + containerHeight);
-      if (distanceFromEnd < endReachedThreshold) {
-        onEndReached();
+      // 끝에 도달 체크
+      if (onEndReached) {
+        const distanceFromEnd = totalHeight - (target.scrollTop + containerHeight);
+        if (distanceFromEnd < endReachedThreshold) {
+          onEndReached();
+        }
       }
-    }
-  }, [totalHeight, containerHeight, endReachedThreshold, onEndReached]);
+    },
+    [totalHeight, containerHeight, endReachedThreshold, onEndReached]
+  );
 
   // 보이는 아이템만 렌더링
   const visibleItems = useMemo(() => {
@@ -164,9 +164,12 @@ export function VariableHeightList<T>({
     };
   }, []);
 
-  const getItemHeight = useCallback((index: number) => {
-    return itemHeights.current.get(index) || estimatedItemHeight;
-  }, [estimatedItemHeight]);
+  const getItemHeight = useCallback(
+    (index: number) => {
+      return itemHeights.current.get(index) || estimatedItemHeight;
+    },
+    [estimatedItemHeight]
+  );
 
   const totalHeight = useMemo(() => {
     let height = 0;

@@ -23,7 +23,7 @@ const HTML_ENTITIES: Record<string, string> = {
  */
 export function escapeHtml(str: string): string {
   if (!str) return '';
-  return String(str).replace(/[&<>"'`=/]/g, (char) => HTML_ENTITIES[char] || char);
+  return String(str).replace(/[&<>"'`=/]/g, char => HTML_ENTITIES[char] || char);
 }
 
 /**
@@ -33,21 +33,23 @@ export function escapeHtml(str: string): string {
 export function sanitizeString(input: string): string {
   if (!input) return '';
 
-  return input
-    // Remove script tags and their content
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    // Remove on* event handlers
-    .replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, '')
-    // Remove javascript: protocol
-    .replace(/javascript:/gi, '')
-    // Remove data: protocol (except for images)
-    .replace(/data:(?!image\/)/gi, '')
-    // Remove vbscript: protocol
-    .replace(/vbscript:/gi, '')
-    // Remove expression() (IE CSS hack)
-    .replace(/expression\s*\(/gi, '')
-    // Escape remaining HTML
-    .trim();
+  return (
+    input
+      // Remove script tags and their content
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      // Remove on* event handlers
+      .replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, '')
+      // Remove javascript: protocol
+      .replace(/javascript:/gi, '')
+      // Remove data: protocol (except for images)
+      .replace(/data:(?!image\/)/gi, '')
+      // Remove vbscript: protocol
+      .replace(/vbscript:/gi, '')
+      // Remove expression() (IE CSS hack)
+      .replace(/expression\s*\(/gi, '')
+      // Escape remaining HTML
+      .trim()
+  );
 }
 
 /**
@@ -88,7 +90,7 @@ export function sanitizeUrl(url: string): string {
   // Allow only safe protocols
   const safeProtocols = ['http:', 'https:', 'mailto:', 'tel:', '/'];
   const isSafe = safeProtocols.some(
-    (protocol) => trimmed.startsWith(protocol) || !trimmed.includes(':')
+    protocol => trimmed.startsWith(protocol) || !trimmed.includes(':')
   );
 
   if (!isSafe) {
@@ -119,7 +121,7 @@ export function sanitizeObject<T extends Record<string, unknown>>(obj: T): T {
     if (typeof value === 'string') {
       sanitized[key] = sanitizeString(value);
     } else if (Array.isArray(value)) {
-      sanitized[key] = value.map((item) =>
+      sanitized[key] = value.map(item =>
         typeof item === 'string'
           ? sanitizeString(item)
           : typeof item === 'object' && item !== null
@@ -219,7 +221,7 @@ export function containsSqlInjection(input: string): boolean {
     /('|").*(\bOR\b|\bAND\b).*('|")\s*=\s*('|")/i, // Quote manipulation
   ];
 
-  return patterns.some((pattern) => pattern.test(input));
+  return patterns.some(pattern => pattern.test(input));
 }
 
 /**
@@ -228,18 +230,20 @@ export function containsSqlInjection(input: string): boolean {
 export function sanitizeFilename(filename: string): string {
   if (!filename) return '';
 
-  return filename
-    // Remove path components
-    // eslint-disable-next-line no-useless-escape
-    .replace(/^.*[\\\/]/, '')
-    // Remove null bytes
-    .replace(/\0/g, '')
-    // Replace dangerous characters
-    .replace(/[<>:"/\\|?*]/g, '_')
-    // Remove leading/trailing spaces and dots
-    .replace(/^[\s.]+|[\s.]+$/g, '')
-    // Limit length
-    .substring(0, 255);
+  return (
+    filename
+      // Remove path components
+      // eslint-disable-next-line no-useless-escape
+      .replace(/^.*[\\\/]/, '')
+      // Remove null bytes
+      .replace(/\0/g, '')
+      // Replace dangerous characters
+      .replace(/[<>:"/\\|?*]/g, '_')
+      // Remove leading/trailing spaces and dots
+      .replace(/^[\s.]+|[\s.]+$/g, '')
+      // Limit length
+      .substring(0, 255)
+  );
 }
 
 const sanitize = {

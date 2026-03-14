@@ -63,7 +63,7 @@ class ChatRestService {
   async getChatRooms(): Promise<ChatRoom[]> {
     try {
       const response = await apiClient.get<ChatRoomApiResponse[]>('/chat/rooms');
-      return response.map((room) => this.mapToChatRoom(room));
+      return response.map(room => this.mapToChatRoom(room));
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Failed to fetch chat rooms:', error);
@@ -104,7 +104,7 @@ class ChatRestService {
 
       // 페이지네이션 응답 처리
       const messages = response.content || [];
-      return Array.isArray(messages) ? messages.map((msg) => this.mapToChatMessage(msg)) : [];
+      return Array.isArray(messages) ? messages.map(msg => this.mapToChatMessage(msg)) : [];
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Failed to fetch messages:', error);
@@ -136,9 +136,7 @@ class ChatRestService {
   // 읽지 않은 메시지 수 조회
   async getUnreadCount(roomId: string): Promise<number> {
     try {
-      const response = await apiClient.get<{ count: number }>(
-        `/chat/rooms/${roomId}/unread-count`
-      );
+      const response = await apiClient.get<{ count: number }>(`/chat/rooms/${roomId}/unread-count`);
       return response.count || 0;
     } catch (error) {
       // eslint-disable-next-line no-console

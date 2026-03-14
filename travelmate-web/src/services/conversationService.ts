@@ -74,10 +74,7 @@ class ConversationService {
    */
   async startConversation(targetUserId: number): Promise<ConversationResponse> {
     const body: StartConversationRequest = { targetUserId };
-    return apiClient.post<ConversationResponse, StartConversationRequest>(
-      '/conversations',
-      body,
-    );
+    return apiClient.post<ConversationResponse, StartConversationRequest>('/conversations', body);
   }
 
   /**
@@ -92,13 +89,9 @@ class ConversationService {
    * GET /api/messages?conversationId=&page=&size=
    * 메시지 목록 (최신순 페이지네이션)
    */
-  async getMessages(
-    conversationId: number,
-    page = 0,
-    size = 10,
-  ): Promise<MessagePageResponse> {
+  async getMessages(conversationId: number, page = 0, size = 10): Promise<MessagePageResponse> {
     return apiClient.get<MessagePageResponse>(
-      `/messages?conversationId=${conversationId}&page=${page}&size=${size}`,
+      `/messages?conversationId=${conversationId}&page=${page}&size=${size}`
     );
   }
 

@@ -11,7 +11,7 @@ describe('Chat Features', () => {
       },
     }).as('getMe');
 
-    cy.window().then((win) => {
+    cy.window().then(win => {
       win.localStorage.setItem('accessToken', 'mock-access-token');
       win.localStorage.setItem('refreshToken', 'mock-refresh-token');
     });
@@ -258,7 +258,7 @@ describe('Chat Features', () => {
       cy.wait(['@getChatRoom', '@getMessages']);
 
       // Simulate typing indicator via WebSocket mock
-      cy.window().then((win) => {
+      cy.window().then(win => {
         const event = new CustomEvent('ws:typing', {
           detail: {
             roomId: 1,
@@ -503,8 +503,8 @@ describe('Chat Features', () => {
       cy.get('[data-testid="copy-message-button"]').click();
 
       // Verify clipboard (requires clipboard permissions in Cypress config)
-      cy.window().then((win) => {
-        win.navigator.clipboard.readText().then((text) => {
+      cy.window().then(win => {
+        win.navigator.clipboard.readText().then(text => {
           expect(text).to.eq('삭제할 메시지');
         });
       });

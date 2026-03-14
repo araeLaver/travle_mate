@@ -58,9 +58,9 @@ describe('MintingService', () => {
         json: async () => ({ message: '권한이 없습니다.' }),
       } as Response);
 
-      await expect(
-        mintingService.requestMinting(1, '0x1234567890abcdef')
-      ).rejects.toThrow('권한이 없습니다.');
+      await expect(mintingService.requestMinting(1, '0x1234567890abcdef')).rejects.toThrow(
+        '권한이 없습니다.'
+      );
     });
 
     it('should throw error when already minted', async () => {
@@ -69,9 +69,9 @@ describe('MintingService', () => {
         json: async () => ({ message: '이미 민팅된 NFT입니다.' }),
       } as Response);
 
-      await expect(
-        mintingService.requestMinting(1, '0x1234567890abcdef')
-      ).rejects.toThrow('이미 민팅된 NFT입니다.');
+      await expect(mintingService.requestMinting(1, '0x1234567890abcdef')).rejects.toThrow(
+        '이미 민팅된 NFT입니다.'
+      );
     });
 
     it('should throw error when minting in progress', async () => {
@@ -80,9 +80,9 @@ describe('MintingService', () => {
         json: async () => ({ message: '민팅이 진행 중입니다.' }),
       } as Response);
 
-      await expect(
-        mintingService.requestMinting(1, '0x1234567890abcdef')
-      ).rejects.toThrow('민팅이 진행 중입니다.');
+      await expect(mintingService.requestMinting(1, '0x1234567890abcdef')).rejects.toThrow(
+        '민팅이 진행 중입니다.'
+      );
     });
   });
 

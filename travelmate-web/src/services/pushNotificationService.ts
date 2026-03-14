@@ -135,9 +135,7 @@ class PushNotificationService {
    */
   private async registerServiceWorker(): Promise<ServiceWorkerRegistration | null> {
     try {
-      const registration = await navigator.serviceWorker.register(
-        '/firebase-messaging-sw.js'
-      );
+      const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
       // eslint-disable-next-line no-console
       console.log('Service Worker registered');
       return registration;
@@ -220,9 +218,7 @@ class PushNotificationService {
   /**
    * Listen for foreground messages
    */
-  async onForegroundMessage(
-    callback: (payload: NotificationPayload) => void
-  ): Promise<() => void> {
+  async onForegroundMessage(callback: (payload: NotificationPayload) => void): Promise<() => void> {
     const messaging = await getFirebaseMessaging();
     if (!messaging) {
       return () => {};
@@ -230,7 +226,7 @@ class PushNotificationService {
 
     const { onMessage } = await import('firebase/messaging');
 
-    return onMessage(messaging, (payload) => {
+    return onMessage(messaging, payload => {
       // eslint-disable-next-line no-console
       console.log('Foreground message received:', payload);
 
@@ -300,10 +296,7 @@ class PushNotificationService {
   async updatePreferences(
     preferences: Partial<NotificationPreferences>
   ): Promise<NotificationPreferences> {
-    return await apiClient.put<NotificationPreferences>(
-      '/settings/notifications',
-      preferences
-    );
+    return await apiClient.put<NotificationPreferences>('/settings/notifications', preferences);
   }
 
   /**

@@ -14,9 +14,7 @@ interface UserTravelProfileProps {
   className?: string;
 }
 
-const UserTravelProfile: React.FC<UserTravelProfileProps> = ({
-  className = '',
-}) => {
+const UserTravelProfile: React.FC<UserTravelProfileProps> = ({ className = '' }) => {
   const [analysis, setAnalysis] = useState<UserAnalysis | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,11 +37,17 @@ const UserTravelProfile: React.FC<UserTravelProfileProps> = ({
   };
 
   // Score bar component
-  const ScoreBar: React.FC<{ label: string; score: number; color: string }> = ({ label, score, color }) => (
+  const ScoreBar: React.FC<{ label: string; score: number; color: string }> = ({
+    label,
+    score,
+    color,
+  }) => (
     <div className="space-y-1">
       <div className="flex justify-between text-sm">
         <span className="text-gray-600 dark:text-gray-400">{label}</span>
-        <span className="font-medium text-gray-900 dark:text-white">{Math.round(score * 100)}%</span>
+        <span className="font-medium text-gray-900 dark:text-white">
+          {Math.round(score * 100)}%
+        </span>
       </div>
       <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
         <div
@@ -127,26 +131,10 @@ const UserTravelProfile: React.FC<UserTravelProfileProps> = ({
       {/* Travel Scores */}
       <div className="space-y-4 mb-8">
         <h4 className="font-semibold text-gray-900 dark:text-white">여행 성향</h4>
-        <ScoreBar
-          label="모험 지수"
-          score={analysis.adventureScore}
-          color="bg-red-500"
-        />
-        <ScoreBar
-          label="문화 지수"
-          score={analysis.cultureScore}
-          color="bg-purple-500"
-        />
-        <ScoreBar
-          label="휴양 지수"
-          score={analysis.relaxationScore}
-          color="bg-green-500"
-        />
-        <ScoreBar
-          label="사교 지수"
-          score={analysis.socialScore}
-          color="bg-blue-500"
-        />
+        <ScoreBar label="모험 지수" score={analysis.adventureScore} color="bg-red-500" />
+        <ScoreBar label="문화 지수" score={analysis.cultureScore} color="bg-purple-500" />
+        <ScoreBar label="휴양 지수" score={analysis.relaxationScore} color="bg-green-500" />
+        <ScoreBar label="사교 지수" score={analysis.socialScore} color="bg-blue-500" />
       </div>
 
       {/* Top Interests */}
@@ -161,10 +149,10 @@ const UserTravelProfile: React.FC<UserTravelProfileProps> = ({
                   idx === 0
                     ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border border-yellow-300 dark:border-yellow-600'
                     : idx === 1
-                    ? 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-500'
-                    : idx === 2
-                    ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border border-orange-300 dark:border-orange-600'
-                    : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+                      ? 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-500'
+                      : idx === 2
+                        ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border border-orange-300 dark:border-orange-600'
+                        : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
                 }`}
               >
                 {idx < 3 && <span className="mr-1">{['🥇', '🥈', '🥉'][idx]}</span>}

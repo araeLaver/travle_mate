@@ -19,12 +19,7 @@ interface IntersectionResult {
 export function useIntersectionObserver<T extends Element>(
   options: UseIntersectionObserverOptions = {}
 ): [React.RefObject<T>, IntersectionResult] {
-  const {
-    threshold = 0,
-    root = null,
-    rootMargin = '0px',
-    freezeOnceVisible = false,
-  } = options;
+  const { threshold = 0, root = null, rootMargin = '0px', freezeOnceVisible = false } = options;
 
   const elementRef = useRef<T>(null);
   const [result, setResult] = useState<IntersectionResult>({

@@ -19,10 +19,7 @@ interface TravelPlannerProps {
   onItineraryGenerated?: (itinerary: ItineraryResponse) => void;
 }
 
-const TravelPlanner: React.FC<TravelPlannerProps> = ({
-  className = '',
-  onItineraryGenerated,
-}) => {
+const TravelPlanner: React.FC<TravelPlannerProps> = ({ className = '', onItineraryGenerated }) => {
   const [step, setStep] = useState<'form' | 'loading' | 'result'>('form');
   const [formData, setFormData] = useState<ItineraryRequest>({
     destination: '',
@@ -39,8 +36,18 @@ const TravelPlanner: React.FC<TravelPlannerProps> = ({
   const [selectedDay, setSelectedDay] = useState(0);
 
   const interestOptions = [
-    '맛집', '카페', '쇼핑', '역사', '자연', '액티비티',
-    '야경', '사진', '축제', '박물관', '해변', '등산',
+    '맛집',
+    '카페',
+    '쇼핑',
+    '역사',
+    '자연',
+    '액티비티',
+    '야경',
+    '사진',
+    '축제',
+    '박물관',
+    '해변',
+    '등산',
   ];
 
   // Handle form input change
@@ -218,7 +225,9 @@ const TravelPlanner: React.FC<TravelPlannerProps> = ({
           className="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
-            <option key={n} value={n}>{n}명</option>
+            <option key={n} value={n}>
+              {n}명
+            </option>
           ))}
         </select>
       </div>
@@ -247,9 +256,7 @@ const TravelPlanner: React.FC<TravelPlannerProps> = ({
       <p className="text-gray-600 dark:text-gray-400 text-center">
         AI가 최적의 여행 일정을 생성하고 있습니다...
       </p>
-      <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
-        약 10-20초 정도 소요됩니다
-      </p>
+      <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">약 10-20초 정도 소요됩니다</p>
     </div>
   );
 
@@ -289,7 +296,11 @@ const TravelPlanner: React.FC<TravelPlannerProps> = ({
           Day {dayPlan.dayNumber}
         </span>
         <span className="text-gray-500 dark:text-gray-400">
-          {new Date(dayPlan.date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' })}
+          {new Date(dayPlan.date).toLocaleDateString('ko-KR', {
+            month: 'long',
+            day: 'numeric',
+            weekday: 'short',
+          })}
         </span>
         {dayPlan.theme && (
           <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded text-sm">
@@ -320,8 +331,9 @@ const TravelPlanner: React.FC<TravelPlannerProps> = ({
             {itinerary.destination} 여행 일정
           </h2>
           <p className="text-gray-500 dark:text-gray-400 mt-1">
-            {new Date(itinerary.startDate).toLocaleDateString('ko-KR')} - {new Date(itinerary.endDate).toLocaleDateString('ko-KR')}
-            {' '}({aiRecommendationService.calculateTripDays(itinerary.startDate, itinerary.endDate)}일)
+            {new Date(itinerary.startDate).toLocaleDateString('ko-KR')} -{' '}
+            {new Date(itinerary.endDate).toLocaleDateString('ko-KR')} (
+            {aiRecommendationService.calculateTripDays(itinerary.startDate, itinerary.endDate)}일)
           </p>
         </div>
 
@@ -338,7 +350,9 @@ const TravelPlanner: React.FC<TravelPlannerProps> = ({
               <div>
                 <p className="text-xs text-gray-500 dark:text-gray-400">숙박</p>
                 <p className="font-medium text-gray-900 dark:text-white">
-                  {aiRecommendationService.formatCurrency(itinerary.budgetEstimate.accommodationEstimate)}
+                  {aiRecommendationService.formatCurrency(
+                    itinerary.budgetEstimate.accommodationEstimate
+                  )}
                 </p>
               </div>
               <div>
@@ -350,13 +364,17 @@ const TravelPlanner: React.FC<TravelPlannerProps> = ({
               <div>
                 <p className="text-xs text-gray-500 dark:text-gray-400">교통</p>
                 <p className="font-medium text-gray-900 dark:text-white">
-                  {aiRecommendationService.formatCurrency(itinerary.budgetEstimate.transportationEstimate)}
+                  {aiRecommendationService.formatCurrency(
+                    itinerary.budgetEstimate.transportationEstimate
+                  )}
                 </p>
               </div>
               <div>
                 <p className="text-xs text-gray-500 dark:text-gray-400">액티비티</p>
                 <p className="font-medium text-gray-900 dark:text-white">
-                  {aiRecommendationService.formatCurrency(itinerary.budgetEstimate.activitiesEstimate)}
+                  {aiRecommendationService.formatCurrency(
+                    itinerary.budgetEstimate.activitiesEstimate
+                  )}
                 </p>
               </div>
             </div>
@@ -397,7 +415,10 @@ const TravelPlanner: React.FC<TravelPlannerProps> = ({
             <h3 className="font-semibold text-gray-900 dark:text-white mb-2">여행 팁</h3>
             <ul className="space-y-1">
               {itinerary.tips.map((tip, idx) => (
-                <li key={idx} className="text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2">
+                <li
+                  key={idx}
+                  className="text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2"
+                >
                   <span className="text-blue-500">•</span>
                   {tip}
                 </li>

@@ -9,8 +9,10 @@ jest.mock('../../services/mintingService', () => ({
     getMintingStatus: jest.fn(),
     requestMinting: jest.fn(),
     retryMinting: jest.fn(),
-    getPolygonscanTxUrl: jest.fn((hash) => `https://polygonscan.com/tx/${hash}`),
-    getOpenseaUrl: jest.fn((contract, tokenId) => `https://opensea.io/assets/matic/${contract}/${tokenId}`),
+    getPolygonscanTxUrl: jest.fn(hash => `https://polygonscan.com/tx/${hash}`),
+    getOpenseaUrl: jest.fn(
+      (contract, tokenId) => `https://opensea.io/assets/matic/${contract}/${tokenId}`
+    ),
   },
 }));
 

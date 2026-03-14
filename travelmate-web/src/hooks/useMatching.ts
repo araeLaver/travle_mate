@@ -60,7 +60,7 @@ export function useCancelMatchRequest() {
   const queryClient = useQueryClient();
 
   return useMutation<void, Error, number>({
-    mutationFn: (requestId) => cancelMatchRequest(requestId),
+    mutationFn: requestId => cancelMatchRequest(requestId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: matchingKeys.all });
     },

@@ -55,7 +55,7 @@ export function usePushNotifications(): UsePushNotificationsReturn {
         (payload: NotificationPayload) => {
           // Show toast for foreground notifications
           toast.custom(
-            (t) => (
+            t => (
               <div
                 className={`${
                   t.visible ? 'animate-enter' : 'animate-leave'
@@ -64,16 +64,10 @@ export function usePushNotifications(): UsePushNotificationsReturn {
                 <div className="flex-1 w-0 p-4">
                   <div className="flex items-start">
                     {payload.icon && (
-                      <img
-                        className="h-10 w-10 rounded-full"
-                        src={payload.icon}
-                        alt=""
-                      />
+                      <img className="h-10 w-10 rounded-full" src={payload.icon} alt="" />
                     )}
                     <div className="ml-3 flex-1">
-                      <p className="text-sm font-medium text-gray-900">
-                        {payload.title}
-                      </p>
+                      <p className="text-sm font-medium text-gray-900">{payload.title}</p>
                       <p className="mt-1 text-sm text-gray-500">{payload.body}</p>
                     </div>
                   </div>

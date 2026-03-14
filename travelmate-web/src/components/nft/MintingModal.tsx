@@ -1,9 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-  mintingService,
-  MintingStatusResponse,
-  MintStatus,
-} from '../../services/mintingService';
+import { mintingService, MintingStatusResponse, MintStatus } from '../../services/mintingService';
 import { useWallet } from '../../hooks/useWallet';
 import './MintingModal.css';
 
@@ -64,12 +60,7 @@ interface MintingModalProps {
   onMintingComplete?: () => void;
 }
 
-const STEP_LABELS = [
-  '지갑 연결',
-  '민팅 요청',
-  '블록체인 처리',
-  '완료',
-];
+const STEP_LABELS = ['지갑 연결', '민팅 요청', '블록체인 처리', '완료'];
 
 const MintingModal: React.FC<MintingModalProps> = ({
   collectionId,
@@ -87,22 +78,25 @@ const MintingModal: React.FC<MintingModalProps> = ({
   const [currentStep, setCurrentStep] = useState(0);
 
   // 현재 단계 계산
-  const calculateStep = useCallback((status: MintStatus): number => {
-    switch (status) {
-      case 'PENDING':
-        return isConnected ? 1 : 0;
-      case 'MINTING':
-        return 2;
-      case 'CONFIRMING':
-        return 2;
-      case 'MINTED':
-        return 3;
-      case 'FAILED':
-        return 2;
-      default:
-        return 0;
-    }
-  }, [isConnected]);
+  const calculateStep = useCallback(
+    (status: MintStatus): number => {
+      switch (status) {
+        case 'PENDING':
+          return isConnected ? 1 : 0;
+        case 'MINTING':
+          return 2;
+        case 'CONFIRMING':
+          return 2;
+        case 'MINTED':
+          return 3;
+        case 'FAILED':
+          return 2;
+        default:
+          return 0;
+      }
+    },
+    [isConnected]
+  );
 
   // 민팅 상태 조회
   const fetchMintingStatus = useCallback(async () => {
@@ -121,8 +115,7 @@ const MintingModal: React.FC<MintingModalProps> = ({
     fetchMintingStatus();
 
     // MINTING 또는 CONFIRMING 상태일 때 폴링
-    const shouldPoll =
-      currentMintStatus === 'MINTING' || currentMintStatus === 'CONFIRMING';
+    const shouldPoll = currentMintStatus === 'MINTING' || currentMintStatus === 'CONFIRMING';
 
     let pollInterval: NodeJS.Timeout | null = null;
     if (shouldPoll) {
@@ -220,7 +213,7 @@ const MintingModal: React.FC<MintingModalProps> = ({
 
   return (
     <div className="minting-modal-overlay" onClick={onClose} data-testid="minting-modal-overlay">
-      <div className="minting-modal" onClick={(e) => e.stopPropagation()} data-testid="minting-modal">
+      <div className="minting-modal" onClick={e => e.stopPropagation()} data-testid="minting-modal">
         <div className="minting-modal-header">
           <h2>NFT 민팅</h2>
           <button className="close-btn" onClick={onClose} data-testid="minting-close-btn">
@@ -260,13 +253,11 @@ const MintingModal: React.FC<MintingModalProps> = ({
                 data-testid={`minting-step-${index}`}
               >
                 <div className="step-indicator">
-                  {index < currentStep ? (
-                    <CheckCircleIcon />
-                  ) : (
-                    <span>{index + 1}</span>
-                  )}
+                  {index < currentStep ? <CheckCircleIcon /> : <span>{index + 1}</span>}
                 </div>
-                <span className="step-label" data-testid={`step-label-${index}`}>{label}</span>
+                <span className="step-label" data-testid={`step-label-${index}`}>
+                  {label}
+                </span>
               </div>
             ))}
           </div>
@@ -374,11 +365,7 @@ const MintingModal: React.FC<MintingModalProps> = ({
                 )}
               </button>
             ) : status === 'PENDING' ? (
-              <button
-                className="action-btn primary"
-                onClick={handleMint}
-                disabled={isLoading}
-              >
+              <button className="action-btn primary" onClick={handleMint} disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <div className="btn-spinner" />
@@ -389,11 +376,7 @@ const MintingModal: React.FC<MintingModalProps> = ({
                 )}
               </button>
             ) : status === 'FAILED' ? (
-              <button
-                className="action-btn primary"
-                onClick={handleRetry}
-                disabled={isLoading}
-              >
+              <button className="action-btn primary" onClick={handleRetry} disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <div className="btn-spinner" />

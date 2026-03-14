@@ -185,7 +185,10 @@ export const MOOD_OPTIONS = [
 ] as const;
 
 // Travel persona descriptions
-export const TRAVEL_PERSONAS: Record<string, { title: string; description: string; emoji: string }> = {
+export const TRAVEL_PERSONAS: Record<
+  string,
+  { title: string; description: string; emoji: string }
+> = {
   EXPLORER: {
     title: '탐험가',
     description: '새로운 장소를 발견하는 것을 좋아하는 모험가',
@@ -234,14 +237,18 @@ class AIRecommendationService {
   /**
    * Get AI place recommendations based on location
    */
-  async getPlaceRecommendations(request: PlaceRecommendationRequest): Promise<PlaceRecommendation[]> {
+  async getPlaceRecommendations(
+    request: PlaceRecommendationRequest
+  ): Promise<PlaceRecommendation[]> {
     return apiClient.post<PlaceRecommendation[]>('/ai/places', request);
   }
 
   /**
    * Get personalized recommendations based on user history
    */
-  async getPersonalizedRecommendations(request: PersonalizedRequest): Promise<PersonalizedResponse> {
+  async getPersonalizedRecommendations(
+    request: PersonalizedRequest
+  ): Promise<PersonalizedResponse> {
     return apiClient.post<PersonalizedResponse>('/ai/personalized', request);
   }
 
@@ -309,11 +316,13 @@ class AIRecommendationService {
    * Get persona info
    */
   getPersonaInfo(persona: string): { title: string; description: string; emoji: string } {
-    return TRAVEL_PERSONAS[persona] || {
-      title: persona,
-      description: '',
-      emoji: '🌍',
-    };
+    return (
+      TRAVEL_PERSONAS[persona] || {
+        title: persona,
+        description: '',
+        emoji: '🌍',
+      }
+    );
   }
 
   /**

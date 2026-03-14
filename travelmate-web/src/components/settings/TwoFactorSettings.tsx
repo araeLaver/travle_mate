@@ -4,10 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import {
-  twoFactorAuthService,
-  TwoFactorSetupResponse,
-} from '../../services/twoFactorAuthService';
+import { twoFactorAuthService, TwoFactorSetupResponse } from '../../services/twoFactorAuthService';
 
 interface TwoFactorSettingsProps {
   className?: string;
@@ -114,9 +111,9 @@ const TwoFactorSettings: React.FC<TwoFactorSettingsProps> = ({ className = '' })
   };
 
   const copyBackupCodes = () => {
-    const codesText = backupCodes.map(code =>
-      twoFactorAuthService.formatBackupCode(code)
-    ).join('\n');
+    const codesText = backupCodes
+      .map(code => twoFactorAuthService.formatBackupCode(code))
+      .join('\n');
     navigator.clipboard.writeText(codesText);
   };
 
@@ -134,17 +131,23 @@ const TwoFactorSettings: React.FC<TwoFactorSettingsProps> = ({ className = '' })
     <div className={`bg-white dark:bg-gray-800 rounded-lg shadow p-6 ${className}`}>
       <div className="flex items-center gap-3 mb-6">
         <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
-          <svg className="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          <svg
+            className="w-6 h-6 text-indigo-600 dark:text-indigo-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+            />
           </svg>
         </div>
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-            2단계 인증 (2FA)
-          </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            계정 보안을 강화하세요
-          </p>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">2단계 인증 (2FA)</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">계정 보안을 강화하세요</p>
         </div>
       </div>
 
@@ -159,15 +162,15 @@ const TwoFactorSettings: React.FC<TwoFactorSettingsProps> = ({ className = '' })
         <div>
           <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg mb-4">
             <div className="flex items-center gap-3">
-              <div className={`w-3 h-3 rounded-full ${isEnabled ? 'bg-green-500' : 'bg-gray-400'}`} />
+              <div
+                className={`w-3 h-3 rounded-full ${isEnabled ? 'bg-green-500' : 'bg-gray-400'}`}
+              />
               <span className="font-medium text-gray-900 dark:text-white">
                 {isEnabled ? '활성화됨' : '비활성화됨'}
               </span>
             </div>
             {isEnabled && (
-              <span className="text-sm text-green-600 dark:text-green-400">
-                보호 중
-              </span>
+              <span className="text-sm text-green-600 dark:text-green-400">보호 중</span>
             )}
           </div>
 
@@ -251,7 +254,7 @@ const TwoFactorSettings: React.FC<TwoFactorSettingsProps> = ({ className = '' })
           <input
             type="text"
             value={verificationCode}
-            onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+            onChange={e => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
             placeholder="000000"
             className="w-full text-center text-2xl tracking-widest font-mono py-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4"
             maxLength={6}
@@ -280,8 +283,8 @@ const TwoFactorSettings: React.FC<TwoFactorSettingsProps> = ({ className = '' })
         <div>
           <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg mb-4">
             <p className="text-sm text-yellow-800 dark:text-yellow-200">
-              백업 코드를 안전한 곳에 저장하세요. 인증 앱에 접근할 수 없을 때 사용할 수 있습니다.
-              각 코드는 한 번만 사용할 수 있습니다.
+              백업 코드를 안전한 곳에 저장하세요. 인증 앱에 접근할 수 없을 때 사용할 수 있습니다. 각
+              코드는 한 번만 사용할 수 있습니다.
             </p>
           </div>
 
@@ -302,7 +305,12 @@ const TwoFactorSettings: React.FC<TwoFactorSettingsProps> = ({ className = '' })
               className="w-full py-2 px-4 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
+                />
               </svg>
               코드 복사
             </button>
@@ -330,15 +338,14 @@ const TwoFactorSettings: React.FC<TwoFactorSettingsProps> = ({ className = '' })
         <div>
           <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg mb-4">
             <p className="text-sm text-red-800 dark:text-red-200">
-              2FA를 비활성화하면 계정 보안이 약해집니다.
-              비활성화하려면 현재 인증 코드를 입력하세요.
+              2FA를 비활성화하면 계정 보안이 약해집니다. 비활성화하려면 현재 인증 코드를 입력하세요.
             </p>
           </div>
 
           <input
             type="text"
             value={verificationCode}
-            onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+            onChange={e => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
             placeholder="000000"
             className="w-full text-center text-2xl tracking-widest font-mono py-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4"
             maxLength={6}

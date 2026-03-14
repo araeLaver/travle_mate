@@ -74,9 +74,7 @@ export function useTranslation(): UseTranslationReturn {
     setLanguage(lang);
     setLang(lang);
     // Dispatch custom event for same-tab updates
-    window.dispatchEvent(
-      new CustomEvent('languagechange', { detail: { language: lang } })
-    );
+    window.dispatchEvent(new CustomEvent('languagechange', { detail: { language: lang } }));
   }, []);
 
   // Listen for same-tab language changes
@@ -87,8 +85,7 @@ export function useTranslation(): UseTranslationReturn {
     };
 
     window.addEventListener('languagechange', handleLanguageChange);
-    return () =>
-      window.removeEventListener('languagechange', handleLanguageChange);
+    return () => window.removeEventListener('languagechange', handleLanguageChange);
   }, []);
 
   return {

@@ -26,7 +26,7 @@ firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging();
 
 // Handle background messages
-messaging.onBackgroundMessage((payload) => {
+messaging.onBackgroundMessage(payload => {
   console.log('[firebase-messaging-sw.js] Background message:', payload);
 
   const { title, body, icon, image, data } = payload.notification || {};
@@ -75,7 +75,7 @@ function getNotificationActions(type) {
 }
 
 // Handle notification click
-self.addEventListener('notificationclick', (event) => {
+self.addEventListener('notificationclick', event => {
   console.log('[firebase-messaging-sw.js] Notification click:', event);
 
   event.notification.close();
@@ -121,7 +121,7 @@ self.addEventListener('notificationclick', (event) => {
 
   // Focus on existing window or open new one
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
       // Check if there's already a window open
       for (const client of clientList) {
         if (client.url.includes(self.location.origin) && 'focus' in client) {
@@ -139,13 +139,13 @@ self.addEventListener('notificationclick', (event) => {
 });
 
 // Handle notification close
-self.addEventListener('notificationclose', (event) => {
+self.addEventListener('notificationclose', event => {
   console.log('[firebase-messaging-sw.js] Notification closed:', event);
   // Analytics or cleanup if needed
 });
 
 // Handle push subscription change
-self.addEventListener('pushsubscriptionchange', (event) => {
+self.addEventListener('pushsubscriptionchange', event => {
   console.log('[firebase-messaging-sw.js] Push subscription changed:', event);
   // Re-subscribe if needed
 });

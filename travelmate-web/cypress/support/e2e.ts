@@ -46,7 +46,7 @@ Cypress.Commands.add('login', (email: string, password: string) => {
 
 // Logout command
 Cypress.Commands.add('logout', () => {
-  cy.window().then((win) => {
+  cy.window().then(win => {
     win.localStorage.removeItem('accessToken');
     win.localStorage.removeItem('refreshToken');
   });
@@ -55,8 +55,8 @@ Cypress.Commands.add('logout', () => {
 
 // Mock geolocation
 Cypress.Commands.add('mockGeolocation', (latitude: number, longitude: number) => {
-  cy.window().then((win) => {
-    cy.stub(win.navigator.geolocation, 'getCurrentPosition').callsFake((success) => {
+  cy.window().then(win => {
+    cy.stub(win.navigator.geolocation, 'getCurrentPosition').callsFake(success => {
       success({
         coords: {
           latitude,
@@ -71,7 +71,7 @@ Cypress.Commands.add('mockGeolocation', (latitude: number, longitude: number) =>
       });
     });
 
-    cy.stub(win.navigator.geolocation, 'watchPosition').callsFake((success) => {
+    cy.stub(win.navigator.geolocation, 'watchPosition').callsFake(success => {
       success({
         coords: {
           latitude,
@@ -95,7 +95,7 @@ Cypress.Commands.add('interceptApi', (method: string, url: string, fixture: stri
 });
 
 // Tab navigation (for accessibility testing)
-Cypress.Commands.add('tab', { prevSubject: 'optional' }, (subject) => {
+Cypress.Commands.add('tab', { prevSubject: 'optional' }, subject => {
   const tabKey = { key: 'Tab', code: 'Tab', which: 9 };
 
   if (subject) {
@@ -107,7 +107,7 @@ Cypress.Commands.add('tab', { prevSubject: 'optional' }, (subject) => {
 
 // Set auth token directly
 Cypress.Commands.add('setAuthToken', (token: string) => {
-  cy.window().then((win) => {
+  cy.window().then(win => {
     win.localStorage.setItem('accessToken', token);
     win.localStorage.setItem('refreshToken', `${token}-refresh`);
   });
@@ -124,7 +124,7 @@ Cypress.Commands.add('checkA11y', (options = {}) => {
   cy.log('Running accessibility checks...');
 
   // Basic checks
-  cy.get('img').each(($img) => {
+  cy.get('img').each($img => {
     const alt = $img.attr('alt');
     const role = $img.attr('role');
     if (!alt && role !== 'presentation') {
@@ -132,7 +132,7 @@ Cypress.Commands.add('checkA11y', (options = {}) => {
     }
   });
 
-  cy.get('a').each(($a) => {
+  cy.get('a').each($a => {
     const href = $a.attr('href');
     const text = $a.text().trim();
     if (!text && !$a.attr('aria-label')) {
@@ -140,7 +140,7 @@ Cypress.Commands.add('checkA11y', (options = {}) => {
     }
   });
 
-  cy.get('button').each(($button) => {
+  cy.get('button').each($button => {
     const text = $button.text().trim();
     if (!text && !$button.attr('aria-label')) {
       cy.log(`Warning: Button missing text/aria-label`);
@@ -150,7 +150,7 @@ Cypress.Commands.add('checkA11y', (options = {}) => {
 
 // Mock WebSocket for real-time features
 Cypress.Commands.add('mockWebSocket', () => {
-  cy.window().then((win) => {
+  cy.window().then(win => {
     // Create a mock WebSocket
     const mockSocket = {
       send: cy.stub().as('wsSend'),
@@ -168,7 +168,7 @@ Cypress.Commands.add('mockWebSocket', () => {
 // Simulate offline mode
 Cypress.Commands.add('simulateOffline', () => {
   cy.log('Simulating offline mode');
-  cy.window().then((win) => {
+  cy.window().then(win => {
     cy.stub(win.navigator, 'onLine').value(false);
     win.dispatchEvent(new Event('offline'));
   });
@@ -177,7 +177,7 @@ Cypress.Commands.add('simulateOffline', () => {
 // Simulate online mode
 Cypress.Commands.add('simulateOnline', () => {
   cy.log('Simulating online mode');
-  cy.window().then((win) => {
+  cy.window().then(win => {
     cy.stub(win.navigator, 'onLine').value(true);
     win.dispatchEvent(new Event('online'));
   });
@@ -185,7 +185,7 @@ Cypress.Commands.add('simulateOnline', () => {
 
 // Preserve tokens between tests
 beforeEach(() => {
-  cy.window().then((win) => {
+  cy.window().then(win => {
     const accessToken = win.localStorage.getItem('accessToken');
     const refreshToken = win.localStorage.getItem('refreshToken');
 
@@ -199,7 +199,7 @@ beforeEach(() => {
 });
 
 // Error handling for uncaught exceptions
-Cypress.on('uncaught:exception', (err) => {
+Cypress.on('uncaught:exception', err => {
   // Ignore specific errors that don't affect tests
   if (
     err.message.includes('ResizeObserver loop') ||

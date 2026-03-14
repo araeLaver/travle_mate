@@ -10,11 +10,11 @@ initializeMonitoring();
 
 // Register service worker for PWA support
 serviceWorkerRegistration.register({
-  onSuccess: (registration) => {
+  onSuccess: registration => {
     // eslint-disable-next-line no-console
     console.log('ServiceWorker registered successfully:', registration);
   },
-  onUpdate: (registration) => {
+  onUpdate: registration => {
     // eslint-disable-next-line no-console
     console.log('New content is available; please refresh.');
     // 업데이트 알림을 위한 이벤트 발생
@@ -31,9 +31,7 @@ serviceWorkerRegistration.register({
   },
 });
 
-const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
-);
+const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 
 root.render(
   <React.StrictMode>

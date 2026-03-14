@@ -172,11 +172,7 @@ export const logger = {
     queueLog(entry);
   },
 
-  error: (
-    message: string,
-    error?: Error,
-    context?: Record<string, unknown>
-  ): void => {
+  error: (message: string, error?: Error, context?: Record<string, unknown>): void => {
     const entry = createLogEntry('error', message, context, error);
     if (MONITORING_CONFIG.logToConsole) {
       // eslint-disable-next-line no-console
@@ -193,10 +189,7 @@ export const errorTracker = {
   /**
    * Report an error with context
    */
-  captureError: (
-    error: Error,
-    context?: Record<string, unknown>
-  ): void => {
+  captureError: (error: Error, context?: Record<string, unknown>): void => {
     const report: ErrorReport = {
       message: error.message,
       stack: error.stack,
@@ -215,9 +208,7 @@ export const errorTracker = {
     }
 
     // Store recent errors for debugging
-    const recentErrors = JSON.parse(
-      sessionStorage.getItem('tm_recent_errors') || '[]'
-    );
+    const recentErrors = JSON.parse(sessionStorage.getItem('tm_recent_errors') || '[]');
     recentErrors.push(report);
     if (recentErrors.length > 10) recentErrors.shift();
     sessionStorage.setItem('tm_recent_errors', JSON.stringify(recentErrors));
@@ -226,10 +217,7 @@ export const errorTracker = {
   /**
    * Report a React error boundary catch
    */
-  captureReactError: (
-    error: Error,
-    errorInfo: { componentStack: string }
-  ): void => {
+  captureReactError: (error: Error, errorInfo: { componentStack: string }): void => {
     const report: ErrorReport = {
       message: error.message,
       stack: error.stack,
@@ -283,9 +271,7 @@ export const performanceMonitor = {
     }
 
     // Store metrics
-    const metrics = JSON.parse(
-      sessionStorage.getItem('tm_perf_metrics') || '[]'
-    );
+    const metrics = JSON.parse(sessionStorage.getItem('tm_perf_metrics') || '[]');
     metrics.push(metric);
     if (metrics.length > 50) metrics.shift();
     sessionStorage.setItem('tm_perf_metrics', JSON.stringify(metrics));
@@ -322,11 +308,7 @@ export const performanceMonitor = {
   /**
    * Measure execution time of a sync function
    */
-  measure: <T>(
-    name: string,
-    fn: () => T,
-    context?: Record<string, unknown>
-  ): T => {
+  measure: <T>(name: string, fn: () => T, context?: Record<string, unknown>): T => {
     const start = performance.now();
     try {
       const result = fn();
@@ -371,43 +353,36 @@ export const webVitals = {
    */
   reportWebVitals: (onReport?: (metric: PerformanceMetric) => void): void => {
     // Import web-vitals dynamically
-    import('web-vitals').then(
-      ({ onCLS, onFCP, onLCP, onTTFB, onINP }) => {
-        const handleMetric = (
-          metric: { name: string; value: number; rating: string }
-        ) => {
-          const perfMetric: PerformanceMetric = {
-            name: metric.name,
-            value: metric.value,
-            unit: 'ms',
-            timestamp: new Date().toISOString(),
-            context: { rating: metric.rating },
-          };
-
-          performanceMonitor.trackMetric(
-            `web-vital-${metric.name}`,
-            metric.value,
-            'ms',
-            { rating: metric.rating }
-          );
-
-          if (onReport) {
-            onReport(perfMetric);
-          }
-
-          logger.info(`Web Vital: ${metric.name}`, {
-            value: metric.value,
-            rating: metric.rating,
-          });
+    import('web-vitals').then(({ onCLS, onFCP, onLCP, onTTFB, onINP }) => {
+      const handleMetric = (metric: { name: string; value: number; rating: string }) => {
+        const perfMetric: PerformanceMetric = {
+          name: metric.name,
+          value: metric.value,
+          unit: 'ms',
+          timestamp: new Date().toISOString(),
+          context: { rating: metric.rating },
         };
 
-        onCLS(handleMetric);
-        onFCP(handleMetric);
-        onLCP(handleMetric);
-        onTTFB(handleMetric);
-        onINP(handleMetric);
-      }
-    );
+        performanceMonitor.trackMetric(`web-vital-${metric.name}`, metric.value, 'ms', {
+          rating: metric.rating,
+        });
+
+        if (onReport) {
+          onReport(perfMetric);
+        }
+
+        logger.info(`Web Vital: ${metric.name}`, {
+          value: metric.value,
+          rating: metric.rating,
+        });
+      };
+
+      onCLS(handleMetric);
+      onFCP(handleMetric);
+      onLCP(handleMetric);
+      onTTFB(handleMetric);
+      onINP(handleMetric);
+    });
   },
 };
 
@@ -429,11 +404,7 @@ export const analytics = {
   /**
    * Track user action
    */
-  trackAction: (
-    action: string,
-    category: string,
-    context?: Record<string, unknown>
-  ): void => {
+  trackAction: (action: string, category: string, context?: Record<string, unknown>): void => {
     logger.info(`User action: ${action}`, {
       category,
       ...context,
@@ -444,10 +415,7 @@ export const analytics = {
   /**
    * Track feature usage
    */
-  trackFeatureUsage: (
-    feature: string,
-    context?: Record<string, unknown>
-  ): void => {
+  trackFeatureUsage: (feature: string, context?: Record<string, unknown>): void => {
     logger.info(`Feature usage: ${feature}`, {
       ...context,
       timestamp: new Date().toISOString(),
@@ -461,19 +429,14 @@ export const analytics = {
 export const initializeMonitoring = (): void => {
   // Global error handler
   window.onerror = (message, source, lineno, colno, error) => {
-    errorTracker.captureError(
-      error || new Error(String(message)),
-      { source, lineno, colno }
-    );
+    errorTracker.captureError(error || new Error(String(message)), { source, lineno, colno });
     return false;
   };
 
   // Unhandled promise rejection handler
-  window.onunhandledrejection = (event) => {
+  window.onunhandledrejection = event => {
     errorTracker.captureError(
-      event.reason instanceof Error
-        ? event.reason
-        : new Error(String(event.reason)),
+      event.reason instanceof Error ? event.reason : new Error(String(event.reason)),
       { type: 'unhandledrejection' }
     );
   };
@@ -503,11 +466,7 @@ export const createMonitoredApiCall = <T>(
   apiCall: () => Promise<T>
 ): (() => Promise<T>) => {
   return async () => {
-    return performanceMonitor.measureAsync(
-      `api-${name}`,
-      apiCall,
-      { type: 'api-call' }
-    );
+    return performanceMonitor.measureAsync(`api-${name}`, apiCall, { type: 'api-call' });
   };
 };
 
