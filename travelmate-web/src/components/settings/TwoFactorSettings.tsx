@@ -36,6 +36,7 @@ const TwoFactorSettings: React.FC<TwoFactorSettingsProps> = ({ className = '' })
       setIsEnabled(status.enabled);
       setStep('status');
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('Failed to check 2FA status:', err);
     } finally {
       setLoading(false);

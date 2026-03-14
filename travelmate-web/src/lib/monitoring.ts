@@ -148,6 +148,7 @@ export const logger = {
   debug: (message: string, context?: Record<string, unknown>): void => {
     const entry = createLogEntry('debug', message, context);
     if (MONITORING_CONFIG.logToConsole) {
+      // eslint-disable-next-line no-console
       console.debug(`[DEBUG] ${message}`, context);
     }
     queueLog(entry);
@@ -156,6 +157,7 @@ export const logger = {
   info: (message: string, context?: Record<string, unknown>): void => {
     const entry = createLogEntry('info', message, context);
     if (MONITORING_CONFIG.logToConsole) {
+      // eslint-disable-next-line no-console
       console.info(`[INFO] ${message}`, context);
     }
     queueLog(entry);
@@ -164,6 +166,7 @@ export const logger = {
   warn: (message: string, context?: Record<string, unknown>): void => {
     const entry = createLogEntry('warn', message, context);
     if (MONITORING_CONFIG.logToConsole) {
+      // eslint-disable-next-line no-console
       console.warn(`[WARN] ${message}`, context);
     }
     queueLog(entry);
@@ -176,6 +179,7 @@ export const logger = {
   ): void => {
     const entry = createLogEntry('error', message, context, error);
     if (MONITORING_CONFIG.logToConsole) {
+      // eslint-disable-next-line no-console
       console.error(`[ERROR] ${message}`, error, context);
     }
     queueLog(entry);
@@ -274,6 +278,7 @@ export const performanceMonitor = {
     };
 
     if (MONITORING_CONFIG.logToConsole) {
+      // eslint-disable-next-line no-console
       console.debug(`[PERF] ${name}: ${value}${unit}`, context);
     }
 
@@ -506,7 +511,7 @@ export const createMonitoredApiCall = <T>(
   };
 };
 
-export default {
+const monitoringUtils = {
   logger,
   errorTracker,
   performanceMonitor,
@@ -515,3 +520,5 @@ export default {
   initializeMonitoring,
   createMonitoredApiCall,
 };
+
+export default monitoringUtils;

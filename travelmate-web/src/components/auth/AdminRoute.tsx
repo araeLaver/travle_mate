@@ -31,6 +31,7 @@ const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
           setIsAdmin(false);
         } else {
           // 다른 오류는 네트워크 문제 등으로 간주, 재시도 필요
+          // eslint-disable-next-line no-console
           console.error('Admin check failed:', error);
           setIsAdmin(false);
         }

@@ -1,5 +1,5 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { useGeolocation, GeolocationState, GeolocationOptions } from './useGeolocation';
+import { useGeolocation, GeolocationOptions } from './useGeolocation';
 
 // Mock navigator.geolocation
 const mockGeolocation = {

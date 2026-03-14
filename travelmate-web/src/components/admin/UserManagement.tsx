@@ -210,6 +210,7 @@ const UserManagement: React.FC = () => {
       setTotalPages(data.totalPages);
       setTotalElements(data.totalElements);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to load users:', error);
     } finally {
       setLoading(false);
@@ -250,6 +251,7 @@ const UserManagement: React.FC = () => {
       setSelectedUser(detail);
       setShowDetail(true);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to load user detail:', error);
     }
   };
@@ -259,6 +261,7 @@ const UserManagement: React.FC = () => {
       await adminService.updateUser(userId, data);
       loadUsers();
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to update user:', error);
     }
   };
@@ -276,6 +279,7 @@ const UserManagement: React.FC = () => {
       setSelectedIds(new Set());
       loadUsers();
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to perform bulk action:', error);
     } finally {
       setBulkLoading(false);

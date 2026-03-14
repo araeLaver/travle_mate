@@ -169,6 +169,7 @@ const AdminOverview: React.FC = () => {
       setStats(statsData);
       setHealth(healthData);
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('Failed to load dashboard data:', err);
       setError('대시보드 데이터를 불러오는데 실패했습니다.');
     } finally {

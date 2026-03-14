@@ -29,6 +29,7 @@ export function register(config?: Config): void {
       if (isLocalhost) {
         checkValidServiceWorker(swUrl, config);
         navigator.serviceWorker.ready.then(() => {
+          // eslint-disable-next-line no-console
           console.log('Service Worker is ready for development.');
         });
       } else {
@@ -59,9 +60,11 @@ function registerValidSW(swUrl: string, config?: Config): void {
         installingWorker.onstatechange = () => {
           if (installingWorker.state === 'installed') {
             if (navigator.serviceWorker.controller) {
+              // eslint-disable-next-line no-console
               console.log('New content is available and will be used when all tabs are closed.');
               config?.onUpdate?.(registration);
             } else {
+              // eslint-disable-next-line no-console
               console.log('Content is cached for offline use.');
               config?.onSuccess?.(registration);
             }
@@ -70,6 +73,7 @@ function registerValidSW(swUrl: string, config?: Config): void {
       };
     })
     .catch((error) => {
+      // eslint-disable-next-line no-console
       console.error('Error during service worker registration:', error);
     });
 }
@@ -94,6 +98,7 @@ function checkValidServiceWorker(swUrl: string, config?: Config): void {
       }
     })
     .catch(() => {
+      // eslint-disable-next-line no-console
       console.log('No internet connection found. App is running in offline mode.');
     });
 }
@@ -105,6 +110,7 @@ export function unregister(): void {
         registration.unregister();
       })
       .catch((error) => {
+        // eslint-disable-next-line no-console
         console.error(error.message);
       });
   }

@@ -261,7 +261,7 @@ export function meetsContrastStandard(
   return ratio >= standards[level][size];
 }
 
-export default {
+const accessibilityUtils = {
   announce,
   trapFocus,
   generateId,
@@ -277,3 +277,5 @@ export default {
   getContrastRatio,
   meetsContrastStandard,
 };
+
+export default accessibilityUtils;

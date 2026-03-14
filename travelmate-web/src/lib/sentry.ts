@@ -8,6 +8,7 @@ const ENVIRONMENT = process.env.REACT_APP_ENV || 'development';
  */
 export const initSentry = () => {
   if (!SENTRY_DSN) {
+    // eslint-disable-next-line no-console
     console.log('Sentry DSN not configured, skipping initialization');
     return;
   }
@@ -88,6 +89,7 @@ export const initSentry = () => {
     ],
   });
 
+  // eslint-disable-next-line no-console
   console.log('Sentry initialized for environment:', ENVIRONMENT);
 };
 

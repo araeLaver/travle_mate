@@ -145,6 +145,7 @@ const FollowerList: React.FC<FollowerListProps> = ({
     try {
       await toggle(targetUserId, isCurrentlyFollowing);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('팔로우 토글 실패:', error);
     }
   };

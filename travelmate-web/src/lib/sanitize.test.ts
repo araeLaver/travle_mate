@@ -47,6 +47,7 @@ describe('sanitize', () => {
     });
 
     it('should remove javascript: protocol', () => {
+      // eslint-disable-next-line no-script-url
       expect(sanitizeString('javascript:alert(1)')).toBe('alert(1)');
     });
 
@@ -97,6 +98,7 @@ describe('sanitize', () => {
     });
 
     it('should block javascript URLs', () => {
+      // eslint-disable-next-line no-script-url
       expect(sanitizeUrl('javascript:alert(1)')).toBe('');
     });
 

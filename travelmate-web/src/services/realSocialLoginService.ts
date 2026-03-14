@@ -122,10 +122,12 @@ const isDev = process.env.NODE_ENV === 'development';
 const logger = {
   // eslint-disable-next-line no-console
   log: (...args: unknown[]): void => {
+    // eslint-disable-next-line no-console
     if (isDev) console.log(...args);
   },
   // eslint-disable-next-line no-console
   error: (...args: unknown[]): void => {
+    // eslint-disable-next-line no-console
     if (isDev) console.error(...args);
   },
 };

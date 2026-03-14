@@ -120,6 +120,7 @@ export function useOfflineStorage<T>(key: string, initialValue: T) {
         setStoredValue(valueToStore);
         localStorage.setItem(key, JSON.stringify(valueToStore));
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('Error saving to localStorage:', error);
       }
     },
@@ -131,6 +132,7 @@ export function useOfflineStorage<T>(key: string, initialValue: T) {
       localStorage.removeItem(key);
       setStoredValue(initialValue);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error removing from localStorage:', error);
     }
   }, [key, initialValue]);
@@ -189,6 +191,7 @@ export function useOfflineQueue() {
         });
         removeFromQueue(request.id);
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('Failed to process queued request:', error);
         break; // 실패하면 나머지는 다음에
       }

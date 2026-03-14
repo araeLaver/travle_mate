@@ -100,11 +100,13 @@ export function t(
     // Fall back to English if available
     const englishTranslation = getNestedValue(translations.en, key);
     if (englishTranslation) {
+      // eslint-disable-next-line no-console
       console.warn(`Missing translation for '${key}' in ${currentLanguage}`);
       return interpolate(englishTranslation, params);
     }
 
     // Return the key itself if no translation found
+    // eslint-disable-next-line no-console
     console.warn(`Missing translation for key: ${key}`);
     return key;
   }
@@ -202,7 +204,7 @@ export function formatRelativeTime(date: Date | string): string {
   return rtf.format(-seconds, 'second');
 }
 
-export default {
+const i18nUtils = {
   t,
   getLanguage,
   setLanguage,
@@ -213,3 +215,5 @@ export default {
   formatCurrency,
   formatRelativeTime,
 };
+
+export default i18nUtils;

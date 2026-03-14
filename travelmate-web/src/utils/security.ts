@@ -54,6 +54,7 @@ export function isUrlSafe(url: string): boolean {
 
   // 위험한 프로토콜 차단
   const dangerousProtocols = [
+    // eslint-disable-next-line no-script-url
     'javascript:',
     'data:',
     'vbscript:',
@@ -154,6 +155,7 @@ export function getCsrfToken(): string | null {
  */
 export function setupCspReporting(): void {
   document.addEventListener('securitypolicyviolation', (e) => {
+    // eslint-disable-next-line no-console
     console.warn('CSP Violation:', {
       blockedURI: e.blockedURI,
       violatedDirective: e.violatedDirective,

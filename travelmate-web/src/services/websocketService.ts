@@ -6,8 +6,11 @@ import { WebSocketError, WebSocketErrorCallback } from '../types';
 // 개발 환경에서만 로그 출력
 const isDev = process.env.NODE_ENV === 'development';
 const logger = {
+  // eslint-disable-next-line no-console
   log: (...args: unknown[]) => isDev && console.log(...args),
+  // eslint-disable-next-line no-console
   warn: (...args: unknown[]) => isDev && console.warn(...args),
+  // eslint-disable-next-line no-console
   error: (...args: unknown[]) => isDev && console.error(...args),
 };
 

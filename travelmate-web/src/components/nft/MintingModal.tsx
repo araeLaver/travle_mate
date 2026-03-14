@@ -111,6 +111,7 @@ const MintingModal: React.FC<MintingModalProps> = ({
       setMintStatus(status);
       setCurrentStep(calculateStep(status.mintStatus));
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('민팅 상태 조회 실패:', err);
     }
   }, [collectionId, calculateStep]);

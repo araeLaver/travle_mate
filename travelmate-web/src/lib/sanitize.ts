@@ -230,6 +230,7 @@ export function sanitizeFilename(filename: string): string {
 
   return filename
     // Remove path components
+    // eslint-disable-next-line no-useless-escape
     .replace(/^.*[\\\/]/, '')
     // Remove null bytes
     .replace(/\0/g, '')
@@ -241,7 +242,7 @@ export function sanitizeFilename(filename: string): string {
     .substring(0, 255);
 }
 
-export default {
+const sanitize = {
   escapeHtml,
   sanitizeString,
   sanitizeHtml,
@@ -255,3 +256,5 @@ export default {
   containsSqlInjection,
   sanitizeFilename,
 };
+
+export default sanitize;

@@ -253,7 +253,7 @@ export function useKeyboardNavigation(): boolean {
   return isKeyboardUser;
 }
 
-export default {
+const accessibilityHooks = {
   useAnnounce,
   useFocusTrap,
   useId,
@@ -263,3 +263,5 @@ export default {
   useSkipLink,
   useKeyboardNavigation,
 };
+
+export default accessibilityHooks;

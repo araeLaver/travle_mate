@@ -1,4 +1,5 @@
 import { followService } from './followService';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { authService } from './authService';
 
 // Mock fetch

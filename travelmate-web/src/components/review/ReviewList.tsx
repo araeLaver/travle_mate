@@ -75,6 +75,7 @@ const ReviewList: React.FC<ReviewListProps> = ({ locationId, onReviewDeleted }) 
       setHasMore(!reviewsResponse.last);
       setPage(currentPage);
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('리뷰 로딩 실패:', err);
     } finally {
       setIsLoading(false);
@@ -83,7 +84,7 @@ const ReviewList: React.FC<ReviewListProps> = ({ locationId, onReviewDeleted }) 
 
   useEffect(() => {
     loadReviews(true);
-  }, [locationId, sort]);
+  }, [locationId, sort]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSortChange = (newSort: 'recent' | 'helpful') => {
     setSort(newSort);
@@ -112,6 +113,7 @@ const ReviewList: React.FC<ReviewListProps> = ({ locationId, onReviewDeleted }) 
         )
       );
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('도움됨 토글 실패:', err);
     }
   };
@@ -127,6 +129,7 @@ const ReviewList: React.FC<ReviewListProps> = ({ locationId, onReviewDeleted }) 
       }
       onReviewDeleted?.();
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('리뷰 삭제 실패:', err);
     }
   };

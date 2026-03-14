@@ -54,6 +54,7 @@ const NotificationSettings: React.FC = () => {
       setNotifications(notifs);
       setUnreadCount(count);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to load notifications:', error);
     } finally {
       setLoading(false);
@@ -89,6 +90,7 @@ const NotificationSettings: React.FC = () => {
       setNotifications((prev) => prev.filter((n) => n.id !== id));
       setUnreadCount((prev) => Math.max(0, prev - 1));
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to mark as read:', error);
     }
   };
@@ -101,6 +103,7 @@ const NotificationSettings: React.FC = () => {
       setUnreadCount(0);
       showToast('모든 알림을 읽음 처리했습니다.', 'success');
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to mark all as read:', error);
       showToast('읽음 처리에 실패했습니다.', 'error');
     }
@@ -113,6 +116,7 @@ const NotificationSettings: React.FC = () => {
       setNotifications((prev) => prev.filter((n) => n.id !== id));
       showToast('알림이 삭제되었습니다.', 'success');
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to delete notification:', error);
       showToast('삭제에 실패했습니다.', 'error');
     }

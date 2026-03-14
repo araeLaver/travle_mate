@@ -72,6 +72,7 @@ const ImageMessage: React.FC<ImageMessageProps> = ({
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('이미지 다운로드 실패:', err);
     }
   };

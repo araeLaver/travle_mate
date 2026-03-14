@@ -66,6 +66,7 @@ class PushNotificationService {
    */
   async requestPermission(): Promise<boolean> {
     if (!this.isSupported()) {
+      // eslint-disable-next-line no-console
       console.warn('Push notifications are not supported');
       return false;
     }
@@ -80,6 +81,7 @@ class PushNotificationService {
 
       return this.permissionGranted;
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to request notification permission:', error);
       return false;
     }
@@ -116,11 +118,13 @@ class PushNotificationService {
       if (token) {
         this.fcmToken = token;
         await this.registerTokenWithServer(token);
+        // eslint-disable-next-line no-console
         console.log('FCM token initialized');
       }
 
       return token;
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to initialize FCM token:', error);
       return null;
     }
@@ -134,9 +138,11 @@ class PushNotificationService {
       const registration = await navigator.serviceWorker.register(
         '/firebase-messaging-sw.js'
       );
+      // eslint-disable-next-line no-console
       console.log('Service Worker registered');
       return registration;
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Service Worker registration failed:', error);
       return null;
     }
@@ -156,8 +162,10 @@ class PushNotificationService {
       };
 
       await apiClient.post('/push/register', request);
+      // eslint-disable-next-line no-console
       console.log('Token registered with server');
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to register token with server:', error);
     }
   }
@@ -173,8 +181,10 @@ class PushNotificationService {
     try {
       await apiClient.post('/push/unregister', { token: this.fcmToken });
       this.fcmToken = null;
+      // eslint-disable-next-line no-console
       console.log('Token unregistered');
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to unregister token:', error);
     }
   }
@@ -185,8 +195,10 @@ class PushNotificationService {
   async subscribeToTopic(topic: string): Promise<void> {
     try {
       await apiClient.post(`/push/subscribe/${topic}`);
+      // eslint-disable-next-line no-console
       console.log(`Subscribed to topic: ${topic}`);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error(`Failed to subscribe to topic ${topic}:`, error);
     }
   }
@@ -197,8 +209,10 @@ class PushNotificationService {
   async unsubscribeFromTopic(topic: string): Promise<void> {
     try {
       await apiClient.delete(`/push/subscribe/${topic}`);
+      // eslint-disable-next-line no-console
       console.log(`Unsubscribed from topic: ${topic}`);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error(`Failed to unsubscribe from topic ${topic}:`, error);
     }
   }
@@ -217,6 +231,7 @@ class PushNotificationService {
     const { onMessage } = await import('firebase/messaging');
 
     return onMessage(messaging, (payload) => {
+      // eslint-disable-next-line no-console
       console.log('Foreground message received:', payload);
 
       const notificationPayload: NotificationPayload = {

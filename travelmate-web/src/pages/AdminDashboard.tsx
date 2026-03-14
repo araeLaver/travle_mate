@@ -152,6 +152,7 @@ const AdminDashboard: React.FC = () => {
       const data = await adminService.getLocationStats();
       setStats(data);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to load stats:', error);
     }
   }, []);
@@ -166,6 +167,7 @@ const AdminDashboard: React.FC = () => {
       setTotalPages(data.totalPages);
       setTotalElements(data.totalElements);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to load locations:', error);
       showToast('장소 목록을 불러오는데 실패했습니다.', 'error');
     } finally {
@@ -276,6 +278,7 @@ const AdminDashboard: React.FC = () => {
       loadLocations();
       loadStats();
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to save location:', error);
       showToast('장소 저장에 실패했습니다.', 'error');
     } finally {
@@ -291,6 +294,7 @@ const AdminDashboard: React.FC = () => {
       loadLocations();
       loadStats();
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to toggle status:', error);
       showToast('상태 변경에 실패했습니다.', 'error');
     }
@@ -305,6 +309,7 @@ const AdminDashboard: React.FC = () => {
       loadLocations();
       loadStats();
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to delete location:', error);
       showToast('장소 삭제에 실패했습니다.', 'error');
     }

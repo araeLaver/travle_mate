@@ -108,6 +108,7 @@ export function usePushNotifications(): UsePushNotificationsReturn {
       const prefs = await pushNotificationService.getPreferences();
       setPreferences(prefs);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to load notification preferences:', error);
     }
   };
@@ -140,6 +141,7 @@ export function usePushNotifications(): UsePushNotificationsReturn {
         }
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to enable notifications:', error);
       toast.error('알림 활성화에 실패했습니다.');
     } finally {
@@ -154,6 +156,7 @@ export function usePushNotifications(): UsePushNotificationsReturn {
       setIsEnabled(false);
       toast.success('알림이 비활성화되었습니다.');
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to disable notifications:', error);
       toast.error('알림 비활성화에 실패했습니다.');
     } finally {
@@ -168,6 +171,7 @@ export function usePushNotifications(): UsePushNotificationsReturn {
         setPreferences(updated);
         toast.success('알림 설정이 업데이트되었습니다.');
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('Failed to update notification preferences:', error);
         toast.error('알림 설정 업데이트에 실패했습니다.');
       }
