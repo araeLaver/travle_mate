@@ -31,11 +31,11 @@ jobs:
           fi
           echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
 
-      - name: Enable auto-merge
+      - name: Squash merge PR
         if: steps.find-pr.outputs.pr_url
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh pr merge --auto --squash "${{ steps.find-pr.outputs.pr_url }}"
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: gh pr merge --squash "${{ steps.find-pr.outputs.pr_url }}"
 
   auto-merge-labeled:
     name: Auto Merge labeled PRs
@@ -49,6 +49,6 @@ jobs:
     steps:
       - name: Enable auto-merge
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
           PR_URL: ${{ github.event.pull_request.html_url }}
         run: gh pr merge --auto --squash "$PR_URL"
