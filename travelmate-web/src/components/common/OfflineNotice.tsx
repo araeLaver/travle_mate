@@ -40,9 +40,7 @@ export function OfflineNotice({ className = '' }: OfflineNoticeProps) {
         <div className="flex items-center justify-center gap-2 max-w-7xl mx-auto">
           <SignalSlashIcon className="w-5 h-5" />
           <span className="font-medium">{t('errors.network')}</span>
-          <span className="text-sm opacity-90">
-            - 일부 기능이 제한될 수 있습니다
-          </span>
+          <span className="text-sm opacity-90">- 일부 기능이 제한될 수 있습니다</span>
           <button
             onClick={handleDismiss}
             className="ml-4 p-1 hover:bg-amber-600 rounded"
@@ -127,15 +125,9 @@ export function UpdateNotice({ onUpdate, onDismiss }: UpdateNoticeProps) {
       <div className="flex items-start gap-3">
         <div className="flex-1">
           <h3 className="font-semibold">새 버전이 있습니다</h3>
-          <p className="text-sm text-indigo-100 mt-1">
-            업데이트하여 최신 기능을 사용하세요.
-          </p>
+          <p className="text-sm text-indigo-100 mt-1">업데이트하여 최신 기능을 사용하세요.</p>
         </div>
-        <button
-          onClick={onDismiss}
-          className="p-1 hover:bg-indigo-500 rounded"
-          aria-label="닫기"
-        >
+        <button onClick={onDismiss} className="p-1 hover:bg-indigo-500 rounded" aria-label="닫기">
           <XMarkIcon className="w-5 h-5" />
         </button>
       </div>

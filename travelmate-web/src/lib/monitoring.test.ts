@@ -133,12 +133,9 @@ describe('monitoring', () => {
     it('should measure async function execution time', async () => {
       mockPerformanceNow.mockReturnValueOnce(0).mockReturnValueOnce(50);
 
-      const result = await performanceMonitor.measureAsync(
-        'async-test',
-        async () => {
-          return 'result';
-        }
-      );
+      const result = await performanceMonitor.measureAsync('async-test', async () => {
+        return 'result';
+      });
 
       expect(result).toBe('result');
       expect(mockSessionStorage.setItem).toHaveBeenCalled();
@@ -179,9 +176,7 @@ describe('monitoring', () => {
     it('should clear stored metrics', () => {
       performanceMonitor.clearMetrics();
 
-      expect(mockSessionStorage.removeItem).toHaveBeenCalledWith(
-        'tm_perf_metrics'
-      );
+      expect(mockSessionStorage.removeItem).toHaveBeenCalledWith('tm_perf_metrics');
     });
   });
 

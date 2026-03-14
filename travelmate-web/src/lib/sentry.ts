@@ -8,6 +8,7 @@ const ENVIRONMENT = process.env.REACT_APP_ENV || 'development';
  */
 export const initSentry = () => {
   if (!SENTRY_DSN) {
+    // eslint-disable-next-line no-console
     console.log('Sentry DSN not configured, skipping initialization');
     return;
   }
@@ -88,6 +89,7 @@ export const initSentry = () => {
     ],
   });
 
+  // eslint-disable-next-line no-console
   console.log('Sentry initialized for environment:', ENVIRONMENT);
 };
 
@@ -109,11 +111,8 @@ export const setUser = (user: { id: string; email?: string; username?: string } 
 /**
  * Capture an exception
  */
-export const captureException = (
-  error: Error,
-  context?: Record<string, unknown>
-) => {
-  Sentry.withScope((scope) => {
+export const captureException = (error: Error, context?: Record<string, unknown>) => {
+  Sentry.withScope(scope => {
     if (context) {
       Object.entries(context).forEach(([key, value]) => {
         scope.setExtra(key, value);
@@ -126,10 +125,7 @@ export const captureException = (
 /**
  * Capture a message
  */
-export const captureMessage = (
-  message: string,
-  level: Sentry.SeverityLevel = 'info'
-) => {
+export const captureMessage = (message: string, level: Sentry.SeverityLevel = 'info') => {
   Sentry.captureMessage(message, level);
 };
 

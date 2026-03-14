@@ -15,6 +15,28 @@ import {
 } from '@heroicons/react/24/outline';
 import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
+import SEOHead from '../components/SEOHead';
+
+const aboutJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Fryndo',
+  applicationCategory: 'TravelApplication',
+  operatingSystem: 'Web',
+  url: 'https://fryndo.com',
+  description:
+    'Fryndo는 AI 기반 매칭 시스템으로 취향이 맞는 여행 동반자를 연결하는 플랫폼입니다. 50개 이상 국가, 10,000명 이상의 여행자 커뮤니티.',
+  offers: {
+    '@type': 'Offer',
+    price: '0',
+    priceCurrency: 'KRW',
+  },
+  aggregateRating: {
+    '@type': 'AggregateRating',
+    ratingValue: '4.8',
+    reviewCount: '1200',
+  },
+};
 
 const About: React.FC = () => {
   const fadeInUp = {
@@ -25,6 +47,12 @@ const About: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b]">
+      <SEOHead
+        title="Fryndo 소개 - 여행 동반자 매칭 플랫폼"
+        description="Fryndo는 AI 기반 매칭으로 취향이 맞는 여행 동반자를 연결합니다. 50개 이상 국가, 10,000명 이상의 여행자와 함께 특별한 여행을 만들어보세요."
+        canonical="https://fryndo.com/about"
+        jsonLd={aboutJsonLd}
+      />
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50">
         <div className="mx-4 mt-4">

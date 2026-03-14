@@ -76,9 +76,7 @@ const FollowerItem: React.FC<FollowerItemProps> = ({
         <div className="follower-details">
           <span className="follower-nickname">{user.nickname}</span>
           {user.bio && <span className="follower-bio">{user.bio}</span>}
-          {user.followedAt && (
-            <span className="follower-date">{formatDate(user.followedAt)}</span>
-          )}
+          {user.followedAt && <span className="follower-date">{formatDate(user.followedAt)}</span>}
         </div>
       </Link>
 
@@ -102,12 +100,7 @@ const FollowerItem: React.FC<FollowerItemProps> = ({
   );
 };
 
-const FollowerList: React.FC<FollowerListProps> = ({
-  userId,
-  type,
-  isOwnProfile,
-  onClose,
-}) => {
+const FollowerList: React.FC<FollowerListProps> = ({ userId, type, isOwnProfile, onClose }) => {
   const observerTarget = useRef<HTMLDivElement>(null);
   const { toggle, isLoading: isToggling } = useFollowToggle();
 
@@ -145,11 +138,12 @@ const FollowerList: React.FC<FollowerListProps> = ({
     try {
       await toggle(targetUserId, isCurrentlyFollowing);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('팔로우 토글 실패:', error);
     }
   };
 
-  const allUsers = data?.pages.flatMap((page) => page.content) || [];
+  const allUsers = data?.pages.flatMap(page => page.content) || [];
   const totalCount = data?.pages[0]?.totalElements || 0;
 
   if (isLoading) {
@@ -215,7 +209,7 @@ const FollowerList: React.FC<FollowerListProps> = ({
           </div>
         ) : (
           <>
-            {allUsers.map((user) => (
+            {allUsers.map(user => (
               <FollowerItem
                 key={user.id}
                 user={user}

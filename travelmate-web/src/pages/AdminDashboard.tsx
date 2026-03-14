@@ -66,9 +66,19 @@ const initialFormData: LocationFormData = {
 
 const RARITY_OPTIONS: Rarity[] = ['COMMON', 'RARE', 'EPIC', 'LEGENDARY'];
 const CATEGORY_OPTIONS: LocationCategory[] = [
-  'LANDMARK', 'MUSEUM', 'PARK', 'TEMPLE', 'BEACH',
-  'MOUNTAIN', 'HISTORIC', 'CULTURAL', 'ENTERTAINMENT',
-  'FOOD', 'SHOPPING', 'NATURE', 'HIDDEN_GEM'
+  'LANDMARK',
+  'MUSEUM',
+  'PARK',
+  'TEMPLE',
+  'BEACH',
+  'MOUNTAIN',
+  'HISTORIC',
+  'CULTURAL',
+  'ENTERTAINMENT',
+  'FOOD',
+  'SHOPPING',
+  'NATURE',
+  'HIDDEN_GEM',
 ];
 
 const RARITY_CONFIG: Record<Rarity, { color: string; label: string; emoji: string }> = {
@@ -139,7 +149,9 @@ const AdminDashboard: React.FC = () => {
 
   // Modal state
   const [showModal, setShowModal] = useState(false);
-  const [editingLocation, setEditingLocation] = useState<CollectibleLocationAdminResponse | null>(null);
+  const [editingLocation, setEditingLocation] = useState<CollectibleLocationAdminResponse | null>(
+    null
+  );
   const [formData, setFormData] = useState<LocationFormData>(initialFormData);
   const [submitting, setSubmitting] = useState(false);
 
@@ -152,6 +164,7 @@ const AdminDashboard: React.FC = () => {
       const data = await adminService.getLocationStats();
       setStats(data);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to load stats:', error);
     }
   }, []);
@@ -166,6 +179,7 @@ const AdminDashboard: React.FC = () => {
       setTotalPages(data.totalPages);
       setTotalElements(data.totalElements);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to load locations:', error);
       showToast('장소 목록을 불러오는데 실패했습니다.', 'error');
     } finally {
@@ -179,7 +193,7 @@ const AdminDashboard: React.FC = () => {
   }, [loadStats, loadLocations]);
 
   // Filter locations
-  const filteredLocations = locations.filter((loc) => {
+  const filteredLocations = locations.filter(loc => {
     if (filterRarity !== 'ALL' && loc.rarity !== filterRarity) return false;
     if (filterCategory !== 'ALL' && loc.category !== filterCategory) return false;
     if (filterStatus === 'ACTIVE' && !loc.isActive) return false;
@@ -202,9 +216,9 @@ const AdminDashboard: React.FC = () => {
     const { name, value, type } = e.target;
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked;
-      setFormData((prev) => ({ ...prev, [name]: checked }));
+      setFormData(prev => ({ ...prev, [name]: checked }));
     } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
+      setFormData(prev => ({ ...prev, [name]: value }));
     }
   };
 
@@ -276,6 +290,7 @@ const AdminDashboard: React.FC = () => {
       loadLocations();
       loadStats();
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to save location:', error);
       showToast('장소 저장에 실패했습니다.', 'error');
     } finally {
@@ -291,6 +306,7 @@ const AdminDashboard: React.FC = () => {
       loadLocations();
       loadStats();
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to toggle status:', error);
       showToast('상태 변경에 실패했습니다.', 'error');
     }
@@ -305,6 +321,7 @@ const AdminDashboard: React.FC = () => {
       loadLocations();
       loadStats();
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to delete location:', error);
       showToast('장소 삭제에 실패했습니다.', 'error');
     }
@@ -365,7 +382,7 @@ const AdminDashboard: React.FC = () => {
       <div className="sticky top-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex overflow-x-auto scrollbar-hide">
-            {tabs.map((tab) => (
+            {tabs.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
@@ -412,7 +429,9 @@ const AdminDashboard: React.FC = () => {
                         <span className="text-3xl">📍</span>
                       </div>
                       <div>
-                        <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.totalLocations}</p>
+                        <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                          {stats.totalLocations}
+                        </p>
                         <p className="text-sm text-gray-500 dark:text-gray-400">전체 장소</p>
                       </div>
                     </div>
@@ -423,7 +442,9 @@ const AdminDashboard: React.FC = () => {
                         <span className="text-3xl">✅</span>
                       </div>
                       <div>
-                        <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.activeLocations}</p>
+                        <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                          {stats.activeLocations}
+                        </p>
                         <p className="text-sm text-gray-500 dark:text-gray-400">활성 장소</p>
                       </div>
                     </div>
@@ -434,7 +455,9 @@ const AdminDashboard: React.FC = () => {
                         <span className="text-3xl">⭐</span>
                       </div>
                       <div>
-                        <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.seasonalEvents}</p>
+                        <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                          {stats.seasonalEvents}
+                        </p>
                         <p className="text-sm text-gray-500 dark:text-gray-400">시즌 이벤트</p>
                       </div>
                     </div>
@@ -445,11 +468,20 @@ const AdminDashboard: React.FC = () => {
               {/* Rarity Distribution */}
               {stats && (
                 <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50">
-                  <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4">희귀도별 분포</h3>
+                  <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4">
+                    희귀도별 분포
+                  </h3>
                   <div className="space-y-3">
-                    {RARITY_OPTIONS.map((rarity) => {
-                      const count = stats[`${rarity.toLowerCase()}Count` as keyof LocationStatsResponse] as number;
-                      const maxCount = Math.max(stats.commonCount, stats.rareCount, stats.epicCount, stats.legendaryCount);
+                    {RARITY_OPTIONS.map(rarity => {
+                      const count = stats[
+                        `${rarity.toLowerCase()}Count` as keyof LocationStatsResponse
+                      ] as number;
+                      const maxCount = Math.max(
+                        stats.commonCount,
+                        stats.rareCount,
+                        stats.epicCount,
+                        stats.legendaryCount
+                      );
                       const percentage = maxCount > 0 ? (count / maxCount) * 100 : 0;
 
                       return (
@@ -457,14 +489,21 @@ const AdminDashboard: React.FC = () => {
                           <div className="flex justify-between items-center mb-1">
                             <span className="text-sm font-medium flex items-center gap-2">
                               <span>{RARITY_CONFIG[rarity].emoji}</span>
-                              <span style={{ color: RARITY_CONFIG[rarity].color }}>{RARITY_CONFIG[rarity].label}</span>
+                              <span style={{ color: RARITY_CONFIG[rarity].color }}>
+                                {RARITY_CONFIG[rarity].label}
+                              </span>
                             </span>
-                            <span className="text-sm font-bold text-gray-800 dark:text-white">{count}</span>
+                            <span className="text-sm font-bold text-gray-800 dark:text-white">
+                              {count}
+                            </span>
                           </div>
                           <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                             <div
                               className="h-full rounded-full transition-all duration-500"
-                              style={{ width: `${percentage}%`, backgroundColor: RARITY_CONFIG[rarity].color }}
+                              style={{
+                                width: `${percentage}%`,
+                                backgroundColor: RARITY_CONFIG[rarity].color,
+                              }}
                             />
                           </div>
                         </div>
@@ -485,12 +524,14 @@ const AdminDashboard: React.FC = () => {
                 </button>
 
                 <div className="flex-1 relative">
-                  <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">🔍</span>
+                  <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+                    🔍
+                  </span>
                   <input
                     type="text"
                     placeholder="장소 검색..."
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={e => setSearchQuery(e.target.value)}
                     className="w-full pl-12 pr-4 py-3 bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
@@ -500,29 +541,33 @@ const AdminDashboard: React.FC = () => {
               <div className="flex flex-wrap gap-3">
                 <select
                   value={filterRarity}
-                  onChange={(e) => setFilterRarity(e.target.value as FilterRarity)}
+                  onChange={e => setFilterRarity(e.target.value as FilterRarity)}
                   className="px-4 py-2 bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                   <option value="ALL">모든 희귀도</option>
-                  {RARITY_OPTIONS.map((r) => (
-                    <option key={r} value={r}>{RARITY_CONFIG[r].emoji} {RARITY_CONFIG[r].label}</option>
+                  {RARITY_OPTIONS.map(r => (
+                    <option key={r} value={r}>
+                      {RARITY_CONFIG[r].emoji} {RARITY_CONFIG[r].label}
+                    </option>
                   ))}
                 </select>
 
                 <select
                   value={filterCategory}
-                  onChange={(e) => setFilterCategory(e.target.value as FilterCategory)}
+                  onChange={e => setFilterCategory(e.target.value as FilterCategory)}
                   className="px-4 py-2 bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                   <option value="ALL">모든 카테고리</option>
-                  {CATEGORY_OPTIONS.map((c) => (
-                    <option key={c} value={c}>{CATEGORY_LABELS[c]}</option>
+                  {CATEGORY_OPTIONS.map(c => (
+                    <option key={c} value={c}>
+                      {CATEGORY_LABELS[c]}
+                    </option>
                   ))}
                 </select>
 
                 <select
                   value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value as FilterStatus)}
+                  onChange={e => setFilterStatus(e.target.value as FilterStatus)}
                   className="px-4 py-2 bg-white/80 dark:bg-gray-800/80 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                   <option value="ALL">모든 상태</option>
@@ -539,7 +584,9 @@ const AdminDashboard: React.FC = () => {
               ) : filteredLocations.length === 0 ? (
                 <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-12 border border-gray-200/50 dark:border-gray-700/50 text-center">
                   <span className="text-6xl mb-4 block">📍</span>
-                  <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">장소가 없습니다</h3>
+                  <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
+                    장소가 없습니다
+                  </h3>
                   <p className="text-gray-500 dark:text-gray-400">새 장소를 추가해주세요.</p>
                 </div>
               ) : (
@@ -549,14 +596,30 @@ const AdminDashboard: React.FC = () => {
                       <table className="w-full">
                         <thead>
                           <tr className="border-b border-gray-200/50 dark:border-gray-700/50 bg-gray-50/50 dark:bg-gray-800/50">
-                            <th className="text-left py-4 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">ID</th>
-                            <th className="text-left py-4 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">이름</th>
-                            <th className="text-left py-4 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">카테고리</th>
-                            <th className="text-left py-4 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">희귀도</th>
-                            <th className="text-left py-4 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">위치</th>
-                            <th className="text-left py-4 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">포인트</th>
-                            <th className="text-left py-4 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">상태</th>
-                            <th className="text-left py-4 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">액션</th>
+                            <th className="text-left py-4 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                              ID
+                            </th>
+                            <th className="text-left py-4 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                              이름
+                            </th>
+                            <th className="text-left py-4 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                              카테고리
+                            </th>
+                            <th className="text-left py-4 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                              희귀도
+                            </th>
+                            <th className="text-left py-4 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                              위치
+                            </th>
+                            <th className="text-left py-4 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                              포인트
+                            </th>
+                            <th className="text-left py-4 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                              상태
+                            </th>
+                            <th className="text-left py-4 px-4 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                              액션
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
@@ -568,14 +631,22 @@ const AdminDashboard: React.FC = () => {
                               transition={{ delay: index * 0.03 }}
                               className={`border-b border-gray-100/50 dark:border-gray-800/50 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors ${!loc.isActive ? 'opacity-60' : ''}`}
                             >
-                              <td className="py-3 px-4 text-sm text-gray-500 dark:text-gray-400 font-mono">{loc.id}</td>
+                              <td className="py-3 px-4 text-sm text-gray-500 dark:text-gray-400 font-mono">
+                                {loc.id}
+                              </td>
                               <td className="py-3 px-4">
                                 <div className="flex items-center gap-3">
                                   {loc.imageUrl && (
-                                    <img src={loc.imageUrl} alt="" className="w-10 h-10 rounded-lg object-cover" />
+                                    <img
+                                      src={loc.imageUrl}
+                                      alt=""
+                                      className="w-10 h-10 rounded-lg object-cover"
+                                    />
                                   )}
                                   <div>
-                                    <p className="font-medium text-gray-900 dark:text-white">{loc.name}</p>
+                                    <p className="font-medium text-gray-900 dark:text-white">
+                                      {loc.name}
+                                    </p>
                                     {loc.isSeasonalEvent && (
                                       <span className="text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 px-2 py-0.5 rounded-full">
                                         ⭐ 이벤트
@@ -585,18 +656,25 @@ const AdminDashboard: React.FC = () => {
                                 </div>
                               </td>
                               <td className="py-3 px-4">
-                                <span className="text-sm text-gray-600 dark:text-gray-400">{CATEGORY_LABELS[loc.category]}</span>
+                                <span className="text-sm text-gray-600 dark:text-gray-400">
+                                  {CATEGORY_LABELS[loc.category]}
+                                </span>
                               </td>
                               <td className="py-3 px-4">
                                 <span
                                   className="px-3 py-1 rounded-full text-xs font-bold text-white"
                                   style={{ backgroundColor: RARITY_CONFIG[loc.rarity].color }}
                                 >
-                                  {RARITY_CONFIG[loc.rarity].emoji} {RARITY_CONFIG[loc.rarity].label}
+                                  {RARITY_CONFIG[loc.rarity].emoji}{' '}
+                                  {RARITY_CONFIG[loc.rarity].label}
                                 </span>
                               </td>
-                              <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">{loc.city || loc.country || '-'}</td>
-                              <td className="py-3 px-4 text-sm font-semibold text-gray-900 dark:text-white">{loc.pointReward}P</td>
+                              <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-400">
+                                {loc.city || loc.country || '-'}
+                              </td>
+                              <td className="py-3 px-4 text-sm font-semibold text-gray-900 dark:text-white">
+                                {loc.pointReward}P
+                              </td>
                               <td className="py-3 px-4">
                                 <button
                                   onClick={() => handleToggleActive(loc.id)}
@@ -697,7 +775,7 @@ const AdminDashboard: React.FC = () => {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-200/50 dark:border-gray-700/50"
-              onClick={(e) => e.stopPropagation()}
+              onClick={e => e.stopPropagation()}
             >
               <div className="p-6 border-b border-gray-200/50 dark:border-gray-700/50 flex justify-between items-center sticky top-0 bg-white dark:bg-gray-900 z-10">
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white">
@@ -714,7 +792,9 @@ const AdminDashboard: React.FC = () => {
               <form onSubmit={handleSubmit} className="p-6 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">장소명 *</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      장소명 *
+                    </label>
                     <input
                       type="text"
                       name="name"
@@ -726,7 +806,9 @@ const AdminDashboard: React.FC = () => {
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">설명</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      설명
+                    </label>
                     <textarea
                       name="description"
                       value={formData.description}
@@ -737,7 +819,9 @@ const AdminDashboard: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">위도 *</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      위도 *
+                    </label>
                     <input
                       type="number"
                       name="latitude"
@@ -750,7 +834,9 @@ const AdminDashboard: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">경도 *</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      경도 *
+                    </label>
                     <input
                       type="number"
                       name="longitude"
@@ -763,7 +849,9 @@ const AdminDashboard: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">수집 반경 (m)</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      수집 반경 (m)
+                    </label>
                     <input
                       type="number"
                       name="collectRadius"
@@ -776,7 +864,9 @@ const AdminDashboard: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">포인트 보상</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      포인트 보상
+                    </label>
                     <input
                       type="number"
                       name="pointReward"
@@ -788,7 +878,9 @@ const AdminDashboard: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">카테고리 *</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      카테고리 *
+                    </label>
                     <select
                       name="category"
                       value={formData.category}
@@ -796,14 +888,18 @@ const AdminDashboard: React.FC = () => {
                       required
                       className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     >
-                      {CATEGORY_OPTIONS.map((c) => (
-                        <option key={c} value={c}>{CATEGORY_LABELS[c]}</option>
+                      {CATEGORY_OPTIONS.map(c => (
+                        <option key={c} value={c}>
+                          {CATEGORY_LABELS[c]}
+                        </option>
                       ))}
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">희귀도 *</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      희귀도 *
+                    </label>
                     <select
                       name="rarity"
                       value={formData.rarity}
@@ -811,14 +907,18 @@ const AdminDashboard: React.FC = () => {
                       required
                       className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     >
-                      {RARITY_OPTIONS.map((r) => (
-                        <option key={r} value={r}>{RARITY_CONFIG[r].emoji} {RARITY_CONFIG[r].label}</option>
+                      {RARITY_OPTIONS.map(r => (
+                        <option key={r} value={r}>
+                          {RARITY_CONFIG[r].emoji} {RARITY_CONFIG[r].label}
+                        </option>
                       ))}
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">국가</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      국가
+                    </label>
                     <input
                       type="text"
                       name="country"
@@ -829,7 +929,9 @@ const AdminDashboard: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">도시</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      도시
+                    </label>
                     <input
                       type="text"
                       name="city"
@@ -840,7 +942,9 @@ const AdminDashboard: React.FC = () => {
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">지역</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      지역
+                    </label>
                     <input
                       type="text"
                       name="region"
@@ -851,7 +955,9 @@ const AdminDashboard: React.FC = () => {
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">이미지 URL</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      이미지 URL
+                    </label>
                     <input
                       type="url"
                       name="imageUrl"
@@ -863,7 +969,9 @@ const AdminDashboard: React.FC = () => {
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">NFT 이미지 URL</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      NFT 이미지 URL
+                    </label>
                     <input
                       type="url"
                       name="nftImageUrl"
@@ -883,14 +991,18 @@ const AdminDashboard: React.FC = () => {
                         onChange={handleInputChange}
                         className="w-5 h-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                       />
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">시즌 이벤트 장소</span>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        시즌 이벤트 장소
+                      </span>
                     </label>
                   </div>
 
                   {formData.isSeasonalEvent && (
                     <>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">이벤트 시작일</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          이벤트 시작일
+                        </label>
                         <input
                           type="date"
                           name="eventStartAt"
@@ -900,7 +1012,9 @@ const AdminDashboard: React.FC = () => {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">이벤트 종료일</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          이벤트 종료일
+                        </label>
                         <input
                           type="date"
                           name="eventEndAt"

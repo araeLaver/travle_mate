@@ -7,10 +7,7 @@
 /**
  * Announce a message to screen readers via aria-live region
  */
-export function announce(
-  message: string,
-  priority: 'polite' | 'assertive' = 'polite'
-): void {
+export function announce(message: string, priority: 'polite' | 'assertive' = 'polite'): void {
   const announcement = document.createElement('div');
   announcement.setAttribute('aria-live', priority);
   announcement.setAttribute('aria-atomic', 'true');
@@ -117,7 +114,7 @@ export function createSkipLink(targetId: string, text: string): HTMLAnchorElemen
   link.className =
     'sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:z-50 focus:p-4 focus:bg-indigo-600 focus:text-white';
 
-  link.addEventListener('click', (e) => {
+  link.addEventListener('click', e => {
     e.preventDefault();
     const target = document.getElementById(targetId);
     if (target) {
@@ -221,18 +218,14 @@ export function isElementVisible(element: HTMLElement): boolean {
 /**
  * Get contrast ratio between two colors (for accessibility validation)
  */
-export function getContrastRatio(
-  foreground: string,
-  background: string
-): number {
+export function getContrastRatio(foreground: string, background: string): number {
   const getLuminance = (color: string): number => {
     const hex = color.replace('#', '');
     const r = parseInt(hex.substr(0, 2), 16) / 255;
     const g = parseInt(hex.substr(2, 2), 16) / 255;
     const b = parseInt(hex.substr(4, 2), 16) / 255;
 
-    const toLinear = (c: number) =>
-      c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    const toLinear = (c: number) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
 
     return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
   };
@@ -261,7 +254,7 @@ export function meetsContrastStandard(
   return ratio >= standards[level][size];
 }
 
-export default {
+const accessibilityUtils = {
   announce,
   trapFocus,
   generateId,
@@ -277,3 +270,5 @@ export default {
   getContrastRatio,
   meetsContrastStandard,
 };
+
+export default accessibilityUtils;

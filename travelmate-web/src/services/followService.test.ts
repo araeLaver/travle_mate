@@ -1,4 +1,5 @@
 import { followService } from './followService';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { authService } from './authService';
 
 // Mock fetch
@@ -137,7 +138,9 @@ describe('FollowService', () => {
         ok: false,
       } as Response);
 
-      await expect(followService.getFollowers(2)).rejects.toThrow('팔로워 목록을 불러오는데 실패했습니다.');
+      await expect(followService.getFollowers(2)).rejects.toThrow(
+        '팔로워 목록을 불러오는데 실패했습니다.'
+      );
     });
   });
 
@@ -198,7 +201,9 @@ describe('FollowService', () => {
         ok: false,
       } as Response);
 
-      await expect(followService.getFollowStats(1)).rejects.toThrow('팔로우 통계를 불러오는데 실패했습니다.');
+      await expect(followService.getFollowStats(1)).rejects.toThrow(
+        '팔로우 통계를 불러오는데 실패했습니다.'
+      );
     });
   });
 

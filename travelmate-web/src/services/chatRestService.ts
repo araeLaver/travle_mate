@@ -63,8 +63,9 @@ class ChatRestService {
   async getChatRooms(): Promise<ChatRoom[]> {
     try {
       const response = await apiClient.get<ChatRoomApiResponse[]>('/chat/rooms');
-      return response.map((room) => this.mapToChatRoom(room));
+      return response.map(room => this.mapToChatRoom(room));
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to fetch chat rooms:', error);
       throw error;
     }
@@ -76,6 +77,7 @@ class ChatRestService {
       const response = await apiClient.get<ChatRoomApiResponse>(`/chat/rooms/${roomId}`);
       return this.mapToChatRoom(response);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to fetch chat room:', error);
       return null;
     }
@@ -87,6 +89,7 @@ class ChatRestService {
       const response = await apiClient.post<ChatRoomApiResponse>('/chat/rooms', request);
       return this.mapToChatRoom(response);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to create chat room:', error);
       throw error;
     }
@@ -101,8 +104,9 @@ class ChatRestService {
 
       // 페이지네이션 응답 처리
       const messages = response.content || [];
-      return Array.isArray(messages) ? messages.map((msg) => this.mapToChatMessage(msg)) : [];
+      return Array.isArray(messages) ? messages.map(msg => this.mapToChatMessage(msg)) : [];
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to fetch messages:', error);
       throw error;
     }
@@ -113,6 +117,7 @@ class ChatRestService {
     try {
       await apiClient.post(`/chat/rooms/${roomId}/read`, {});
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to mark messages as read:', error);
     }
   }
@@ -122,6 +127,7 @@ class ChatRestService {
     try {
       await apiClient.delete(`/chat/messages/${messageId}`);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to delete message:', error);
       throw error;
     }
@@ -130,11 +136,10 @@ class ChatRestService {
   // 읽지 않은 메시지 수 조회
   async getUnreadCount(roomId: string): Promise<number> {
     try {
-      const response = await apiClient.get<{ count: number }>(
-        `/chat/rooms/${roomId}/unread-count`
-      );
+      const response = await apiClient.get<{ count: number }>(`/chat/rooms/${roomId}/unread-count`);
       return response.count || 0;
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to fetch unread count:', error);
       return 0;
     }

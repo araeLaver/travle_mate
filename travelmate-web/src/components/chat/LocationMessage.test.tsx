@@ -34,12 +34,7 @@ describe('LocationMessage', () => {
   });
 
   test('장소명 없을 때 기본 텍스트 표시', () => {
-    render(
-      <LocationMessage
-        latitude={mockProps.latitude}
-        longitude={mockProps.longitude}
-      />
-    );
+    render(<LocationMessage latitude={mockProps.latitude} longitude={mockProps.longitude} />);
 
     expect(screen.getByText('공유된 위치')).toBeInTheDocument();
   });
@@ -48,10 +43,7 @@ describe('LocationMessage', () => {
     render(<LocationMessage {...mockProps} />);
 
     const mapImage = screen.getByAltText('위치 미리보기');
-    expect(mapImage).toHaveAttribute(
-      'src',
-      expect.stringContaining('staticmap.openstreetmap.de')
-    );
+    expect(mapImage).toHaveAttribute('src', expect.stringContaining('staticmap.openstreetmap.de'));
     expect(mapImage.getAttribute('src')).toContain('37.5665');
     expect(mapImage.getAttribute('src')).toContain('126.978');
   });
@@ -81,10 +73,7 @@ describe('LocationMessage', () => {
     const naverBtn = screen.getByRole('button', { name: /네이버/i });
     fireEvent.click(naverBtn);
 
-    expect(mockWindowOpen).toHaveBeenCalledWith(
-      expect.stringContaining('map.naver.com'),
-      '_blank'
-    );
+    expect(mockWindowOpen).toHaveBeenCalledWith(expect.stringContaining('map.naver.com'), '_blank');
   });
 
   test('카카오맵 버튼 클릭', () => {
@@ -93,10 +82,7 @@ describe('LocationMessage', () => {
     const kakaoBtn = screen.getByRole('button', { name: /카카오/i });
     fireEvent.click(kakaoBtn);
 
-    expect(mockWindowOpen).toHaveBeenCalledWith(
-      expect.stringContaining('map.kakao.com'),
-      '_blank'
-    );
+    expect(mockWindowOpen).toHaveBeenCalledWith(expect.stringContaining('map.kakao.com'), '_blank');
   });
 
   test('지도 앱 버튼들 존재', () => {

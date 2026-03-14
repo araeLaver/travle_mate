@@ -7,7 +7,10 @@ class NotificationService {
   /**
    * 알림 목록 조회 (페이징)
    */
-  async getNotifications(page: number = 0, size: number = 20): Promise<PaginatedResponse<Notification>> {
+  async getNotifications(
+    page: number = 0,
+    size: number = 20
+  ): Promise<PaginatedResponse<Notification>> {
     return apiClient.get<PaginatedResponse<Notification>>(
       `${this.baseUrl}?page=${page}&size=${size}`
     );

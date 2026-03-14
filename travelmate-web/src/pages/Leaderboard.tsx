@@ -13,7 +13,10 @@ import {
   PointTransactionType,
 } from '../types';
 
-const transactionTypeLabels: Record<PointTransactionType, { label: string; color: string; darkColor: string }> = {
+const transactionTypeLabels: Record<
+  PointTransactionType,
+  { label: string; color: string; darkColor: string }
+> = {
   EARN: { label: '획득', color: '#22c55e', darkColor: '#4ade80' },
   SPEND: { label: '사용', color: '#ef4444', darkColor: '#f87171' },
   TRANSFER_IN: { label: '수신', color: '#3b82f6', darkColor: '#60a5fa' },
@@ -223,11 +226,15 @@ const Leaderboard: React.FC = () => {
             <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-white/20">
               <div>
                 <p className="text-sm opacity-80">총 획득</p>
-                <p className="font-semibold text-green-200">{balance.lifetimeEarned.toLocaleString()}P</p>
+                <p className="font-semibold text-green-200">
+                  {balance.lifetimeEarned.toLocaleString()}P
+                </p>
               </div>
               <div>
                 <p className="text-sm opacity-80">총 사용</p>
-                <p className="font-semibold text-red-200">{balance.lifetimeSpent.toLocaleString()}P</p>
+                <p className="font-semibold text-red-200">
+                  {balance.lifetimeSpent.toLocaleString()}P
+                </p>
               </div>
               <div>
                 <p className="text-sm opacity-80">현재 순위</p>
@@ -243,7 +250,7 @@ const Leaderboard: React.FC = () => {
           transition={{ delay: 0.1 }}
           className="flex gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl mb-6"
         >
-          {tabs.map((tab) => (
+          {tabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
@@ -293,8 +300,13 @@ const Leaderboard: React.FC = () => {
                   <div className="w-12 h-12 border-4 border-violet-500 border-t-transparent rounded-full animate-spin" />
                 </div>
               ) : (
-                <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-3">
-                  {currentLeaderboard.map((entry) => (
+                <motion.div
+                  variants={staggerContainer}
+                  initial="initial"
+                  animate="animate"
+                  className="space-y-3"
+                >
+                  {currentLeaderboard.map(entry => (
                     <motion.div
                       key={entry.userId}
                       variants={fadeInUp}
@@ -321,8 +333,12 @@ const Leaderboard: React.FC = () => {
                         )}
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-semibold text-gray-800 dark:text-white">{entry.nickname}</h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{entry.totalNftsCollected} NFTs</p>
+                        <h3 className="font-semibold text-gray-800 dark:text-white">
+                          {entry.nickname}
+                        </h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          {entry.totalNftsCollected} NFTs
+                        </p>
                       </div>
                       <div className="flex items-center gap-2 text-yellow-600 dark:text-yellow-400">
                         <span className="text-lg">💰</span>
@@ -345,12 +361,21 @@ const Leaderboard: React.FC = () => {
               ) : transactions.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
                   <span className="text-6xl mb-4">📭</span>
-                  <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">거래 내역이 없습니다</h3>
-                  <p className="text-gray-500 dark:text-gray-400">NFT를 수집하여 포인트를 획득해보세요!</p>
+                  <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
+                    거래 내역이 없습니다
+                  </h3>
+                  <p className="text-gray-500 dark:text-gray-400">
+                    NFT를 수집하여 포인트를 획득해보세요!
+                  </p>
                 </div>
               ) : (
-                <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-3">
-                  {transactions.map((tx) => {
+                <motion.div
+                  variants={staggerContainer}
+                  initial="initial"
+                  animate="animate"
+                  className="space-y-3"
+                >
+                  {transactions.map(tx => {
                     const typeInfo = transactionTypeLabels[tx.type];
                     const isPositive = tx.type === 'EARN' || tx.type === 'TRANSFER_IN';
 
@@ -367,7 +392,9 @@ const Leaderboard: React.FC = () => {
                           {isPositive ? '📈' : '📉'}
                         </div>
                         <div className="flex-1">
-                          <p className="font-medium text-gray-800 dark:text-white">{tx.description}</p>
+                          <p className="font-medium text-gray-800 dark:text-white">
+                            {tx.description}
+                          </p>
                           <div className="flex items-center gap-2 text-sm">
                             <span style={{ color: typeInfo.color }}>{typeInfo.label}</span>
                             <span className="text-gray-400">•</span>
@@ -406,7 +433,7 @@ const Leaderboard: React.FC = () => {
                   <input
                     type="number"
                     value={transferReceiverId}
-                    onChange={(e) => setTransferReceiverId(e.target.value)}
+                    onChange={e => setTransferReceiverId(e.target.value)}
                     placeholder="사용자 ID를 입력하세요"
                     required
                     className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-violet-500/50 transition-all"
@@ -414,12 +441,14 @@ const Leaderboard: React.FC = () => {
                 </div>
 
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">전송 금액</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    전송 금액
+                  </label>
                   <div className="relative">
                     <input
                       type="number"
                       value={transferAmount}
-                      onChange={(e) => setTransferAmount(e.target.value)}
+                      onChange={e => setTransferAmount(e.target.value)}
                       placeholder="0"
                       required
                       min="1"
@@ -443,7 +472,7 @@ const Leaderboard: React.FC = () => {
                   <input
                     type="text"
                     value={transferMessage}
-                    onChange={(e) => setTransferMessage(e.target.value)}
+                    onChange={e => setTransferMessage(e.target.value)}
                     placeholder="전송 메시지를 입력하세요"
                     className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-violet-500/50 transition-all"
                   />

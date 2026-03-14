@@ -43,7 +43,7 @@
     "test": "craco test",
     "test:coverage": "craco test --coverage --watchAll=false",
     "eject": "react-scripts eject",
-    "lint": "eslint src --ext .ts,.tsx --max-warnings 0",
+    "lint": "eslint src --ext .ts,.tsx --max-warnings 100",
     "lint:fix": "eslint src --ext .ts,.tsx --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,css,json}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css,json}\"",

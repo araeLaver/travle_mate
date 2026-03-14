@@ -162,7 +162,7 @@ const en = {
     blockedUsers: 'Blocked Users',
     blockSuccess: 'User blocked',
     unblockSuccess: 'User unblocked',
-    blockWarning: 'Blocking will prevent you from seeing each other\'s posts and activities',
+    blockWarning: "Blocking will prevent you from seeing each other's posts and activities",
     noBlockedUsers: 'No blocked users',
     bookmark: 'Bookmark',
     bookmarks: 'Bookmarks',

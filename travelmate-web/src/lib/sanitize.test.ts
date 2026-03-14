@@ -41,12 +41,11 @@ describe('sanitize', () => {
     });
 
     it('should remove onclick handlers', () => {
-      expect(sanitizeString('<div onclick="alert(1)">click</div>')).toBe(
-        '<div>click</div>'
-      );
+      expect(sanitizeString('<div onclick="alert(1)">click</div>')).toBe('<div>click</div>');
     });
 
     it('should remove javascript: protocol', () => {
+      // eslint-disable-next-line no-script-url
       expect(sanitizeString('javascript:alert(1)')).toBe('alert(1)');
     });
 
@@ -61,15 +60,11 @@ describe('sanitize', () => {
 
   describe('sanitizeHtml', () => {
     it('should allow safe tags', () => {
-      expect(sanitizeHtml('<b>bold</b> <i>italic</i>')).toBe(
-        '<b>bold</b> <i>italic</i>'
-      );
+      expect(sanitizeHtml('<b>bold</b> <i>italic</i>')).toBe('<b>bold</b> <i>italic</i>');
     });
 
     it('should remove unsafe tags', () => {
-      expect(sanitizeHtml('<script>alert(1)</script><b>text</b>')).toBe(
-        '<b>text</b>'
-      );
+      expect(sanitizeHtml('<script>alert(1)</script><b>text</b>')).toBe('<b>text</b>');
     });
 
     it('should remove attributes from allowed tags', () => {
@@ -91,12 +86,11 @@ describe('sanitize', () => {
     });
 
     it('should allow mailto URLs', () => {
-      expect(sanitizeUrl('mailto:test@example.com')).toBe(
-        'mailto:test@example.com'
-      );
+      expect(sanitizeUrl('mailto:test@example.com')).toBe('mailto:test@example.com');
     });
 
     it('should block javascript URLs', () => {
+      // eslint-disable-next-line no-script-url
       expect(sanitizeUrl('javascript:alert(1)')).toBe('');
     });
 
@@ -236,9 +230,7 @@ describe('sanitize', () => {
   describe('sanitizeFilename', () => {
     it('should remove path components', () => {
       expect(sanitizeFilename('../../etc/passwd')).toBe('passwd');
-      expect(sanitizeFilename('C:\\Windows\\System32\\file.txt')).toBe(
-        'file.txt'
-      );
+      expect(sanitizeFilename('C:\\Windows\\System32\\file.txt')).toBe('file.txt');
     });
 
     it('should replace dangerous characters', () => {

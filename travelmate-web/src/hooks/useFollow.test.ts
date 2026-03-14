@@ -124,9 +124,7 @@ describe('useFollow hooks', () => {
   describe('useFollowers', () => {
     it('should fetch followers with pagination', async () => {
       const mockPage = {
-        content: [
-          { id: 2, nickname: 'user2', profileImageUrl: null, isMutual: false },
-        ],
+        content: [{ id: 2, nickname: 'user2', profileImageUrl: null, isMutual: false }],
         totalElements: 1,
         totalPages: 1,
         number: 0,
@@ -152,9 +150,7 @@ describe('useFollow hooks', () => {
   describe('useFollowing', () => {
     it('should fetch following with pagination', async () => {
       const mockPage = {
-        content: [
-          { id: 3, nickname: 'user3', profileImageUrl: null, isMutual: true },
-        ],
+        content: [{ id: 3, nickname: 'user3', profileImageUrl: null, isMutual: true }],
         totalElements: 1,
         totalPages: 1,
         number: 0,
@@ -179,9 +175,7 @@ describe('useFollow hooks', () => {
   describe('useMutualFollowers', () => {
     it('should fetch mutual followers', async () => {
       const mockPage = {
-        content: [
-          { id: 4, nickname: 'mutual', profileImageUrl: null, isMutual: true },
-        ],
+        content: [{ id: 4, nickname: 'mutual', profileImageUrl: null, isMutual: true }],
         totalElements: 1,
         totalPages: 1,
         number: 0,
@@ -344,9 +338,10 @@ describe('useFollow hooks', () => {
     it('should track loading state', async () => {
       let resolvePromise: (value: unknown) => void;
       mockFollowService.follow.mockImplementation(
-        () => new Promise((resolve) => {
-          resolvePromise = resolve;
-        })
+        () =>
+          new Promise(resolve => {
+            resolvePromise = resolve;
+          })
       );
 
       const { result } = renderHook(() => useFollowToggle(), {

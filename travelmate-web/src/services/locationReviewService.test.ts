@@ -71,9 +71,9 @@ describe('LocationReviewService', () => {
         json: async () => ({ message: '수집한 후에 리뷰를 작성할 수 있습니다.' }),
       } as Response);
 
-      await expect(
-        locationReviewService.createReview(1, { rating: 5 })
-      ).rejects.toThrow('수집한 후에 리뷰를 작성할 수 있습니다.');
+      await expect(locationReviewService.createReview(1, { rating: 5 })).rejects.toThrow(
+        '수집한 후에 리뷰를 작성할 수 있습니다.'
+      );
     });
 
     it('should throw error on duplicate review', async () => {
@@ -82,9 +82,9 @@ describe('LocationReviewService', () => {
         json: async () => ({ message: '이미 리뷰를 작성한 장소입니다.' }),
       } as Response);
 
-      await expect(
-        locationReviewService.createReview(1, { rating: 5 })
-      ).rejects.toThrow('이미 리뷰를 작성한 장소입니다.');
+      await expect(locationReviewService.createReview(1, { rating: 5 })).rejects.toThrow(
+        '이미 리뷰를 작성한 장소입니다.'
+      );
     });
   });
 
@@ -115,9 +115,9 @@ describe('LocationReviewService', () => {
         json: async () => ({ message: '본인이 작성한 리뷰만 수정할 수 있습니다.' }),
       } as Response);
 
-      await expect(
-        locationReviewService.updateReview(1, { rating: 4 })
-      ).rejects.toThrow('본인이 작성한 리뷰만 수정할 수 있습니다.');
+      await expect(locationReviewService.updateReview(1, { rating: 4 })).rejects.toThrow(
+        '본인이 작성한 리뷰만 수정할 수 있습니다.'
+      );
     });
   });
 

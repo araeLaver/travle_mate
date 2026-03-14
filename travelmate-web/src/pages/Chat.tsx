@@ -6,6 +6,8 @@ import { useToast } from '../components/Toast';
 import { ImageMessage, LocationMessage, TypingIndicator } from '../components/chat';
 import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
+import { trackChatMessageSent } from '../utils/analytics';
+import SEOHead from '../components/SEOHead';
 
 // Typing user interface
 interface TypingUser {
@@ -87,6 +89,7 @@ const Chat: React.FC = () => {
     if (!newMessage.trim() || !roomId) return;
 
     chatService.sendMessage(roomId, newMessage.trim());
+    trackChatMessageSent();
     setNewMessage('');
   };
 
@@ -296,6 +299,7 @@ const Chat: React.FC = () => {
       role="main"
       aria-label={`${room.name} 채팅방`}
     >
+      <SEOHead title="채팅" description="Fryndo 채팅" noIndex={true} />
       {/* Background Effects */}
       <div
         className="absolute top-20 left-10 w-72 h-72 bg-violet-400/30 dark:bg-violet-600/20 rounded-full blur-3xl"

@@ -53,37 +53,41 @@ const ReviewList: React.FC<ReviewListProps> = ({ locationId, onReviewDeleted }) 
 
   const currentUser = authService.getUser();
 
-  const loadReviews = useCallback(async (reset = false) => {
-    const currentPage = reset ? 0 : page;
-    setIsLoading(true);
+  const loadReviews = useCallback(
+    async (reset = false) => {
+      const currentPage = reset ? 0 : page;
+      setIsLoading(true);
 
-    try {
-      const [reviewsResponse, statsResponse] = await Promise.all([
-        locationReviewService.getLocationReviews(locationId, sort, currentPage),
-        reset ? locationReviewService.getLocationReviewStats(locationId) : Promise.resolve(null),
-      ]);
+      try {
+        const [reviewsResponse, statsResponse] = await Promise.all([
+          locationReviewService.getLocationReviews(locationId, sort, currentPage),
+          reset ? locationReviewService.getLocationReviewStats(locationId) : Promise.resolve(null),
+        ]);
 
-      if (reset) {
-        setReviews(reviewsResponse.content);
-        if (statsResponse) {
-          setStats(statsResponse);
+        if (reset) {
+          setReviews(reviewsResponse.content);
+          if (statsResponse) {
+            setStats(statsResponse);
+          }
+        } else {
+          setReviews(prev => [...prev, ...reviewsResponse.content]);
         }
-      } else {
-        setReviews(prev => [...prev, ...reviewsResponse.content]);
-      }
 
-      setHasMore(!reviewsResponse.last);
-      setPage(currentPage);
-    } catch (err) {
-      console.error('리뷰 로딩 실패:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [locationId, sort, page]);
+        setHasMore(!reviewsResponse.last);
+        setPage(currentPage);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('리뷰 로딩 실패:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [locationId, sort, page]
+  );
 
   useEffect(() => {
     loadReviews(true);
-  }, [locationId, sort]);
+  }, [locationId, sort]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSortChange = (newSort: 'recent' | 'helpful') => {
     setSort(newSort);
@@ -104,14 +108,13 @@ const ReviewList: React.FC<ReviewListProps> = ({ locationId, onReviewDeleted }) 
             ? {
                 ...review,
                 isHelpful: result.isHelpful,
-                helpfulCount: result.isHelpful
-                  ? review.helpfulCount + 1
-                  : review.helpfulCount - 1,
+                helpfulCount: result.isHelpful ? review.helpfulCount + 1 : review.helpfulCount - 1,
               }
             : review
         )
       );
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('도움됨 토글 실패:', err);
     }
   };
@@ -127,6 +130,7 @@ const ReviewList: React.FC<ReviewListProps> = ({ locationId, onReviewDeleted }) 
       }
       onReviewDeleted?.();
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('리뷰 삭제 실패:', err);
     }
   };
@@ -203,7 +207,10 @@ const ReviewList: React.FC<ReviewListProps> = ({ locationId, onReviewDeleted }) 
                       className="reviewer-avatar"
                     />
                   ) : (
-                    <div className="reviewer-avatar placeholder" data-testid={`reviewer-avatar-placeholder-${review.reviewer.id}`}>
+                    <div
+                      className="reviewer-avatar placeholder"
+                      data-testid={`reviewer-avatar-placeholder-${review.reviewer.id}`}
+                    >
                       <UserIcon />
                     </div>
                   )}

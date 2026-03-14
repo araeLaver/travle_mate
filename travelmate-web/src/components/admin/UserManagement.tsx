@@ -47,14 +47,25 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose, onUpda
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-lg mx-4" onClick={e => e.stopPropagation()}>
+    <div
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-lg shadow-xl w-full max-w-lg mx-4"
+        onClick={e => e.stopPropagation()}
+      >
         <div className="p-6 border-b">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-gray-900">사용자 상세</h2>
             <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -110,7 +121,7 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose, onUpda
               <label className="block text-sm font-medium text-gray-700 mb-1">역할</label>
               <select
                 value={role}
-                onChange={(e) => setRole(e.target.value)}
+                onChange={e => setRole(e.target.value)}
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
               >
                 <option value="USER">사용자</option>
@@ -140,16 +151,12 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose, onUpda
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <span className="text-gray-500">가입일</span>
-              <p className="font-medium">
-                {new Date(user.createdAt).toLocaleDateString('ko-KR')}
-              </p>
+              <p className="font-medium">{new Date(user.createdAt).toLocaleDateString('ko-KR')}</p>
             </div>
             <div>
               <span className="text-gray-500">마지막 로그인</span>
               <p className="font-medium">
-                {user.lastLoginAt
-                  ? new Date(user.lastLoginAt).toLocaleDateString('ko-KR')
-                  : '-'}
+                {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleDateString('ko-KR') : '-'}
               </p>
             </div>
           </div>
@@ -210,6 +217,7 @@ const UserManagement: React.FC = () => {
       setTotalPages(data.totalPages);
       setTotalElements(data.totalElements);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to load users:', error);
     } finally {
       setLoading(false);
@@ -250,6 +258,7 @@ const UserManagement: React.FC = () => {
       setSelectedUser(detail);
       setShowDetail(true);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to load user detail:', error);
     }
   };
@@ -259,6 +268,7 @@ const UserManagement: React.FC = () => {
       await adminService.updateUser(userId, data);
       loadUsers();
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to update user:', error);
     }
   };
@@ -276,6 +286,7 @@ const UserManagement: React.FC = () => {
       setSelectedIds(new Set());
       loadUsers();
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to perform bulk action:', error);
     } finally {
       setBulkLoading(false);
@@ -293,7 +304,7 @@ const UserManagement: React.FC = () => {
                 type="text"
                 placeholder="이메일 또는 닉네임 검색..."
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={e => setSearch(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
               />
               <svg
@@ -302,14 +313,19 @@ const UserManagement: React.FC = () => {
                 viewBox="0 0 24 24"
                 stroke="currentColor"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
               </svg>
             </div>
           </div>
 
           <select
             value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value)}
+            onChange={e => setRoleFilter(e.target.value)}
             className="px-3 py-2 border rounded-lg"
           >
             <option value="">모든 역할</option>
@@ -319,7 +335,7 @@ const UserManagement: React.FC = () => {
 
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={e => setStatusFilter(e.target.value)}
             className="px-3 py-2 border rounded-lg"
           >
             <option value="">모든 상태</option>
@@ -339,9 +355,7 @@ const UserManagement: React.FC = () => {
       {/* Bulk Actions */}
       {selectedIds.size > 0 && (
         <div className="bg-indigo-50 rounded-lg p-4 flex items-center justify-between">
-          <span className="text-indigo-700 font-medium">
-            {selectedIds.size}명 선택됨
-          </span>
+          <span className="text-indigo-700 font-medium">{selectedIds.size}명 선택됨</span>
           <div className="flex gap-2">
             <button
               onClick={() => handleBulkAction('ACTIVATE')}
@@ -376,7 +390,12 @@ const UserManagement: React.FC = () => {
         ) : users.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 text-gray-500">
             <svg className="w-12 h-12 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+              />
             </svg>
             <p>사용자가 없습니다</p>
           </div>
@@ -393,16 +412,28 @@ const UserManagement: React.FC = () => {
                       className="rounded border-gray-300"
                     />
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">사용자</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">역할</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">NFT</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">가입일</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">상태</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">액션</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    사용자
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    역할
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    NFT
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    가입일
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    상태
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    액션
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {users.map((user) => (
+                {users.map(user => (
                   <tr key={user.id} className={!user.isActive ? 'bg-gray-50' : ''}>
                     <td className="px-4 py-3">
                       <input
@@ -446,9 +477,7 @@ const UserManagement: React.FC = () => {
                     <td className="px-4 py-3">
                       <span
                         className={`px-2 py-1 text-xs font-medium rounded-full ${
-                          user.isActive
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
+                          user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                         }`}
                       >
                         {user.isActive ? '활성' : '비활성'}

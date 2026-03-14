@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { chatRestService, ChatRoom, CreateChatRoomRequest } from '../services/chatRestService';
+import { chatRestService, CreateChatRoomRequest } from '../services/chatRestService';
 
 // Query Keys
 export const chatKeys = {

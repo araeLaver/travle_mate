@@ -1,8 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import MatchCard from '../components/MatchCard';
 import MatchRequestList from '../components/MatchRequestList';
 import MatchScoreBreakdown from '../components/MatchScoreBreakdown';
-import { trackEvent } from '../utils/analytics';
+import {
+  trackEvent,
+  trackMatchRequestSent,
+  trackMatchRecommendationViewed,
+} from '../utils/analytics';
 import {
   useMatchRecommendations,
   useSendMatchRequest,
@@ -14,6 +18,7 @@ import {
   usePendingMatchCount,
 } from '../hooks/useMatching';
 import './Matching.css';
+import { MatchCardSkeleton, ListItemSkeleton, SkeletonList } from '../components/SkeletonLoader';
 
 type TabType = 'recommendations' | 'requests' | 'history';
 
@@ -24,7 +29,8 @@ const Matching: React.FC = () => {
 
   // Queries
   const { data: recommendations, isLoading: loadingRecs } = useMatchRecommendations(10);
-  const { data: receivedRequests, isLoading: loadingReceived } = useReceivedMatchRequests(receivedPage);
+  const { data: receivedRequests, isLoading: loadingReceived } =
+    useReceivedMatchRequests(receivedPage);
   const { data: sentRequests, isLoading: loadingSent } = useSentMatchRequests(sentPage);
   const { data: history, isLoading: loadingHistory } = useMatchHistory();
   const { data: pendingCount } = usePendingMatchCount();
@@ -34,8 +40,16 @@ const Matching: React.FC = () => {
   const respondRequest = useRespondToMatchRequest();
   const cancelRequest = useCancelMatchRequest();
 
+  // 추천 목록 로드 완료 시 GA4 이벤트 전송
+  useEffect(() => {
+    if (!loadingRecs && recommendations && recommendations.length > 0) {
+      trackMatchRecommendationViewed(recommendations.length);
+    }
+  }, [loadingRecs, recommendations]);
+
   const handleSendRequest = (receiverId: number, message?: string) => {
     trackEvent('match_initiated', { receiverId });
+    trackMatchRequestSent(String(receiverId));
     sendRequest.mutate({ receiverId, message });
   };
 
@@ -89,13 +103,14 @@ const Matching: React.FC = () => {
           {activeTab === 'recommendations' && (
             <div className="matching-recommendations">
               {loadingRecs ? (
-                <div className="matching-loading">
-                  <div className="matching-spinner" />
-                  <p>추천 동반자를 찾고 있습니다...</p>
-                </div>
+                <SkeletonList
+                  count={6}
+                  skeleton={<MatchCardSkeleton />}
+                  className="match-card-grid"
+                />
               ) : recommendations && recommendations.length > 0 ? (
                 <div className="match-card-grid">
-                  {recommendations.map((rec) => (
+                  {recommendations.map(rec => (
                     <MatchCard
                       key={rec.user.id}
                       recommendation={rec}
@@ -119,7 +134,7 @@ const Matching: React.FC = () => {
               <section className="matching-section">
                 <h2>받은 요청</h2>
                 {loadingReceived ? (
-                  <div className="matching-loading"><div className="matching-spinner" /></div>
+                  <SkeletonList count={3} skeleton={<ListItemSkeleton />} />
                 ) : (
                   <>
                     <MatchRequestList
@@ -133,14 +148,16 @@ const Matching: React.FC = () => {
                       <div className="matching-pagination">
                         <button
                           disabled={receivedPage === 0}
-                          onClick={() => setReceivedPage((p) => p - 1)}
+                          onClick={() => setReceivedPage(p => p - 1)}
                         >
                           이전
                         </button>
-                        <span>{receivedPage + 1} / {receivedRequests.totalPages}</span>
+                        <span>
+                          {receivedPage + 1} / {receivedRequests.totalPages}
+                        </span>
                         <button
                           disabled={receivedRequests.last}
-                          onClick={() => setReceivedPage((p) => p + 1)}
+                          onClick={() => setReceivedPage(p => p + 1)}
                         >
                           다음
                         </button>
@@ -153,7 +170,7 @@ const Matching: React.FC = () => {
               <section className="matching-section">
                 <h2>보낸 요청</h2>
                 {loadingSent ? (
-                  <div className="matching-loading"><div className="matching-spinner" /></div>
+                  <SkeletonList count={3} skeleton={<ListItemSkeleton />} />
                 ) : (
                   <>
                     <MatchRequestList
@@ -164,16 +181,15 @@ const Matching: React.FC = () => {
                     />
                     {sentRequests && sentRequests.totalPages > 1 && (
                       <div className="matching-pagination">
-                        <button
-                          disabled={sentPage === 0}
-                          onClick={() => setSentPage((p) => p - 1)}
-                        >
+                        <button disabled={sentPage === 0} onClick={() => setSentPage(p => p - 1)}>
                           이전
                         </button>
-                        <span>{sentPage + 1} / {sentRequests.totalPages}</span>
+                        <span>
+                          {sentPage + 1} / {sentRequests.totalPages}
+                        </span>
                         <button
                           disabled={sentRequests.last}
-                          onClick={() => setSentPage((p) => p + 1)}
+                          onClick={() => setSentPage(p => p + 1)}
                         >
                           다음
                         </button>
@@ -189,10 +205,12 @@ const Matching: React.FC = () => {
           {activeTab === 'history' && (
             <div className="matching-history">
               {loadingHistory ? (
-                <div className="matching-loading"><div className="matching-spinner" /></div>
+                <div className="matching-loading">
+                  <div className="matching-spinner" />
+                </div>
               ) : history && history.length > 0 ? (
                 <div className="match-history-list">
-                  {history.map((item) => (
+                  {history.map(item => (
                     <div key={item.matchRequestId} className="match-history-item">
                       <div className="match-history-header">
                         <div className="match-history-user">

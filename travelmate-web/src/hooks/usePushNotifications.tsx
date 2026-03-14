@@ -55,7 +55,7 @@ export function usePushNotifications(): UsePushNotificationsReturn {
         (payload: NotificationPayload) => {
           // Show toast for foreground notifications
           toast.custom(
-            (t) => (
+            t => (
               <div
                 className={`${
                   t.visible ? 'animate-enter' : 'animate-leave'
@@ -64,16 +64,10 @@ export function usePushNotifications(): UsePushNotificationsReturn {
                 <div className="flex-1 w-0 p-4">
                   <div className="flex items-start">
                     {payload.icon && (
-                      <img
-                        className="h-10 w-10 rounded-full"
-                        src={payload.icon}
-                        alt=""
-                      />
+                      <img className="h-10 w-10 rounded-full" src={payload.icon} alt="" />
                     )}
                     <div className="ml-3 flex-1">
-                      <p className="text-sm font-medium text-gray-900">
-                        {payload.title}
-                      </p>
+                      <p className="text-sm font-medium text-gray-900">{payload.title}</p>
                       <p className="mt-1 text-sm text-gray-500">{payload.body}</p>
                     </div>
                   </div>
@@ -108,6 +102,7 @@ export function usePushNotifications(): UsePushNotificationsReturn {
       const prefs = await pushNotificationService.getPreferences();
       setPreferences(prefs);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to load notification preferences:', error);
     }
   };
@@ -140,6 +135,7 @@ export function usePushNotifications(): UsePushNotificationsReturn {
         }
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to enable notifications:', error);
       toast.error('알림 활성화에 실패했습니다.');
     } finally {
@@ -154,6 +150,7 @@ export function usePushNotifications(): UsePushNotificationsReturn {
       setIsEnabled(false);
       toast.success('알림이 비활성화되었습니다.');
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to disable notifications:', error);
       toast.error('알림 비활성화에 실패했습니다.');
     } finally {
@@ -168,6 +165,7 @@ export function usePushNotifications(): UsePushNotificationsReturn {
         setPreferences(updated);
         toast.success('알림 설정이 업데이트되었습니다.');
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('Failed to update notification preferences:', error);
         toast.error('알림 설정 업데이트에 실패했습니다.');
       }

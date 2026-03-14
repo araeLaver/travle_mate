@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { profileService, UserProfile, UpdateProfileRequest } from '../services/profileService';
+import { profileService, UpdateProfileRequest } from '../services/profileService';
 
 // Query Keys
 export const profileKeys = {
@@ -20,7 +20,7 @@ export function useUpdateProfile() {
 
   return useMutation({
     mutationFn: (updates: UpdateProfileRequest) => profileService.updateProfile(updates),
-    onSuccess: (updatedProfile) => {
+    onSuccess: updatedProfile => {
       // 내 프로필 캐시 업데이트
       queryClient.setQueryData(profileKeys.detail(), updatedProfile);
       queryClient.invalidateQueries({ queryKey: profileKeys.all });

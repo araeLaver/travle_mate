@@ -11,7 +11,7 @@ describe('Leaderboard', () => {
       },
     }).as('getMe');
 
-    cy.window().then((win) => {
+    cy.window().then(win => {
       win.localStorage.setItem('accessToken', 'mock-access-token');
       win.localStorage.setItem('refreshToken', 'mock-refresh-token');
     });
@@ -302,9 +302,7 @@ describe('Leaderboard', () => {
         statusCode: 200,
         body: {
           type: 'ALL_TIME',
-          entries: [
-            { rank: 1, userId: 10, nickname: 'TopCollector', nftCount: 150 },
-          ],
+          entries: [{ rank: 1, userId: 10, nickname: 'TopCollector', nftCount: 150 }],
           totalParticipants: 100,
         },
       }).as('getGlobalLeaderboard');
@@ -417,7 +415,7 @@ describe('Leaderboard', () => {
 
     it('should retry on button click', () => {
       let callCount = 0;
-      cy.intercept('GET', '**/api/leaderboard/global*', (req) => {
+      cy.intercept('GET', '**/api/leaderboard/global*', req => {
         callCount++;
         if (callCount === 1) {
           req.reply({ statusCode: 500, body: { error: '서버 오류' } });

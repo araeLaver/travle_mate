@@ -1,6 +1,6 @@
 describe('Accessibility', () => {
   beforeEach(() => {
-    cy.window().then((win) => {
+    cy.window().then(win => {
       win.localStorage.setItem('accessToken', 'mock-access-token');
       win.localStorage.setItem('refreshToken', 'mock-refresh-token');
     });
@@ -50,9 +50,7 @@ describe('Accessibility', () => {
       cy.intercept('GET', '**/api/nft/collection*', {
         statusCode: 200,
         body: {
-          content: [
-            { id: 1, locationName: 'Test NFT', mintStatus: 'NOT_MINTED' },
-          ],
+          content: [{ id: 1, locationName: 'Test NFT', mintStatus: 'NOT_MINTED' }],
           totalElements: 1,
         },
       }).as('getCollection');
@@ -66,7 +64,9 @@ describe('Accessibility', () => {
 
       // Tab should stay within modal
       cy.get('[data-testid="minting-modal"]').within(() => {
-        const focusableElements = cy.get('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        const focusableElements = cy.get(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
 
         // Tab to last element
         focusableElements.last().focus();
@@ -80,7 +80,10 @@ describe('Accessibility', () => {
     it('should close modal with Escape key', () => {
       cy.intercept('GET', '**/api/nft/collection*', {
         statusCode: 200,
-        body: { content: [{ id: 1, locationName: 'Test', mintStatus: 'NOT_MINTED' }], totalElements: 1 },
+        body: {
+          content: [{ id: 1, locationName: 'Test', mintStatus: 'NOT_MINTED' }],
+          totalElements: 1,
+        },
       }).as('getCollection');
 
       cy.visit('/nft/collection');
@@ -110,13 +113,9 @@ describe('Accessibility', () => {
     it('should have proper ARIA labels on form inputs', () => {
       cy.visit('/login');
 
-      cy.get('input[type="email"]')
-        .should('have.attr', 'aria-label')
-        .or('have.attr', 'id');
+      cy.get('input[type="email"]').should('have.attr', 'aria-label').or('have.attr', 'id');
 
-      cy.get('input[type="password"]')
-        .should('have.attr', 'aria-label')
-        .or('have.attr', 'id');
+      cy.get('input[type="password"]').should('have.attr', 'aria-label').or('have.attr', 'id');
     });
 
     it('should announce loading states', () => {
@@ -142,7 +141,7 @@ describe('Accessibility', () => {
       cy.get('h1').should('have.length', 1);
 
       // Headings should be in order
-      cy.get('h1, h2, h3, h4, h5, h6').then(($headings) => {
+      cy.get('h1, h2, h3, h4, h5, h6').then($headings => {
         let lastLevel = 0;
         $headings.each((_, heading) => {
           const level = parseInt(heading.tagName.substring(1));
@@ -173,7 +172,7 @@ describe('Accessibility', () => {
       cy.visit('/');
 
       // Check primary text
-      cy.get('body').then(($body) => {
+      cy.get('body').then($body => {
         const backgroundColor = $body.css('background-color');
         const textColor = $body.css('color');
 
@@ -213,9 +212,7 @@ describe('Accessibility', () => {
     it('should have skip link for main content', () => {
       cy.visit('/');
 
-      cy.get('[data-testid="skip-link"]')
-        .should('exist')
-        .and('have.attr', 'href', '#main-content');
+      cy.get('[data-testid="skip-link"]').should('exist').and('have.attr', 'href', '#main-content');
 
       // Skip link should be visible on focus
       cy.get('[data-testid="skip-link"]').focus();
@@ -231,7 +228,7 @@ describe('Accessibility', () => {
       cy.visit('/profile/1');
       cy.wait('@getUserProfile');
 
-      cy.get('img').each(($img) => {
+      cy.get('img').each($img => {
         // Images should have alt or be marked as decorative
         const alt = $img.attr('alt');
         const role = $img.attr('role');
@@ -244,7 +241,7 @@ describe('Accessibility', () => {
       cy.visit('/');
 
       // Links should not have generic text
-      cy.get('a').each(($link) => {
+      cy.get('a').each($link => {
         const text = $link.text().trim().toLowerCase();
         const ariaLabel = $link.attr('aria-label');
 
@@ -252,7 +249,7 @@ describe('Accessibility', () => {
         const genericTexts = ['click here', 'read more', 'here', 'more', '더보기'];
 
         if (!ariaLabel) {
-          genericTexts.forEach((generic) => {
+          genericTexts.forEach(generic => {
             expect(text).to.not.equal(generic);
           });
         }
@@ -269,8 +266,9 @@ describe('Accessibility', () => {
       cy.wait('@getNotifications');
 
       // Check for live region
-      cy.get('[aria-live="polite"], [aria-live="assertive"], [role="alert"], [role="status"]')
-        .should('exist');
+      cy.get(
+        '[aria-live="polite"], [aria-live="assertive"], [role="alert"], [role="status"]'
+      ).should('exist');
     });
   });
 
@@ -278,7 +276,10 @@ describe('Accessibility', () => {
     it('should return focus after modal closes', () => {
       cy.intercept('GET', '**/api/nft/collection*', {
         statusCode: 200,
-        body: { content: [{ id: 1, locationName: 'Test', mintStatus: 'NOT_MINTED' }], totalElements: 1 },
+        body: {
+          content: [{ id: 1, locationName: 'Test', mintStatus: 'NOT_MINTED' }],
+          totalElements: 1,
+        },
       }).as('getCollection');
 
       cy.visit('/nft/collection');
@@ -346,7 +347,7 @@ describe('Accessibility', () => {
       cy.visit('/');
 
       // Check that animations are disabled or reduced
-      cy.get('*').then(($elements) => {
+      cy.get('*').then($elements => {
         $elements.each((_, el) => {
           const animationDuration = window.getComputedStyle(el).animationDuration;
           const transitionDuration = window.getComputedStyle(el).transitionDuration;
@@ -364,7 +365,7 @@ describe('Accessibility', () => {
     it('should have associated labels for inputs', () => {
       cy.visit('/login');
 
-      cy.get('input').each(($input) => {
+      cy.get('input').each($input => {
         const id = $input.attr('id');
         const ariaLabel = $input.attr('aria-label');
         const ariaLabelledBy = $input.attr('aria-labelledby');
@@ -402,7 +403,7 @@ describe('Accessibility', () => {
     it('should indicate required fields', () => {
       cy.visit('/register');
 
-      cy.get('input[required]').each(($input) => {
+      cy.get('input[required]').each($input => {
         // Required inputs should have aria-required or visible indicator
         const ariaRequired = $input.attr('aria-required');
         const required = $input.attr('required');

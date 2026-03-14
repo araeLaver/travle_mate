@@ -205,9 +205,7 @@ export const toggleHelpful = async (reviewId: number): Promise<{ isHelpful: bool
 /**
  * 장소 리뷰 통계 조회
  */
-export const getLocationReviewStats = async (
-  locationId: number
-): Promise<LocationReviewStats> => {
+export const getLocationReviewStats = async (locationId: number): Promise<LocationReviewStats> => {
   const response = await fetch(`${API_BASE_URL}/locations/${locationId}/reviews/stats`, {
     headers: getAuthHeaders(),
   });

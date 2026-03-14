@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { chatService, ChatRoom } from '../services/chatService';
 import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
+import SEOHead from '../components/SEOHead';
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -115,6 +116,7 @@ const ChatList: React.FC = () => {
       role="main"
       aria-label="채팅 목록"
     >
+      <SEOHead title="채팅 목록" description="Fryndo 채팅 목록" noIndex={true} />
       {/* Background Effects */}
       <div
         className="absolute top-20 left-10 w-72 h-72 bg-violet-400/30 dark:bg-violet-600/20 rounded-full blur-3xl"

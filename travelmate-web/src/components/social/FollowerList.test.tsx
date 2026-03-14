@@ -80,10 +80,9 @@ describe('FollowerList', () => {
       isLoading: false,
     });
 
-    render(
-      <FollowerList userId={1} type="followers" isOwnProfile={true} />,
-      { wrapper: createWrapper() }
-    );
+    render(<FollowerList userId={1} type="followers" isOwnProfile={true} />, {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => {
       expect(screen.getByRole('heading', { level: 3 })).toHaveTextContent('팔로워');
@@ -106,10 +105,9 @@ describe('FollowerList', () => {
       error: null,
     });
 
-    render(
-      <FollowerList userId={1} type="following" isOwnProfile={true} />,
-      { wrapper: createWrapper() }
-    );
+    render(<FollowerList userId={1} type="following" isOwnProfile={true} />, {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => {
       expect(screen.getByRole('heading', { level: 3 })).toHaveTextContent('팔로잉');
@@ -130,10 +128,9 @@ describe('FollowerList', () => {
       isLoading: false,
     });
 
-    render(
-      <FollowerList userId={1} type="followers" isOwnProfile={true} />,
-      { wrapper: createWrapper() }
-    );
+    render(<FollowerList userId={1} type="followers" isOwnProfile={true} />, {
+      wrapper: createWrapper(),
+    });
 
     expect(screen.getByText('불러오는 중...')).toBeInTheDocument();
   });
@@ -152,10 +149,9 @@ describe('FollowerList', () => {
       isLoading: false,
     });
 
-    render(
-      <FollowerList userId={1} type="followers" isOwnProfile={true} />,
-      { wrapper: createWrapper() }
-    );
+    render(<FollowerList userId={1} type="followers" isOwnProfile={true} />, {
+      wrapper: createWrapper(),
+    });
 
     expect(screen.getByText('아직 팔로워가 없습니다.')).toBeInTheDocument();
   });
@@ -174,10 +170,9 @@ describe('FollowerList', () => {
       error: null,
     });
 
-    render(
-      <FollowerList userId={1} type="following" isOwnProfile={true} />,
-      { wrapper: createWrapper() }
-    );
+    render(<FollowerList userId={1} type="following" isOwnProfile={true} />, {
+      wrapper: createWrapper(),
+    });
 
     expect(screen.getByText('아직 팔로우하는 사람이 없습니다.')).toBeInTheDocument();
   });
@@ -196,10 +191,9 @@ describe('FollowerList', () => {
       isLoading: false,
     });
 
-    render(
-      <FollowerList userId={1} type="followers" isOwnProfile={true} />,
-      { wrapper: createWrapper() }
-    );
+    render(<FollowerList userId={1} type="followers" isOwnProfile={true} />, {
+      wrapper: createWrapper(),
+    });
 
     const followBtn = screen.getByText('팔로우');
     fireEvent.click(followBtn);
@@ -223,10 +217,9 @@ describe('FollowerList', () => {
       isLoading: false,
     });
 
-    render(
-      <FollowerList userId={1} type="followers" isOwnProfile={true} />,
-      { wrapper: createWrapper() }
-    );
+    render(<FollowerList userId={1} type="followers" isOwnProfile={true} />, {
+      wrapper: createWrapper(),
+    });
 
     const followingBtn = screen.getByText('팔로잉');
     fireEvent.click(followingBtn);
@@ -250,10 +243,9 @@ describe('FollowerList', () => {
       isLoading: false,
     });
 
-    render(
-      <FollowerList userId={1} type="followers" isOwnProfile={true} onClose={mockOnClose} />,
-      { wrapper: createWrapper() }
-    );
+    render(<FollowerList userId={1} type="followers" isOwnProfile={true} onClose={mockOnClose} />, {
+      wrapper: createWrapper(),
+    });
 
     const closeBtn = screen.getByText('×');
     fireEvent.click(closeBtn);
@@ -275,10 +267,9 @@ describe('FollowerList', () => {
       isLoading: false,
     });
 
-    render(
-      <FollowerList userId={1} type="followers" isOwnProfile={true} />,
-      { wrapper: createWrapper() }
-    );
+    render(<FollowerList userId={1} type="followers" isOwnProfile={true} />, {
+      wrapper: createWrapper(),
+    });
 
     expect(screen.getByTestId('mutual-badge')).toBeInTheDocument();
   });
@@ -297,10 +288,9 @@ describe('FollowerList', () => {
       isLoading: false,
     });
 
-    render(
-      <FollowerList userId={1} type="followers" isOwnProfile={false} />,
-      { wrapper: createWrapper() }
-    );
+    render(<FollowerList userId={1} type="followers" isOwnProfile={false} />, {
+      wrapper: createWrapper(),
+    });
 
     expect(screen.queryByText('팔로우')).not.toBeInTheDocument();
     expect(screen.queryByText('팔로잉')).not.toBeInTheDocument();
@@ -320,10 +310,9 @@ describe('FollowerList', () => {
       isLoading: false,
     });
 
-    render(
-      <FollowerList userId={1} type="followers" isOwnProfile={true} />,
-      { wrapper: createWrapper() }
-    );
+    render(<FollowerList userId={1} type="followers" isOwnProfile={true} />, {
+      wrapper: createWrapper(),
+    });
 
     expect(screen.getByText('목록을 불러오는데 실패했습니다.')).toBeInTheDocument();
   });
@@ -342,10 +331,9 @@ describe('FollowerList', () => {
       isLoading: false,
     });
 
-    render(
-      <FollowerList userId={1} type="followers" isOwnProfile={true} />,
-      { wrapper: createWrapper() }
-    );
+    render(<FollowerList userId={1} type="followers" isOwnProfile={true} />, {
+      wrapper: createWrapper(),
+    });
 
     expect(screen.getByTestId('avatar-placeholder-2')).toBeInTheDocument();
   });
@@ -364,10 +352,9 @@ describe('FollowerList', () => {
       isLoading: false,
     });
 
-    render(
-      <FollowerList userId={1} type="followers" isOwnProfile={true} />,
-      { wrapper: createWrapper() }
-    );
+    render(<FollowerList userId={1} type="followers" isOwnProfile={true} />, {
+      wrapper: createWrapper(),
+    });
 
     expect(screen.getByText('100')).toBeInTheDocument();
   });

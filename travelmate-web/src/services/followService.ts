@@ -203,12 +203,9 @@ export const getMyFollowers = async (
   page: number = 0,
   size: number = 20
 ): Promise<PageResponse<FollowUserResponse>> => {
-  const response = await fetch(
-    `${API_BASE_URL}/users/me/followers?page=${page}&size=${size}`,
-    {
-      headers: getAuthHeaders(),
-    }
-  );
+  const response = await fetch(`${API_BASE_URL}/users/me/followers?page=${page}&size=${size}`, {
+    headers: getAuthHeaders(),
+  });
 
   if (!response.ok) {
     throw new Error('팔로워 목록을 불러오는데 실패했습니다.');
@@ -224,12 +221,9 @@ export const getMyFollowing = async (
   page: number = 0,
   size: number = 20
 ): Promise<PageResponse<FollowUserResponse>> => {
-  const response = await fetch(
-    `${API_BASE_URL}/users/me/following?page=${page}&size=${size}`,
-    {
-      headers: getAuthHeaders(),
-    }
-  );
+  const response = await fetch(`${API_BASE_URL}/users/me/following?page=${page}&size=${size}`, {
+    headers: getAuthHeaders(),
+  });
 
   if (!response.ok) {
     throw new Error('팔로잉 목록을 불러오는데 실패했습니다.');
@@ -256,9 +250,7 @@ export const getMyFollowStats = async (): Promise<FollowStatsResponse> => {
 /**
  * 사용자들의 팔로우 상태 배치 조회
  */
-export const getFollowStatusBatch = async (
-  userIds: number[]
-): Promise<UserWithFollowStatus[]> => {
+export const getFollowStatusBatch = async (userIds: number[]): Promise<UserWithFollowStatus[]> => {
   const response = await fetch(`${API_BASE_URL}/users/follow-status/batch`, {
     method: 'POST',
     headers: getAuthHeaders(),

@@ -12,8 +12,8 @@ type Config = {
 
 const isLocalhost = Boolean(
   window.location.hostname === 'localhost' ||
-    window.location.hostname === '[::1]' ||
-    window.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/)
+  window.location.hostname === '[::1]' ||
+  window.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/)
 );
 
 export function register(config?: Config): void {
@@ -29,6 +29,7 @@ export function register(config?: Config): void {
       if (isLocalhost) {
         checkValidServiceWorker(swUrl, config);
         navigator.serviceWorker.ready.then(() => {
+          // eslint-disable-next-line no-console
           console.log('Service Worker is ready for development.');
         });
       } else {
@@ -50,7 +51,7 @@ export function register(config?: Config): void {
 function registerValidSW(swUrl: string, config?: Config): void {
   navigator.serviceWorker
     .register(swUrl)
-    .then((registration) => {
+    .then(registration => {
       registration.onupdatefound = () => {
         const installingWorker = registration.installing;
         if (installingWorker == null) {
@@ -59,9 +60,11 @@ function registerValidSW(swUrl: string, config?: Config): void {
         installingWorker.onstatechange = () => {
           if (installingWorker.state === 'installed') {
             if (navigator.serviceWorker.controller) {
+              // eslint-disable-next-line no-console
               console.log('New content is available and will be used when all tabs are closed.');
               config?.onUpdate?.(registration);
             } else {
+              // eslint-disable-next-line no-console
               console.log('Content is cached for offline use.');
               config?.onSuccess?.(registration);
             }
@@ -69,7 +72,8 @@ function registerValidSW(swUrl: string, config?: Config): void {
         };
       };
     })
-    .catch((error) => {
+    .catch(error => {
+      // eslint-disable-next-line no-console
       console.error('Error during service worker registration:', error);
     });
 }
@@ -78,13 +82,13 @@ function checkValidServiceWorker(swUrl: string, config?: Config): void {
   fetch(swUrl, {
     headers: { 'Service-Worker': 'script' },
   })
-    .then((response) => {
+    .then(response => {
       const contentType = response.headers.get('content-type');
       if (
         response.status === 404 ||
         (contentType != null && contentType.indexOf('javascript') === -1)
       ) {
-        navigator.serviceWorker.ready.then((registration) => {
+        navigator.serviceWorker.ready.then(registration => {
           registration.unregister().then(() => {
             window.location.reload();
           });
@@ -94,6 +98,7 @@ function checkValidServiceWorker(swUrl: string, config?: Config): void {
       }
     })
     .catch(() => {
+      // eslint-disable-next-line no-console
       console.log('No internet connection found. App is running in offline mode.');
     });
 }
@@ -101,10 +106,11 @@ function checkValidServiceWorker(swUrl: string, config?: Config): void {
 export function unregister(): void {
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.ready
-      .then((registration) => {
+      .then(registration => {
         registration.unregister();
       })
-      .catch((error) => {
+      .catch(error => {
+        // eslint-disable-next-line no-console
         console.error(error.message);
       });
   }
@@ -116,7 +122,7 @@ export function unregister(): void {
 export function applyUpdate(registration: ServiceWorkerRegistration): void {
   const waitingServiceWorker = registration.waiting;
   if (waitingServiceWorker) {
-    waitingServiceWorker.addEventListener('statechange', (event) => {
+    waitingServiceWorker.addEventListener('statechange', event => {
       const target = event.target as ServiceWorker;
       if (target.state === 'activated') {
         window.location.reload();

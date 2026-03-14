@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
   <head>
     <meta charset="utf-8" />
@@ -19,7 +19,10 @@
     <meta name="msapplication-config" content="%PUBLIC_URL%/browserconfig.xml" />
 
     <!-- SEO Meta Tags -->
-    <meta name="description" content="Fryndo - 여행 동반자를 찾는 소셜 플랫폼. 함께 여행할 친구를 찾고, 특별한 여행 경험을 공유하세요." />
+    <meta
+      name="description"
+      content="Fryndo - 여행 동반자를 찾는 소셜 플랫폼. 함께 여행할 친구를 찾고, 특별한 여행 경험을 공유하세요."
+    />
     <meta name="keywords" content="여행, 동반자, 소셜, 여행친구, 그룹여행, Fryndo, 자우니바" />
     <meta name="author" content="Fryndo Team" />
     <meta name="robots" content="index, follow" />
@@ -28,7 +31,10 @@
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://various-belva-untab-1a59bee2.koyeb.app/" />
     <meta property="og:title" content="Fryndo - 여행 동반자를 찾는 소셜 플랫폼" />
-    <meta property="og:description" content="함께 여행할 친구를 찾고, 특별한 여행 경험을 공유하세요." />
+    <meta
+      property="og:description"
+      content="함께 여행할 친구를 찾고, 특별한 여행 경험을 공유하세요."
+    />
     <meta property="og:image" content="%PUBLIC_URL%/og-image.png" />
     <meta property="og:locale" content="ko_KR" />
     <meta property="og:site_name" content="Fryndo" />
@@ -36,7 +42,10 @@
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Fryndo - 여행 동반자를 찾는 소셜 플랫폼" />
-    <meta name="twitter:description" content="함께 여행할 친구를 찾고, 특별한 여행 경험을 공유하세요." />
+    <meta
+      name="twitter:description"
+      content="함께 여행할 친구를 찾고, 특별한 여행 경험을 공유하세요."
+    />
     <meta name="twitter:image" content="%PUBLIC_URL%/og-image.png" />
 
     <!-- Security -->
@@ -54,24 +63,33 @@
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-GT2487FZ6L"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
+      function gtag() {
+        dataLayer.push(arguments);
+      }
       gtag('js', new Date());
       gtag('config', 'G-GT2487FZ6L');
     </script>
 
     <!-- Google AdSense (승인 후 ca-pub ID 교체) -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+    <script
+      async
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
+      crossorigin="anonymous"
+    ></script>
 
     <title>Fryndo - 여행 동반자를 찾는 소셜 플랫폼</title>
   </head>
   <body>
     <!-- Skip to main content link for accessibility -->
-    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:z-50 focus:p-4 focus:bg-indigo-600 focus:text-white">
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:z-50 focus:p-4 focus:bg-indigo-600 focus:text-white"
+    >
       메인 콘텐츠로 건너뛰기
     </a>
 
     <noscript>
-      <div style="padding: 20px; text-align: center; font-family: sans-serif;">
+      <div style="padding: 20px; text-align: center; font-family: sans-serif">
         <h1>JavaScript 필요</h1>
         <p>이 앱을 사용하려면 브라우저에서 JavaScript를 활성화해야 합니다.</p>
         <p>Please enable JavaScript in your browser to use this app.</p>
@@ -83,12 +101,13 @@
     <!-- Service Worker Registration -->
     <script>
       if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-          navigator.serviceWorker.register('/service-worker.js')
-            .then(function(registration) {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker
+            .register('/service-worker.js')
+            .then(function (registration) {
               console.log('ServiceWorker registration successful');
             })
-            .catch(function(err) {
+            .catch(function (err) {
               console.log('ServiceWorker registration failed: ', err);
             });
         });

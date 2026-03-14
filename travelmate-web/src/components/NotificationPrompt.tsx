@@ -22,8 +22,7 @@ export const NotificationPrompt: React.FC<NotificationPromptProps> = ({
   showOnce = true,
 }) => {
   const [isVisible, setIsVisible] = useState(false);
-  const { isSupported, permission, isLoading, requestPermission } =
-    usePushNotifications();
+  const { isSupported, permission, isLoading, requestPermission } = usePushNotifications();
 
   useEffect(() => {
     // Don't show if not supported or already granted/denied
@@ -84,9 +83,7 @@ export const NotificationPrompt: React.FC<NotificationPromptProps> = ({
                 </svg>
               </div>
               <div className="ml-3 flex-1">
-                <h3 className="text-sm font-medium text-gray-900">
-                  알림 받기
-                </h3>
+                <h3 className="text-sm font-medium text-gray-900">알림 받기</h3>
                 <p className="mt-1 text-sm text-gray-500">
                   새로운 팔로워, NFT 수집, 메시지 등의 알림을 실시간으로 받아보세요.
                 </p>

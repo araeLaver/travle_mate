@@ -11,7 +11,7 @@ describe('Notifications', () => {
       },
     }).as('getMe');
 
-    cy.window().then((win) => {
+    cy.window().then(win => {
       win.localStorage.setItem('accessToken', 'mock-access-token');
       win.localStorage.setItem('refreshToken', 'mock-refresh-token');
     });
@@ -142,8 +142,20 @@ describe('Notifications', () => {
         statusCode: 200,
         body: {
           content: [
-            { id: 1, type: 'FOLLOW', message: '알림 1', isRead: false, createdAt: new Date().toISOString() },
-            { id: 2, type: 'FOLLOW', message: '알림 2', isRead: false, createdAt: new Date().toISOString() },
+            {
+              id: 1,
+              type: 'FOLLOW',
+              message: '알림 1',
+              isRead: false,
+              createdAt: new Date().toISOString(),
+            },
+            {
+              id: 2,
+              type: 'FOLLOW',
+              message: '알림 2',
+              isRead: false,
+              createdAt: new Date().toISOString(),
+            },
           ],
           totalElements: 2,
         },
@@ -166,7 +178,13 @@ describe('Notifications', () => {
         statusCode: 200,
         body: {
           content: [
-            { id: 1, type: 'FOLLOW', message: '삭제할 알림', isRead: true, createdAt: new Date().toISOString() },
+            {
+              id: 1,
+              type: 'FOLLOW',
+              message: '삭제할 알림',
+              isRead: true,
+              createdAt: new Date().toISOString(),
+            },
           ],
           totalElements: 1,
         },
@@ -193,8 +211,20 @@ describe('Notifications', () => {
         statusCode: 200,
         body: {
           content: [
-            { id: 1, type: 'FOLLOW', message: '알림 1', isRead: true, createdAt: new Date().toISOString() },
-            { id: 2, type: 'FOLLOW', message: '알림 2', isRead: true, createdAt: new Date().toISOString() },
+            {
+              id: 1,
+              type: 'FOLLOW',
+              message: '알림 1',
+              isRead: true,
+              createdAt: new Date().toISOString(),
+            },
+            {
+              id: 2,
+              type: 'FOLLOW',
+              message: '알림 2',
+              isRead: true,
+              createdAt: new Date().toISOString(),
+            },
           ],
           totalElements: 2,
         },
@@ -343,10 +373,34 @@ describe('Notifications', () => {
         statusCode: 200,
         body: {
           content: [
-            { id: 1, type: 'FOLLOW', message: '팔로우', isRead: true, createdAt: new Date().toISOString() },
-            { id: 2, type: 'NFT_COLLECTED', message: 'NFT 수집', isRead: true, createdAt: new Date().toISOString() },
-            { id: 3, type: 'MINTING_COMPLETE', message: '민팅 완료', isRead: true, createdAt: new Date().toISOString() },
-            { id: 4, type: 'REVIEW_HELPFUL', message: '도움됨', isRead: true, createdAt: new Date().toISOString() },
+            {
+              id: 1,
+              type: 'FOLLOW',
+              message: '팔로우',
+              isRead: true,
+              createdAt: new Date().toISOString(),
+            },
+            {
+              id: 2,
+              type: 'NFT_COLLECTED',
+              message: 'NFT 수집',
+              isRead: true,
+              createdAt: new Date().toISOString(),
+            },
+            {
+              id: 3,
+              type: 'MINTING_COMPLETE',
+              message: '민팅 완료',
+              isRead: true,
+              createdAt: new Date().toISOString(),
+            },
+            {
+              id: 4,
+              type: 'REVIEW_HELPFUL',
+              message: '도움됨',
+              isRead: true,
+              createdAt: new Date().toISOString(),
+            },
           ],
           totalElements: 4,
         },
@@ -417,7 +471,7 @@ describe('Notifications', () => {
       cy.visit('/');
 
       // Simulate receiving a WebSocket notification
-      cy.window().then((win) => {
+      cy.window().then(win => {
         const event = new CustomEvent('ws:notification', {
           detail: {
             id: 100,
@@ -445,7 +499,7 @@ describe('Notifications', () => {
       cy.get('[data-testid="notification-badge"]').should('contain', '2');
 
       // Simulate receiving a new notification
-      cy.window().then((win) => {
+      cy.window().then(win => {
         const event = new CustomEvent('ws:notification', {
           detail: {
             id: 100,

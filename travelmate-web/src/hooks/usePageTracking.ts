@@ -27,11 +27,7 @@ export function usePageTracking(): void {
  * Hook to track user interactions
  */
 export function useInteractionTracking() {
-  const trackClick = (
-    element: string,
-    action: string,
-    context?: Record<string, unknown>
-  ): void => {
+  const trackClick = (element: string, action: string, context?: Record<string, unknown>): void => {
     analytics.trackAction(action, 'click', {
       element,
       ...context,
@@ -50,10 +46,7 @@ export function useInteractionTracking() {
     );
   };
 
-  const trackFeature = (
-    featureName: string,
-    context?: Record<string, unknown>
-  ): void => {
+  const trackFeature = (featureName: string, context?: Record<string, unknown>): void => {
     analytics.trackFeatureUsage(featureName, context);
   };
 

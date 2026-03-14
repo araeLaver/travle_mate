@@ -25,7 +25,7 @@ export function useNotifications(page = 0, size = 20) {
       );
       return {
         ...response,
-        content: response.content.map((n) => ({
+        content: response.content.map(n => ({
           ...n,
           createdAt: new Date(n.createdAt),
           readAt: n.readAt ? new Date(n.readAt) : null,
@@ -41,7 +41,7 @@ export function useUnreadNotifications() {
     queryKey: notificationKeys.unread(),
     queryFn: async () => {
       const response = await apiClient.get<Notification[]>('/notifications/unread');
-      return response.map((n) => ({
+      return response.map(n => ({
         ...n,
         createdAt: new Date(n.createdAt),
         readAt: n.readAt ? new Date(n.readAt) : null,
@@ -93,8 +93,7 @@ export function useDeleteNotification() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (notificationId: number) =>
-      apiClient.delete(`/notifications/${notificationId}`),
+    mutationFn: (notificationId: number) => apiClient.delete(`/notifications/${notificationId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: notificationKeys.all });
     },
@@ -113,32 +112,30 @@ export function useRealtimeNotifications() {
     }
 
     // WebSocket으로 실시간 알림 구독
-    const subscription = websocketService.subscribe(
-      `/user/queue/notifications`,
-      (message) => {
-        try {
-          const notification: Notification = JSON.parse(message.body);
+    const subscription = websocketService.subscribe(`/user/queue/notifications`, message => {
+      try {
+        const notification: Notification = JSON.parse(message.body);
 
-          // 새 알림 추가
-          setRealtimeNotifications((prev) => [notification, ...prev]);
+        // 새 알림 추가
+        setRealtimeNotifications(prev => [notification, ...prev]);
 
-          // 쿼리 캐시 무효화 (목록 갱신)
-          queryClient.invalidateQueries({ queryKey: notificationKeys.unread() });
-          queryClient.invalidateQueries({ queryKey: notificationKeys.unreadCount() });
+        // 쿼리 캐시 무효화 (목록 갱신)
+        queryClient.invalidateQueries({ queryKey: notificationKeys.unread() });
+        queryClient.invalidateQueries({ queryKey: notificationKeys.unreadCount() });
 
-          // 브라우저 알림 표시 (권한이 있으면)
-          if (Notification.permission === 'granted') {
-            new Notification(notification.title, {
-              body: notification.message,
-              icon: '/logo192.png',
-              badge: '/logo192.png',
-            });
-          }
-        } catch (error) {
-          console.error('Failed to parse notification:', error);
+        // 브라우저 알림 표시 (권한이 있으면)
+        if (Notification.permission === 'granted') {
+          new Notification(notification.title, {
+            body: notification.message,
+            icon: '/logo192.png',
+            badge: '/logo192.png',
+          });
         }
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to parse notification:', error);
       }
-    );
+    });
 
     return () => {
       subscription?.unsubscribe();
@@ -157,9 +154,7 @@ export function useRealtimeNotifications() {
 
 // 브라우저 알림 권한 요청
 export function useNotificationPermission() {
-  const [permission, setPermission] = useState<NotificationPermission>(
-    Notification.permission
-  );
+  const [permission, setPermission] = useState<NotificationPermission>(Notification.permission);
 
   const requestPermission = useCallback(async () => {
     if ('Notification' in window) {

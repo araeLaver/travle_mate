@@ -22,25 +22,24 @@ interface Notification {
   timestamp: number;
 }
 
-export const useUIStore = create<UIState>((set) => ({
+export const useUIStore = create<UIState>(set => ({
   theme: 'light',
   sidebarOpen: false,
   notifications: [],
 
-  setTheme: (theme) => set({ theme }),
+  setTheme: theme => set({ theme }),
 
   toggleTheme: () =>
-    set((state) => ({
+    set(state => ({
       theme: state.theme === 'light' ? 'dark' : 'light',
     })),
 
-  setSidebarOpen: (open) => set({ sidebarOpen: open }),
+  setSidebarOpen: open => set({ sidebarOpen: open }),
 
-  toggleSidebar: () =>
-    set((state) => ({ sidebarOpen: !state.sidebarOpen })),
+  toggleSidebar: () => set(state => ({ sidebarOpen: !state.sidebarOpen })),
 
-  addNotification: (notification) =>
-    set((state) => ({
+  addNotification: notification =>
+    set(state => ({
       notifications: [
         ...state.notifications,
         {
@@ -51,9 +50,9 @@ export const useUIStore = create<UIState>((set) => ({
       ],
     })),
 
-  removeNotification: (id) =>
-    set((state) => ({
-      notifications: state.notifications.filter((n) => n.id !== id),
+  removeNotification: id =>
+    set(state => ({
+      notifications: state.notifications.filter(n => n.id !== id),
     })),
 
   clearNotifications: () => set({ notifications: [] }),

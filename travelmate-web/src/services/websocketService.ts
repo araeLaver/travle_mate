@@ -6,8 +6,11 @@ import { WebSocketError, WebSocketErrorCallback } from '../types';
 // 개발 환경에서만 로그 출력
 const isDev = process.env.NODE_ENV === 'development';
 const logger = {
+  // eslint-disable-next-line no-console
   log: (...args: unknown[]) => isDev && console.log(...args),
+  // eslint-disable-next-line no-console
   warn: (...args: unknown[]) => isDev && console.warn(...args),
+  // eslint-disable-next-line no-console
   error: (...args: unknown[]) => isDev && console.error(...args),
 };
 
@@ -54,7 +57,7 @@ class WebSocketService {
       webSocketFactory: () => {
         return new SockJS(wsUrl) as WebSocket;
       },
-      debug: (str) => {
+      debug: str => {
         logger.log('[WebSocket Debug]', str);
       },
       reconnectDelay: this.reconnectDelay,
@@ -64,11 +67,11 @@ class WebSocketService {
       onConnect: () => {
         logger.log('WebSocket Connected');
         this.reconnectAttempts = 0;
-        this.onConnectCallbacks.forEach((cb) => cb());
+        this.onConnectCallbacks.forEach(cb => cb());
       },
       onDisconnect: () => {
         logger.log('WebSocket Disconnected');
-        this.onDisconnectCallbacks.forEach((cb) => cb());
+        this.onDisconnectCallbacks.forEach(cb => cb());
       },
       onStompError: (frame: IFrame) => {
         logger.error('STOMP Error:', frame);
@@ -77,7 +80,7 @@ class WebSocketService {
           code: frame.command,
           timestamp: new Date(),
         };
-        this.onErrorCallbacks.forEach((cb) => cb(error));
+        this.onErrorCallbacks.forEach(cb => cb(error));
       },
       onWebSocketError: (event: Event) => {
         logger.error('WebSocket Error:', event);
@@ -85,7 +88,7 @@ class WebSocketService {
           message: 'WebSocket connection error',
           timestamp: new Date(),
         };
-        this.onErrorCallbacks.forEach((cb) => cb(error));
+        this.onErrorCallbacks.forEach(cb => cb(error));
       },
     });
   }
@@ -163,20 +166,17 @@ class WebSocketService {
       return () => this.unsubscribeFromRoom(roomId);
     }
 
-    const subscription = this.client!.subscribe(
-      destination,
-      (message: IMessage) => {
-        try {
-          const parsedMessage: ChatMessage = JSON.parse(message.body);
-          if (parsedMessage.sentAt) {
-            parsedMessage.sentAt = new Date(parsedMessage.sentAt);
-          }
-          onMessage(parsedMessage);
-        } catch (error) {
-          logger.error('Failed to parse message:', error);
+    const subscription = this.client!.subscribe(destination, (message: IMessage) => {
+      try {
+        const parsedMessage: ChatMessage = JSON.parse(message.body);
+        if (parsedMessage.sentAt) {
+          parsedMessage.sentAt = new Date(parsedMessage.sentAt);
         }
+        onMessage(parsedMessage);
+      } catch (error) {
+        logger.error('Failed to parse message:', error);
       }
-    );
+    });
 
     this.subscriptions.set(destination, subscription);
 
@@ -261,7 +261,10 @@ class WebSocketService {
   }
 
   // 일반 구독 (외부에서 client 직접 접근 대신 사용)
-  subscribe(destination: string, callback: (message: IMessage) => void): StompSubscription | undefined {
+  subscribe(
+    destination: string,
+    callback: (message: IMessage) => void
+  ): StompSubscription | undefined {
     if (!this.client?.active) {
       logger.warn('WebSocket is not connected');
       return undefined;

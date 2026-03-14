@@ -19,7 +19,7 @@ export function escapeHtml(str: string): string {
     '=': '&#x3D;',
   };
 
-  return str.replace(/[&<>"'`=/]/g, (char) => htmlEntities[char] || char);
+  return str.replace(/[&<>"'`=/]/g, char => htmlEntities[char] || char);
 }
 
 /**
@@ -39,8 +39,9 @@ export function unescapeHtml(str: string): string {
     '&#x3D;': '=',
   };
 
-  return str.replace(/&(?:amp|lt|gt|quot|#39|#x2F|#x60|#x3D);/g,
-    (entity) => htmlEntities[entity] || entity
+  return str.replace(
+    /&(?:amp|lt|gt|quot|#39|#x2F|#x60|#x3D);/g,
+    entity => htmlEntities[entity] || entity
   );
 }
 
@@ -54,6 +55,7 @@ export function isUrlSafe(url: string): boolean {
 
   // 위험한 프로토콜 차단
   const dangerousProtocols = [
+    // eslint-disable-next-line no-script-url
     'javascript:',
     'data:',
     'vbscript:',
@@ -122,8 +124,8 @@ export function sanitizeFileName(fileName: string): string {
 
   return fileName
     .replace(/[/\\]/g, '') // 경로 구분자 제거
-    .replace(/\0/g, '')    // 널 바이트 제거
-    .replace(/\.\./g, '')  // 디렉토리 순회 방지
+    .replace(/\0/g, '') // 널 바이트 제거
+    .replace(/\.\./g, '') // 디렉토리 순회 방지
     .replace(/[<>:"|?*]/g, ''); // Windows 금지 문자 제거
 }
 
@@ -153,7 +155,8 @@ export function getCsrfToken(): string | null {
  * Content Security Policy 위반 보고
  */
 export function setupCspReporting(): void {
-  document.addEventListener('securitypolicyviolation', (e) => {
+  document.addEventListener('securitypolicyviolation', e => {
+    // eslint-disable-next-line no-console
     console.warn('CSP Violation:', {
       blockedURI: e.blockedURI,
       violatedDirective: e.violatedDirective,

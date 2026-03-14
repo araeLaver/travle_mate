@@ -18,18 +18,19 @@ export const vapidKey = process.env.REACT_APP_FIREBASE_VAPID_KEY;
 // Check if Firebase config is properly set
 export const isFirebaseConfigured = (): boolean => {
   return Boolean(
-    firebaseConfig.apiKey &&
-      firebaseConfig.projectId &&
-      firebaseConfig.messagingSenderId
+    firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.messagingSenderId
   );
 };
 
 // Dynamically load Firebase SDK
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let firebaseApp: any = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let messaging: any = null;
 
 export const initializeFirebase = async () => {
   if (!isFirebaseConfigured()) {
+    // eslint-disable-next-line no-console
     console.warn('Firebase is not configured. Push notifications disabled.');
     return null;
   }
@@ -41,6 +42,7 @@ export const initializeFirebase = async () => {
     // Check if messaging is supported
     const supported = await isSupported();
     if (!supported) {
+      // eslint-disable-next-line no-console
       console.warn('Firebase Messaging is not supported in this browser.');
       return null;
     }
@@ -55,6 +57,7 @@ export const initializeFirebase = async () => {
     messaging = getMessaging(firebaseApp);
     return messaging;
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Failed to initialize Firebase:', error);
     return null;
   }

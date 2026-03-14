@@ -85,7 +85,9 @@ describe('useRecommendations', () => {
       });
 
       expect(result.current.data).toEqual(mockData);
-      expect(apiClient.apiClient.get).toHaveBeenCalledWith('/recommendations/travel-mates?limit=10');
+      expect(apiClient.apiClient.get).toHaveBeenCalledWith(
+        '/recommendations/travel-mates?limit=10'
+      );
     });
   });
 });

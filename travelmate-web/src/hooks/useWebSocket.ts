@@ -30,7 +30,7 @@ export function useWebSocketConnection() {
 
     websocketService.onConnect(() => setIsConnected(true));
     websocketService.onDisconnect(() => setIsConnected(false));
-    websocketService.onError((err) => {
+    websocketService.onError(err => {
       setError(err.message || 'WebSocket error');
     });
 
@@ -74,8 +74,8 @@ export function useChatRoom(roomId: string) {
     const currentUserId = user.id.toString();
 
     // 채팅방 구독
-    const unsubscribe = websocketService.subscribeToRoom(currentRoomId, (message) => {
-      setMessages((prev) => [...prev, message]);
+    const unsubscribe = websocketService.subscribeToRoom(currentRoomId, message => {
+      setMessages(prev => [...prev, message]);
     });
 
     unsubscribeRef.current = unsubscribe;

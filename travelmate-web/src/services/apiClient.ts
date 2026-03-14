@@ -61,11 +61,7 @@ class ApiClient {
   }
 
   // POST 요청
-  async post<T, D = unknown>(
-    endpoint: string,
-    data?: D,
-    includeAuth: boolean = true
-  ): Promise<T> {
+  async post<T, D = unknown>(endpoint: string, data?: D, includeAuth: boolean = true): Promise<T> {
     try {
       const headers = await this.getHeadersWithRefresh(includeAuth);
       const response = await fetch(`${this.baseURL}${endpoint}`, {
@@ -81,11 +77,7 @@ class ApiClient {
   }
 
   // PUT 요청
-  async put<T, D = unknown>(
-    endpoint: string,
-    data?: D,
-    includeAuth: boolean = true
-  ): Promise<T> {
+  async put<T, D = unknown>(endpoint: string, data?: D, includeAuth: boolean = true): Promise<T> {
     try {
       const headers = await this.getHeadersWithRefresh(includeAuth);
       const response = await fetch(`${this.baseURL}${endpoint}`, {
@@ -116,11 +108,7 @@ class ApiClient {
   }
 
   // PATCH 요청
-  async patch<T, D = unknown>(
-    endpoint: string,
-    data?: D,
-    includeAuth: boolean = true
-  ): Promise<T> {
+  async patch<T, D = unknown>(endpoint: string, data?: D, includeAuth: boolean = true): Promise<T> {
     try {
       const headers = await this.getHeadersWithRefresh(includeAuth);
       const response = await fetch(`${this.baseURL}${endpoint}`, {
@@ -174,8 +162,7 @@ class ApiClient {
     }
 
     // 네트워크 에러 등
-    const errorMessage =
-      error instanceof Error ? error.message : '네트워크 오류가 발생했습니다.';
+    const errorMessage = error instanceof Error ? error.message : '네트워크 오류가 발생했습니다.';
     return {
       message: errorMessage,
       status: 0,

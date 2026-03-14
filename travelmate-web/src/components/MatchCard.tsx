@@ -15,8 +15,7 @@ const MatchCard: React.FC<MatchCardProps> = ({ recommendation, onSendRequest, is
   const [showMessageInput, setShowMessageInput] = useState(false);
 
   const scorePercent = Math.round(totalScore);
-  const scoreColor =
-    scorePercent >= 75 ? '#10b981' : scorePercent >= 50 ? '#f59e0b' : '#ef4444';
+  const scoreColor = scorePercent >= 75 ? '#10b981' : scorePercent >= 50 ? '#f59e0b' : '#ef4444';
 
   const travelStyleLabels: Record<string, string> = {
     ADVENTURE: '모험',
@@ -67,12 +66,12 @@ const MatchCard: React.FC<MatchCardProps> = ({ recommendation, onSendRequest, is
       {user.bio && <p className="match-card-bio">{user.bio}</p>}
 
       <div className="match-card-tags">
-        {user.languages?.slice(0, 3).map((lang) => (
+        {user.languages?.slice(0, 3).map(lang => (
           <span key={lang} className="match-tag match-tag-lang">
             {lang}
           </span>
         ))}
-        {user.interests?.slice(0, 3).map((interest) => (
+        {user.interests?.slice(0, 3).map(interest => (
           <span key={interest} className="match-tag match-tag-interest">
             {interest}
           </span>
@@ -102,7 +101,7 @@ const MatchCard: React.FC<MatchCardProps> = ({ recommendation, onSendRequest, is
             <input
               type="text"
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              onChange={e => setMessage(e.target.value)}
               placeholder="메시지를 입력하세요 (선택)"
               maxLength={500}
             />

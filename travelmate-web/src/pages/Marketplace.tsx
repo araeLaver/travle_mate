@@ -109,7 +109,7 @@ const Marketplace: React.FC = () => {
         if (reset) {
           setListings(response.content);
         } else {
-          setListings((prev) => [...prev, ...response.content]);
+          setListings(prev => [...prev, ...response.content]);
         }
         setHasMore(!response.last);
         setPage(currentPage);
@@ -185,7 +185,7 @@ const Marketplace: React.FC = () => {
 
   // 더 보기
   const loadMore = () => {
-    setPage((prev) => prev + 1);
+    setPage(prev => prev + 1);
     loadListings();
   };
 
@@ -328,7 +328,7 @@ const Marketplace: React.FC = () => {
       <div className="sticky top-[57px] z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50">
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex">
-            {tabs.map((tab) => (
+            {tabs.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
@@ -371,7 +371,9 @@ const Marketplace: React.FC = () => {
                         key={key}
                         onClick={() => setSelectedRarity(key as Rarity)}
                         className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
-                          selectedRarity === key ? 'text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
+                          selectedRarity === key
+                            ? 'text-white'
+                            : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
                         }`}
                         style={selectedRarity === key ? { backgroundColor: config.color } : {}}
                       >
@@ -386,7 +388,7 @@ const Marketplace: React.FC = () => {
                     type="number"
                     placeholder="최소"
                     value={minPrice}
-                    onChange={(e) => setMinPrice(e.target.value)}
+                    onChange={e => setMinPrice(e.target.value)}
                     className="w-24 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-sm outline-none text-gray-800 dark:text-white"
                   />
                   <span className="text-gray-400">~</span>
@@ -394,7 +396,7 @@ const Marketplace: React.FC = () => {
                     type="number"
                     placeholder="최대"
                     value={maxPrice}
-                    onChange={(e) => setMaxPrice(e.target.value)}
+                    onChange={e => setMaxPrice(e.target.value)}
                     className="w-24 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-sm outline-none text-gray-800 dark:text-white"
                   />
                   <button
@@ -410,7 +412,9 @@ const Marketplace: React.FC = () => {
               {listings.length === 0 && !isLoading ? (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
                   <span className="text-6xl mb-4">🏪</span>
-                  <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">등록된 NFT가 없습니다</h3>
+                  <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
+                    등록된 NFT가 없습니다
+                  </h3>
                   <p className="text-gray-500 dark:text-gray-400">첫 번째로 NFT를 판매해보세요!</p>
                 </div>
               ) : (
@@ -420,16 +424,20 @@ const Marketplace: React.FC = () => {
                   animate="animate"
                   className="grid grid-cols-2 gap-4"
                 >
-                  {listings.map((listing) => (
+                  {listings.map(listing => (
                     <motion.article
                       key={listing.id}
                       variants={fadeInUp}
                       className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-700/50 overflow-hidden"
                     >
                       <div className="aspect-square relative">
-                        {listing.nftCollection.location.nftImageUrl || listing.nftCollection.location.imageUrl ? (
+                        {listing.nftCollection.location.nftImageUrl ||
+                        listing.nftCollection.location.imageUrl ? (
                           <img
-                            src={listing.nftCollection.location.nftImageUrl || listing.nftCollection.location.imageUrl}
+                            src={
+                              listing.nftCollection.location.nftImageUrl ||
+                              listing.nftCollection.location.imageUrl
+                            }
                             alt={listing.nftCollection.location.name}
                             className="w-full h-full object-cover"
                           />
@@ -440,7 +448,10 @@ const Marketplace: React.FC = () => {
                         )}
                         <span
                           className="absolute top-2 left-2 px-2 py-1 rounded-lg text-xs font-bold text-white"
-                          style={{ backgroundColor: rarityConfig[listing.nftCollection.location.rarity].color }}
+                          style={{
+                            backgroundColor:
+                              rarityConfig[listing.nftCollection.location.rarity].color,
+                          }}
                         >
                           {rarityConfig[listing.nftCollection.location.rarity].emoji}{' '}
                           {rarityConfig[listing.nftCollection.location.rarity].label}
@@ -496,12 +507,18 @@ const Marketplace: React.FC = () => {
           {/* 판매 탭 */}
           {activeTab === 'sell' && (
             <motion.div key="sell" {...fadeInUp}>
-              <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">판매할 NFT 선택</h2>
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
+                판매할 NFT 선택
+              </h2>
               {myNfts.length === 0 && !isLoading ? (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
                   <span className="text-6xl mb-4">📍</span>
-                  <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">보유한 NFT가 없습니다</h3>
-                  <p className="text-gray-500 dark:text-gray-400 mb-4">NFT를 수집해서 마켓에 판매해보세요!</p>
+                  <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
+                    보유한 NFT가 없습니다
+                  </h3>
+                  <p className="text-gray-500 dark:text-gray-400 mb-4">
+                    NFT를 수집해서 마켓에 판매해보세요!
+                  </p>
                   <button
                     onClick={() => navigate('/nft')}
                     className="px-6 py-3 bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold rounded-xl"
@@ -516,7 +533,7 @@ const Marketplace: React.FC = () => {
                   animate="animate"
                   className="grid grid-cols-2 gap-4"
                 >
-                  {myNfts.map((nft) => (
+                  {myNfts.map(nft => (
                     <motion.article
                       key={nft.id}
                       variants={fadeInUp}
@@ -542,12 +559,17 @@ const Marketplace: React.FC = () => {
                           className="absolute top-2 left-2 px-2 py-1 rounded-lg text-xs font-bold text-white"
                           style={{ backgroundColor: rarityConfig[nft.location.rarity].color }}
                         >
-                          {rarityConfig[nft.location.rarity].emoji} {rarityConfig[nft.location.rarity].label}
+                          {rarityConfig[nft.location.rarity].emoji}{' '}
+                          {rarityConfig[nft.location.rarity].label}
                         </span>
                       </div>
                       <div className="p-4">
-                        <h3 className="font-semibold text-gray-800 dark:text-white truncate">{nft.location.name}</h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{nft.location.city}</p>
+                        <h3 className="font-semibold text-gray-800 dark:text-white truncate">
+                          {nft.location.name}
+                        </h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          {nft.location.city}
+                        </p>
                       </div>
                     </motion.article>
                   ))}
@@ -567,12 +589,19 @@ const Marketplace: React.FC = () => {
               {myListings.length === 0 && !isLoading ? (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
                   <span className="text-6xl mb-4">📋</span>
-                  <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">판매중인 NFT가 없습니다</h3>
+                  <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
+                    판매중인 NFT가 없습니다
+                  </h3>
                   <p className="text-gray-500 dark:text-gray-400">NFT를 판매 등록해보세요!</p>
                 </div>
               ) : (
-                <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-3">
-                  {myListings.map((listing) => (
+                <motion.div
+                  variants={staggerContainer}
+                  initial="initial"
+                  animate="animate"
+                  className="space-y-3"
+                >
+                  {myListings.map(listing => (
                     <motion.article
                       key={listing.id}
                       variants={fadeInUp}
@@ -604,17 +633,23 @@ const Marketplace: React.FC = () => {
                               listing.status === 'ACTIVE'
                                 ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
                                 : listing.status === 'SOLD'
-                                ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-                                : 'bg-gray-100 dark:bg-gray-800 text-gray-500'
+                                  ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                                  : 'bg-gray-100 dark:bg-gray-800 text-gray-500'
                             }`}
                           >
-                            {listing.status === 'ACTIVE' ? '판매중' : listing.status === 'SOLD' ? '판매완료' : '취소됨'}
+                            {listing.status === 'ACTIVE'
+                              ? '판매중'
+                              : listing.status === 'SOLD'
+                                ? '판매완료'
+                                : '취소됨'}
                           </span>
                         </div>
                       </div>
                       {listing.status === 'ACTIVE' && (
                         <div className="flex items-center gap-3">
-                          <span className="text-xs text-gray-400">⏰ {getTimeRemaining(listing.expiresAt)}</span>
+                          <span className="text-xs text-gray-400">
+                            ⏰ {getTimeRemaining(listing.expiresAt)}
+                          </span>
                           <button
                             onClick={() => handleCancelListing(listing.id)}
                             className="px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-sm font-medium rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
@@ -641,12 +676,19 @@ const Marketplace: React.FC = () => {
               {myPurchases.length === 0 && !isLoading ? (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
                   <span className="text-6xl mb-4">🛒</span>
-                  <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">구매 내역이 없습니다</h3>
+                  <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">
+                    구매 내역이 없습니다
+                  </h3>
                   <p className="text-gray-500 dark:text-gray-400">마켓에서 NFT를 구매해보세요!</p>
                 </div>
               ) : (
-                <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-3">
-                  {myPurchases.map((listing) => (
+                <motion.div
+                  variants={staggerContainer}
+                  initial="initial"
+                  animate="animate"
+                  className="space-y-3"
+                >
+                  {myPurchases.map(listing => (
                     <motion.article
                       key={listing.id}
                       variants={fadeInUp}
@@ -669,13 +711,17 @@ const Marketplace: React.FC = () => {
                         <h3 className="font-semibold text-gray-800 dark:text-white truncate">
                           {listing.nftCollection.location.name}
                         </h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">판매자: {listing.seller.nickname}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          판매자: {listing.seller.nickname}
+                        </p>
                       </div>
                       <div className="text-right">
                         <span className="text-yellow-600 dark:text-yellow-400 font-bold">
                           💰 {listing.priceInPoints.toLocaleString()}P
                         </span>
-                        <p className="text-xs text-gray-400">{new Date(listing.listedAt).toLocaleDateString()}</p>
+                        <p className="text-xs text-gray-400">
+                          {new Date(listing.listedAt).toLocaleDateString()}
+                        </p>
                       </div>
                     </motion.article>
                   ))}
@@ -706,7 +752,7 @@ const Marketplace: React.FC = () => {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-md w-full p-6 border border-gray-200/50 dark:border-gray-700/50"
-              onClick={(e) => e.stopPropagation()}
+              onClick={e => e.stopPropagation()}
             >
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg font-bold text-gray-800 dark:text-white">NFT 판매 등록</h2>
@@ -733,12 +779,15 @@ const Marketplace: React.FC = () => {
                   )}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-800 dark:text-white">{selectedNft.location.name}</h3>
+                  <h3 className="font-semibold text-gray-800 dark:text-white">
+                    {selectedNft.location.name}
+                  </h3>
                   <span
                     className="inline-block px-2 py-0.5 rounded-full text-xs font-medium text-white mt-1"
                     style={{ backgroundColor: rarityConfig[selectedNft.location.rarity].color }}
                   >
-                    {rarityConfig[selectedNft.location.rarity].emoji} {rarityConfig[selectedNft.location.rarity].label}
+                    {rarityConfig[selectedNft.location.rarity].emoji}{' '}
+                    {rarityConfig[selectedNft.location.rarity].label}
                   </span>
                 </div>
               </div>
@@ -753,7 +802,7 @@ const Marketplace: React.FC = () => {
                     type="number"
                     placeholder="판매할 가격을 입력하세요"
                     value={sellPrice}
-                    onChange={(e) => setSellPrice(e.target.value)}
+                    onChange={e => setSellPrice(e.target.value)}
                     min="1"
                     className="w-full pl-12 pr-12 py-3 bg-gray-100 dark:bg-gray-800 rounded-xl outline-none text-gray-800 dark:text-white placeholder-gray-400"
                   />
@@ -762,9 +811,11 @@ const Marketplace: React.FC = () => {
               </div>
 
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">판매 기간</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  판매 기간
+                </label>
                 <div className="flex gap-2">
-                  {[3, 7, 14, 30].map((days) => (
+                  {[3, 7, 14, 30].map(days => (
                     <button
                       key={days}
                       onClick={() => setSellDuration(days)}
@@ -806,7 +857,7 @@ const Marketplace: React.FC = () => {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-md w-full p-6 border border-gray-200/50 dark:border-gray-700/50"
-              onClick={(e) => e.stopPropagation()}
+              onClick={e => e.stopPropagation()}
             >
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg font-bold text-gray-800 dark:text-white">구매 확인</h2>
@@ -842,7 +893,10 @@ const Marketplace: React.FC = () => {
                   </h3>
                   <span
                     className="inline-block px-2 py-0.5 rounded-full text-xs font-medium text-white mt-1"
-                    style={{ backgroundColor: rarityConfig[selectedListing.nftCollection.location.rarity].color }}
+                    style={{
+                      backgroundColor:
+                        rarityConfig[selectedListing.nftCollection.location.rarity].color,
+                    }}
                   >
                     {rarityConfig[selectedListing.nftCollection.location.rarity].emoji}{' '}
                     {rarityConfig[selectedListing.nftCollection.location.rarity].label}
@@ -853,7 +907,9 @@ const Marketplace: React.FC = () => {
               <div className="space-y-3 mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500 dark:text-gray-400">판매자</span>
-                  <span className="text-gray-800 dark:text-white">{selectedListing.seller.nickname}</span>
+                  <span className="text-gray-800 dark:text-white">
+                    {selectedListing.seller.nickname}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500 dark:text-gray-400">가격</span>
@@ -864,7 +920,9 @@ const Marketplace: React.FC = () => {
                 <hr className="border-gray-200 dark:border-gray-700" />
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500 dark:text-gray-400">내 포인트</span>
-                  <span className="text-gray-800 dark:text-white">{balance?.totalPoints?.toLocaleString() || 0}P</span>
+                  <span className="text-gray-800 dark:text-white">
+                    {balance?.totalPoints?.toLocaleString() || 0}P
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500 dark:text-gray-400">구매 후 잔액</span>
@@ -875,7 +933,8 @@ const Marketplace: React.FC = () => {
                         : 'text-gray-800 dark:text-white'
                     }`}
                   >
-                    {((balance?.totalPoints || 0) - selectedListing.priceInPoints).toLocaleString()}P
+                    {((balance?.totalPoints || 0) - selectedListing.priceInPoints).toLocaleString()}
+                    P
                   </span>
                 </div>
               </div>
@@ -886,7 +945,9 @@ const Marketplace: React.FC = () => {
 
               <button
                 onClick={handleBuy}
-                disabled={isBuying || !balance || balance.totalPoints < selectedListing.priceInPoints}
+                disabled={
+                  isBuying || !balance || balance.totalPoints < selectedListing.priceInPoints
+                }
                 className="w-full py-4 bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {isBuying ? (

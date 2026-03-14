@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { locationService, TravelMate, Location } from '../services/locationService';
 import { chatService } from '../services/chatService';
@@ -8,6 +8,8 @@ import { getErrorMessage, logError } from '../utils/errorHandler';
 import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
 import AdBanner from '../components/ads/AdBanner';
+import { MatchCardSkeleton, ListItemSkeleton, SkeletonList } from '../components/SkeletonLoader';
+import { usePullToRefresh } from '../hooks/usePullToRefresh';
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -38,6 +40,9 @@ const Dashboard: React.FC = () => {
     const savedName = localStorage.getItem('userName');
     return savedName || '여행러';
   });
+
+  // 풀투리프레시를 위한 컨테이너 ref
+  const mainContainerRef = useRef<HTMLDivElement>(null);
 
   const moods = ['여행 중', '맛집 탐방', '산 좋아', '인생샷 찍기', '카페 투어', '문화 체험'];
 
@@ -91,6 +96,12 @@ const Dashboard: React.FC = () => {
       }, 2000);
     }
   }, [isDiscovering, searchRadius, currentMood, toast]);
+
+  // 풀투리프레시: 주변 메이트 재탐색
+  const { isPulling, pullDistance, isRefreshing } = usePullToRefresh(mainContainerRef, {
+    onRefresh: discoverNearbyMates,
+    threshold: 60,
+  });
 
   const startChat = (mate: TravelMate) => {
     const room = chatService.createChatRoom(mate.name, mate.id);
@@ -187,7 +198,12 @@ const Dashboard: React.FC = () => {
     { label: '매칭', icon: '🤝', path: '/matching', gradient: 'from-violet-500 to-purple-500' },
     { label: 'AI 추천', icon: '🤖', path: '/ai', gradient: 'from-cyan-500 to-blue-500' },
     { label: '리더보드', icon: '🏆', path: '/leaderboard', gradient: 'from-rose-500 to-pink-500' },
-    { label: '알림 설정', icon: '🔔', path: '/settings/notifications', gradient: 'from-indigo-500 to-violet-500' },
+    {
+      label: '알림 설정',
+      icon: '🔔',
+      path: '/settings/notifications',
+      gradient: 'from-indigo-500 to-violet-500',
+    },
   ];
 
   return (
@@ -222,7 +238,46 @@ const Dashboard: React.FC = () => {
       </nav>
 
       {/* Main Content */}
-      <main className="relative z-10 max-w-6xl mx-auto px-4 pt-24 pb-12">
+      <main ref={mainContainerRef} className="relative z-10 max-w-6xl mx-auto px-4 pt-24 pb-12">
+        {/* Pull-to-refresh 인디케이터 */}
+        {(isPulling || isRefreshing) && (
+          <div
+            className="flex items-center justify-center py-3 transition-all duration-200"
+            style={{ height: isPulling ? Math.min(pullDistance, 60) : 48, overflow: 'hidden' }}
+            aria-live="polite"
+          >
+            <div
+              className={`flex items-center gap-2 text-sm text-violet-600 dark:text-violet-400 font-medium ${isRefreshing ? 'animate-pulse' : ''}`}
+            >
+              <svg
+                className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`}
+                style={{
+                  transform:
+                    isPulling && !isRefreshing
+                      ? `rotate(${Math.min(pullDistance * 3, 180)}deg)`
+                      : undefined,
+                }}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+              <span>
+                {isRefreshing
+                  ? '새로고침 중...'
+                  : pullDistance >= 30
+                    ? '놓으면 새로고침'
+                    : '당겨서 새로고침'}
+              </span>
+            </div>
+          </div>
+        )}
         {/* Header */}
         <motion.header
           className="text-center mb-12"
@@ -283,15 +338,7 @@ const Dashboard: React.FC = () => {
         {/* Location Card */}
         <motion.section className="mb-8" {...fadeInUp} transition={{ delay: 0.2 }}>
           {isInitialLoading ? (
-            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
-              <div className="flex items-center gap-4 animate-pulse">
-                <div className="w-14 h-14 bg-gray-200 dark:bg-gray-700 rounded-xl" />
-                <div className="flex-1 space-y-3">
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4" />
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
-                </div>
-              </div>
-            </div>
+            <ListItemSkeleton />
           ) : (
             currentLocation && (
               <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
@@ -445,6 +492,22 @@ const Dashboard: React.FC = () => {
             </p>
           </div>
         </motion.section>
+
+        {/* Nearby Users - Discovering skeleton */}
+        {isDiscovering && nearbyUsers.length === 0 && (
+          <motion.section className="mb-8" {...fadeInUp} transition={{ delay: 0.4 }}>
+            <div className="flex items-center gap-3 mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                여행 메이트 탐색 중...
+              </h2>
+            </div>
+            <SkeletonList
+              count={4}
+              skeleton={<MatchCardSkeleton />}
+              className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+            />
+          </motion.section>
+        )}
 
         {/* Nearby Users */}
         {nearbyUsers.length > 0 ? (

@@ -56,7 +56,7 @@ const MatchRequestList: React.FC<MatchRequestListProps> = ({
 
   return (
     <div className="match-request-list">
-      {requests.map((req) => {
+      {requests.map(req => {
         const displayUser = type === 'received' ? req.requester : req.receiver;
 
         return (
@@ -73,9 +73,7 @@ const MatchRequestList: React.FC<MatchRequestListProps> = ({
             <div className="match-request-meta">
               <span>{formatDate(req.createdAt)}</span>
               {req.expiresAt && (
-                <span className="match-request-expires">
-                  만료: {formatDate(req.expiresAt)}
-                </span>
+                <span className="match-request-expires">만료: {formatDate(req.expiresAt)}</span>
               )}
             </div>
 
