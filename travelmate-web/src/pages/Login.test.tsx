@@ -103,12 +103,7 @@ describe('Login', () => {
     // Kakao button is always rendered
     expect(screen.getByText('카카오로 계속하기')).toBeInTheDocument();
     // Google and Naver buttons are conditionally rendered based on env vars;
-    // they may not appear in test environments without those vars set.
-    const googleBtn = screen.queryByText('Google로 계속하기');
-    const naverBtn = screen.queryByText('네이버로 계속하기');
-    // If rendered, they should be in the document
-    if (googleBtn) expect(googleBtn).toBeInTheDocument();
-    if (naverBtn) expect(naverBtn).toBeInTheDocument();
+    // they may not appear in test environments — verified via snapshot/separate env test
   });
 
   test('renders register link', () => {
