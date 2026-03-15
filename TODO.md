@@ -72,10 +72,10 @@
 - [ ] 완전한 오프라인 모드 (데이터 캐싱)
 
 ### 3.3 UX 개선
-- [ ] 스켈레톤 로딩
-- [ ] 풀투리프레시
-- [ ] 무한 스크롤 최적화
-- [ ] 앱 딥링크 지원
+- [x] 스켈레톤 로딩 ✅ 2026-03-15
+- [x] 풀투리프레시 (기존 구현)
+- [x] 무한 스크롤 최적화 (CollectionScreen 기존 구현)
+- [x] 앱 딥링크 지원 ✅ 2026-03-15
 
 ---
 
@@ -149,6 +149,7 @@
 ## 기술 부채 (Tech Debt)
 
 ### 백엔드
+- [x] 단위 테스트 커버리지 확대 (59개 테스트 추가: AuctionService, CollectionSetService, TravelReviewService, UserBlockService, TrustScoreService) ✅ 2026-03-15
 - [ ] 단위 테스트 커버리지 80% 이상
 - [ ] API 응답 시간 최적화 (P95 < 200ms)
 - [ ] 데이터베이스 인덱스 최적화
