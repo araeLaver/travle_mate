@@ -411,7 +411,7 @@ const MintingModal: React.FC<MintingModalProps> = ({
                 )}
               </button>
             ) : status === 'MINTED' ? (
-              <button className="action-btn secondary" onClick={onClose}>
+              <button className="action-btn secondary" onClick={onClose} data-testid="minting-close-action-btn">
                 닫기
               </button>
             ) : null}
