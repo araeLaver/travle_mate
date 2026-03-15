@@ -386,6 +386,7 @@ const Login: React.FC = () => {
                     checked={rememberMe}
                     onChange={e => setRememberMe(e.target.checked)}
                     className="sr-only peer"
+                    aria-label="로그인 상태 유지"
                   />
                   <div className="w-5 h-5 bg-gray-100 dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-md peer-checked:bg-violet-500 peer-checked:border-violet-500 transition-all">
                     <svg
