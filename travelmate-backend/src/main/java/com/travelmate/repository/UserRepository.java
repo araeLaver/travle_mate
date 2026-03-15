@@ -44,6 +44,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
                                 @Param("longitude") Double longitude,
                                 @Param("radiusKm") Double radiusKm);
 
+    @Query("SELECT u FROM User u WHERE u.isMatchingEnabled = true AND u.isActive = true " +
+           "AND u.id NOT IN :excludeIds " +
+           "ORDER BY u.lastActivityAt DESC NULLS LAST")
+    List<User> findMatchingCandidates(@Param("excludeIds") List<Long> excludeIds, Pageable pageable);
+
     // Admin Dashboard methods
     long countByCreatedAtAfter(LocalDateTime dateTime);
 

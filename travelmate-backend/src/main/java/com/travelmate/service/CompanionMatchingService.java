@@ -23,6 +23,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.data.domain.PageRequest;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -399,18 +401,14 @@ public class CompanionMatchingService {
                     .collect(Collectors.toList());
         }
 
-        // 위치 비활성화 시 매칭 활성화된 전체 사용자 중 선택
-        return userRepository.findAll().stream()
-                .filter(u -> Boolean.TRUE.equals(u.getIsMatchingEnabled()))
-                .filter(u -> Boolean.TRUE.equals(u.getIsActive()))
-                .filter(u -> !excludeIds.contains(u.getId()))
-                .limit(100)
-                .collect(Collectors.toList());
+        // 위치 비활성화 시 매칭 활성화된 활성 사용자 중 최근 활동 순으로 선택
+        return userRepository.findMatchingCandidates(excludeIds, PageRequest.of(0, 100));
     }
 
     // ===== 매칭 이유 생성 =====
 
-    private List<String> generateMatchReasons(MatchScoreBreakdown breakdown, User candidate) {
+    private List<String> generateMatchReasons(MatchScoreBreakdown breakdown, User candidate,
+                                                double interestBonus) {
         List<String> reasons = new ArrayList<>();
 
         if (breakdown.getTravelStyleScore().compareTo(BigDecimal.valueOf(25)) >= 0) {
@@ -428,6 +426,13 @@ public class CompanionMatchingService {
         if (breakdown.getRatingScore().compareTo(BigDecimal.valueOf(7)) >= 0) {
             reasons.add("높은 사용자 평점을 가지고 있어요!");
         }
+        if (interestBonus >= 2.0) {
+            reasons.add("관심사가 비슷해요!");
+        }
+        if (candidate.getLastActivityAt() != null &&
+                ChronoUnit.HOURS.between(candidate.getLastActivityAt(), LocalDateTime.now()) <= 24) {
+            reasons.add("최근에 활동한 사용자예요!");
+        }
 
         if (reasons.isEmpty()) {
             reasons.add("새로운 여행 동반자를 만나보세요!");
@@ -443,12 +448,52 @@ public class CompanionMatchingService {
         MatchScoreBreakdown breakdown = calculateScoreBreakdown(currentUser, candidate, myItineraries);
         BigDecimal totalScore = calculateTotalFromBreakdown(breakdown);
 
+        // 관심사 겹침 보너스 (최대 +5점)
+        double interestBonus = calculateInterestBonus(currentUser.getInterests(), candidate.getInterests());
+        // 최근 활동 보너스 (최대 +3점)
+        double recencyBonus = calculateRecencyBonus(candidate.getLastActivityAt());
+
+        totalScore = totalScore
+                .add(BigDecimal.valueOf(interestBonus))
+                .add(BigDecimal.valueOf(recencyBonus))
+                .setScale(2, RoundingMode.HALF_UP);
+
+        List<String> reasons = generateMatchReasons(breakdown, candidate, interestBonus);
+
         return MatchRecommendation.builder()
                 .user(toUserSummary(candidate))
                 .totalScore(totalScore)
                 .scoreBreakdown(breakdown)
-                .matchReasons(generateMatchReasons(breakdown, candidate))
+                .matchReasons(reasons)
                 .build();
+    }
+
+    private double calculateInterestBonus(List<String> interests1, List<String> interests2) {
+        if (interests1 == null || interests1.isEmpty() || interests2 == null || interests2.isEmpty()) {
+            return 0;
+        }
+        Set<String> set1 = new HashSet<>(interests1);
+        Set<String> set2 = new HashSet<>(interests2);
+        Set<String> intersection = new HashSet<>(set1);
+        intersection.retainAll(set2);
+        if (intersection.isEmpty()) {
+            return 0;
+        }
+        Set<String> union = new HashSet<>(set1);
+        union.addAll(set2);
+        double jaccard = (double) intersection.size() / union.size();
+        return Math.min(5.0, jaccard * 5.0);
+    }
+
+    private double calculateRecencyBonus(LocalDateTime lastActivityAt) {
+        if (lastActivityAt == null) {
+            return 0;
+        }
+        long hoursAgo = ChronoUnit.HOURS.between(lastActivityAt, LocalDateTime.now());
+        if (hoursAgo <= 1) return 3.0;
+        if (hoursAgo <= 24) return 2.0;
+        if (hoursAgo <= 72) return 1.0;
+        return 0;
     }
 
     private MatchUserSummary toUserSummary(User user) {
