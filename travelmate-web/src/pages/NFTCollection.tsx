@@ -312,6 +312,7 @@ const NFTCollection: React.FC = () => {
                         variants={fadeInUp}
                         transition={{ delay: index * 0.05 }}
                         className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-700/50 overflow-hidden hover:shadow-xl transition-shadow"
+                        data-testid="nft-card"
                       >
                         {/* NFT Image */}
                         <div className="relative aspect-square">

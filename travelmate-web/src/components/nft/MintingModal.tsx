@@ -209,14 +209,23 @@ const MintingModal: React.FC<MintingModalProps> = ({
     }
   };
 
+  // ESC 키로 모달 닫기
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   const status = mintStatus?.mintStatus || currentMintStatus;
 
   return (
-    <div className="minting-modal-overlay" onClick={onClose} data-testid="minting-modal-overlay">
+    <div className="minting-modal-overlay" onClick={onClose} data-testid="minting-modal-overlay" role="dialog" aria-modal="true" aria-label="NFT 민팅">
       <div className="minting-modal" onClick={e => e.stopPropagation()} data-testid="minting-modal">
         <div className="minting-modal-header">
           <h2>NFT 민팅</h2>
-          <button className="close-btn" onClick={onClose} data-testid="minting-close-btn">
+          <button className="close-btn" onClick={onClose} data-testid="minting-close-btn" aria-label="닫기">
             <CloseIcon />
           </button>
         </div>

@@ -85,6 +85,15 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
   onSubmit,
   onClose,
 }) => {
+  // ESC 키로 모달 닫기
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   const [punctualityScore, setPunctualityScore] = useState(0);
   const [mannersScore, setMannersScore] = useState(0);
   const [communicationScore, setCommunicationScore] = useState(0);
@@ -125,7 +134,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
   };
 
   return (
-    <div className="tr-overlay" onClick={onClose} data-testid="travel-review-overlay">
+    <div className="tr-overlay" onClick={onClose} data-testid="travel-review-overlay" role="dialog" aria-modal="true" aria-label="동행 평가 작성">
       <div
         className="tr-modal"
         onClick={e => e.stopPropagation()}

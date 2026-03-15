@@ -185,6 +185,16 @@ const NotificationCenter: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [page, setPage] = useState(0);
 
+  // ESC 키로 드롭다운 닫기
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsOpen(false);
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
+
   const { data: notifications, isLoading } = useNotifications(page, 20);
   const { data: unreadCount } = useUnreadCount();
   const markAsReadMutation = useMarkAsRead();
@@ -263,6 +273,7 @@ const NotificationCenter: React.FC = () => {
         aria-expanded={isOpen}
         aria-haspopup="dialog"
         aria-label={`알림 ${(unreadCount || 0) > 0 ? `(읽지 않은 알림 ${unreadCount}개)` : ''}`}
+        data-testid="notification-bell"
       >
         <span className="bell-icon" aria-hidden="true">
           <BellIcon />
@@ -287,6 +298,7 @@ const NotificationCenter: React.FC = () => {
             role="dialog"
             aria-label="알림 목록"
             aria-modal="true"
+            data-testid="notification-dropdown"
           >
             <div className="notification-header">
               <h3 id="notification-title">알림</h3>

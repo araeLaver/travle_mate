@@ -128,7 +128,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       </a>
 
       {/* 헤더 */}
-      <header className="header">
+      <header className="header" data-testid="navbar">
         <div className="header-content">
           <Link to="/dashboard" className="logo" aria-label="Fryndo 홈으로 이동">
             <span className="logo-icon" aria-hidden="true">
@@ -138,7 +138,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </Link>
           <div className="header-actions">
             {authService.isAuthenticated() ? (
-              <div className="user-actions">
+              <div className="user-actions" data-testid="user-menu">
                 <NotificationCenter />
                 <Link to="/settings/notifications" className="settings-link" aria-label="알림 설정">
                   <svg
@@ -157,10 +157,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </div>
             ) : (
               <div className="guest-actions">
-                <Link to="/login" className="auth-btn login">
+                <Link to="/login" className="auth-btn login" aria-label="로그인">
                   로그인
                 </Link>
-                <Link to="/register" className="auth-btn register">
+                <Link to="/register" className="auth-btn register" aria-label="회원가입">
                   회원가입
                 </Link>
               </div>

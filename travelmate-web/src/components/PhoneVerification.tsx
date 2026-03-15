@@ -37,8 +37,14 @@ const PhoneVerification: React.FC<PhoneVerificationProps> = ({ isOpen, onClose, 
       setCode(['', '', '', '', '', '']);
       setError('');
       setCountdown(0);
+      return;
     }
-  }, [isOpen]);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   const formatPhoneInput = (value: string) => {
     const digits = value.replace(/\D/g, '').slice(0, 11);
@@ -133,14 +139,14 @@ const PhoneVerification: React.FC<PhoneVerificationProps> = ({ isOpen, onClose, 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4" role="dialog" aria-modal="true" aria-label="휴대폰 본인 인증">
       <div className="w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-green-600 to-blue-600 px-6 py-4 flex items-center justify-between">
           <h2 className="text-lg font-bold text-white">
             {step === 'done' ? '인증 완료' : '휴대폰 본인 인증'}
           </h2>
-          <button onClick={onClose} className="text-white/80 hover:text-white text-xl">&times;</button>
+          <button onClick={onClose} className="text-white/80 hover:text-white text-xl" aria-label="닫기">&times;</button>
         </div>
 
         <div className="p-6">
@@ -155,6 +161,7 @@ const PhoneVerification: React.FC<PhoneVerificationProps> = ({ isOpen, onClose, 
                 value={phoneNumber}
                 onChange={e => setPhoneNumber(formatPhoneInput(e.target.value))}
                 placeholder="010-1234-5678"
+                aria-label="휴대폰 번호"
                 className="w-full px-4 py-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-lg text-center tracking-wider text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
                 autoFocus
               />
@@ -194,6 +201,7 @@ const PhoneVerification: React.FC<PhoneVerificationProps> = ({ isOpen, onClose, 
                     value={digit}
                     onChange={e => handleCodeChange(i, e.target.value)}
                     onKeyDown={e => handleCodeKeyDown(i, e)}
+                    aria-label={`인증 코드 ${i + 1}번째 자리`}
                     className="w-12 h-14 text-center text-2xl font-bold bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                   />
                 ))}
