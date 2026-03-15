@@ -22,6 +22,8 @@ import com.travelmate.entity.UserReview;
 import com.travelmate.entity.BetaInvite;
 import com.travelmate.entity.Report;
 import com.travelmate.repository.UserReviewRepository;
+import com.travelmate.repository.UserTrustScoreRepository;
+import com.travelmate.entity.UserTrustScore;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.Authentication;
 
@@ -38,7 +40,8 @@ public class UserService {
     private final EmailService emailService;
     private final ReportService reportService;
     private final BetaInviteService betaInviteService;
-    
+    private final UserTrustScoreRepository trustScoreRepository;
+
     public UserDto.Response registerUser(UserDto.RegisterRequest request) {
         // 베타 모드 체크
         if (betaInviteService.isBetaEnabled()) {
@@ -244,11 +247,25 @@ public class UserService {
             .reviewCount(user.getReviewCount())
             .isEmailVerified(user.getIsEmailVerified())
             .phoneVerified(user.getPhoneVerified())
+            .trustBadge(getTrustBadgeForUser(user.getId()))
+            .trustScore(getTrustScoreForUser(user.getId()))
             .lastActivityAt(user.getLastActivityAt())
             .createdAt(user.getCreatedAt())
             .build();
     }
-    
+
+    private String getTrustBadgeForUser(Long userId) {
+        return trustScoreRepository.findByUserId(userId)
+                .map(ts -> ts.getTrustBadge().name())
+                .orElse(UserTrustScore.TrustBadge.NEW.name());
+    }
+
+    private Integer getTrustScoreForUser(Long userId) {
+        return trustScoreRepository.findByUserId(userId)
+                .map(UserTrustScore::getTotalScore)
+                .orElse(50);
+    }
+
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getName() != null) {

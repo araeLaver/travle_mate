@@ -9,6 +9,8 @@ import com.travelmate.entity.UserGroupMembership;
 import com.travelmate.repository.TravelGroupRepository;
 import com.travelmate.repository.UserGroupMembershipRepository;
 import com.travelmate.repository.UserRepository;
+import com.travelmate.repository.UserTrustScoreRepository;
+import com.travelmate.entity.UserTrustScore;
 import com.travelmate.util.TravelStyleMatcher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +30,7 @@ public class RecommendationService {
     private final UserRepository userRepository;
     private final TravelGroupRepository travelGroupRepository;
     private final UserGroupMembershipRepository membershipRepository;
+    private final UserTrustScoreRepository trustScoreRepository;
 
     // 가중치 설정
     private static final double TRAVEL_STYLE_WEIGHT = 0.25;
@@ -105,6 +108,12 @@ public class RecommendationService {
             .reviewCount(user.getReviewCount())
             .isEmailVerified(user.getIsEmailVerified())
             .phoneVerified(user.getPhoneVerified())
+            .trustBadge(trustScoreRepository.findByUserId(user.getId())
+                    .map(ts -> ts.getTrustBadge().name())
+                    .orElse(UserTrustScore.TrustBadge.NEW.name()))
+            .trustScore(trustScoreRepository.findByUserId(user.getId())
+                    .map(UserTrustScore::getTotalScore)
+                    .orElse(50))
             .lastActivityAt(user.getLastActivityAt())
             .createdAt(user.getCreatedAt())
             .build();

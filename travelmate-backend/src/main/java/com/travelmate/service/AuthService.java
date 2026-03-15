@@ -7,6 +7,8 @@ import com.travelmate.entity.User;
 import com.travelmate.exception.UserException;
 import com.travelmate.repository.RefreshTokenRepository;
 import com.travelmate.repository.UserRepository;
+import com.travelmate.repository.UserTrustScoreRepository;
+import com.travelmate.entity.UserTrustScore;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,6 +37,7 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+    private final UserTrustScoreRepository trustScoreRepository;
     private final RestTemplate restTemplate = new RestTemplate();
 
     @Value("${app.jwt.expiration}")
@@ -446,6 +449,12 @@ public class AuthService {
             .reviewCount(user.getReviewCount())
             .isEmailVerified(user.getIsEmailVerified())
             .phoneVerified(user.getPhoneVerified())
+            .trustBadge(trustScoreRepository.findByUserId(user.getId())
+                    .map(ts -> ts.getTrustBadge().name())
+                    .orElse(UserTrustScore.TrustBadge.NEW.name()))
+            .trustScore(trustScoreRepository.findByUserId(user.getId())
+                    .map(UserTrustScore::getTotalScore)
+                    .orElse(50))
             .lastActivityAt(user.getLastActivityAt())
             .createdAt(user.getCreatedAt())
             .build();

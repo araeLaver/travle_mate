@@ -84,6 +84,8 @@ public class UserDto {
         private Integer reviewCount;
         private Boolean isEmailVerified;
         private Boolean phoneVerified;
+        private String trustBadge;
+        private Integer trustScore;
         private LocalDateTime lastActivityAt;
         private LocalDateTime createdAt;
     }
