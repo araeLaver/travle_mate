@@ -11,9 +11,12 @@ describe('Notifications', () => {
       },
     }).as('getMe');
 
-    cy.window().then(win => {
-      win.localStorage.setItem('accessToken', 'mock-access-token');
-      win.localStorage.setItem('refreshToken', 'mock-refresh-token');
+    // Set auth tokens via onBeforeLoad so localStorage persists across navigation
+    cy.visit('/', {
+      onBeforeLoad(win) {
+        win.localStorage.setItem('accessToken', 'mock-access-token');
+        win.localStorage.setItem('refreshToken', 'mock-refresh-token');
+      },
     });
   });
 

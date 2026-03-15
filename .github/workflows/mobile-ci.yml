@@ -35,7 +35,7 @@ jobs:
           cache-dependency-path: travelmate-mobile/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps --legacy-peer-deps
 
       - name: Run ESLint
         run: npm run lint
@@ -59,7 +59,7 @@ jobs:
           cache-dependency-path: travelmate-mobile/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps --legacy-peer-deps
 
       - name: Run unit tests
         run: npm test -- --coverage --watchAll=false
@@ -91,7 +91,7 @@ jobs:
         uses: android-actions/setup-android@v3
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Setup EAS
         uses: expo/expo-github-action@v8
@@ -125,7 +125,7 @@ jobs:
           cache-dependency-path: travelmate-mobile/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Setup EAS
         uses: expo/expo-github-action@v8
@@ -160,7 +160,7 @@ jobs:
           cache-dependency-path: travelmate-mobile/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Setup EAS
         uses: expo/expo-github-action@v8
@@ -190,7 +190,7 @@ jobs:
           cache-dependency-path: travelmate-mobile/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Setup EAS
         uses: expo/expo-github-action@v8
