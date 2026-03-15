@@ -139,14 +139,25 @@ const PhoneVerification: React.FC<PhoneVerificationProps> = ({ isOpen, onClose, 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4" role="dialog" aria-modal="true" aria-label="휴대폰 본인 인증">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label="휴대폰 본인 인증"
+    >
       <div className="w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-green-600 to-blue-600 px-6 py-4 flex items-center justify-between">
           <h2 className="text-lg font-bold text-white">
             {step === 'done' ? '인증 완료' : '휴대폰 본인 인증'}
           </h2>
-          <button onClick={onClose} className="text-white/80 hover:text-white text-xl" aria-label="닫기">&times;</button>
+          <button
+            onClick={onClose}
+            className="text-white/80 hover:text-white text-xl"
+            aria-label="닫기"
+          >
+            &times;
+          </button>
         </div>
 
         <div className="p-6">
@@ -194,7 +205,9 @@ const PhoneVerification: React.FC<PhoneVerificationProps> = ({ isOpen, onClose, 
                 {code.map((digit, i) => (
                   <input
                     key={i}
-                    ref={el => { codeRefs.current[i] = el; }}
+                    ref={el => {
+                      codeRefs.current[i] = el;
+                    }}
                     type="text"
                     inputMode="numeric"
                     maxLength={1}

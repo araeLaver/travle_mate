@@ -23,7 +23,8 @@ const PaymentFail: React.FC = () => {
   const navigate = useNavigate();
 
   const errorCode = searchParams.get('code') || 'UNKNOWN';
-  const errorMessage = searchParams.get('message') || ERROR_MESSAGES[errorCode] || '결제에 실패했습니다.';
+  const errorMessage =
+    searchParams.get('message') || ERROR_MESSAGES[errorCode] || '결제에 실패했습니다.';
   const orderId = searchParams.get('orderId');
 
   return (
@@ -41,9 +42,7 @@ const PaymentFail: React.FC = () => {
           </p>
         )}
 
-        <p className="text-xs text-gray-400 dark:text-gray-500 mb-6">
-          오류 코드: {errorCode}
-        </p>
+        <p className="text-xs text-gray-400 dark:text-gray-500 mb-6">오류 코드: {errorCode}</p>
 
         <div className="flex gap-3 justify-center">
           <button

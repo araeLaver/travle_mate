@@ -8,6 +8,7 @@ import com.travelmate.entity.UserReview;
 import com.travelmate.exception.UserException;
 import com.travelmate.repository.UserRepository;
 import com.travelmate.repository.UserReviewRepository;
+import com.travelmate.repository.UserTrustScoreRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -51,6 +52,9 @@ class UserServiceTest {
 
     @Mock
     private BetaInviteService betaInviteService;
+
+    @Mock
+    private UserTrustScoreRepository trustScoreRepository;
 
     @InjectMocks
     private UserService userService;

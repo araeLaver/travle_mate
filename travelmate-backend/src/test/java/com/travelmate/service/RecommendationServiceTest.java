@@ -9,6 +9,7 @@ import com.travelmate.entity.UserGroupMembership;
 import com.travelmate.repository.TravelGroupRepository;
 import com.travelmate.repository.UserGroupMembershipRepository;
 import com.travelmate.repository.UserRepository;
+import com.travelmate.repository.UserTrustScoreRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -37,6 +38,9 @@ class RecommendationServiceTest {
 
     @Mock
     private UserGroupMembershipRepository membershipRepository;
+
+    @Mock
+    private UserTrustScoreRepository trustScoreRepository;
 
     @InjectMocks
     private RecommendationService recommendationService;

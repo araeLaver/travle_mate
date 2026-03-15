@@ -90,7 +90,9 @@ const PaymentSuccess: React.FC = () => {
           <span className="text-4xl">&#10003;</span>
         </div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">결제 완료</h1>
-        <p className="text-gray-500 dark:text-gray-400 mb-6">{result?.message || '결제가 성공적으로 완료되었습니다.'}</p>
+        <p className="text-gray-500 dark:text-gray-400 mb-6">
+          {result?.message || '결제가 성공적으로 완료되었습니다.'}
+        </p>
 
         {result && (
           <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 mb-6 text-left space-y-2">

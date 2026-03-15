@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import MintingModal from './MintingModal';
 import { mintingService } from '../../services/mintingService';
 import * as useWalletHook from '../../hooks/useWallet';
@@ -369,7 +369,7 @@ describe('MintingModal', () => {
     render(<MintingModal {...defaultProps} currentMintStatus="MINTED" />);
 
     await waitFor(() => {
-      const closeActionBtn = screen.getByRole('button', { name: '닫기' });
+      const closeActionBtn = screen.getByTestId('minting-close-action-btn');
       expect(closeActionBtn).toHaveClass('action-btn');
     });
   });
@@ -421,11 +421,11 @@ describe('MintingModal', () => {
 
     render(<MintingModal {...defaultProps} />);
 
-    fireEvent.click(screen.getByText('NFT 민팅하기'));
-
-    await waitFor(() => {
-      expect(screen.getByText('네트워크 오류')).toBeInTheDocument();
+    await act(async () => {
+      fireEvent.click(screen.getByText('NFT 민팅하기'));
     });
+
+    expect(screen.getByText('네트워크 오류')).toBeInTheDocument();
   });
 
   test('지갑 연결 실패 시 에러 메시지 표시', async () => {
@@ -440,10 +440,11 @@ describe('MintingModal', () => {
     render(<MintingModal {...defaultProps} />);
 
     const connectBtn = screen.getByTestId('connect-wallet-btn');
-    fireEvent.click(connectBtn);
 
-    await waitFor(() => {
-      expect(screen.getByText('MetaMask를 찾을 수 없습니다.')).toBeInTheDocument();
+    await act(async () => {
+      fireEvent.click(connectBtn);
     });
+
+    expect(screen.getByText('MetaMask를 찾을 수 없습니다.')).toBeInTheDocument();
   });
 });

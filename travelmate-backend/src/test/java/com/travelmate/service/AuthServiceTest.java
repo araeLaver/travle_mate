@@ -7,6 +7,7 @@ import com.travelmate.entity.User;
 import com.travelmate.exception.UserException;
 import com.travelmate.repository.RefreshTokenRepository;
 import com.travelmate.repository.UserRepository;
+import com.travelmate.repository.UserTrustScoreRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -42,6 +43,9 @@ class AuthServiceTest {
 
     @Mock
     private JwtService jwtService;
+
+    @Mock
+    private UserTrustScoreRepository trustScoreRepository;
 
     @InjectMocks
     private AuthService authService;

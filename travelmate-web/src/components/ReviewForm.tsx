@@ -134,7 +134,14 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
   };
 
   return (
-    <div className="tr-overlay" onClick={onClose} data-testid="travel-review-overlay" role="dialog" aria-modal="true" aria-label="동행 평가 작성">
+    <div
+      className="tr-overlay"
+      onClick={onClose}
+      data-testid="travel-review-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label="동행 평가 작성"
+    >
       <div
         className="tr-modal"
         onClick={e => e.stopPropagation()}
