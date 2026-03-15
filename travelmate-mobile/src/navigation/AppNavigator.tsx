@@ -23,6 +23,10 @@ import ChatRoomScreen from '../screens/ChatRoomScreen';
 import CreateGroupScreen from '../screens/CreateGroupScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
 import PremiumScreen from '../screens/PremiumScreen';
+import UserSearchScreen from '../screens/UserSearchScreen';
+import UserProfileScreen from '../screens/UserProfileScreen';
+import ReviewScreen from '../screens/ReviewScreen';
+import MatchingScreen from '../screens/MatchingScreen';
 
 // Contexts
 import { useNotifications } from '../contexts/NotificationContext';
@@ -38,6 +42,10 @@ export type RootStackParamList = {
   CreateGroup: undefined;
   Notifications: undefined;
   Premium: undefined;
+  UserSearch: undefined;
+  UserProfile: { userId: number };
+  Review: { matchId: number; targetUserNickname: string };
+  Matching: undefined;
 };
 
 export type AuthStackParamList = {
@@ -211,6 +219,46 @@ const AppNavigator = () => {
               options={{
                 headerShown: true,
                 headerTitle: '프리미엄',
+                headerBackTitle: '뒤로',
+                headerTintColor: '#3B82F6',
+              }}
+            />
+            <Stack.Screen
+              name="UserSearch"
+              component={UserSearchScreen}
+              options={{
+                headerShown: true,
+                headerTitle: '동행자 찾기',
+                headerBackTitle: '뒤로',
+                headerTintColor: '#3B82F6',
+              }}
+            />
+            <Stack.Screen
+              name="UserProfile"
+              component={UserProfileScreen}
+              options={{
+                headerShown: true,
+                headerTitle: '프로필',
+                headerBackTitle: '뒤로',
+                headerTintColor: '#3B82F6',
+              }}
+            />
+            <Stack.Screen
+              name="Review"
+              component={ReviewScreen}
+              options={{
+                headerShown: true,
+                headerTitle: '리뷰 작성',
+                headerBackTitle: '뒤로',
+                headerTintColor: '#3B82F6',
+              }}
+            />
+            <Stack.Screen
+              name="Matching"
+              component={MatchingScreen}
+              options={{
+                headerShown: true,
+                headerTitle: '매칭 관리',
                 headerBackTitle: '뒤로',
                 headerTintColor: '#3B82F6',
               }}

@@ -205,6 +205,26 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
           <TouchableOpacity
             style={styles.actionButton}
+            onPress={() => navigation.navigate('UserSearch')}
+          >
+            <View style={[styles.actionIcon, { backgroundColor: '#E0E7FF' }]}>
+              <Text style={styles.actionEmoji}>🔍</Text>
+            </View>
+            <Text style={styles.actionText}>동행자 찾기</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => navigation.navigate('Matching')}
+          >
+            <View style={[styles.actionIcon, { backgroundColor: '#FCE7F3' }]}>
+              <Text style={styles.actionEmoji}>🤝</Text>
+            </View>
+            <Text style={styles.actionText}>매칭 관리</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.actionButton}
             onPress={() => navigation.navigate('Settings')}
           >
             <View style={[styles.actionIcon, { backgroundColor: '#E5E7EB' }]}>
