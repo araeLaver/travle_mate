@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import com.travelmate.entity.UserReview;
+import com.travelmate.entity.BetaInvite;
 import com.travelmate.entity.Report;
 import com.travelmate.repository.UserReviewRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -29,23 +30,35 @@ import org.springframework.security.core.Authentication;
 @Transactional
 @Slf4j
 public class UserService {
-    
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final UserReviewRepository userReviewRepository;
     private final EmailService emailService;
     private final ReportService reportService;
+    private final BetaInviteService betaInviteService;
     
     public UserDto.Response registerUser(UserDto.RegisterRequest request) {
+        // 베타 모드 체크
+        if (betaInviteService.isBetaEnabled()) {
+            if (request.getInviteCode() == null || request.getInviteCode().isBlank()) {
+                throw new UserException("베타 기간 중에는 초대 코드가 필요합니다.");
+            }
+            BetaInvite invite = betaInviteService.validateInviteCode(request.getInviteCode());
+            if (invite == null) {
+                throw new UserException("유효하지 않거나 만료된 초대 코드입니다.");
+            }
+        }
+
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new UserException("이미 존재하는 이메일입니다.");
         }
-        
+
         if (userRepository.existsByNickname(request.getNickname())) {
             throw new UserException("이미 존재하는 닉네임입니다.");
         }
-        
+
         User user = new User();
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -59,6 +72,11 @@ public class UserService {
         
         User savedUser = userRepository.save(user);
         log.info("새로운 사용자 등록: {}", savedUser.getEmail());
+
+        // 베타 초대 코드 사용 처리
+        if (betaInviteService.isBetaEnabled() && request.getInviteCode() != null) {
+            betaInviteService.consumeInvite(request.getInviteCode(), savedUser.getId());
+        }
 
         // 이메일 인증 발송
         emailService.sendVerificationEmail(savedUser.getEmail(), savedUser.getFullName());

@@ -54,6 +54,7 @@ public class SecurityConfig {
                 .requestMatchers("/users/register", "/users/login").permitAll()
                 .requestMatchers("/users/check-email", "/users/check-nickname").permitAll() // 중복체크 공개
                 .requestMatchers("/users/verify-email", "/users/request-password-reset", "/users/reset-password").permitAll() // 이메일 인증 및 비밀번호 재설정
+                .requestMatchers("/invite/**").permitAll() // 베타 초대 코드 검증
                 .requestMatchers("/auth/login", "/auth/refresh", "/auth/oauth/login").permitAll() // 인증 API
                 .requestMatchers("/location/**").permitAll() // 위치 서비스 공개
                 .requestMatchers("/h2-console/**").permitAll()

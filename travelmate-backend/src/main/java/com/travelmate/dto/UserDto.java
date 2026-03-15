@@ -33,8 +33,10 @@ public class UserDto {
         private String phoneNumber;
 
         private User.TravelStyle travelStyle;
+
+        private String inviteCode;
     }
-    
+
     @Data
     public static class LoginRequest {
         @Email(message = "올바른 이메일 형식을 입력해주세요")
