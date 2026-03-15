@@ -36,10 +36,15 @@ public enum ErrorCode {
     NOT_GROUP_MEMBER("G3004", "그룹 멤버가 아닙니다", HttpStatus.FORBIDDEN),
     NOT_GROUP_ADMIN("G3005", "그룹 관리자 권한이 필요합니다", HttpStatus.FORBIDDEN),
 
+    // 매칭 관련 에러 (3500-3999)
+    NOT_MATCHED_PAIR("M3501", "매칭된 상대가 아닙니다", HttpStatus.BAD_REQUEST),
+
     // 채팅 관련 에러 (4000-4999)
     CHAT_ROOM_NOT_FOUND("CH4001", "채팅방을 찾을 수 없습니다", HttpStatus.NOT_FOUND),
     NOT_CHAT_PARTICIPANT("CH4002", "채팅 참여자가 아닙니다", HttpStatus.FORBIDDEN),
     MESSAGE_SEND_FAILED("CH4003", "메시지 전송에 실패했습니다", HttpStatus.INTERNAL_SERVER_ERROR),
+    CONVERSATION_NOT_FOUND("CH4004", "대화를 찾을 수 없습니다", HttpStatus.NOT_FOUND),
+    NOT_CONVERSATION_PARTICIPANT("CH4005", "대화 참여자가 아닙니다", HttpStatus.FORBIDDEN),
 
     // NFT/블록체인 관련 에러 (5000-5999)
     LOCATION_NOT_FOUND("N5001", "수집 가능한 위치를 찾을 수 없습니다", HttpStatus.NOT_FOUND),
