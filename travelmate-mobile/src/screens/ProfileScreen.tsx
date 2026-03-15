@@ -20,6 +20,7 @@ import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { RootStackParamList, MainTabParamList } from '../navigation/AppNavigator';
 import { useAuth } from '../contexts/AuthContext';
 import { takePhoto, pickImage, showImageSourcePicker } from '../services/cameraService';
+import apiClient from '../services/apiClient';
 
 type ProfileScreenNavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<MainTabParamList, 'Profile'>,
@@ -51,10 +52,12 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
   const uploadProfileImage = async (uri: string) => {
     setUploadingPhoto(true);
     try {
-      // TODO: Upload to backend API when ready
-      // const formData = new FormData();
-      // formData.append('image', { uri, type: 'image/jpeg', name: 'profile.jpg' } as any);
-      // await apiClient.put('/users/me/profile-image', formData);
+      const fileName = `profile_${Date.now()}.jpg`;
+      await apiClient.uploadFile('/files/upload/profile', {
+        uri,
+        name: fileName,
+        type: 'image/jpeg',
+      });
       await refreshUser();
       Alert.alert('완료', '프로필 사진이 변경되었습니다.');
     } catch (error) {
