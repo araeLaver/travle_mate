@@ -26,7 +26,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.travelmate.app",
       "buildNumber": "1",
-      "usesAppleSignIn": false,
+      "usesAppleSignIn": true,
       "associatedDomains": [
         "applinks:travelmate.app"
       ],
@@ -113,6 +113,7 @@
           ]
         }
       ],
+      "expo-apple-authentication",
       "expo-in-app-purchases",
       [
         "expo-camera",

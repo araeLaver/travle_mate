@@ -4,6 +4,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authService, User, LoginRequest, RegisterRequest } from '../services/authService';
+import { socialAuthService, SocialAuthResponse } from '../services/socialAuthService';
 
 interface AuthContextType {
   user: User | null;
@@ -11,6 +12,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (request: LoginRequest) => Promise<void>;
   register: (request: RegisterRequest) => Promise<void>;
+  loginWithGoogle: (idToken?: string, accessToken?: string) => Promise<void>;
+  loginWithApple: () => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -61,6 +64,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(response.user);
   };
 
+  const loginWithGoogle = async (idToken?: string, accessToken?: string) => {
+    let response: SocialAuthResponse;
+    if (idToken) {
+      response = await socialAuthService.authenticateWithGoogle(idToken);
+    } else if (accessToken) {
+      response = await socialAuthService.handleGoogleAccessToken(accessToken);
+    } else {
+      throw new Error('Google 인증 토큰이 없습니다.');
+    }
+    setUser(response.user);
+  };
+
+  const loginWithApple = async () => {
+    const response = await socialAuthService.signInWithApple();
+    setUser(response.user);
+  };
+
   const logout = async () => {
     await authService.logout();
     setUser(null);
@@ -83,6 +103,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         isAuthenticated: !!user,
         login,
         register,
+        loginWithGoogle,
+        loginWithApple,
         logout,
         refreshUser,
       }}

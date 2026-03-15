@@ -2,7 +2,7 @@
  * Login Screen for TravelMate Mobile
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -14,9 +14,14 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
+import * as Google from 'expo-auth-session/providers/google';
+import * as WebBrowser from 'expo-web-browser';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '../navigation/AppNavigator';
 import { useAuth } from '../contexts/AuthContext';
+import { socialAuthService } from '../services/socialAuthService';
+
+WebBrowser.maybeCompleteAuthSession();
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
 
@@ -25,10 +30,50 @@ interface Props {
 }
 
 const LoginScreen: React.FC<Props> = ({ navigation }) => {
-  const { login } = useAuth();
+  const { login, loginWithGoogle, loginWithApple } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isSocialLoading, setIsSocialLoading] = useState(false);
+  const [isAppleAvailable, setIsAppleAvailable] = useState(false);
+
+  const googleConfig = socialAuthService.getGoogleAuthConfig();
+  const [request, response, promptAsync] = Google.useAuthRequest(googleConfig);
+
+  useEffect(() => {
+    socialAuthService.isAppleSignInAvailable().then(setIsAppleAvailable);
+  }, []);
+
+  useEffect(() => {
+    if (response?.type === 'success') {
+      handleGoogleResponse(response.authentication);
+    }
+  }, [response]);
+
+  const handleGoogleResponse = async (authentication: any) => {
+    if (!authentication) return;
+    setIsSocialLoading(true);
+    try {
+      await loginWithGoogle(authentication.idToken, authentication.accessToken);
+    } catch (error: any) {
+      Alert.alert('Google 로그인 실패', error.message || 'Google 계정으로 로그인할 수 없습니다.');
+    } finally {
+      setIsSocialLoading(false);
+    }
+  };
+
+  const handleAppleLogin = async () => {
+    setIsSocialLoading(true);
+    try {
+      await loginWithApple();
+    } catch (error: any) {
+      if (error.code !== 'ERR_CANCELED') {
+        Alert.alert('Apple 로그인 실패', error.message || 'Apple 계정으로 로그인할 수 없습니다.');
+      }
+    } finally {
+      setIsSocialLoading(false);
+    }
+  };
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -46,6 +91,8 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
+  const anyLoading = isLoading || isSocialLoading;
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -56,6 +103,40 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
         <View style={styles.logoContainer}>
           <Text style={styles.logo}>Fryndo</Text>
           <Text style={styles.tagline}>AI 여행 동반자</Text>
+        </View>
+
+        {/* Social Login */}
+        <View style={styles.socialContainer}>
+          <TouchableOpacity
+            style={[styles.socialButton, styles.googleButton]}
+            onPress={() => promptAsync()}
+            disabled={!request || anyLoading}
+          >
+            <Text style={styles.socialIcon}>G</Text>
+            <Text style={styles.socialButtonText}>Google로 계속하기</Text>
+          </TouchableOpacity>
+
+          {isAppleAvailable && (
+            <TouchableOpacity
+              style={[styles.socialButton, styles.appleButton]}
+              onPress={handleAppleLogin}
+              disabled={anyLoading}
+            >
+              <Text style={[styles.socialIcon, styles.appleIcon]}>{'\uF8FF'}</Text>
+              <Text style={[styles.socialButtonText, styles.appleButtonText]}>Apple로 계속하기</Text>
+            </TouchableOpacity>
+          )}
+
+          {isSocialLoading && (
+            <ActivityIndicator style={styles.socialLoading} color="#3B82F6" />
+          )}
+        </View>
+
+        {/* Divider */}
+        <View style={styles.divider}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>또는</Text>
+          <View style={styles.dividerLine} />
         </View>
 
         {/* Form */}
@@ -81,9 +162,9 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
           />
 
           <TouchableOpacity
-            style={[styles.button, isLoading && styles.buttonDisabled]}
+            style={[styles.button, anyLoading && styles.buttonDisabled]}
             onPress={handleLogin}
-            disabled={isLoading}
+            disabled={anyLoading}
           >
             {isLoading ? (
               <ActivityIndicator color="#fff" />
@@ -117,7 +198,7 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     alignItems: 'center',
-    marginBottom: 48,
+    marginBottom: 36,
   },
   logo: {
     fontSize: 36,
@@ -128,6 +209,61 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#6B7280',
     marginTop: 8,
+  },
+  socialContainer: {
+    gap: 12,
+    marginBottom: 24,
+  },
+  socialButton: {
+    height: 50,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+  },
+  googleButton: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  appleButton: {
+    backgroundColor: '#000',
+  },
+  socialIcon: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#4285F4',
+  },
+  appleIcon: {
+    color: '#fff',
+    fontSize: 20,
+  },
+  socialButtonText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#374151',
+  },
+  appleButtonText: {
+    color: '#fff',
+  },
+  socialLoading: {
+    marginTop: 4,
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#E5E7EB',
+  },
+  dividerText: {
+    paddingHorizontal: 16,
+    fontSize: 13,
+    color: '#9CA3AF',
   },
   form: {
     gap: 16,
