@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import MintingModal from './MintingModal';
 import { mintingService } from '../../services/mintingService';
 import * as useWalletHook from '../../hooks/useWallet';
@@ -421,11 +421,9 @@ describe('MintingModal', () => {
 
     render(<MintingModal {...defaultProps} />);
 
-    await act(async () => {
-      fireEvent.click(screen.getByText('NFT 민팅하기'));
-    });
+    fireEvent.click(screen.getByText('NFT 민팅하기'));
 
-    expect(screen.getByText('네트워크 오류')).toBeInTheDocument();
+    expect(await screen.findByText('네트워크 오류')).toBeInTheDocument();
   });
 
   test('지갑 연결 실패 시 에러 메시지 표시', async () => {
@@ -441,10 +439,8 @@ describe('MintingModal', () => {
 
     const connectBtn = screen.getByTestId('connect-wallet-btn');
 
-    await act(async () => {
-      fireEvent.click(connectBtn);
-    });
+    fireEvent.click(connectBtn);
 
-    expect(screen.getByText('MetaMask를 찾을 수 없습니다.')).toBeInTheDocument();
+    expect(await screen.findByText('MetaMask를 찾을 수 없습니다.')).toBeInTheDocument();
   });
 });
