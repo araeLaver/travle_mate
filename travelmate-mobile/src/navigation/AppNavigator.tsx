@@ -3,11 +3,12 @@
  */
 
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, NavigationContainerRef } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, Text, StyleSheet } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
+import { linkingConfig, setNavigationRef } from '../services/deepLinkService';
 
 // Screens
 import LoginScreen from '../screens/LoginScreen';
@@ -149,6 +150,7 @@ const MainTabNavigator = () => {
 // App Navigator
 const AppNavigator = () => {
   const { isAuthenticated, isLoading } = useAuth();
+  const navigationRef = React.useRef<NavigationContainerRef<RootStackParamList>>(null);
 
   if (isLoading) {
     return (
@@ -159,7 +161,11 @@ const AppNavigator = () => {
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer
+      ref={navigationRef}
+      linking={isAuthenticated ? linkingConfig : undefined}
+      onReady={() => setNavigationRef(navigationRef.current)}
+    >
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {isAuthenticated ? (
           <>

@@ -19,6 +19,7 @@ import {
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { chatService, TravelGroup } from '../services/chatService';
+import { ListSkeleton } from '../components/SkeletonLoader';
 
 type GroupsScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Groups'>;
 
@@ -195,7 +196,7 @@ const GroupsScreen: React.FC<Props> = ({ navigation }) => {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#3B82F6" />
+        <ListSkeleton count={5} />
       </View>
     );
   }

@@ -20,6 +20,7 @@ import { CompositeNavigationProp } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { RootStackParamList, MainTabParamList } from '../navigation/AppNavigator';
 import { nftService, NftCollection } from '../services/nftService';
+import { ListSkeleton } from '../components/SkeletonLoader';
 
 type CollectionScreenNavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<MainTabParamList, 'Collection'>,
@@ -192,8 +193,7 @@ const CollectionScreen: React.FC<Props> = ({ navigation }) => {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#3B82F6" />
-        <Text style={styles.loadingText}>컬렉션을 불러오는 중...</Text>
+        <ListSkeleton count={6} />
       </View>
     );
   }

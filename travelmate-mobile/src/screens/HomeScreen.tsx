@@ -252,9 +252,21 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
             </Text>
           </View>
         ) : isLoading ? (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyText}>주변 장소를 찾는 중...</Text>
-          </View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.nearbyList}
+          >
+            {[1, 2, 3].map((i) => (
+              <View key={i} style={[styles.nearbyCard, { opacity: 0.5 }]}>
+                <View style={[styles.cardImage, styles.cardImagePlaceholder]} />
+                <View style={styles.cardContent}>
+                  <View style={{ width: '70%', height: 14, backgroundColor: '#E5E7EB', borderRadius: 4 }} />
+                  <View style={{ width: '90%', height: 12, backgroundColor: '#E5E7EB', borderRadius: 4, marginTop: 6 }} />
+                </View>
+              </View>
+            ))}
+          </ScrollView>
         ) : nearbyLocations.length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyText}>
