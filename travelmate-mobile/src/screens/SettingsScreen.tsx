@@ -2,7 +2,7 @@
  * Settings Screen for TravelMate Mobile
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -16,6 +16,15 @@ import {
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  isBiometricAvailable,
+  getBiometricType,
+  getBiometricLabel,
+  authenticate,
+  isBiometricEnabled,
+  setBiometricEnabled,
+  BiometricType,
+} from '../services/biometricService';
 
 type SettingsScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -31,6 +40,31 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
   const [locationServices, setLocationServices] = useState(true);
   const [nearbyAlerts, setNearbyAlerts] = useState(true);
   const [collectAlerts, setCollectAlerts] = useState(true);
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const [biometricOn, setBiometricOn] = useState(false);
+  const [biometricType, setBiometricType] = useState<BiometricType>('none');
+
+  useEffect(() => {
+    (async () => {
+      const available = await isBiometricAvailable();
+      setBiometricAvailable(available);
+      if (available) {
+        const type = await getBiometricType();
+        setBiometricType(type);
+        const enabled = await isBiometricEnabled();
+        setBiometricOn(enabled);
+      }
+    })();
+  }, []);
+
+  const handleBiometricToggle = async (value: boolean) => {
+    if (value) {
+      const success = await authenticate('생체 인증을 활성화합니다');
+      if (!success) return;
+    }
+    setBiometricOn(value);
+    await setBiometricEnabled(value);
+  };
 
   const handleToggle = async (
     key: string,
@@ -142,6 +176,27 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
           />
         </View>
       </View>
+
+      {/* Security Section */}
+      {biometricAvailable && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>보안</Text>
+          <View style={styles.settingItem}>
+            <View style={styles.settingInfo}>
+              <Text style={styles.settingTitle}>{getBiometricLabel(biometricType)}</Text>
+              <Text style={styles.settingDescription}>
+                앱 잠금 해제 시 생체 인증을 사용합니다
+              </Text>
+            </View>
+            <Switch
+              value={biometricOn}
+              onValueChange={handleBiometricToggle}
+              trackColor={{ false: '#D1D5DB', true: '#93C5FD' }}
+              thumbColor={biometricOn ? '#3B82F6' : '#f4f3f4'}
+            />
+          </View>
+        </View>
+      )}
 
       {/* Location Section */}
       <View style={styles.section}>

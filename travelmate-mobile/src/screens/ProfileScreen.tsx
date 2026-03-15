@@ -12,12 +12,14 @@ import {
   Image,
   RefreshControl,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { CompositeNavigationProp, useFocusEffect } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { RootStackParamList, MainTabParamList } from '../navigation/AppNavigator';
 import { useAuth } from '../contexts/AuthContext';
+import { takePhoto, pickImage, showImageSourcePicker } from '../services/cameraService';
 
 type ProfileScreenNavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<MainTabParamList, 'Profile'>,
@@ -31,6 +33,36 @@ interface Props {
 const ProfileScreen: React.FC<Props> = ({ navigation }) => {
   const { user, logout, refreshUser } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+
+  const handleChangeProfilePhoto = () => {
+    showImageSourcePicker(
+      async () => {
+        const photo = await takePhoto();
+        if (photo) await uploadProfileImage(photo.uri);
+      },
+      async () => {
+        const photo = await pickImage();
+        if (photo) await uploadProfileImage(photo.uri);
+      },
+    );
+  };
+
+  const uploadProfileImage = async (uri: string) => {
+    setUploadingPhoto(true);
+    try {
+      // TODO: Upload to backend API when ready
+      // const formData = new FormData();
+      // formData.append('image', { uri, type: 'image/jpeg', name: 'profile.jpg' } as any);
+      // await apiClient.put('/users/me/profile-image', formData);
+      await refreshUser();
+      Alert.alert('완료', '프로필 사진이 변경되었습니다.');
+    } catch (error) {
+      Alert.alert('오류', '프로필 사진 변경에 실패했습니다.');
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -92,18 +124,27 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
       {/* Profile Header */}
       <View style={styles.header}>
         <View style={styles.profileSection}>
-          {user.profileImageUrl ? (
-            <Image
-              source={{ uri: user.profileImageUrl }}
-              style={styles.profileImage}
-            />
-          ) : (
-            <View style={styles.profileImagePlaceholder}>
-              <Text style={styles.profileInitial}>
-                {user.nickname?.[0]?.toUpperCase() || 'U'}
-              </Text>
+          <TouchableOpacity onPress={handleChangeProfilePhoto} disabled={uploadingPhoto}>
+            {user.profileImageUrl ? (
+              <Image
+                source={{ uri: user.profileImageUrl }}
+                style={styles.profileImage}
+              />
+            ) : (
+              <View style={styles.profileImagePlaceholder}>
+                <Text style={styles.profileInitial}>
+                  {user.nickname?.[0]?.toUpperCase() || 'U'}
+                </Text>
+              </View>
+            )}
+            <View style={styles.cameraButton}>
+              {uploadingPhoto ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.cameraIcon}>📷</Text>
+              )}
             </View>
-          )}
+          </TouchableOpacity>
 
           <View style={styles.profileInfo}>
             <Text style={styles.nickname}>{user.nickname}</Text>
@@ -288,6 +329,22 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     color: '#fff',
+  },
+  cameraButton: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#3B82F6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  cameraIcon: {
+    fontSize: 14,
   },
   profileInfo: {
     marginLeft: 16,

@@ -115,6 +115,25 @@
       ],
       "expo-in-app-purchases",
       [
+        "expo-camera",
+        {
+          "cameraPermission": "Fryndo는 프로필 사진 촬영 및 장소 인증을 위해 카메라 접근이 필요합니다."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Fryndo는 프로필 사진을 갤러리에서 선택하기 위해 사진 접근이 필요합니다.",
+          "cameraPermission": "Fryndo는 프로필 사진을 촬영하기 위해 카메라 접근이 필요합니다."
+        }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Fryndo는 빠른 로그인을 위해 Face ID를 사용합니다."
+        }
+      ],
+      [
         "@sentry/react-native/expo",
         {
           "organization": "travelmate",
