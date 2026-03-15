@@ -11,10 +11,13 @@ describe('Travel Groups', () => {
       },
     }).as('getMe');
 
-    // Set auth tokens
-    cy.window().then(win => {
-      win.localStorage.setItem('accessToken', 'mock-access-token');
-      win.localStorage.setItem('refreshToken', 'mock-refresh-token');
+    // Set auth tokens via onBeforeLoad so localStorage is set on the correct origin
+    // (cy.window() before cy.visit() targets about:blank and tokens are lost on navigation)
+    cy.visit('/', {
+      onBeforeLoad(win) {
+        win.localStorage.setItem('accessToken', 'mock-access-token');
+        win.localStorage.setItem('refreshToken', 'mock-refresh-token');
+      },
     });
   });
 
