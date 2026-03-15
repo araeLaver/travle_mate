@@ -232,6 +232,12 @@ payment:
     client-key: ${TOSS_CLIENT_KEY:test_ck_}
     api-url: https://api.tosspayments.com/v1
 
+# SMS 본인인증 설정
+sms:
+  provider: ${SMS_PROVIDER:mock}
+  expiration-minutes: 5
+  max-attempts: 5
+
 ---
 # 운영 환경 설정 (PostgreSQL)
 spring:

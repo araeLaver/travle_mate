@@ -21,6 +21,9 @@ export interface UserProfile {
   stats: UserStats;
   preferences: TravelPreferences;
   socialLinks?: SocialLinks;
+  phoneVerified?: boolean;
+  trustBadge?: string;
+  trustScore?: number;
   createdAt: Date;
   lastActive: Date;
 }

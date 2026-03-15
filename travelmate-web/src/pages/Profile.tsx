@@ -7,6 +7,7 @@ import { getErrorMessage, logError } from '../utils/errorHandler';
 import { useFollowStats, useFollowStatus, useFollowToggle } from '../hooks/useFollow';
 import { authService } from '../services/authService';
 import FollowerList from '../components/social/FollowerList';
+import PhoneVerification from '../components/PhoneVerification';
 import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
 
@@ -27,6 +28,7 @@ const Profile: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [showFollowerList, setShowFollowerList] = useState<'followers' | 'following' | null>(null);
+  const [showPhoneVerification, setShowPhoneVerification] = useState(false);
 
   const currentUser = authService.getUser();
   const viewedUserId = userId ? parseInt(userId) : currentUser?.id;
@@ -566,6 +568,27 @@ const Profile: React.FC = () => {
                       ))}
                     </div>
                   </div>
+
+                  {/* 본인 인증 상태 */}
+                  {isOwnProfile && (
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                        🔒 본인 인증
+                      </h3>
+                      {profile.phoneVerified ? (
+                        <span className="inline-flex items-center gap-1.5 px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-sm font-medium">
+                          <span>&#10003;</span> 인증 완료
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => setShowPhoneVerification(true)}
+                          className="px-4 py-2 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
+                        >
+                          휴대폰 본인 인증하기
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -729,6 +752,16 @@ const Profile: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Phone Verification Modal */}
+      <PhoneVerification
+        isOpen={showPhoneVerification}
+        onClose={() => setShowPhoneVerification(false)}
+        onVerified={() => {
+          loadProfile();
+          setShowPhoneVerification(false);
+        }}
+      />
 
       {/* Blob animation keyframes */}
       <style>{`
