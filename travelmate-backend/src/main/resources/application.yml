@@ -225,6 +225,13 @@ cdn:
   static-path: /static
   cache-duration: 86400
 
+# Toss Payments 설정
+payment:
+  toss:
+    secret-key: ${TOSS_SECRET_KEY:test_sk_}
+    client-key: ${TOSS_CLIENT_KEY:test_ck_}
+    api-url: https://api.tosspayments.com/v1
+
 ---
 # 운영 환경 설정 (PostgreSQL)
 spring:
@@ -428,6 +435,13 @@ cdn:
   image-path: /images
   static-path: /static
   cache-duration: 604800
+
+# Toss Payments 설정 (운영)
+payment:
+  toss:
+    secret-key: ${TOSS_SECRET_KEY}
+    client-key: ${TOSS_CLIENT_KEY}
+    api-url: https://api.tosspayments.com/v1
 
 # Sentry 설정 (운영) - 선택적 설정
 sentry:

@@ -34,6 +34,9 @@ const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const NotificationSettings = lazy(() => import('./pages/NotificationSettings'));
 const AIRecommendation = lazy(() => import('./pages/AIRecommendation'));
 const Matching = lazy(() => import('./pages/Matching'));
+const Payment = lazy(() => import('./pages/Payment'));
+const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess'));
+const PaymentFail = lazy(() => import('./pages/PaymentFail'));
 
 // Loading fallback component
 const PageLoader: React.FC = () => (
@@ -213,6 +216,20 @@ function App() {
                         </ProtectedRoute>
                       }
                     />
+
+                    {/* 결제 페이지 */}
+                    <Route
+                      path="/payment"
+                      element={
+                        <ProtectedRoute>
+                          <Layout>
+                            <Payment />
+                          </Layout>
+                        </ProtectedRoute>
+                      }
+                    />
+                    <Route path="/payment/success" element={<PaymentSuccess />} />
+                    <Route path="/payment/fail" element={<PaymentFail />} />
                   </Routes>
                 </Suspense>
               </Router>

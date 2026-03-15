@@ -111,13 +111,25 @@ const Payment: React.FC = () => {
         couponCode: couponResult?.discount ? couponCode : undefined,
       });
 
-      alert(
-        `결제 준비 완료\n주문번호: ${response.orderId}\n결제금액: ${paymentService.formatCurrency(response.finalAmount)}`
-      );
-    } catch (error) {
+      // Toss Payments SDK로 결제 위젯 실행
+      const { loadTossPayments } = await import('@tosspayments/tosspayments-sdk');
+      const tossPayments = await loadTossPayments(response.clientKey);
+      const payment = tossPayments.payment({ customerKey: response.customerKey });
+
+      await payment.requestPayment({
+        method: 'CARD',
+        amount: { currency: 'KRW', value: response.finalAmount },
+        orderId: response.orderId,
+        orderName: response.orderName,
+        successUrl: response.successUrl || `${window.location.origin}/payment/success`,
+        failUrl: response.failUrl || `${window.location.origin}/payment/fail`,
+      });
+    } catch (error: unknown) {
+      const err = error as { code?: string; message?: string };
+      if (err.code === 'USER_CANCEL') return;
       // eslint-disable-next-line no-console
       console.error('Payment failed:', error);
-      alert('결제 준비에 실패했습니다.');
+      alert(err.message || '결제에 실패했습니다.');
     }
   };
 
