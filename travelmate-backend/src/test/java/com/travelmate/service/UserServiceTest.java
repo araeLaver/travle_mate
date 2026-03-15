@@ -49,6 +49,9 @@ class UserServiceTest {
     @Mock
     private ReportService reportService;
 
+    @Mock
+    private BetaInviteService betaInviteService;
+
     @InjectMocks
     private UserService userService;
 
