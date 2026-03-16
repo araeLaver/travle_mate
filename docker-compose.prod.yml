@@ -79,6 +79,10 @@ services:
   # ===================
   # Frontend Web App
   # ===================
+  # NOTE: 기본 배포에서 nginx (with-proxy profile) 를 사용할 경우 frontend ports를 노출하면
+  # nginx와 80/443 포트 충돌이 발생합니다. standalone profile을 사용하여 분리합니다.
+  # - 기본 (nginx reverse proxy): ports 없음, nginx가 80/443 처리
+  # - standalone profile: frontend가 직접 80/443 처리
   frontend:
     image: ${DOCKER_REGISTRY:-ghcr.io}/travelmate/frontend:${TAG:-latest}
     container_name: travelmate-frontend
@@ -86,6 +90,8 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    profiles:
+      - standalone
     volumes:
       - ./nginx/ssl:/etc/nginx/ssl:ro
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
@@ -234,7 +240,9 @@ services:
     volumes:
       - ./backup/postgres:/backup
       - ./scripts/backup.sh:/backup.sh:ro
-    entrypoint: ["/bin/sh", "-c", "crond -f"]
+    # backup.sh가 크론탭을 설정한 후 crond를 실행해야 합니다.
+    # entrypoint를 직접 crond -f로 설정하면 크론잡 없이 실행됩니다.
+    entrypoint: ["/bin/sh", "-c", "chmod +x /backup.sh && echo '0 2 * * * /backup.sh >> /backup/cron.log 2>&1' | crontab - && crond -f"]
     depends_on:
       - postgres
     profiles:
