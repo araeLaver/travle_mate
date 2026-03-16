@@ -37,6 +37,8 @@ export const OfflineProvider: React.FC<Props> = ({ children }) => {
     connectionType: null,
     pendingActionsCount: 0,
     lastSyncTime: null,
+    isInitialized: false,
+    cacheSize: 0,
   });
   const [isInitialized, setIsInitialized] = useState(false);
 

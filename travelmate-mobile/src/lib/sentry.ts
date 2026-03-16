@@ -39,7 +39,6 @@ export const initSentry = () => {
 
     // Breadcrumbs
     maxBreadcrumbs: 100,
-    enableAutoNativeBreadcrumbs: true,
 
     // Before send hook
     beforeSend(event, hint) {
@@ -111,9 +110,11 @@ export const captureException = (
 /**
  * Capture a message
  */
+type SentryLevel = 'fatal' | 'error' | 'warning' | 'log' | 'info' | 'debug';
+
 export const captureMessage = (
   message: string,
-  level: Sentry.SeverityLevel = 'info'
+  level: SentryLevel = 'info'
 ) => {
   Sentry.captureMessage(message, level);
 };
