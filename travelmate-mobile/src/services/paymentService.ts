@@ -69,25 +69,20 @@ class PaymentService {
 
     try {
       // Connect to the store
-      const { responseCode } = await InAppPurchases.connectAsync();
+      await InAppPurchases.connectAsync();
 
-      if (responseCode === InAppPurchases.IAPResponseCode.OK) {
-        this.isInitialized = true;
+      this.isInitialized = true;
 
-        // Set up purchase listener
-        this.setupPurchaseListener();
+      // Set up purchase listener
+      this.setupPurchaseListener();
 
-        // Load products
-        await this.loadProducts();
+      // Load products
+      await this.loadProducts();
 
-        // Process any pending purchases
-        await this.processPendingPurchases();
+      // Process any pending purchases
+      await this.processPendingPurchases();
 
-        return true;
-      }
-
-      console.log('Failed to connect to store:', responseCode);
-      return false;
+      return true;
     } catch (error) {
       console.error('IAP initialization failed:', error);
       return false;
@@ -234,7 +229,7 @@ class PaymentService {
     try {
       const response = await apiClient.post<{ verified: boolean }>('/payments/verify', {
         productId: purchase.productId,
-        transactionId: purchase.transactionId,
+        transactionId: purchase.orderId,
         receipt: purchase.transactionReceipt,
         platform: Platform.OS,
       });
