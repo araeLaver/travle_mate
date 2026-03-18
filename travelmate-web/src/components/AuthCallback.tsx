@@ -41,7 +41,7 @@ const AuthCallback: React.FC = () => {
         try {
           // 백엔드에 authorization code 전달하여 토큰 교환
           const response = await fetch(
-            `${process.env.REACT_APP_API_URL || 'http://localhost:8080/api'}/auth/oauth/callback`,
+            `${import.meta.env.VITE_API_URL || 'http://localhost:8080/api'}/auth/oauth/callback`,
             {
               method: 'POST',
               headers: {

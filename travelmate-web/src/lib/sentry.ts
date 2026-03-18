@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/react';
 
-const SENTRY_DSN = process.env.REACT_APP_SENTRY_DSN;
-const ENVIRONMENT = process.env.REACT_APP_ENV || 'development';
+const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN;
+const ENVIRONMENT = import.meta.env.VITE_ENV || 'development';
 
 /**
  * Initialize Sentry for error tracking
@@ -16,7 +16,7 @@ export const initSentry = () => {
   Sentry.init({
     dsn: SENTRY_DSN,
     environment: ENVIRONMENT,
-    release: `travelmate-web@${process.env.REACT_APP_VERSION || '1.0.0'}`,
+    release: `travelmate-web@${import.meta.env.VITE_VERSION || '1.0.0'}`,
 
     // Performance Monitoring
     tracesSampleRate: ENVIRONMENT === 'production' ? 0.2 : 1.0,

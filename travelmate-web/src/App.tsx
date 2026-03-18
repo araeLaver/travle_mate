@@ -15,7 +15,7 @@ import Tutorial from './components/Tutorial';
 import { ToastProvider } from './components/Toast';
 import { trackPageView } from './utils/analytics';
 
-const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '';
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
 // Lazy loaded pages for code splitting
 const Home = lazy(() => import('./pages/Home'));

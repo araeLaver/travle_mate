@@ -92,7 +92,7 @@ class LocationService {
       if (this.isKoreaCoords(lat, lng)) {
         // 먼저 백엔드 API를 시도
         try {
-          const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8080/api';
+          const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080/api';
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 3000);
 
@@ -122,7 +122,7 @@ class LocationService {
         }
 
         // 백엔드가 실패하면 직접 Kakao API 호출
-        const kakaoApiKey = process.env.REACT_APP_KAKAO_MAP_API_KEY;
+        const kakaoApiKey = import.meta.env.VITE_KAKAO_MAP_API_KEY;
 
         if (kakaoApiKey) {
           try {

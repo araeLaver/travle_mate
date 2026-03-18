@@ -10,8 +10,8 @@ import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
 import { trackEvent, trackSignUpComplete } from '../utils/analytics';
 
-const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '';
-const NAVER_CLIENT_ID = process.env.REACT_APP_NAVER_CLIENT_ID || '';
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+const NAVER_CLIENT_ID = import.meta.env.VITE_NAVER_CLIENT_ID || '';
 const REDIRECT_URI = `${window.location.origin}/auth/callback`;
 
 class GoogleButtonErrorBoundary extends Component<

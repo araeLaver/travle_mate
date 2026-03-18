@@ -16,7 +16,7 @@ const MONITORING_CONFIG = {
   batchSize: 10,
   flushInterval: 30000, // 30 seconds
   maxQueueSize: 100,
-  apiEndpoint: process.env.REACT_APP_API_URL + '/monitoring/logs',
+  apiEndpoint: import.meta.env.VITE_API_URL + '/monitoring/logs',
 };
 
 // Types

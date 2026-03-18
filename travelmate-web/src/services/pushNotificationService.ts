@@ -156,7 +156,7 @@ class PushNotificationService {
         deviceType: 'WEB',
         deviceModel: this.getDeviceModel(),
         osVersion: this.getOsVersion(),
-        appVersion: process.env.REACT_APP_VERSION || '1.0.0',
+        appVersion: import.meta.env.VITE_VERSION || '1.0.0',
       };
 
       await apiClient.post('/push/register', request);

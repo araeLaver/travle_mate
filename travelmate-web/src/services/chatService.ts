@@ -27,6 +27,9 @@ export interface ChatParticipant {
   lastSeen: Date;
 }
 
+// TODO: This service uses in-memory storage with mock data. Migrate to HTTP API
+// (e.g., REST endpoints /api/chat/rooms and /api/chat/messages) and replace
+// simulated responses with real-time WebSocket/STOMP messages via websocketService.
 class ChatService {
   private rooms: Map<string, ChatRoom> = new Map();
   private messages: Map<string, ChatMessage[]> = new Map();

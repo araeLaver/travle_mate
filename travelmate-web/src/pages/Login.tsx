@@ -8,8 +8,8 @@ import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
 import { trackEvent, trackLoginSuccess } from '../utils/analytics';
 
-const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '';
-const NAVER_CLIENT_ID = process.env.REACT_APP_NAVER_CLIENT_ID || '';
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+const NAVER_CLIENT_ID = import.meta.env.VITE_NAVER_CLIENT_ID || '';
 const REDIRECT_URI = `${window.location.origin}/auth/callback`;
 
 // useGoogleLogin 크래시 시 Login 전체가 깨지지 않도록 별도 컴포넌트 + ErrorBoundary로 격리

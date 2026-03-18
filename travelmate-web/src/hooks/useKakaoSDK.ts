@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
-const KAKAO_APP_KEY = process.env.REACT_APP_KAKAO_APP_KEY || '';
+const KAKAO_APP_KEY = import.meta.env.VITE_KAKAO_APP_KEY || '';
 
 interface UseKakaoSDKReturn {
   isLoaded: boolean;

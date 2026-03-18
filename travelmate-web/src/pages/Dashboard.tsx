@@ -124,7 +124,7 @@ const Dashboard: React.FC = () => {
     };
 
     try {
-      const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
       const response = await fetch(
         `${API_BASE_URL}/location/address?lat=${gwangjuLocation.latitude}&lng=${gwangjuLocation.longitude}`
       );

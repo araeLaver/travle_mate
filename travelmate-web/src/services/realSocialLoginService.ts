@@ -204,7 +204,7 @@ class RealSocialLoginService {
   }
 
   private initializeGoogleAuth(resolve: (value: SocialLoginResponse) => void): void {
-    const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
     if (!clientId) {
       logger.error('Google Client ID가 설정되지 않았습니다.');
@@ -344,7 +344,7 @@ class RealSocialLoginService {
   }
 
   private initializeKakaoAuth(resolve: (value: SocialLoginResponse) => void): void {
-    const clientId = process.env.REACT_APP_KAKAO_CLIENT_ID;
+    const clientId = import.meta.env.VITE_KAKAO_CLIENT_ID;
 
     if (!clientId) {
       logger.error('Kakao Client ID가 설정되지 않았습니다.');
@@ -462,8 +462,8 @@ class RealSocialLoginService {
   }
 
   private initializeNaverAuth(resolve: (value: SocialLoginResponse) => void): void {
-    const clientId = process.env.REACT_APP_NAVER_CLIENT_ID;
-    const callbackUrl = process.env.REACT_APP_REDIRECT_URI;
+    const clientId = import.meta.env.VITE_NAVER_CLIENT_ID;
+    const callbackUrl = import.meta.env.VITE_REDIRECT_URI;
 
     if (!clientId) {
       logger.error('Naver Client ID가 설정되지 않았습니다.');
