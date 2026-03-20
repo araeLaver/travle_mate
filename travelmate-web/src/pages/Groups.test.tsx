@@ -20,6 +20,7 @@ jest.mock('framer-motion', () => {
     'whileTap',
     'variants',
   ];
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const ReactModule = require('react');
   return {
     motion: new Proxy(
@@ -62,7 +63,9 @@ jest.mock('../utils/errorHandler', () => ({
   logError: jest.fn(),
 }));
 
+// eslint-disable-next-line react/display-name
 jest.mock('../components/Logo', () => () => <div data-testid="logo">Logo</div>);
+// eslint-disable-next-line react/display-name
 jest.mock('../components/ThemeToggle', () => () => (
   <div data-testid="theme-toggle">ThemeToggle</div>
 ));

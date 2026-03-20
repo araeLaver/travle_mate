@@ -19,6 +19,7 @@ jest.mock('framer-motion', () => {
     'whileTap',
     'variants',
   ];
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const ReactModule = require('react');
   return {
     motion: new Proxy(
@@ -58,7 +59,9 @@ jest.mock('../hooks/useKakaoSDK', () => ({
   }),
 }));
 
+// eslint-disable-next-line react/display-name
 jest.mock('../components/Logo', () => () => <div data-testid="logo">Logo</div>);
+// eslint-disable-next-line react/display-name
 jest.mock('../components/ThemeToggle', () => () => (
   <div data-testid="theme-toggle">ThemeToggle</div>
 ));
@@ -72,7 +75,6 @@ jest.mock('../utils/analytics', () => ({
   trackMatchRecommendationViewed: jest.fn(),
 }));
 
-// eslint-disable-next-line import/first
 import { authService } from '../services/authService';
 
 const renderLogin = () =>

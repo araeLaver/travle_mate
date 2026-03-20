@@ -19,6 +19,7 @@ jest.mock('framer-motion', () => {
     'whileTap',
     'variants',
   ];
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const ReactModule = require('react');
   return {
     motion: new Proxy(
@@ -111,6 +112,7 @@ jest.mock('../hooks/useWallet', () => ({
   }),
 }));
 
+/* eslint-disable react/display-name */
 jest.mock(
   '../components/nft/MintingModal',
   () => (props: { locationName: string; onClose: () => void }) => (
@@ -120,20 +122,21 @@ jest.mock(
     </div>
   )
 );
+/* eslint-enable react/display-name */
 
 const mockToast = { success: jest.fn(), error: jest.fn(), info: jest.fn(), warning: jest.fn() };
 jest.mock('../components/Toast', () => ({
   useToast: () => mockToast,
 }));
 
+// eslint-disable-next-line react/display-name
 jest.mock('../components/Logo', () => () => <div data-testid="logo">Logo</div>);
+// eslint-disable-next-line react/display-name
 jest.mock('../components/ThemeToggle', () => () => (
   <div data-testid="theme-toggle">ThemeToggle</div>
 ));
 
-// eslint-disable-next-line import/first
 import { nftService } from '../services/nftService';
-// eslint-disable-next-line import/first
 import { achievementService } from '../services/achievementService';
 
 const renderNFTCollection = () =>

@@ -44,6 +44,7 @@ const createWrapper = () => {
     },
   });
 
+  // eslint-disable-next-line react/display-name
   return ({ children }: { children: React.ReactNode }) =>
     React.createElement(QueryClientProvider, { client: queryClient }, children);
 };
