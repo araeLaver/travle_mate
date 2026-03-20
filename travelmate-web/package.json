@@ -41,7 +41,7 @@
   "scripts": {
     "start": "craco start",
     "build": "craco build",
-    "test": "craco test",
+    "test": "react-scripts test",
     "test:coverage": "craco test --coverage --watchAll=false",
     "eject": "react-scripts eject",
     "lint": "eslint src --ext .ts,.tsx --max-warnings 100",
