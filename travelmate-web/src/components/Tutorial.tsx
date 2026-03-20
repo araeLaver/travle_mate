@@ -359,7 +359,7 @@ const Tutorial: React.FC<TutorialProps> = ({ onComplete, isOpen }) => {
             {step?.description}
           </p>
           <div className="tutorial-click-hint" aria-hidden="true">
-            하이라이트된 영역을 클릭하거나 '다음' 버튼을 눌러주세요
+            하이라이트된 영역을 클릭하거나 &apos;다음&apos; 버튼을 눌러주세요
           </div>
         </div>
 

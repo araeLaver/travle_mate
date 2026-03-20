@@ -164,7 +164,7 @@ const ReviewList: React.FC<ReviewListProps> = ({
             </div>
 
             {/* 코멘트 */}
-            {review.comment && <p className="trl-comment">"{review.comment}"</p>}
+            {review.comment && <p className="trl-comment">&quot;{review.comment}&quot;</p>}
           </div>
         ))}
       </div>

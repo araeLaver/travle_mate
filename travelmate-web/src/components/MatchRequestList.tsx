@@ -68,7 +68,7 @@ const MatchRequestList: React.FC<MatchRequestListProps> = ({
               </div>
             </div>
 
-            {req.message && <p className="match-request-message">"{req.message}"</p>}
+            {req.message && <p className="match-request-message">&quot;{req.message}&quot;</p>}
 
             <div className="match-request-meta">
               <span>{formatDate(req.createdAt)}</span>
