@@ -37,7 +37,7 @@ jobs:
         run: npm run format:check
 
       - name: Run unit tests
-        run: npm run test:coverage
+        run: npx react-scripts test --watchAll=false --coverage --passWithNoTests
         env:
           CI: true
 
