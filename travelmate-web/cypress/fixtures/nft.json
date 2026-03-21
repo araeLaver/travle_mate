@@ -1,0 +1,95 @@
+{
+  "locations": [
+    {
+      "id": 1,
+      "name": "경복궁",
+      "latitude": 37.5796,
+      "longitude": 126.977,
+      "rarity": "LEGENDARY",
+      "isCollected": false,
+      "collectRadius": 100,
+      "description": "조선 왕조의 정궁",
+      "category": "HISTORICAL",
+      "region": "서울",
+      "imageUrl": "/images/gyeongbok.jpg"
+    },
+    {
+      "id": 2,
+      "name": "남산타워",
+      "latitude": 37.5512,
+      "longitude": 126.9882,
+      "rarity": "EPIC",
+      "isCollected": true,
+      "collectRadius": 50,
+      "description": "서울의 상징적인 랜드마크",
+      "category": "LANDMARK",
+      "region": "서울",
+      "imageUrl": "/images/namsan.jpg"
+    },
+    {
+      "id": 3,
+      "name": "광화문",
+      "latitude": 37.5759,
+      "longitude": 126.9769,
+      "rarity": "RARE",
+      "isCollected": false,
+      "collectRadius": 80,
+      "description": "경복궁의 정문",
+      "category": "HISTORICAL",
+      "region": "서울",
+      "imageUrl": "/images/gwanghwamun.jpg"
+    },
+    {
+      "id": 4,
+      "name": "해운대 해수욕장",
+      "latitude": 35.1586,
+      "longitude": 129.1604,
+      "rarity": "COMMON",
+      "isCollected": false,
+      "collectRadius": 200,
+      "description": "부산의 대표 해수욕장",
+      "category": "NATURE",
+      "region": "부산",
+      "imageUrl": "/images/haeundae.jpg"
+    }
+  ],
+  "collection": {
+    "content": [
+      {
+        "id": 1,
+        "locationId": 2,
+        "locationName": "남산타워",
+        "imageUrl": "/images/namsan.jpg",
+        "rarity": "EPIC",
+        "collectedAt": "2024-01-15T10:00:00Z",
+        "mintStatus": "MINTED",
+        "tokenId": "12345",
+        "transactionHash": "0x123abc..."
+      },
+      {
+        "id": 2,
+        "locationId": 3,
+        "locationName": "광화문",
+        "imageUrl": "/images/gwanghwamun.jpg",
+        "rarity": "RARE",
+        "collectedAt": "2024-01-20T14:30:00Z",
+        "mintStatus": "NOT_MINTED",
+        "tokenId": null
+      }
+    ],
+    "totalElements": 2,
+    "totalPages": 1,
+    "number": 0
+  },
+  "mintingResponse": {
+    "success": true,
+    "status": "MINTING",
+    "message": "민팅이 시작되었습니다."
+  },
+  "mintingComplete": {
+    "status": "COMPLETED",
+    "tokenId": "12346",
+    "transactionHash": "0x456def...",
+    "openseaUrl": "https://opensea.io/assets/polygon/..."
+  }
+}

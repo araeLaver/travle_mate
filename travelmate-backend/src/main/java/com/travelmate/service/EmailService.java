@@ -1,110 +1,214 @@
 package com.travelmate.service;
 
-import lombok.RequiredArgsConstructor;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class EmailService {
 
-    // 임시로 메모리에 저장 (실제로는 Redis나 DB 사용 권장)
-    private final Map<String, VerificationToken> verificationTokens = new ConcurrentHashMap<>();
+    private final Optional<JavaMailSender> mailSender;
+    private final TokenStorageServiceInterface tokenStorageService;
+
+    @Autowired
+    public EmailService(@Autowired(required = false) JavaMailSender mailSender,
+                        TokenStorageServiceInterface tokenStorageService) {
+        this.mailSender = Optional.ofNullable(mailSender);
+        this.tokenStorageService = tokenStorageService;
+    }
 
     @Value("${app.frontend.url:http://localhost:3000}")
     private String frontendUrl;
 
+    @Value("${spring.mail.username:}")
+    private String mailFrom;
+
+    @Value("${app.mail.enabled:false}")
+    private boolean mailEnabled;
+
     public String sendVerificationEmail(String email, String fullName) {
         String token = UUID.randomUUID().toString();
-        VerificationToken verificationToken = new VerificationToken(
-            email,
-            token,
-            System.currentTimeMillis() + TimeUnit.HOURS.toMillis(24) // 24시간 유효
-        );
 
-        verificationTokens.put(token, verificationToken);
-
-        // 실제로는 이메일 발송 (SMTP, SendGrid, AWS SES 등 사용)
+        tokenStorageService.saveEmailVerificationToken(token, email);
         String verificationLink = frontendUrl + "/verify-email?token=" + token;
 
-        log.info("이메일 인증 링크 생성: {} -> {}", email, verificationLink);
-        log.info("=================================================");
-        log.info("📧 이메일 인증 링크 (개발 모드):");
-        log.info("수신자: {}", email);
-        log.info("링크: {}", verificationLink);
-        log.info("유효기간: 24시간");
-        log.info("=================================================");
-
-        // TODO: 실제 이메일 발송 구현
-        // emailSender.send(email, "TravelMate 이메일 인증", emailTemplate);
+        if (mailEnabled && mailSender.isPresent() && !mailFrom.isEmpty()) {
+            sendEmailAsync(email, "Fryndo 이메일 인증", buildVerificationEmailHtml(fullName, verificationLink));
+        } else {
+            log.info("=================================================");
+            log.info("[DEV] 이메일 인증 링크:");
+            log.info("수신자: {}", email);
+            log.info("링크: {}", verificationLink);
+            log.info("=================================================");
+        }
 
         return token;
-    }
-
-    public boolean verifyEmail(String token) {
-        VerificationToken verificationToken = verificationTokens.get(token);
-
-        if (verificationToken == null) {
-            log.warn("유효하지 않은 인증 토큰: {}", token);
-            return false;
-        }
-
-        if (System.currentTimeMillis() > verificationToken.expiryTime) {
-            verificationTokens.remove(token);
-            log.warn("만료된 인증 토큰: {}", token);
-            return false;
-        }
-
-        verificationTokens.remove(token);
-        log.info("이메일 인증 성공: {}", verificationToken.email);
-        return true;
-    }
-
-    public String getEmailByToken(String token) {
-        VerificationToken verificationToken = verificationTokens.get(token);
-        return verificationToken != null ? verificationToken.email : null;
     }
 
     public String sendPasswordResetEmail(String email) {
         String token = UUID.randomUUID().toString();
-        VerificationToken resetToken = new VerificationToken(
-            email,
-            token,
-            System.currentTimeMillis() + TimeUnit.HOURS.toMillis(1) // 1시간 유효
-        );
 
-        verificationTokens.put(token, resetToken);
-
+        tokenStorageService.savePasswordResetToken(token, email);
         String resetLink = frontendUrl + "/reset-password?token=" + token;
 
-        log.info("비밀번호 재설정 링크 생성: {} -> {}", email, resetLink);
-        log.info("=================================================");
-        log.info("🔑 비밀번호 재설정 링크 (개발 모드):");
-        log.info("수신자: {}", email);
-        log.info("링크: {}", resetLink);
-        log.info("유효기간: 1시간");
-        log.info("=================================================");
+        if (mailEnabled && mailSender.isPresent() && !mailFrom.isEmpty()) {
+            sendEmailAsync(email, "Fryndo 비밀번호 재설정", buildPasswordResetEmailHtml(resetLink));
+        } else {
+            log.info("=================================================");
+            log.info("[DEV] 비밀번호 재설정 링크:");
+            log.info("수신자: {}", email);
+            log.info("링크: {}", resetLink);
+            log.info("=================================================");
+        }
 
         return token;
     }
 
-    // 이메일 인증 토큰 정보를 담는 내부 클래스
-    private static class VerificationToken {
-        String email;
-        String token;
-        long expiryTime;
-
-        VerificationToken(String email, String token, long expiryTime) {
-            this.email = email;
-            this.token = token;
-            this.expiryTime = expiryTime;
+    @Async
+    public void sendEmailAsync(String to, String subject, String htmlContent) {
+        if (mailSender.isEmpty()) {
+            log.warn("JavaMailSender가 구성되지 않았습니다. 이메일을 발송할 수 없습니다: {}", to);
+            return;
         }
+
+        try {
+            JavaMailSender sender = mailSender.get();
+            MimeMessage message = sender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(mailFrom);
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(htmlContent, true);
+
+            sender.send(message);
+            log.info("이메일 발송 완료: {}", to);
+        } catch (MessagingException e) {
+            log.error("이메일 발송 실패: {} - {}", to, e.getMessage());
+        }
+    }
+
+    public boolean verifyEmail(String token) {
+        String email = tokenStorageService.getEmailByVerificationToken(token);
+
+        if (email == null) {
+            log.warn("유효하지 않은 인증 토큰: {}", token);
+            return false;
+        }
+
+        tokenStorageService.deleteEmailVerificationToken(token);
+        log.info("이메일 인증 성공: {}", email);
+        return true;
+    }
+
+    public String getEmailByToken(String token) {
+        // 이메일 인증 토큰 먼저 확인
+        String email = tokenStorageService.getEmailByVerificationToken(token);
+        if (email != null) {
+            return email;
+        }
+        // 비밀번호 재설정 토큰 확인
+        return tokenStorageService.getEmailByPasswordResetToken(token);
+    }
+
+    public boolean verifyPasswordResetToken(String token) {
+        String email = tokenStorageService.getEmailByPasswordResetToken(token);
+        return email != null;
+    }
+
+    public void invalidatePasswordResetToken(String token) {
+        tokenStorageService.deletePasswordResetToken(token);
+    }
+
+    private String buildVerificationEmailHtml(String fullName, String verificationLink) {
+        return """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    body { font-family: 'Apple SD Gothic Neo', sans-serif; background: #f5f5f5; padding: 20px; }
+                    .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; padding: 40px; }
+                    .header { text-align: center; margin-bottom: 30px; }
+                    .header h1 { color: #4F46E5; margin: 0; }
+                    .content { color: #333; line-height: 1.6; }
+                    .button { display: inline-block; background: #4F46E5; color: white; padding: 15px 30px;
+                              text-decoration: none; border-radius: 8px; margin: 20px 0; }
+                    .footer { margin-top: 30px; color: #888; font-size: 12px; text-align: center; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>Fryndo</h1>
+                    </div>
+                    <div class="content">
+                        <p>안녕하세요, %s님!</p>
+                        <p>Fryndo에 가입해 주셔서 감사합니다.</p>
+                        <p>아래 버튼을 클릭하여 이메일 인증을 완료해 주세요.</p>
+                        <p style="text-align: center;">
+                            <a href="%s" class="button">이메일 인증하기</a>
+                        </p>
+                        <p>이 링크는 24시간 동안 유효합니다.</p>
+                    </div>
+                    <div class="footer">
+                        <p>본 메일은 발신 전용입니다.</p>
+                        <p>&copy; 2024 Fryndo. All rights reserved.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """.formatted(fullName, verificationLink);
+    }
+
+    private String buildPasswordResetEmailHtml(String resetLink) {
+        return """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    body { font-family: 'Apple SD Gothic Neo', sans-serif; background: #f5f5f5; padding: 20px; }
+                    .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; padding: 40px; }
+                    .header { text-align: center; margin-bottom: 30px; }
+                    .header h1 { color: #4F46E5; margin: 0; }
+                    .content { color: #333; line-height: 1.6; }
+                    .button { display: inline-block; background: #EF4444; color: white; padding: 15px 30px;
+                              text-decoration: none; border-radius: 8px; margin: 20px 0; }
+                    .footer { margin-top: 30px; color: #888; font-size: 12px; text-align: center; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>Fryndo</h1>
+                    </div>
+                    <div class="content">
+                        <p>비밀번호 재설정 요청을 받았습니다.</p>
+                        <p>아래 버튼을 클릭하여 새 비밀번호를 설정해 주세요.</p>
+                        <p style="text-align: center;">
+                            <a href="%s" class="button">비밀번호 재설정</a>
+                        </p>
+                        <p>이 링크는 1시간 동안 유효합니다.</p>
+                        <p style="color: #888;">본인이 요청하지 않았다면 이 메일을 무시하세요.</p>
+                    </div>
+                    <div class="footer">
+                        <p>본 메일은 발신 전용입니다.</p>
+                        <p>&copy; 2024 Fryndo. All rights reserved.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """.formatted(resetLink);
     }
 }

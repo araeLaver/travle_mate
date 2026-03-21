@@ -1,0 +1,158 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run weekly on Sundays at midnight
+    - cron: '0 0 * * 0'
+
+jobs:
+  # Frontend Security Scan
+  frontend-security:
+    name: Frontend Security
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: travelmate-web
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: travelmate-web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Run npm audit
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+      - name: Run npm audit (JSON output)
+        run: npm audit --json > ../npm-audit-results.json || true
+
+      - name: Upload npm audit results
+        uses: actions/upload-artifact@v6
+        with:
+          name: npm-audit-results
+          path: npm-audit-results.json
+          retention-days: 30
+
+  # Backend Security Scan
+  backend-security:
+    name: Backend Security
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: travelmate-backend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Run OWASP Dependency Check
+        run: mvn org.owasp:dependency-check-maven:check -DfailBuildOnCVSS=9
+        continue-on-error: true
+
+      - name: Upload OWASP report
+        uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: owasp-dependency-check-report
+          path: travelmate-backend/target/dependency-check-report.html
+          retention-days: 30
+
+  # CodeQL Analysis
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ['java', 'javascript']
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+
+      - name: Setup Java (for Java analysis)
+        if: matrix.language == 'java'
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Build Java
+        if: matrix.language == 'java'
+        working-directory: travelmate-backend
+        run: mvn compile -DskipTests -B
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v4
+        with:
+          category: "/language:${{matrix.language}}"
+
+  # Secret Scanning (using gitleaks)
+  secret-scan:
+    name: Secret Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+        continue-on-error: true
+
+  # Security Summary
+  security-summary:
+    name: Security Summary
+    runs-on: ubuntu-latest
+    needs: [frontend-security, backend-security, codeql, secret-scan]
+    if: always()
+
+    steps:
+      - name: Security Scan Summary
+        run: |
+          echo "## Security Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend (npm audit) | ${{ needs.frontend-security.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Backend (OWASP) | ${{ needs.backend-security.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| CodeQL | ${{ needs.codeql.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Secret Scan | ${{ needs.secret-scan.result }} |" >> $GITHUB_STEP_SUMMARY

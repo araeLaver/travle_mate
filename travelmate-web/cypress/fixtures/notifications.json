@@ -1,0 +1,99 @@
+{
+  "list": {
+    "content": [
+      {
+        "id": 1,
+        "type": "FOLLOW",
+        "message": "TravelBuddy님이 팔로우했습니다.",
+        "isRead": false,
+        "createdAt": "2024-01-20T10:00:00Z",
+        "data": {
+          "userId": 2,
+          "nickname": "TravelBuddy",
+          "profileImageUrl": "/images/profile2.jpg"
+        }
+      },
+      {
+        "id": 2,
+        "type": "NFT_COLLECTED",
+        "message": "경복궁 NFT를 수집했습니다!",
+        "isRead": true,
+        "createdAt": "2024-01-19T15:00:00Z",
+        "data": {
+          "collectionId": 3,
+          "locationId": 1,
+          "locationName": "경복궁",
+          "rarity": "LEGENDARY",
+          "imageUrl": "/images/gyeongbok.jpg"
+        }
+      },
+      {
+        "id": 3,
+        "type": "MINTING_COMPLETE",
+        "message": "남산타워 NFT 민팅이 완료되었습니다.",
+        "isRead": true,
+        "createdAt": "2024-01-18T12:00:00Z",
+        "data": {
+          "collectionId": 1,
+          "tokenId": "12345",
+          "locationName": "남산타워",
+          "transactionHash": "0x123abc..."
+        }
+      },
+      {
+        "id": 4,
+        "type": "GROUP_INVITE",
+        "message": "서울 여행 그룹에 초대되었습니다.",
+        "isRead": false,
+        "createdAt": "2024-01-17T09:00:00Z",
+        "data": {
+          "groupId": 1,
+          "groupName": "서울 여행",
+          "inviterId": 2,
+          "inviterNickname": "TravelMaster"
+        }
+      },
+      {
+        "id": 5,
+        "type": "MESSAGE",
+        "message": "TravelBuddy님이 메시지를 보냈습니다.",
+        "isRead": true,
+        "createdAt": "2024-01-16T14:00:00Z",
+        "data": {
+          "chatRoomId": 2,
+          "senderId": 2,
+          "senderNickname": "TravelBuddy",
+          "preview": "안녕하세요!"
+        }
+      },
+      {
+        "id": 6,
+        "type": "REVIEW_HELPFUL",
+        "message": "회원님의 리뷰가 도움이 됐습니다.",
+        "isRead": true,
+        "createdAt": "2024-01-15T11:00:00Z",
+        "data": {
+          "reviewId": 1,
+          "locationName": "남산타워",
+          "helpfulCount": 10
+        }
+      }
+    ],
+    "totalElements": 6,
+    "totalPages": 1,
+    "number": 0
+  },
+  "unreadCount": {
+    "count": 2
+  },
+  "settings": {
+    "follow": true,
+    "message": true,
+    "nftCollected": true,
+    "mintingComplete": true,
+    "groupInvite": true,
+    "reviewHelpful": false,
+    "email": false,
+    "push": true
+  }
+}

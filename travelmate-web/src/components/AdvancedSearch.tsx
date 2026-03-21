@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { useAdvancedSearch, usePopularTags, SearchRequest } from '../hooks/useSearch';
+import { useAdvancedSearch, usePopularTags, SearchRequest, SearchResult } from '../hooks/useSearch';
 import './AdvancedSearch.css';
 
 interface AdvancedSearchProps {
-  onResults?: (results: any) => void;
+  onResults?: (results: SearchResult) => void;
 }
 
 const AdvancedSearch: React.FC<AdvancedSearchProps> = ({ onResults }) => {
@@ -39,11 +39,9 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({ onResults }) => {
   };
 
   const handleTagToggle = (tag: string) => {
-    setSearchParams((prev) => {
+    setSearchParams(prev => {
       const tags = prev.tags || [];
-      const newTags = tags.includes(tag)
-        ? tags.filter((t) => t !== tag)
-        : [...tags, tag];
+      const newTags = tags.includes(tag) ? tags.filter(t => t !== tag) : [...tags, tag];
       return { ...prev, tags: newTags };
     });
   };
@@ -74,10 +72,8 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({ onResults }) => {
           type="text"
           placeholder="그룹 이름, 설명, 목적지 검색..."
           value={searchParams.keyword || ''}
-          onChange={(e) =>
-            setSearchParams({ ...searchParams, keyword: e.target.value })
-          }
-          onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+          onChange={e => setSearchParams({ ...searchParams, keyword: e.target.value })}
+          onKeyPress={e => e.key === 'Enter' && handleSearch()}
         />
       </div>
 
@@ -85,17 +81,14 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({ onResults }) => {
       <div className="search-section">
         <label>여행 스타일</label>
         <div className="style-buttons">
-          {travelStyles.map((style) => (
+          {travelStyles.map(style => (
             <button
               key={style.value}
-              className={`style-button ${
-                searchParams.travelStyle === style.value ? 'active' : ''
-              }`}
+              className={`style-button ${searchParams.travelStyle === style.value ? 'active' : ''}`}
               onClick={() =>
                 setSearchParams({
                   ...searchParams,
-                  travelStyle:
-                    searchParams.travelStyle === style.value ? '' : style.value,
+                  travelStyle: searchParams.travelStyle === style.value ? '' : style.value,
                 })
               }
             >
@@ -110,12 +103,10 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({ onResults }) => {
         <div className="search-section">
           <label>인기 태그</label>
           <div className="tags-container">
-            {popularTags.map((tag) => (
+            {popularTags.map(tag => (
               <button
                 key={tag}
-                className={`tag-button ${
-                  searchParams.tags?.includes(tag) ? 'active' : ''
-                }`}
+                className={`tag-button ${searchParams.tags?.includes(tag) ? 'active' : ''}`}
                 onClick={() => handleTagToggle(tag)}
               >
                 {tag}
@@ -132,9 +123,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({ onResults }) => {
           type="text"
           placeholder="예: 제주도, 부산, 파리..."
           value={searchParams.destination || ''}
-          onChange={(e) =>
-            setSearchParams({ ...searchParams, destination: e.target.value })
-          }
+          onChange={e => setSearchParams({ ...searchParams, destination: e.target.value })}
         />
       </div>
 
@@ -147,7 +136,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({ onResults }) => {
             placeholder="최소"
             min="1"
             value={searchParams.minMembers || ''}
-            onChange={(e) =>
+            onChange={e =>
               setSearchParams({
                 ...searchParams,
                 minMembers: e.target.value ? parseInt(e.target.value) : undefined,
@@ -160,7 +149,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({ onResults }) => {
             placeholder="최대"
             min="1"
             value={searchParams.maxMembers || ''}
-            onChange={(e) =>
+            onChange={e =>
               setSearchParams({
                 ...searchParams,
                 maxMembers: e.target.value ? parseInt(e.target.value) : undefined,
@@ -177,9 +166,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({ onResults }) => {
         <div className="sort-controls">
           <select
             value={searchParams.sortBy}
-            onChange={(e) =>
-              setSearchParams({ ...searchParams, sortBy: e.target.value })
-            }
+            onChange={e => setSearchParams({ ...searchParams, sortBy: e.target.value })}
           >
             <option value="createdAt">생성일</option>
             <option value="startDate">출발일</option>
@@ -187,7 +174,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({ onResults }) => {
           </select>
           <select
             value={searchParams.sortOrder}
-            onChange={(e) =>
+            onChange={e =>
               setSearchParams({
                 ...searchParams,
                 sortOrder: e.target.value as 'asc' | 'desc',
@@ -202,11 +189,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({ onResults }) => {
 
       {/* 버튼 */}
       <div className="search-actions">
-        <button
-          className="reset-button"
-          onClick={handleReset}
-          disabled={searchMutation.isPending}
-        >
+        <button className="reset-button" onClick={handleReset} disabled={searchMutation.isPending}>
           초기화
         </button>
         <button
@@ -222,19 +205,14 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({ onResults }) => {
       {searchMutation.data && (
         <div className="search-results-info">
           <p>
-            총 <strong>{searchMutation.data.totalResults}</strong>개의 그룹을
-            찾았습니다.
+            총 <strong>{searchMutation.data.totalResults}</strong>개의 그룹을 찾았습니다.
           </p>
-          <p className="search-time">
-            검색 시간: {searchMutation.data.took?.toFixed(3)}초
-          </p>
+          <p className="search-time">검색 시간: {searchMutation.data.took?.toFixed(3)}초</p>
         </div>
       )}
 
       {searchMutation.isError && (
-        <div className="search-error">
-          검색 중 오류가 발생했습니다. 다시 시도해주세요.
-        </div>
+        <div className="search-error">검색 중 오류가 발생했습니다. 다시 시도해주세요.</div>
       )}
     </div>
   );

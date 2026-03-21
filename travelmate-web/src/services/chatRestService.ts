@@ -1,4 +1,10 @@
 import { apiClient } from './apiClient';
+import {
+  ChatRoomApiResponse,
+  ChatParticipantApiResponse,
+  ChatMessageApiResponse,
+  PaginatedResponse,
+} from '../types';
 
 export interface ChatRoom {
   id: string;
@@ -56,9 +62,10 @@ class ChatRestService {
   // 채팅방 목록 조회
   async getChatRooms(): Promise<ChatRoom[]> {
     try {
-      const response = await apiClient.get<any[]>('/chat/rooms');
-      return response.map(this.mapToChatRoom);
+      const response = await apiClient.get<ChatRoomApiResponse[]>('/chat/rooms');
+      return response.map(room => this.mapToChatRoom(room));
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to fetch chat rooms:', error);
       throw error;
     }
@@ -67,9 +74,10 @@ class ChatRestService {
   // 특정 채팅방 조회
   async getChatRoom(roomId: string): Promise<ChatRoom | null> {
     try {
-      const response = await apiClient.get<any>(`/chat/rooms/${roomId}`);
+      const response = await apiClient.get<ChatRoomApiResponse>(`/chat/rooms/${roomId}`);
       return this.mapToChatRoom(response);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to fetch chat room:', error);
       return null;
     }
@@ -78,9 +86,10 @@ class ChatRestService {
   // 채팅방 생성
   async createChatRoom(request: CreateChatRoomRequest): Promise<ChatRoom> {
     try {
-      const response = await apiClient.post<any>('/chat/rooms', request);
+      const response = await apiClient.post<ChatRoomApiResponse>('/chat/rooms', request);
       return this.mapToChatRoom(response);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to create chat room:', error);
       throw error;
     }
@@ -89,14 +98,15 @@ class ChatRestService {
   // 채팅 메시지 조회 (페이지네이션)
   async getMessages(roomId: string, page: number = 0, size: number = 50): Promise<ChatMessage[]> {
     try {
-      const response = await apiClient.get<any>(
+      const response = await apiClient.get<PaginatedResponse<ChatMessageApiResponse>>(
         `/chat/rooms/${roomId}/messages?page=${page}&size=${size}`
       );
 
       // 페이지네이션 응답 처리
-      const messages = response.content || response;
-      return Array.isArray(messages) ? messages.map(this.mapToChatMessage) : [];
+      const messages = response.content || [];
+      return Array.isArray(messages) ? messages.map(msg => this.mapToChatMessage(msg)) : [];
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to fetch messages:', error);
       throw error;
     }
@@ -107,6 +117,7 @@ class ChatRestService {
     try {
       await apiClient.post(`/chat/rooms/${roomId}/read`, {});
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to mark messages as read:', error);
     }
   }
@@ -116,6 +127,7 @@ class ChatRestService {
     try {
       await apiClient.delete(`/chat/messages/${messageId}`);
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to delete message:', error);
       throw error;
     }
@@ -124,23 +136,22 @@ class ChatRestService {
   // 읽지 않은 메시지 수 조회
   async getUnreadCount(roomId: string): Promise<number> {
     try {
-      const response = await apiClient.get<{ count: number }>(
-        `/chat/rooms/${roomId}/unread-count`
-      );
+      const response = await apiClient.get<{ count: number }>(`/chat/rooms/${roomId}/unread-count`);
       return response.count || 0;
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Failed to fetch unread count:', error);
       return 0;
     }
   }
 
   // 백엔드 응답을 ChatRoom으로 변환
-  private mapToChatRoom(data: any): ChatRoom {
+  private mapToChatRoom(data: ChatRoomApiResponse): ChatRoom {
     return {
       id: data.id?.toString() || '',
       name: data.roomName || '',
       roomType: data.roomType || 'PRIVATE',
-      participants: (data.participants || []).map((p: any) => ({
+      participants: (data.participants || []).map((p: ChatParticipantApiResponse) => ({
         id: p.id?.toString() || '',
         userId: p.userId?.toString() || p.user?.id?.toString() || '',
         userName: p.user?.nickname || p.userName || '',
@@ -156,7 +167,7 @@ class ChatRestService {
   }
 
   // 백엔드 응답을 ChatMessage로 변환
-  private mapToChatMessage(data: any): ChatMessage {
+  private mapToChatMessage(data: ChatMessageApiResponse): ChatMessage {
     return {
       id: data.id?.toString() || '',
       chatRoomId: data.chatRoomId?.toString() || '',
@@ -169,7 +180,7 @@ class ChatRestService {
       locationLongitude: data.locationLongitude,
       locationName: data.locationName,
       isDeleted: data.isDeleted || false,
-      sentAt: new Date(data.sentAt || data.createdAt),
+      sentAt: new Date(data.sentAt || data.createdAt || Date.now()),
       isRead: data.isRead || false,
     };
   }

@@ -1,0 +1,159 @@
+/* 접근성 유틸리티 스타일 */
+
+/* 스크린 리더 전용 (시각적으로 숨김) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* 포커스 시에만 보이는 요소 (스킵 링크 등) */
+.sr-only-focusable:focus,
+.sr-only-focusable:active {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: inherit;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* 포커스 스타일 */
+:focus-visible {
+  outline: 2px solid #8b5cf6;
+  outline-offset: 2px;
+}
+
+/* 포커스 링 제거가 필요한 경우 (마우스 클릭) */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* 버튼 및 인터랙티브 요소 포커스 */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid #8b5cf6;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* 다크 테마에서의 포커스 스타일 */
+.dark :focus-visible,
+[data-theme='dark'] :focus-visible {
+  outline-color: #a78bfa;
+}
+
+/* 키보드 네비게이션 가능한 카드 스타일 */
+.keyboard-navigable {
+  cursor: pointer;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+.keyboard-navigable:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+/* 비활성화된 요소 스타일 */
+[aria-disabled='true'],
+[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* 로딩 상태 표시 */
+[aria-busy='true'] {
+  cursor: wait;
+}
+
+/* 선택된 탭 스타일 */
+[role='tab'][aria-selected='true'] {
+  font-weight: 600;
+}
+
+/* 현재 페이지 네비게이션 */
+[aria-current='page'] {
+  font-weight: 600;
+  position: relative;
+}
+
+/* 필수 필드 표시 */
+[aria-required='true']::after {
+  content: ' *';
+  color: #ef4444;
+}
+
+/* 에러 상태 필드 */
+[aria-invalid='true'] {
+  border-color: #ef4444 !important;
+}
+
+/* 라이브 영역 (스크린 리더 알림용) */
+.live-region {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* 스킵 링크 */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: #8b5cf6;
+  color: white;
+  padding: 8px 16px;
+  z-index: 10000;
+  text-decoration: none;
+  font-weight: 600;
+  border-radius: 0 0 8px 0;
+  transition: top 0.3s;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* 감소된 모션 선호 사용자 지원 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* 고대비 모드 지원 */
+@media (prefers-contrast: high) {
+  :focus-visible {
+    outline-width: 3px;
+  }
+
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    border-width: 2px;
+  }
+}

@@ -8,37 +8,83 @@ import org.springframework.http.HttpStatus;
  */
 @Getter
 public class BusinessException extends RuntimeException {
-    
+
     private final HttpStatus status;
-    private final String errorCode;
-    
+    private final String errorCodeStr;
+    private final ErrorCode errorCode;
+
     public BusinessException(String message) {
         super(message);
         this.status = HttpStatus.BAD_REQUEST;
-        this.errorCode = "BUSINESS_ERROR";
+        this.errorCodeStr = "BUSINESS_ERROR";
+        this.errorCode = null;
     }
-    
+
     public BusinessException(String message, HttpStatus status) {
         super(message);
         this.status = status;
-        this.errorCode = "BUSINESS_ERROR";
+        this.errorCodeStr = "BUSINESS_ERROR";
+        this.errorCode = null;
     }
-    
+
     public BusinessException(String message, String errorCode) {
         super(message);
         this.status = HttpStatus.BAD_REQUEST;
-        this.errorCode = errorCode;
+        this.errorCodeStr = errorCode;
+        this.errorCode = null;
     }
-    
+
     public BusinessException(String message, HttpStatus status, String errorCode) {
         super(message);
         this.status = status;
-        this.errorCode = errorCode;
+        this.errorCodeStr = errorCode;
+        this.errorCode = null;
     }
-    
+
     public BusinessException(String message, Throwable cause, HttpStatus status, String errorCode) {
         super(message, cause);
         this.status = status;
+        this.errorCodeStr = errorCode;
+        this.errorCode = null;
+    }
+
+    /**
+     * ErrorCode enum을 사용하는 생성자
+     */
+    public BusinessException(ErrorCode errorCode) {
+        super(errorCode.getMessage());
+        this.status = errorCode.getHttpStatus();
+        this.errorCodeStr = errorCode.getCode();
+        this.errorCode = errorCode;
+    }
+
+    /**
+     * ErrorCode enum과 커스텀 메시지를 사용하는 생성자
+     */
+    public BusinessException(ErrorCode errorCode, String message) {
+        super(message);
+        this.status = errorCode.getHttpStatus();
+        this.errorCodeStr = errorCode.getCode();
+        this.errorCode = errorCode;
+    }
+
+    /**
+     * ErrorCode enum과 예외 원인을 사용하는 생성자
+     */
+    public BusinessException(ErrorCode errorCode, Throwable cause) {
+        super(errorCode.getMessage(), cause);
+        this.status = errorCode.getHttpStatus();
+        this.errorCodeStr = errorCode.getCode();
+        this.errorCode = errorCode;
+    }
+
+    /**
+     * ErrorCode enum, 커스텀 메시지, 예외 원인을 사용하는 생성자
+     */
+    public BusinessException(ErrorCode errorCode, String message, Throwable cause) {
+        super(message, cause);
+        this.status = errorCode.getHttpStatus();
+        this.errorCodeStr = errorCode.getCode();
         this.errorCode = errorCode;
     }
     

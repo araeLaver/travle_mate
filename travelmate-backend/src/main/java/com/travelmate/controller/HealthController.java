@@ -24,7 +24,7 @@ public class HealthController {
         Map<String, Object> health = new HashMap<>();
         health.put("status", "UP");
         health.put("timestamp", LocalDateTime.now().toString());
-        health.put("service", "TravelMate API");
+        health.put("service", "Fryndo API");
         health.put("version", "1.0.0");
         
         // Check database connection
@@ -42,5 +42,13 @@ public class HealthController {
     @GetMapping("/ping")
     public ResponseEntity<String> ping() {
         return ResponseEntity.ok("pong");
+    }
+
+    /**
+     * 컨테이너 liveness 체크용 - 데이터베이스 확인 없이 빠르게 응답
+     */
+    @GetMapping("/live")
+    public ResponseEntity<String> liveness() {
+        return ResponseEntity.ok("OK");
     }
 }

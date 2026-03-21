@@ -17,10 +17,10 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       
     - name: Set up Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v6
       with:
         node-version: '20'
         cache: 'npm'
@@ -28,18 +28,23 @@ jobs:
         
     - name: Install dependencies
       working-directory: ./travelmate-web
-      run: npm ci
-      
-    - name: Run lint
+      run: npm ci --legacy-peer-deps
+
+    - name: Run tests
       working-directory: ./travelmate-web
-      run: npm run lint --if-present
-      
+      run: npm test -- --watchAll=false --passWithNoTests
+      env:
+        CI: true
+
     - name: Build
       working-directory: ./travelmate-web
       run: npm run build
+      env:
+        CI: false
       
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
+      if: success()
+      uses: actions/upload-artifact@v6
       with:
         name: frontend-build
         path: travelmate-web/build

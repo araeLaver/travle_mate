@@ -30,7 +30,7 @@ export function useWebSocketConnection() {
 
     websocketService.onConnect(() => setIsConnected(true));
     websocketService.onDisconnect(() => setIsConnected(false));
-    websocketService.onError((err) => {
+    websocketService.onError(err => {
       setError(err.message || 'WebSocket error');
     });
 
@@ -51,27 +51,42 @@ export function useChatRoom(roomId: string) {
   const { user } = useAuthStore();
   const unsubscribeRef = useRef<(() => void) | null>(null);
 
+  // 클로저 문제 방지를 위한 refs
+  const roomIdRef = useRef(roomId);
+  const userRef = useRef(user);
+
+  // refs 업데이트
+  useEffect(() => {
+    roomIdRef.current = roomId;
+  }, [roomId]);
+
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
+
   useEffect(() => {
     if (!isConnected || !roomId || !user) {
       return;
     }
 
+    // 현재 값 캡처
+    const currentRoomId = roomId;
+    const currentUserId = user.id.toString();
+
     // 채팅방 구독
-    const unsubscribe = websocketService.subscribeToRoom(roomId, (message) => {
-      setMessages((prev) => [...prev, message]);
+    const unsubscribe = websocketService.subscribeToRoom(currentRoomId, message => {
+      setMessages(prev => [...prev, message]);
     });
 
     unsubscribeRef.current = unsubscribe;
     setIsSubscribed(true);
 
     // 채팅방 입장 알림
-    websocketService.joinRoom(roomId, user.id.toString());
+    websocketService.joinRoom(currentRoomId, currentUserId);
 
     return () => {
-      // 채팅방 퇴장 알림
-      if (user) {
-        websocketService.leaveRoom(roomId, user.id.toString());
-      }
+      // 클린업 시 캡처된 값 사용 (클로저 문제 방지)
+      websocketService.leaveRoom(currentRoomId, currentUserId);
       unsubscribe();
       setIsSubscribed(false);
     };

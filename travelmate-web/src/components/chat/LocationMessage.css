@@ -1,0 +1,177 @@
+.location-message {
+  position: relative;
+  max-width: 280px;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(138, 43, 226, 0.2);
+  transition: all 0.2s ease;
+}
+
+.location-message:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(138, 43, 226, 0.3);
+}
+
+.location-message.my-message {
+  margin-left: auto;
+}
+
+/* Map Preview */
+.map-preview {
+  position: relative;
+  width: 100%;
+  height: 120px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(168, 85, 247, 0.2));
+  overflow: hidden;
+}
+
+.map-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.9;
+}
+
+.map-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.location-pin {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+.location-pin svg {
+  width: 20px;
+  height: 20px;
+  color: white;
+  transform: rotate(45deg);
+}
+
+/* Location Info */
+.location-info {
+  padding: 12px;
+}
+
+.location-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.location-header svg {
+  width: 16px;
+  height: 16px;
+  color: #a855f7;
+  flex-shrink: 0;
+}
+
+.location-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.location-address {
+  margin: 0 0 4px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.location-coords {
+  margin: 0;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  font-family: 'SF Mono', 'Consolas', monospace;
+}
+
+/* Map Actions */
+.map-actions {
+  display: flex;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.map-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.map-btn:not(:last-child) {
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.map-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.map-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.map-btn.google:hover {
+  color: #4285f4;
+}
+
+.map-btn.naver:hover {
+  color: #03c75a;
+}
+
+.map-btn.kakao:hover {
+  color: #fee500;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .location-message {
+    max-width: 240px;
+  }
+
+  .map-preview {
+    height: 100px;
+  }
+
+  .map-btn span {
+    display: none;
+  }
+
+  .map-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+}

@@ -1,15 +1,33 @@
 package com.travelmate.repository;
 
 import com.travelmate.entity.TravelGroup;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface TravelGroupRepository extends JpaRepository<TravelGroup, Long> {
+
+    /**
+     * ID로 그룹 조회 - creator와 members.user를 함께 로드하여 N+1 방지
+     */
+    @EntityGraph(attributePaths = {"creator", "members", "members.user"})
+    Optional<TravelGroup> findById(Long id);
+
+    /**
+     * ID로 그룹 조회 - 멤버 포함
+     */
+    @Query("SELECT DISTINCT tg FROM TravelGroup tg " +
+           "LEFT JOIN FETCH tg.creator " +
+           "LEFT JOIN FETCH tg.members m " +
+           "LEFT JOIN FETCH m.user " +
+           "WHERE tg.id = :id")
+    Optional<TravelGroup> findByIdWithMembers(@Param("id") Long id);
     
     @Query("SELECT tg FROM TravelGroup tg WHERE tg.status = 'RECRUITING' AND " +
            "(:purpose IS NULL OR tg.purpose = :purpose) AND " +
@@ -31,4 +49,27 @@ public interface TravelGroupRepository extends JpaRepository<TravelGroup, Long> 
     List<TravelGroup> findByCreatorId(@Param("userId") Long userId);
     
     List<TravelGroup> findByStatus(TravelGroup.Status status);
+
+    /**
+     * 추천용 그룹 목록 조회 (정원 미달 + 모집중)
+     * N+1 방지를 위해 creator만 먼저 조회, 멤버는 별도 배치 조회
+     */
+    @Query("SELECT tg FROM TravelGroup tg " +
+           "LEFT JOIN FETCH tg.creator " +
+           "WHERE tg.currentMembers < tg.maxMembers " +
+           "AND (tg.status = 'RECRUITING' OR tg.status = 'ACTIVE')")
+    List<TravelGroup> findAvailableGroupsForRecommendation();
+
+    // ===== Admin Dashboard Queries =====
+
+    /**
+     * 활성 그룹 수 조회 (RECRUITING 또는 ACTIVE)
+     */
+    @Query("SELECT COUNT(tg) FROM TravelGroup tg WHERE tg.status = 'RECRUITING' OR tg.status = 'ACTIVE'")
+    long countActiveGroups();
+
+    /**
+     * 특정 상태의 그룹 수 조회
+     */
+    long countByStatus(TravelGroup.Status status);
 }

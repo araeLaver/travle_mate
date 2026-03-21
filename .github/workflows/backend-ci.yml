@@ -17,10 +17,10 @@ jobs:
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       
     - name: Set up JDK 17
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5
       with:
         java-version: '17'
         distribution: 'temurin'
@@ -28,14 +28,17 @@ jobs:
         
     - name: Build with Maven
       working-directory: ./travelmate-backend
-      run: ./mvnw clean package -DskipTests
+      run: mvn clean package -DskipTests
       
     - name: Run tests
       working-directory: ./travelmate-backend
-      run: ./mvnw test
+      run: mvn test
+      env:
+        SPRING_PROFILES_ACTIVE: test
       
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
+      if: success()
+      uses: actions/upload-artifact@v6
       with:
         name: backend-jar
         path: travelmate-backend/target/*.jar

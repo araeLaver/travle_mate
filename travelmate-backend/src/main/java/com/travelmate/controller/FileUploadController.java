@@ -19,9 +19,13 @@ public class FileUploadController {
     private final FileUploadService fileUploadService;
 
     @PostMapping("/upload/image")
-    public ResponseEntity<Map<String, String>> uploadImage(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<Map<String, String>> uploadImage(
+            @AuthenticationPrincipal Long userId,
+            @RequestParam("file") MultipartFile file) {
         try {
-            String fileUrl = fileUploadService.uploadImage(file);
+            // 파일 소유자 정보와 함께 저장
+            String fileUrl = fileUploadService.uploadImage(file, userId);
+            log.info("이미지 업로드 성공: {} by user {}", fileUrl, userId);
             return ResponseEntity.ok(Map.of(
                 "success", "true",
                 "url", fileUrl,
@@ -37,11 +41,10 @@ public class FileUploadController {
 
     @PostMapping("/upload/profile")
     public ResponseEntity<Map<String, String>> uploadProfileImage(
-            @AuthenticationPrincipal String userId,
+            @AuthenticationPrincipal Long userId,
             @RequestParam("file") MultipartFile file) {
         try {
-            Long userIdLong = Long.parseLong(userId);
-            String fileUrl = fileUploadService.uploadProfileImage(file, userIdLong);
+            String fileUrl = fileUploadService.uploadProfileImage(file, userId);
             return ResponseEntity.ok(Map.of(
                 "success", "true",
                 "url", fileUrl,
@@ -56,9 +59,13 @@ public class FileUploadController {
     }
 
     @PostMapping("/upload/document")
-    public ResponseEntity<Map<String, String>> uploadDocument(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<Map<String, String>> uploadDocument(
+            @AuthenticationPrincipal Long userId,
+            @RequestParam("file") MultipartFile file) {
         try {
-            String fileUrl = fileUploadService.uploadDocument(file);
+            // 파일 소유자 정보와 함께 저장
+            String fileUrl = fileUploadService.uploadDocument(file, userId);
+            log.info("문서 업로드 성공: {} by user {}", fileUrl, userId);
             return ResponseEntity.ok(Map.of(
                 "success", "true",
                 "url", fileUrl,
@@ -73,15 +80,25 @@ public class FileUploadController {
     }
 
     @DeleteMapping("/delete")
-    public ResponseEntity<Map<String, String>> deleteFile(@RequestParam("url") String fileUrl) {
+    public ResponseEntity<Map<String, String>> deleteFile(
+            @AuthenticationPrincipal Long userId,
+            @RequestParam("url") String fileUrl) {
         try {
-            fileUploadService.deleteFile(fileUrl);
+            // 파일 소유자만 삭제 가능 (권한 검증 포함)
+            fileUploadService.deleteFileWithAuth(fileUrl, userId);
+            log.info("파일 삭제 성공: {} by user {}", fileUrl, userId);
             return ResponseEntity.ok(Map.of(
                 "success", "true",
                 "message", "파일 삭제 성공"
             ));
+        } catch (SecurityException e) {
+            log.warn("파일 삭제 권한 없음: {} by user {}", fileUrl, userId);
+            return ResponseEntity.status(403).body(Map.of(
+                "success", "false",
+                "message", e.getMessage()
+            ));
         } catch (Exception e) {
-            log.error("파일 삭제 실패: {}", fileUrl, e);
+            log.error("파일 삭제 실패: {} by user {}", fileUrl, userId, e);
             return ResponseEntity.badRequest().body(Map.of(
                 "success", "false",
                 "message", "파일 삭제 실패"

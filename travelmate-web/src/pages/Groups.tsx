@@ -1,10 +1,31 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { groupService, TravelGroup } from '../services/groupService';
-import './Groups.css';
+import { useToast } from '../components/Toast';
+import { getErrorMessage, logError } from '../utils/errorHandler';
+import Logo from '../components/Logo';
+import ThemeToggle from '../components/ThemeToggle';
+import AdBanner from '../components/ads/AdBanner';
+import SEOHead from '../components/SEOHead';
+
+const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.5 },
+};
+
+const staggerContainer = {
+  animate: {
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
 
 const Groups: React.FC = () => {
   const navigate = useNavigate();
+  const toast = useToast();
   const [groups, setGroups] = useState<TravelGroup[]>([]);
   const [filteredGroups, setFilteredGroups] = useState<TravelGroup[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -12,20 +33,36 @@ const Groups: React.FC = () => {
   const [filters, setFilters] = useState({
     destination: '',
     travelStyle: '',
-    status: 'recruiting'
+    status: 'recruiting',
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const travelStyles = [
-    '전체', '자연관광', '문화탐방', '미식투어', '모험가', '힐링여행', 
-    '사진가', '배낭여행', '럭셔리 여행', '등산/트레킹'
+    '전체',
+    '자연관광',
+    '문화탐방',
+    '미식투어',
+    '모험가',
+    '힐링여행',
+    '사진가',
+    '배낭여행',
+    '럭셔리 여행',
+    '등산/트레킹',
   ];
 
-  const statusLabels = {
-    'recruiting': '모집중',
-    'full': '모집완료', 
-    'active': '진행중',
-    'completed': '완료'
+  const statusLabels: Record<string, string> = {
+    recruiting: '모집중',
+    full: '모집완료',
+    active: '진행중',
+    completed: '완료',
+  };
+
+  const statusColors: Record<string, string> = {
+    recruiting: 'bg-emerald-500',
+    full: 'bg-amber-500',
+    active: 'bg-blue-500',
+    completed: 'bg-gray-500',
   };
 
   useEffect(() => {
@@ -56,8 +93,8 @@ const Groups: React.FC = () => {
 
       setGroups(loadedGroups);
     } catch (error) {
-      console.error('Failed to load groups:', error);
-      alert('그룹 목록을 불러오는데 실패했습니다.');
+      logError('Groups.loadGroups', error);
+      toast.error(getErrorMessage(error));
     } finally {
       setIsLoading(false);
     }
@@ -66,20 +103,18 @@ const Groups: React.FC = () => {
   const filterGroups = async () => {
     let filtered = [...groups];
 
-    // 검색어 필터링
     if (searchQuery.trim()) {
       try {
         filtered = await groupService.searchGroups(searchQuery.trim(), {
           destination: filters.destination || undefined,
-          travelStyle: filters.travelStyle && filters.travelStyle !== '전체' ? filters.travelStyle : undefined,
+          travelStyle:
+            filters.travelStyle && filters.travelStyle !== '전체' ? filters.travelStyle : undefined,
           status: filters.status || undefined,
         });
-      } catch (error) {
-        console.error('Failed to search groups:', error);
+      } catch {
         // 에러 발생 시 로컬 필터링 사용
       }
     } else {
-      // 추가 필터 적용 (검색어가 없을 때)
       if (filters.destination) {
         filtered = filtered.filter(group =>
           group.destination.toLowerCase().includes(filters.destination.toLowerCase())
@@ -99,35 +134,43 @@ const Groups: React.FC = () => {
   };
 
   const handleJoinGroup = async (groupId: string) => {
+    setActionLoading(`join-${groupId}`);
     try {
       const success = await groupService.joinGroup(groupId);
       if (success) {
-        alert('그룹에 성공적으로 가입했습니다! 🎉');
-        await loadGroups(); // 목록 새로고침
+        toast.success('그룹에 성공적으로 가입했습니다!');
+        await loadGroups();
       }
     } catch (error) {
-      alert(`가입 실패: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
+      logError('Groups.handleJoinGroup', error);
+      toast.error(getErrorMessage(error));
+    } finally {
+      setActionLoading(null);
     }
   };
 
   const handleLeaveGroup = async (groupId: string) => {
     if (!window.confirm('정말 그룹에서 탈퇴하시겠습니까?')) return;
 
+    setActionLoading(`leave-${groupId}`);
     try {
       const success = await groupService.leaveGroup(groupId);
       if (success) {
-        alert('그룹에서 탈퇴했습니다.');
+        toast.info('그룹에서 탈퇴했습니다.');
         await loadGroups();
       }
     } catch (error) {
-      alert(`탈퇴 실패: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
+      logError('Groups.handleLeaveGroup', error);
+      toast.error(getErrorMessage(error));
+    } finally {
+      setActionLoading(null);
     }
   };
 
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat('ko-KR', {
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     }).format(date);
   };
 
@@ -138,214 +181,332 @@ const Groups: React.FC = () => {
     return `${min}~${max}만원`;
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'recruiting': return '#28a745';
-      case 'full': return '#fd7e14';
-      case 'active': return '#007bff';
-      case 'completed': return '#6c757d';
-      default: return '#6c757d';
-    }
-  };
-
   const isMyGroup = (group: TravelGroup) => {
     return group.members.some(member => member.id === groupService.getCurrentUserId());
   };
 
-  if (isLoading) {
-    return (
-      <div className="groups-loading">
-        <div className="loading-spinner">🗺️</div>
-        <p>여행 그룹을 불러오는 중...</p>
-      </div>
-    );
-  }
+  const tabs = [
+    { id: 'all', label: '전체 그룹', icon: '🌍' },
+    { id: 'my', label: '내 그룹', icon: '👥' },
+    { id: 'recommended', label: '추천 그룹', icon: '⭐' },
+  ] as const;
 
   return (
-    <div className="groups-container">
-      {/* 헤더 */}
-      <div className="groups-header">
-        <h1>🗺️ 여행 그룹</h1>
-        <p>함께할 여행 메이트를 찾고 멋진 추억을 만들어보세요!</p>
-        
-        <button 
-          className="create-group-btn"
-          onClick={() => navigate('/groups/create')}
-        >
-          ✨ 새 그룹 만들기
-        </button>
-      </div>
+    <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] relative overflow-hidden">
+      <SEOHead
+        title="여행 그룹 - 함께하는 여행"
+        description="Fryndo 여행 그룹에서 마음이 맞는 여행 메이트를 찾아보세요. 목적지별, 여행 스타일별 그룹을 검색하고 새로운 여행 동반자와 특별한 추억을 만드세요."
+        canonical="https://fryndo.com/groups"
+      />
+      {/* Background Effects */}
+      <div
+        className="absolute top-20 left-10 w-72 h-72 bg-violet-400/30 dark:bg-violet-600/20 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite' }}
+      />
+      <div
+        className="absolute top-40 right-10 w-96 h-96 bg-pink-400/20 dark:bg-pink-600/15 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite 2s' }}
+      />
+      <div
+        className="absolute bottom-20 left-1/3 w-80 h-80 bg-blue-400/20 dark:bg-blue-600/15 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite 4s' }}
+      />
 
-      {/* 탭 네비게이션 */}
-      <div className="groups-tabs">
-        <button 
-          className={`tab-btn ${selectedTab === 'all' ? 'active' : ''}`}
-          onClick={() => setSelectedTab('all')}
-        >
-          🌐 전체 그룹
-        </button>
-        <button 
-          className={`tab-btn ${selectedTab === 'my' ? 'active' : ''}`}
-          onClick={() => setSelectedTab('my')}
-        >
-          👥 내 그룹
-        </button>
-        <button 
-          className={`tab-btn ${selectedTab === 'recommended' ? 'active' : ''}`}
-          onClick={() => setSelectedTab('recommended')}
-        >
-          ⭐ 추천 그룹
-        </button>
-      </div>
-
-      {/* 검색 및 필터 */}
-      <div className="groups-filters">
-        <div className="search-bar">
-          <input
-            type="text"
-            placeholder="그룹명, 목적지, 태그로 검색..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="search-input"
-          />
-          <span className="search-icon">🔍</span>
-        </div>
-        
-        <div className="filter-row">
-          <select
-            value={filters.destination}
-            onChange={(e) => setFilters({...filters, destination: e.target.value})}
-            className="filter-select"
-          >
-            <option value="">전체 지역</option>
-            <option value="서울">서울</option>
-            <option value="부산">부산</option>
-            <option value="제주">제주</option>
-            <option value="경주">경주</option>
-            <option value="강릉">강릉</option>
-            <option value="여수">여수</option>
-            <option value="전주">전주</option>
-          </select>
-          
-          <select
-            value={filters.travelStyle}
-            onChange={(e) => setFilters({...filters, travelStyle: e.target.value})}
-            className="filter-select"
-          >
-            {travelStyles.map(style => (
-              <option key={style} value={style}>{style}</option>
-            ))}
-          </select>
-          
-          <select
-            value={filters.status}
-            onChange={(e) => setFilters({...filters, status: e.target.value})}
-            className="filter-select"
-          >
-            <option value="">전체 상태</option>
-            <option value="recruiting">모집중</option>
-            <option value="full">모집완료</option>
-            <option value="active">진행중</option>
-          </select>
-        </div>
-      </div>
-
-      {/* 그룹 목록 */}
-      <div className="groups-list">
-        {filteredGroups.length === 0 ? (
-          <div className="empty-groups">
-            <div className="empty-icon">🗺️</div>
-            <h3>검색 결과가 없습니다</h3>
-            <p>다른 검색어나 필터를 시도해보세요.</p>
+      {/* Navigation */}
+      <nav className="fixed top-0 w-full z-50 px-4 py-3">
+        <div className="max-w-6xl mx-auto bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-2xl px-6 py-3 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
+          <div className="flex items-center justify-between">
+            <button onClick={() => navigate('/')} className="flex items-center gap-2">
+              <Logo size="md" />
+              <span className="font-bold text-gray-900 dark:text-white">Fryndo</span>
+            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+              >
+                대시보드
+              </button>
+              <ThemeToggle />
+            </div>
           </div>
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <main className="relative z-10 max-w-6xl mx-auto px-4 pt-24 pb-12">
+        {/* Header */}
+        <motion.header
+          className="text-center mb-12"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            <span className="bg-gradient-to-r from-violet-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Travel Groups
+            </span>
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-8">
+            함께할 여행 메이트를 찾고 멋진 추억을 만들어보세요!
+          </p>
+          <motion.button
+            onClick={() => navigate('/groups/create')}
+            className="px-8 py-4 bg-gradient-to-r from-violet-600 to-pink-600 text-white rounded-full font-semibold text-lg shadow-lg shadow-violet-500/30 hover:shadow-xl hover:shadow-violet-500/40 transition-all duration-300 hover:-translate-y-1 flex items-center gap-2 mx-auto"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <span className="text-xl">✨</span>새 그룹 만들기
+          </motion.button>
+        </motion.header>
+
+        {/* Tabs */}
+        <motion.nav
+          className="flex justify-center gap-2 mb-8"
+          {...fadeInUp}
+          transition={{ delay: 0.1 }}
+          role="tablist"
+          aria-label="그룹 카테고리"
+        >
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setSelectedTab(tab.id)}
+              className={`px-6 py-3 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 ${
+                selectedTab === tab.id
+                  ? 'bg-gradient-to-r from-violet-600 to-pink-600 text-white shadow-lg shadow-violet-500/30'
+                  : 'bg-white/80 dark:bg-gray-900/80 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200/50 dark:border-gray-800/50'
+              }`}
+              role="tab"
+              aria-selected={selectedTab === tab.id}
+            >
+              <span>{tab.icon}</span>
+              <span className="hidden sm:inline">{tab.label}</span>
+            </button>
+          ))}
+        </motion.nav>
+
+        {/* Search and Filters */}
+        <motion.div
+          className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-800/50 shadow-lg mb-8"
+          {...fadeInUp}
+          transition={{ delay: 0.2 }}
+        >
+          <div className="flex flex-col lg:flex-row gap-4">
+            {/* Search Bar */}
+            <div className="relative flex-1">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+              <input
+                type="search"
+                placeholder="그룹명, 목적지, 태그로 검색..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all"
+              />
+            </div>
+
+            {/* Filters */}
+            <div className="flex flex-wrap gap-3">
+              <select
+                value={filters.destination}
+                onChange={e => setFilters({ ...filters, destination: e.target.value })}
+                className="px-4 py-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+              >
+                <option value="">전체 지역</option>
+                <option value="서울">서울</option>
+                <option value="부산">부산</option>
+                <option value="제주">제주</option>
+                <option value="경주">경주</option>
+                <option value="강릉">강릉</option>
+                <option value="여수">여수</option>
+                <option value="전주">전주</option>
+              </select>
+
+              <select
+                value={filters.travelStyle}
+                onChange={e => setFilters({ ...filters, travelStyle: e.target.value })}
+                className="px-4 py-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+              >
+                {travelStyles.map(style => (
+                  <option key={style} value={style}>
+                    {style}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={filters.status}
+                onChange={e => setFilters({ ...filters, status: e.target.value })}
+                className="px-4 py-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+              >
+                <option value="">전체 상태</option>
+                <option value="recruiting">모집중</option>
+                <option value="full">모집완료</option>
+                <option value="active">진행중</option>
+              </select>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Groups List */}
+        {isLoading ? (
+          <motion.div className="flex flex-col items-center justify-center py-20" {...fadeInUp}>
+            <div className="w-16 h-16 rounded-full border-4 border-violet-200 dark:border-violet-800 border-t-violet-600 animate-spin mb-4" />
+            <p className="text-gray-500 dark:text-gray-400">여행 그룹을 불러오는 중...</p>
+          </motion.div>
+        ) : filteredGroups.length === 0 ? (
+          <motion.div
+            className="text-center py-20 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-800/50 shadow-lg"
+            {...fadeInUp}
+          >
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-violet-400/20 to-pink-400/20 dark:from-violet-500/30 dark:to-pink-500/30 flex items-center justify-center text-4xl">
+              🗺️
+            </div>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+              검색 결과가 없습니다
+            </h2>
+            <p className="text-gray-500 dark:text-gray-400">다른 검색어나 필터를 시도해보세요.</p>
+          </motion.div>
         ) : (
-          <div className="groups-grid">
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            variants={staggerContainer}
+            initial="initial"
+            animate="animate"
+            role="list"
+          >
             {filteredGroups.map(group => (
-              <div key={group.id} className="group-card">
+              <motion.article
+                key={group.id}
+                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-800/50 shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
+                variants={fadeInUp}
+                role="listitem"
+                whileHover={{ scale: 1.02 }}
+              >
+                {/* Cover Image */}
                 {group.coverImage && (
-                  <div className="group-image">
-                    <img src={group.coverImage} alt={group.name} />
-                    <div 
-                      className="group-status"
-                      style={{ backgroundColor: getStatusColor(group.status) }}
+                  <div className="relative h-40 overflow-hidden">
+                    <img
+                      src={group.coverImage}
+                      alt={`${group.name} 그룹 커버`}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                    <span
+                      className={`absolute top-3 right-3 px-3 py-1 ${statusColors[group.status]} text-white text-xs font-semibold rounded-full`}
                     >
                       {statusLabels[group.status]}
-                    </div>
+                    </span>
                   </div>
                 )}
-                
-                <div className="group-content">
-                  <div className="group-header">
-                    <h3 className="group-name">{group.name}</h3>
-                    <div className="group-members">
-                      {group.currentMembers}/{group.maxMembers}명
-                    </div>
+
+                <div className="p-5">
+                  {/* Header */}
+                  <div className="flex items-start justify-between mb-3">
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-1">
+                      {group.name}
+                    </h3>
+                    <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                      👥 {group.currentMembers}/{group.maxMembers}
+                    </span>
                   </div>
-                  
-                  <p className="group-destination">📍 {group.destination}</p>
-                  <p className="group-dates">
-                    🗓️ {formatDate(group.startDate)} - {formatDate(group.endDate)}
+
+                  {/* Info */}
+                  <div className="space-y-2 mb-4 text-sm text-gray-600 dark:text-gray-400">
+                    <p className="flex items-center gap-2">📍 {group.destination}</p>
+                    <p className="flex items-center gap-2">
+                      📅 {formatDate(group.startDate)} - {formatDate(group.endDate)}
+                    </p>
+                    <p className="flex items-center gap-2">💰 {formatBudget(group.budget)}</p>
+                  </div>
+
+                  {/* Description */}
+                  <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-4">
+                    {group.description}
                   </p>
-                  <p className="group-budget">💰 {formatBudget(group.budget)}</p>
-                  
-                  <p className="group-description">{group.description}</p>
-                  
-                  <div className="group-tags">
-                    {group.tags.slice(0, 3).map((tag, index) => (
-                      <span key={index} className="group-tag">#{tag}</span>
+
+                  {/* Tags */}
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {group.tags.slice(0, 3).map((tag, idx) => (
+                      <span
+                        key={idx}
+                        className="px-2 py-1 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 text-xs font-medium rounded-full"
+                      >
+                        #{tag}
+                      </span>
                     ))}
                   </div>
-                  
-                  <div className="group-leader">
-                    <span className="leader-label">👑 리더:</span>
-                    <span className="leader-name">
+
+                  {/* Leader */}
+                  <div className="flex items-center gap-2 mb-4 text-sm">
+                    <span className="text-amber-500">👑</span>
+                    <span className="text-gray-600 dark:text-gray-400">리더:</span>
+                    <span className="font-medium text-gray-900 dark:text-white">
                       {group.members.find(m => m.role === 'leader')?.name || '알 수 없음'}
                     </span>
                   </div>
-                </div>
-                
-                <div className="group-actions">
-                  {isMyGroup(group) ? (
-                    <div className="my-group-actions">
-                      <button 
-                        className="btn-small secondary"
-                        onClick={() => navigate(`/groups/${group.id}`)}
-                      >
-                        그룹 보기
-                      </button>
-                      {group.members.find(m => m.id === groupService.getCurrentUserId())?.role !== 'leader' && (
-                        <button 
-                          className="btn-small danger"
-                          onClick={() => handleLeaveGroup(group.id)}
+
+                  {/* Actions */}
+                  <div className="flex gap-3">
+                    {isMyGroup(group) ? (
+                      <>
+                        <button
+                          onClick={() => navigate(`/groups/${group.id}`)}
+                          className="flex-1 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl font-medium border border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
                         >
-                          탈퇴하기
+                          그룹 보기
                         </button>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="join-group-actions">
-                      <button 
-                        className="btn-small secondary"
-                        onClick={() => navigate(`/groups/${group.id}`)}
-                      >
-                        상세보기
-                      </button>
-                      {group.status === 'recruiting' && (
-                        <button 
-                          className="btn-small primary"
-                          onClick={() => handleJoinGroup(group.id)}
+                        {group.members.find(m => m.id === groupService.getCurrentUserId())?.role !==
+                          'leader' && (
+                          <button
+                            onClick={() => handleLeaveGroup(group.id)}
+                            disabled={actionLoading === `leave-${group.id}`}
+                            className="px-4 py-2.5 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-xl font-medium hover:bg-red-200 dark:hover:bg-red-900/50 transition-all disabled:opacity-50"
+                          >
+                            {actionLoading === `leave-${group.id}` ? '...' : '탈퇴'}
+                          </button>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => navigate(`/groups/${group.id}`)}
+                          className="flex-1 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl font-medium border border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
                         >
-                          가입하기
+                          상세보기
                         </button>
-                      )}
-                    </div>
-                  )}
+                        {group.status === 'recruiting' && (
+                          <button
+                            onClick={() => handleJoinGroup(group.id)}
+                            disabled={actionLoading === `join-${group.id}`}
+                            className="flex-1 py-2.5 bg-gradient-to-r from-violet-600 to-pink-600 text-white rounded-xl font-medium hover:shadow-lg hover:shadow-violet-500/30 transition-all disabled:opacity-50"
+                          >
+                            {actionLoading === `join-${group.id}` ? '가입중...' : '가입하기'}
+                          </button>
+                        )}
+                      </>
+                    )}
+                  </div>
                 </div>
-              </div>
+              </motion.article>
             ))}
-          </div>
+          </motion.div>
         )}
-      </div>
+        {/* Ad Banner */}
+        <div className="mt-8">
+          <AdBanner adSlot="GROUPS_BOTTOM" adFormat="horizontal" />
+        </div>
+      </main>
+
+      {/* Blob animation keyframes */}
+      <style>{`
+        @keyframes blob {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          25% { transform: translate(20px, -30px) scale(1.1); }
+          50% { transform: translate(-20px, 20px) scale(0.9); }
+          75% { transform: translate(30px, 10px) scale(1.05); }
+        }
+      `}</style>
     </div>
   );
 };

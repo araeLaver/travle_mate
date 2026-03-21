@@ -1,0 +1,447 @@
+package com.travelmate.service.nft;
+
+import com.travelmate.config.CacheConfig;
+import com.travelmate.dto.NftDto;
+import com.travelmate.entity.User;
+import com.travelmate.entity.nft.*;
+import com.travelmate.repository.UserRepository;
+import com.travelmate.repository.nft.CollectibleLocationRepository;
+import com.travelmate.repository.nft.UserNftCollectionRepository;
+import com.travelmate.service.CacheService;
+import com.travelmate.service.NotificationService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class NftCollectionService {
+
+    private final CollectibleLocationRepository collectibleLocationRepository;
+    private final UserNftCollectionRepository userNftCollectionRepository;
+    private final UserRepository userRepository;
+    private final PointService pointService;
+    private final GpsVerificationService gpsVerificationService;
+    private final AchievementService achievementService;
+    private final NotificationService notificationService;
+    private final CacheService cacheService;
+
+    /**
+     * NFT 수집 가능 장소 목록 조회 (배치 조회로 N+1 방지)
+     */
+    @Transactional(readOnly = true)
+    @Cacheable(value = CacheConfig.NFT_LOCATIONS, key = "'list_' + #pageable.pageNumber + '_' + #pageable.pageSize")
+    public Page<NftDto.CollectibleLocationResponse> getCollectibleLocations(
+            Long userId,
+            Pageable pageable) {
+
+        Page<CollectibleLocation> locations = collectibleLocationRepository.findByIsActiveTrue(pageable);
+
+        // N+1 방지: 수집한 장소 ID를 한 번에 조회
+        Set<Long> collectedLocationIds = userId != null
+                ? Set.copyOf(userNftCollectionRepository.findCollectedLocationIdsByUserId(userId))
+                : Set.of();
+
+        return locations.map(loc -> toCollectibleLocationResponseWithSet(loc, collectedLocationIds, null));
+    }
+
+    /**
+     * 주변 수집 가능 장소 조회
+     */
+    @Transactional(readOnly = true)
+    public List<NftDto.CollectibleLocationResponse> getNearbyLocations(
+            Long userId,
+            Double latitude,
+            Double longitude,
+            Double radiusKm) {
+
+        List<CollectibleLocation> locations = collectibleLocationRepository
+                .findNearbyActiveLocations(latitude, longitude, radiusKm);
+
+        // N+1 방지: 수집한 장소 ID를 한 번에 조회
+        Set<Long> collectedLocationIds = userId != null
+                ? Set.copyOf(userNftCollectionRepository.findCollectedLocationIdsByUserId(userId))
+                : Set.of();
+
+        return locations.stream()
+                .map(loc -> {
+                    double distance = gpsVerificationService.calculateDistance(
+                            latitude, longitude, loc.getLatitude(), loc.getLongitude());
+                    return toCollectibleLocationResponseWithSet(loc, collectedLocationIds, distance);
+                })
+                .toList();
+    }
+
+    /**
+     * 카테고리별 장소 조회 (배치 조회로 N+1 방지)
+     */
+    @Transactional(readOnly = true)
+    @Cacheable(value = CacheConfig.NFT_LOCATIONS, key = "'category_' + #category + '_' + #pageable.pageNumber")
+    public Page<NftDto.CollectibleLocationResponse> getLocationsByCategory(
+            Long userId,
+            LocationCategory category,
+            Pageable pageable) {
+
+        Page<CollectibleLocation> locations = collectibleLocationRepository
+                .findByCategoryAndIsActiveTrue(category, pageable);
+
+        // N+1 방지: 수집한 장소 ID를 한 번에 조회
+        Set<Long> collectedLocationIds = userId != null
+                ? Set.copyOf(userNftCollectionRepository.findCollectedLocationIdsByUserId(userId))
+                : Set.of();
+
+        return locations.map(loc -> toCollectibleLocationResponseWithSet(loc, collectedLocationIds, null));
+    }
+
+    /**
+     * NFT 수집 (수집 후 관련 캐시 무효화)
+     */
+    @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = CacheConfig.NFT_COLLECTIONS, key = "#userId"),
+        @CacheEvict(value = "nftStats", key = "#userId"),
+        @CacheEvict(value = "collectionBook", key = "#userId")
+    })
+    public NftDto.CollectNftResponse collectNft(Long userId, NftDto.CollectNftRequest request) {
+        // 1. 장소 조회
+        CollectibleLocation location = collectibleLocationRepository.findById(request.getLocationId())
+                .orElseThrow(() -> new com.travelmate.exception.BusinessException(com.travelmate.exception.ErrorCode.LOCATION_NOT_FOUND));
+
+        if (!location.getIsActive()) {
+            throw new IllegalStateException("현재 수집이 불가능한 장소입니다");
+        }
+
+        // 2. 시즌 이벤트 확인
+        if (location.getIsSeasonalEvent()) {
+            LocalDateTime now = LocalDateTime.now();
+            if (location.getEventStartAt() != null && now.isBefore(location.getEventStartAt())) {
+                throw new IllegalStateException("이벤트가 아직 시작되지 않았습니다");
+            }
+            if (location.getEventEndAt() != null && now.isAfter(location.getEventEndAt())) {
+                throw new IllegalStateException("이벤트가 종료되었습니다");
+            }
+        }
+
+        // 3. 이미 수집했는지 확인
+        boolean alreadyCollected = userNftCollectionRepository
+                .existsByUserIdAndLocationId(userId, location.getId());
+        if (alreadyCollected) {
+            throw new IllegalStateException("이미 수집한 장소입니다");
+        }
+
+        // 4. GPS 검증 (GpsVerificationService 사용)
+        GpsVerificationService.GpsVerificationRequest gpsRequest = new GpsVerificationService.GpsVerificationRequest(
+                userId,
+                request.getLatitude(),
+                request.getLongitude(),
+                location.getLatitude(),
+                location.getLongitude(),
+                location.getCollectRadius().intValue(),
+                request.getGpsAccuracy(),
+                request.getIsMockLocation(),
+                request.getDeviceId()
+        );
+
+        GpsVerificationService.GpsVerificationResult verificationResult = gpsVerificationService.verify(gpsRequest);
+
+        if (!verificationResult.isValid()) {
+            return NftDto.CollectNftResponse.builder()
+                    .success(false)
+                    .message(verificationResult.getMessage())
+                    .build();
+        }
+
+        // 5. 사용자 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new com.travelmate.exception.BusinessException(com.travelmate.exception.ErrorCode.USER_NOT_FOUND));
+
+        // 6. NFT 컬렉션 생성
+        UserNftCollection nftCollection = UserNftCollection.builder()
+                .user(user)
+                .location(location)
+                .mintStatus(MintStatus.PENDING) // 블록체인 민팅은 별도 처리
+                .collectedLatitude(request.getLatitude())
+                .collectedLongitude(request.getLongitude())
+                .collectedAt(LocalDateTime.now())
+                .deviceId(request.getDeviceId())
+                .gpsAccuracy(request.getGpsAccuracy() != null ? String.valueOf(request.getGpsAccuracy()) : null)
+                .isVerified(true)
+                .verificationMethod("GPS_DISTANCE")
+                .earnedPoints(location.getPointReward())
+                .build();
+
+        nftCollection = userNftCollectionRepository.save(nftCollection);
+
+        // 7. 포인트 지급
+        Long pointReward = location.getPointReward() != null ? location.getPointReward().longValue() : 0L;
+        pointService.earnPoints(
+                userId,
+                pointReward,
+                PointSource.NFT_COLLECT,
+                location.getName() + " NFT 수집",
+                nftCollection.getId(),
+                "NFT_COLLECTION"
+        );
+
+        // 8. 사용자 통계 업데이트
+        user.setTotalNftsCollected(user.getTotalNftsCollected() + 1);
+        user.setUniqueLocationsVisited(user.getUniqueLocationsVisited() + 1);
+        userRepository.save(user);
+
+        // 9. 업적 체크
+        List<NftDto.AchievementUnlocked> unlockedAchievements = achievementService.checkAchievementsOnCollect(userId);
+
+        // 10. 알림 발송
+        notificationService.notifyNftCollected(
+                userId,
+                nftCollection.getId(),
+                location.getName(),
+                pointReward.intValue()
+        );
+
+        // 11. 업적 달성 알림 발송
+        for (NftDto.AchievementUnlocked achievement : unlockedAchievements) {
+            notificationService.notifyAchievementUnlocked(
+                    userId,
+                    achievement.getName(),
+                    achievement.getDescription()
+            );
+        }
+
+        log.info("NFT 수집 성공: userId={}, locationId={}, points={}",
+                userId, location.getId(), location.getPointReward());
+
+        return NftDto.CollectNftResponse.builder()
+                .success(true)
+                .message("NFT를 성공적으로 수집했습니다!")
+                .nftCollection(toUserNftCollectionResponse(nftCollection))
+                .earnedPoints(pointReward)
+                .unlockedAchievements(unlockedAchievements)
+                .build();
+    }
+
+    /**
+     * 내 NFT 컬렉션 조회 (N+1 방지: location과 함께 조회)
+     */
+    @Transactional(readOnly = true)
+    @Cacheable(value = CacheConfig.NFT_COLLECTIONS, key = "#userId + '_' + #pageable.pageNumber")
+    public Page<NftDto.UserNftCollectionResponse> getMyCollection(Long userId, Pageable pageable) {
+        // N+1 방지: location을 함께 조회
+        Page<UserNftCollection> collections = userNftCollectionRepository
+                .findByUserIdWithLocation(userId, pageable);
+        return collections.map(this::toUserNftCollectionResponse);
+    }
+
+    /**
+     * 희귀도별 컬렉션 조회
+     */
+    @Transactional(readOnly = true)
+    public Page<NftDto.UserNftCollectionResponse> getMyCollectionByRarity(
+            Long userId,
+            Rarity rarity,
+            Pageable pageable) {
+        Page<UserNftCollection> collections = userNftCollectionRepository
+                .findByUserIdAndRarity(userId, rarity, pageable);
+        return collections.map(this::toUserNftCollectionResponse);
+    }
+
+    /**
+     * 특정 NFT 상세 조회
+     */
+    @Transactional(readOnly = true)
+    public NftDto.UserNftCollectionResponse getNftDetail(Long userId, Long collectionId) {
+        UserNftCollection collection = userNftCollectionRepository.findById(collectionId)
+                .orElseThrow(() -> new com.travelmate.exception.BusinessException(com.travelmate.exception.ErrorCode.RESOURCE_NOT_FOUND));
+
+        if (!collection.getUser().getId().equals(userId)) {
+            throw new com.travelmate.exception.BusinessException(com.travelmate.exception.ErrorCode.FORBIDDEN);
+        }
+
+        return toUserNftCollectionResponse(collection);
+    }
+
+    /**
+     * 도감 조회 (캐싱으로 성능 최적화)
+     */
+    @Transactional(readOnly = true)
+    @Cacheable(value = "collectionBook", key = "#userId")
+    public NftDto.CollectionBookResponse getCollectionBook(Long userId) {
+        // 전체 통계
+        int totalLocations = (int) collectibleLocationRepository.count();
+        int collectedLocations = userNftCollectionRepository.countDistinctLocationsByUserId(userId);
+
+        // 희귀도별 통계 - N+1 방지: 단일 쿼리로 모든 희귀도 집계
+        Map<Rarity, Integer> rarityCounts = userNftCollectionRepository.countByUserIdGroupByRarity(userId)
+                .stream()
+                .collect(Collectors.toMap(
+                        row -> (Rarity) row[0],
+                        row -> ((Number) row[1]).intValue()
+                ));
+
+        int commonCollected = rarityCounts.getOrDefault(Rarity.COMMON, 0);
+        int rareCollected = rarityCounts.getOrDefault(Rarity.RARE, 0);
+        int epicCollected = rarityCounts.getOrDefault(Rarity.EPIC, 0);
+        int legendaryCollected = rarityCounts.getOrDefault(Rarity.LEGENDARY, 0);
+
+        NftDto.CollectionStats stats = NftDto.CollectionStats.builder()
+                .totalLocations(totalLocations)
+                .collectedLocations(collectedLocations)
+                .completionRate(totalLocations > 0 ? (double) collectedLocations / totalLocations * 100 : 0)
+                .commonCollected(commonCollected)
+                .rareCollected(rareCollected)
+                .epicCollected(epicCollected)
+                .legendaryCollected(legendaryCollected)
+                .build();
+
+        // 지역별 통계
+        List<Object[]> regionStats = userNftCollectionRepository.getCollectionProgressByRegion(userId);
+        List<NftDto.RegionCollection> regions = regionStats.stream()
+                .map(row -> NftDto.RegionCollection.builder()
+                        .region((String) row[0])
+                        .country((String) row[1])
+                        .total(((Number) row[2]).intValue())
+                        .collected(((Number) row[3]).intValue())
+                        .completionRate(((Number) row[4]).doubleValue())
+                        .build())
+                .toList();
+
+        // 카테고리별 통계
+        List<Object[]> categoryStats = userNftCollectionRepository.getCollectionProgressByCategory(userId);
+        List<NftDto.CategoryCollection> categories = categoryStats.stream()
+                .map(row -> NftDto.CategoryCollection.builder()
+                        .category(LocationCategory.valueOf((String) row[0]))
+                        .total(((Number) row[1]).intValue())
+                        .collected(((Number) row[2]).intValue())
+                        .completionRate(((Number) row[3]).doubleValue())
+                        .build())
+                .toList();
+
+        return NftDto.CollectionBookResponse.builder()
+                .stats(stats)
+                .regions(regions)
+                .categories(categories)
+                .build();
+    }
+
+    /**
+     * 사용자 NFT 통계 (캐싱으로 성능 최적화)
+     */
+    @Transactional(readOnly = true)
+    @Cacheable(value = "nftStats", key = "#userId")
+    public NftDto.UserNftStatsResponse getUserNftStats(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new com.travelmate.exception.BusinessException(com.travelmate.exception.ErrorCode.USER_NOT_FOUND));
+
+        NftDto.CollectionBookResponse collectionBook = getCollectionBook(userId);
+
+        return NftDto.UserNftStatsResponse.builder()
+                .totalNftsCollected(user.getTotalNftsCollected())
+                .uniqueLocationsVisited(user.getUniqueLocationsVisited())
+                .totalPointsEarned(pointService.getBalance(userId).getLifetimeEarned())
+                .globalRank(user.getGlobalRank())
+                .regionRank(user.getRegionRank())
+                .collectionStats(collectionBook.getStats())
+                .build();
+    }
+
+    // ===== DTO 변환 =====
+
+    private NftDto.CollectibleLocationResponse toCollectibleLocationResponse(
+            CollectibleLocation loc,
+            Long userId,
+            Double distance) {
+
+        boolean isCollected = userId != null &&
+                userNftCollectionRepository.existsByUserIdAndLocationId(userId, loc.getId());
+
+        return NftDto.CollectibleLocationResponse.builder()
+                .id(loc.getId())
+                .name(loc.getName())
+                .description(loc.getDescription())
+                .latitude(loc.getLatitude())
+                .longitude(loc.getLongitude())
+                .collectRadius(loc.getCollectRadius() != null ? loc.getCollectRadius().intValue() : 50)
+                .category(loc.getCategory())
+                .rarity(loc.getRarity())
+                .country(loc.getCountry())
+                .city(loc.getCity())
+                .region(loc.getRegion())
+                .imageUrl(loc.getImageUrl())
+                .nftImageUrl(loc.getNftImageUrl())
+                .pointReward(loc.getPointReward() != null ? loc.getPointReward().longValue() : 0L)
+                .isCollected(isCollected)
+                .isSeasonalEvent(loc.getIsSeasonalEvent())
+                .eventEndAt(loc.getEventEndAt())
+                .distance(distance)
+                .build();
+    }
+
+    /**
+     * 배치 조회된 수집 장소 ID Set을 사용하여 응답 생성 (N+1 방지)
+     */
+    private NftDto.CollectibleLocationResponse toCollectibleLocationResponseWithSet(
+            CollectibleLocation loc,
+            Set<Long> collectedLocationIds,
+            Double distance) {
+
+        boolean isCollected = collectedLocationIds.contains(loc.getId());
+
+        return NftDto.CollectibleLocationResponse.builder()
+                .id(loc.getId())
+                .name(loc.getName())
+                .description(loc.getDescription())
+                .latitude(loc.getLatitude())
+                .longitude(loc.getLongitude())
+                .collectRadius(loc.getCollectRadius() != null ? loc.getCollectRadius().intValue() : 50)
+                .category(loc.getCategory())
+                .rarity(loc.getRarity())
+                .country(loc.getCountry())
+                .city(loc.getCity())
+                .region(loc.getRegion())
+                .imageUrl(loc.getImageUrl())
+                .nftImageUrl(loc.getNftImageUrl())
+                .pointReward(loc.getPointReward() != null ? loc.getPointReward().longValue() : 0L)
+                .isCollected(isCollected)
+                .isSeasonalEvent(loc.getIsSeasonalEvent())
+                .eventEndAt(loc.getEventEndAt())
+                .distance(distance)
+                .build();
+    }
+
+    private NftDto.UserNftCollectionResponse toUserNftCollectionResponse(UserNftCollection collection) {
+        CollectibleLocation loc = collection.getLocation();
+
+        return NftDto.UserNftCollectionResponse.builder()
+                .id(collection.getId())
+                .location(NftDto.CollectibleLocationSummary.builder()
+                        .id(loc.getId())
+                        .name(loc.getName())
+                        .imageUrl(loc.getImageUrl())
+                        .nftImageUrl(loc.getNftImageUrl())
+                        .rarity(loc.getRarity())
+                        .category(loc.getCategory())
+                        .city(loc.getCity())
+                        .country(loc.getCountry())
+                        .build())
+                .tokenId(collection.getTokenId())
+                .mintStatus(collection.getMintStatus())
+                .collectedAt(collection.getCollectedAt())
+                .earnedPoints(collection.getEarnedPoints() != null ? collection.getEarnedPoints().longValue() : 0L)
+                .isVerified(collection.getIsVerified())
+                .build();
+    }
+}

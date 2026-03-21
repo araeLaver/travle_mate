@@ -1,0 +1,100 @@
+{
+  "title": "여행 일정",
+  "myItineraries": "내 일정",
+  "collaborating": "협업 일정",
+  "public": "공개 일정",
+  "popular": "인기 일정",
+  "create": "새 일정 만들기",
+  "edit": "일정 수정",
+  "delete": "일정 삭제",
+  "copy": "일정 복사",
+  "share": "일정 공유",
+  "empty": "아직 일정이 없습니다",
+  "emptyDescription": "새로운 여행 일정을 만들어보세요!",
+  "form": {
+    "title": "제목",
+    "titlePlaceholder": "일정 제목을 입력하세요",
+    "description": "설명",
+    "descriptionPlaceholder": "일정에 대한 설명을 입력하세요",
+    "startDate": "시작일",
+    "endDate": "종료일",
+    "coverImage": "커버 이미지",
+    "visibility": "공개 범위",
+    "create": "일정 만들기",
+    "save": "저장"
+  },
+  "visibility": {
+    "PRIVATE": "나만 보기",
+    "LINK_ONLY": "링크로 공유",
+    "FOLLOWERS": "팔로워에게 공개",
+    "PUBLIC": "전체 공개"
+  },
+  "detail": {
+    "duration": "{nights}박 {days}일",
+    "dayTrip": "당일치기",
+    "day": "Day {number}",
+    "views": "조회 {count}회",
+    "likes": "좋아요 {count}개",
+    "copies": "복사 {count}회",
+    "owner": "작성자",
+    "collaborators": "협업자",
+    "shareCode": "공유 코드",
+    "copyLink": "링크 복사"
+  },
+  "item": {
+    "add": "일정 추가",
+    "edit": "일정 수정",
+    "delete": "일정 삭제",
+    "move": "이동",
+    "reorder": "순서 변경",
+    "type": {
+      "ATTRACTION": "관광지",
+      "RESTAURANT": "식당",
+      "CAFE": "카페",
+      "ACCOMMODATION": "숙소",
+      "TRANSPORTATION": "교통",
+      "ACTIVITY": "액티비티",
+      "SHOPPING": "쇼핑",
+      "FREE_TIME": "자유 시간",
+      "NOTE": "메모",
+      "OTHER": "기타"
+    },
+    "booking": {
+      "NOT_NEEDED": "예약 불필요",
+      "PENDING": "예약 예정",
+      "BOOKED": "예약 완료",
+      "CANCELLED": "예약 취소"
+    },
+    "time": "시간",
+    "duration": "소요 시간",
+    "cost": "비용",
+    "estimatedCost": "예상 비용",
+    "actualCost": "실제 비용",
+    "notes": "메모",
+    "location": "장소",
+    "booking": "예약 정보"
+  },
+  "collaborator": {
+    "invite": "협업자 초대",
+    "manage": "협업자 관리",
+    "role": {
+      "VIEWER": "뷰어",
+      "EDITOR": "편집자",
+      "ADMIN": "관리자"
+    },
+    "status": {
+      "PENDING": "대기 중",
+      "ACCEPTED": "수락됨",
+      "DECLINED": "거절됨"
+    },
+    "accept": "수락",
+    "decline": "거절",
+    "remove": "제거",
+    "pendingInvites": "대기 중인 초대"
+  },
+  "search": {
+    "placeholder": "일정 검색...",
+    "results": "검색 결과",
+    "noResults": "검색 결과가 없습니다"
+  }
+}

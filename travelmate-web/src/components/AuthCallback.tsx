@@ -1,10 +1,27 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { realSocialLoginService } from '../services/realSocialLoginService';
+import { useToast } from './Toast';
+import { authService } from '../services/authService';
+
+const LoadingIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    style={{ width: '48px', height: '48px', animation: 'spin 1s linear infinite' }}
+  >
+    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+  </svg>
+);
 
 const AuthCallback: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const toast = useToast();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const handleAuthCallback = async () => {
@@ -12,135 +29,130 @@ const AuthCallback: React.FC = () => {
       const code = urlParams.get('code');
       const state = urlParams.get('state');
       const error = urlParams.get('error');
-      const provider = urlParams.get('provider') || state; // state에서 provider 정보 추출
-
-      console.log('OAuth 콜백 처리 시작:', { code, state, error, provider });
+      const provider = urlParams.get('provider') || state;
 
       if (error) {
-        console.error('OAuth 에러:', error);
-        alert(`로그인 중 오류가 발생했습니다: ${error}`);
+        toast.error(`로그인 중 오류가 발생했습니다: ${error}`);
         navigate('/login');
         return;
       }
 
-      if (code) {
+      if (code && provider) {
         try {
-          // OAuth 코드를 사용하여 토큰 교환 및 사용자 정보 가져오기
-          console.log('OAuth 코드 수신:', code);
-          console.log('Provider:', provider);
+          // 백엔드에 authorization code 전달하여 토큰 교환
+          const response = await fetch(
+            `${process.env.REACT_APP_API_URL || 'http://localhost:8080/api'}/auth/oauth/callback`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              credentials: 'include',
+              body: JSON.stringify({
+                code,
+                provider,
+                redirectUri: `${window.location.origin}/auth/callback`,
+              }),
+            }
+          );
 
-          // 실제 구현에서는 백엔드 API를 호출하여 토큰을 교환해야 합니다
-          // 예시: POST /api/auth/oauth/callback
-          const response = await fetch('/api/auth/oauth/callback', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              code,
-              provider,
-              redirectUri: process.env.REACT_APP_REDIRECT_URI
-            })
+          if (!response.ok) {
+            const errorData = await response.text();
+            throw new Error(errorData || 'OAuth 인증에 실패했습니다.');
+          }
+
+          const data = await response.json();
+
+          // authService.oauthLogin()을 사용하여 안전하게 토큰 저장
+          // 백엔드에서 이미 토큰 교환이 완료되었으므로 accessToken으로 로그인 처리
+          await authService.oauthLogin({
+            provider: provider as 'google' | 'kakao' | 'naver',
+            accessToken: data.accessToken,
           });
 
-          if (response.ok) {
-            const userData = await response.json();
-            console.log('백엔드에서 받은 사용자 정보:', userData);
-
-            // 로컬 저장소에 사용자 정보 저장
-            localStorage.setItem('socialUser', JSON.stringify(userData.user));
-            localStorage.setItem('isLoggedIn', 'true');
-            localStorage.setItem('loginProvider', provider || 'unknown');
-            localStorage.setItem('accessToken', userData.accessToken);
-
-            alert(`✅ ${provider?.toUpperCase()} 로그인 성공! 환영합니다, ${userData.user?.name}님!`);
-            navigate('/dashboard');
-          } else {
-            throw new Error('백엔드 인증 처리 실패');
-          }
-        } catch (error) {
-          console.error('OAuth 콜백 처리 오류:', error);
-
-          // 백엔드 연결 실패 시 임시로 성공 처리 (개발용)
-          console.warn('백엔드 API 연결 실패 - 개발 모드로 처리');
-          const mockUser = {
-            id: 'oauth_' + Date.now(),
-            email: 'oauth.user@example.com',
-            name: `${provider?.toUpperCase()} 사용자`,
-            profileImage: 'https://picsum.photos/150/150?random=oauth',
-            provider: provider || 'unknown'
-          };
-
-          localStorage.setItem('socialUser', JSON.stringify(mockUser));
-          localStorage.setItem('isLoggedIn', 'true');
-          localStorage.setItem('loginProvider', provider || 'unknown');
-
-          alert(`✅ ${provider?.toUpperCase()} 로그인 성공! (개발 모드)`);
+          toast.success(
+            `${provider.charAt(0).toUpperCase() + provider.slice(1)} 로그인 성공! 환영합니다!`
+          );
           navigate('/dashboard');
+        } catch (err) {
+          const message = err instanceof Error ? err.message : 'OAuth 로그인에 실패했습니다.';
+          setErrorMessage(message);
+          toast.error(message);
+          setTimeout(() => navigate('/login'), 3000);
         }
       } else {
-        // 네이버 로그인의 경우 fragment 방식 처리
-        const hash = location.hash;
-        if (hash) {
-          const hashParams = new URLSearchParams(hash.substring(1));
-          const accessToken = hashParams.get('access_token');
-          const tokenType = hashParams.get('token_type');
-
-          if (accessToken) {
-            console.log('네이버 액세스 토큰 수신:', accessToken);
-            // 네이버 사용자 정보 API 호출
-            try {
-              const userResponse = await fetch('https://openapi.naver.com/v1/nid/me', {
-                headers: {
-                  'Authorization': `${tokenType} ${accessToken}`
-                }
-              });
-
-              if (userResponse.ok) {
-                const naverData = await userResponse.json();
-                const user = {
-                  id: naverData.response.id,
-                  email: naverData.response.email,
-                  name: naverData.response.nickname || naverData.response.name,
-                  profileImage: naverData.response.profile_image,
-                  provider: 'naver'
-                };
-
-                localStorage.setItem('socialUser', JSON.stringify(user));
-                localStorage.setItem('isLoggedIn', 'true');
-                localStorage.setItem('loginProvider', 'naver');
-
-                alert(`✅ 네이버 로그인 성공! 환영합니다, ${user.name}님!`);
-                navigate('/dashboard');
-                return;
-              }
-            } catch (error) {
-              console.error('네이버 사용자 정보 조회 실패:', error);
-            }
-          }
-        }
-
-        // 콜백 파라미터가 없는 경우 로그인 페이지로 리다이렉트
-        console.log('OAuth 콜백 파라미터 없음 - 로그인 페이지로 이동');
+        // 파라미터가 없는 경우 로그인 페이지로 리다이렉트
         navigate('/login');
       }
     };
 
     handleAuthCallback();
-  }, [location, navigate]);
+  }, [location, navigate, toast]);
+
+  if (errorMessage) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100vh',
+          textAlign: 'center',
+          background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%)',
+          color: 'white',
+        }}
+      >
+        <div style={{ marginBottom: '20px', color: '#f87171' }}>
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            style={{ width: '48px', height: '48px' }}
+          >
+            <circle cx="12" cy="12" r="10" />
+            <line x1="15" y1="9" x2="9" y2="15" />
+            <line x1="9" y1="9" x2="15" y2="15" />
+          </svg>
+        </div>
+        <h2>로그인 실패</h2>
+        <p style={{ color: 'rgba(255, 255, 255, 0.7)', marginTop: '10px' }}>{errorMessage}</p>
+        <p style={{ color: 'rgba(255, 255, 255, 0.5)', marginTop: '20px', fontSize: '14px' }}>
+          잠시 후 로그인 페이지로 이동합니다...
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      height: '100vh',
-      textAlign: 'center'
-    }}>
-      <div style={{ marginBottom: '20px', fontSize: '24px' }}>🔄</div>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100vh',
+        textAlign: 'center',
+        background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%)',
+        color: 'white',
+      }}
+    >
+      <style>
+        {`
+          @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+        `}
+      </style>
+      <div style={{ marginBottom: '20px', color: '#a78bfa' }} aria-hidden="true">
+        <LoadingIcon />
+      </div>
       <h2>로그인 처리 중...</h2>
-      <p>잠시만 기다려주세요.</p>
+      <p style={{ color: 'rgba(255, 255, 255, 0.7)' }}>잠시만 기다려주세요.</p>
     </div>
   );
 };

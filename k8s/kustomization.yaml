@@ -1,0 +1,34 @@
+# Kustomization for Fryndo Kubernetes Deployment
+# Usage: kubectl apply -k k8s/
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: travelmate
+
+resources:
+  - namespace.yaml
+  - configmap.yaml
+  - secret.yaml
+  - rbac.yaml
+  - pvc.yaml
+  - postgres-deployment.yaml
+  - redis-deployment.yaml
+  - backend-deployment.yaml
+  - frontend-deployment.yaml
+  - ingress.yaml
+  - pdb.yaml
+  - networkpolicy.yaml
+
+commonLabels:
+  app.kubernetes.io/name: travelmate
+  app.kubernetes.io/managed-by: kustomize
+
+# Image customization (overlay에서 반드시 newTag를 semantic version으로 override하세요)
+# 예: newTag: "1.2.3" 또는 SHA digest
+# 프로덕션에서 'latest' 태그는 재현성을 보장하지 않으므로 사용 금지
+images:
+  - name: travelmate/backend
+    newTag: latest
+  - name: travelmate/frontend
+    newTag: latest

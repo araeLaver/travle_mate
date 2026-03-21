@@ -1,0 +1,182 @@
+# Prometheus Alert Rules for Fryndo
+
+groups:
+  # ===================
+  # Application Alerts
+  # ===================
+  - name: application
+    rules:
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(http_server_requests_seconds_count{status=~"5.."}[5m]))
+          /
+          sum(rate(http_server_requests_seconds_count[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value | humanizePercentage }} (threshold: 5%)"
+
+      - alert: HighResponseTime
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(http_server_requests_seconds_bucket[5m])) by (le)
+          ) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High response time detected"
+          description: "95th percentile response time is {{ $value }}s (threshold: 2s)"
+
+      - alert: ApplicationDown
+        expr: up{job="travelmate-backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Fryndo backend is down"
+          description: "Backend application has been down for more than 1 minute"
+
+      - alert: HighHeapUsage
+        expr: |
+          jvm_memory_used_bytes{area="heap"}
+          /
+          jvm_memory_max_bytes{area="heap"} > 0.85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High JVM heap usage"
+          description: "Heap usage is {{ $value | humanizePercentage }}"
+
+  # ===================
+  # Database Alerts
+  # ===================
+  - name: database
+    rules:
+      - alert: PostgreSQLDown
+        expr: pg_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "PostgreSQL database is not responding"
+
+      - alert: HighDatabaseConnections
+        expr: |
+          pg_stat_activity_count
+          /
+          pg_settings_max_connections > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High database connection usage"
+          description: "Connection usage is {{ $value | humanizePercentage }}"
+
+      - alert: SlowQueries
+        expr: |
+          rate(pg_stat_statements_seconds_total[5m])
+          /
+          rate(pg_stat_statements_calls_total[5m]) > 1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Slow database queries detected"
+          description: "Average query time is {{ $value }}s"
+
+  # ===================
+  # Redis Alerts
+  # ===================
+  - name: redis
+    rules:
+      - alert: RedisDown
+        expr: redis_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis is down"
+          description: "Redis cache is not responding"
+
+      - alert: HighRedisMemory
+        expr: |
+          redis_memory_used_bytes
+          /
+          redis_memory_max_bytes > 0.85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Redis memory usage"
+          description: "Memory usage is {{ $value | humanizePercentage }}"
+
+      - alert: RedisRejectedConnections
+        expr: increase(redis_rejected_connections_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis rejecting connections"
+          description: "Redis has rejected {{ $value }} connections in the last 5 minutes"
+
+  # ===================
+  # Infrastructure Alerts
+  # ===================
+  - name: infrastructure
+    rules:
+      - alert: HighCPUUsage
+        expr: |
+          100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is {{ $value }}%"
+
+      - alert: HighMemoryUsage
+        expr: |
+          (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is {{ $value }}%"
+
+      - alert: HighDiskUsage
+        expr: |
+          (1 - node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High disk usage on {{ $labels.instance }}"
+          description: "Disk usage is {{ $value }}%"
+
+      - alert: ContainerHighCPU
+        expr: |
+          sum(rate(container_cpu_usage_seconds_total{name!=""}[5m])) by (name) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container {{ $labels.name }} high CPU"
+          description: "CPU usage is {{ $value }}%"
+
+      - alert: ContainerHighMemory
+        expr: |
+          container_memory_usage_bytes{name!=""}
+          /
+          container_spec_memory_limit_bytes{name!=""} * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container {{ $labels.name }} high memory"
+          description: "Memory usage is {{ $value }}%"

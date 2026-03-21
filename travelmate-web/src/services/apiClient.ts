@@ -1,13 +1,10 @@
 import { authService } from './authService';
+import { ApiError, FileUploadResponse } from '../types';
 
 // API Base URL 설정
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8081/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
 
-export interface ApiError {
-  message: string;
-  status: number;
-  errors?: any;
-}
+export type { ApiError };
 
 class ApiClient {
   private baseURL: string;
@@ -64,11 +61,7 @@ class ApiClient {
   }
 
   // POST 요청
-  async post<T>(
-    endpoint: string,
-    data?: any,
-    includeAuth: boolean = true
-  ): Promise<T> {
+  async post<T, D = unknown>(endpoint: string, data?: D, includeAuth: boolean = true): Promise<T> {
     try {
       const headers = await this.getHeadersWithRefresh(includeAuth);
       const response = await fetch(`${this.baseURL}${endpoint}`, {
@@ -84,11 +77,7 @@ class ApiClient {
   }
 
   // PUT 요청
-  async put<T>(
-    endpoint: string,
-    data?: any,
-    includeAuth: boolean = true
-  ): Promise<T> {
+  async put<T, D = unknown>(endpoint: string, data?: D, includeAuth: boolean = true): Promise<T> {
     try {
       const headers = await this.getHeadersWithRefresh(includeAuth);
       const response = await fetch(`${this.baseURL}${endpoint}`, {
@@ -110,6 +99,22 @@ class ApiClient {
       const response = await fetch(`${this.baseURL}${endpoint}`, {
         method: 'DELETE',
         headers,
+      });
+
+      return this.handleResponse<T>(response);
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  // PATCH 요청
+  async patch<T, D = unknown>(endpoint: string, data?: D, includeAuth: boolean = true): Promise<T> {
+    try {
+      const headers = await this.getHeadersWithRefresh(includeAuth);
+      const response = await fetch(`${this.baseURL}${endpoint}`, {
+        method: 'PATCH',
+        headers,
+        body: data ? JSON.stringify(data) : undefined,
       });
 
       return this.handleResponse<T>(response);
@@ -151,20 +156,21 @@ class ApiClient {
   }
 
   // 에러 처리
-  private handleError(error: any): ApiError {
-    if (error.status) {
+  private handleError(error: unknown): ApiError {
+    if (error && typeof error === 'object' && 'status' in error) {
       return error as ApiError;
     }
 
     // 네트워크 에러 등
+    const errorMessage = error instanceof Error ? error.message : '네트워크 오류가 발생했습니다.';
     return {
-      message: error.message || '네트워크 오류가 발생했습니다.',
+      message: errorMessage,
       status: 0,
     };
   }
 
   // 파일 업로드
-  async uploadFile(endpoint: string, file: File): Promise<any> {
+  async uploadFile(endpoint: string, file: File): Promise<FileUploadResponse> {
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -181,7 +187,7 @@ class ApiClient {
         body: formData,
       });
 
-      return this.handleResponse(response);
+      return this.handleResponse<FileUploadResponse>(response);
     } catch (error) {
       throw this.handleError(error);
     }

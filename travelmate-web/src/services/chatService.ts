@@ -37,7 +37,7 @@ class ChatService {
     // 임시 사용자 ID 생성
     this.currentUserId = localStorage.getItem('tempUserId') || this.generateUserId();
     localStorage.setItem('tempUserId', this.currentUserId);
-    
+
     // 초기 데이터 로드
     this.initializeMockData();
   }
@@ -56,19 +56,18 @@ class ChatService {
           id: this.currentUserId,
           name: '나',
           isOnline: true,
-          lastSeen: new Date()
+          lastSeen: new Date(),
         },
         {
           id: 'mate_1',
           name: '김탐험가',
-          profileImage: 'https://picsum.photos/50/50?random=1',
           isOnline: true,
-          lastSeen: new Date()
-        }
+          lastSeen: new Date(),
+        },
       ],
       unreadCount: 0,
       createdAt: new Date(Date.now() - 3600000),
-      type: 'direct'
+      type: 'direct',
     };
 
     const room2: ChatRoom = {
@@ -79,26 +78,24 @@ class ChatService {
           id: this.currentUserId,
           name: '나',
           isOnline: true,
-          lastSeen: new Date()
+          lastSeen: new Date(),
         },
         {
           id: 'mate_2',
           name: '박여행러',
-          profileImage: 'https://picsum.photos/50/50?random=2',
           isOnline: false,
-          lastSeen: new Date(Date.now() - 1800000)
+          lastSeen: new Date(Date.now() - 1800000),
         },
         {
           id: 'mate_3',
           name: '이모험가',
-          profileImage: 'https://picsum.photos/50/50?random=3',
           isOnline: true,
-          lastSeen: new Date()
-        }
+          lastSeen: new Date(),
+        },
       ],
       unreadCount: 2,
       createdAt: new Date(Date.now() - 86400000),
-      type: 'group'
+      type: 'group',
     };
 
     const room3: ChatRoom = {
@@ -109,19 +106,18 @@ class ChatService {
           id: this.currentUserId,
           name: '나',
           isOnline: true,
-          lastSeen: new Date()
+          lastSeen: new Date(),
         },
         {
           id: 'mate_4',
           name: '이서연',
-          profileImage: 'https://picsum.photos/50/50?random=4',
           isOnline: false,
-          lastSeen: new Date(Date.now() - 3600000)
-        }
+          lastSeen: new Date(Date.now() - 3600000),
+        },
       ],
       unreadCount: 1,
       createdAt: new Date(Date.now() - 7200000),
-      type: 'direct'
+      type: 'direct',
     };
 
     const room4: ChatRoom = {
@@ -132,33 +128,30 @@ class ChatService {
           id: this.currentUserId,
           name: '나',
           isOnline: true,
-          lastSeen: new Date()
+          lastSeen: new Date(),
         },
         {
           id: 'mate_5',
           name: '제주러버',
-          profileImage: 'https://picsum.photos/50/50?random=5',
           isOnline: true,
-          lastSeen: new Date()
+          lastSeen: new Date(),
         },
         {
           id: 'mate_6',
           name: '휴식이필요해',
-          profileImage: 'https://picsum.photos/50/50?random=6',
           isOnline: false,
-          lastSeen: new Date(Date.now() - 1800000)
+          lastSeen: new Date(Date.now() - 1800000),
         },
         {
           id: 'mate_7',
           name: '카페순례자',
-          profileImage: 'https://picsum.photos/50/50?random=7',
           isOnline: true,
-          lastSeen: new Date()
-        }
+          lastSeen: new Date(),
+        },
       ],
       unreadCount: 3,
       createdAt: new Date(Date.now() - 172800000),
-      type: 'group'
+      type: 'group',
     };
 
     const room5: ChatRoom = {
@@ -169,19 +162,18 @@ class ChatService {
           id: this.currentUserId,
           name: '나',
           isOnline: true,
-          lastSeen: new Date()
+          lastSeen: new Date(),
         },
         {
           id: 'mate_8',
           name: '박민준',
-          profileImage: 'https://picsum.photos/50/50?random=8',
           isOnline: true,
-          lastSeen: new Date()
-        }
+          lastSeen: new Date(),
+        },
       ],
       unreadCount: 0,
       createdAt: new Date(Date.now() - 43200000),
-      type: 'direct'
+      type: 'direct',
     };
 
     this.rooms.set(room1.id, room1);
@@ -200,7 +192,7 @@ class ChatService {
         content: '안녕하세요! 여행 메이트로 매칭되어서 연락드려요 😊',
         timestamp: new Date(Date.now() - 3600000),
         type: 'text',
-        isRead: true
+        isRead: true,
       },
       {
         id: 'msg_2',
@@ -210,7 +202,7 @@ class ChatService {
         content: '안녕하세요! 반가워요. 어떤 여행 계획이 있으신가요?',
         timestamp: new Date(Date.now() - 3300000),
         type: 'text',
-        isRead: true
+        isRead: true,
       },
       {
         id: 'msg_3',
@@ -220,8 +212,8 @@ class ChatService {
         content: '이번 주말에 경복궁 근처에서 한복 체험하고 카페 투어 하려고 해요! 같이 하실래요?',
         timestamp: new Date(Date.now() - 3000000),
         type: 'text',
-        isRead: true
-      }
+        isRead: true,
+      },
     ];
 
     const messages2: ChatMessage[] = [
@@ -233,7 +225,7 @@ class ChatService {
         content: '오늘 밤 N서울타워 가실 분 있나요?',
         timestamp: new Date(Date.now() - 7200000),
         type: 'text',
-        isRead: false
+        isRead: false,
       },
       {
         id: 'msg_5',
@@ -243,8 +235,8 @@ class ChatService {
         content: '저 갈게요! 몇 시에 만날까요? 🌃',
         timestamp: new Date(Date.now() - 3600000),
         type: 'text',
-        isRead: false
-      }
+        isRead: false,
+      },
     ];
 
     this.messages.set(room1.id, messages1);
@@ -257,12 +249,11 @@ class ChatService {
 
   // 채팅방 목록 가져오기
   getChatRooms(): ChatRoom[] {
-    return Array.from(this.rooms.values())
-      .sort((a, b) => {
-        const aTime = a.lastMessage?.timestamp || a.createdAt;
-        const bTime = b.lastMessage?.timestamp || b.createdAt;
-        return bTime.getTime() - aTime.getTime();
-      });
+    return Array.from(this.rooms.values()).sort((a, b) => {
+      const aTime = a.lastMessage?.timestamp || a.createdAt;
+      const bTime = b.lastMessage?.timestamp || b.createdAt;
+      return bTime.getTime() - aTime.getTime();
+    });
   }
 
   // 특정 채팅방의 메시지 가져오기
@@ -271,7 +262,11 @@ class ChatService {
   }
 
   // 메시지 전송
-  sendMessage(roomId: string, content: string, type: 'text' | 'image' | 'location' = 'text'): ChatMessage {
+  sendMessage(
+    roomId: string,
+    content: string,
+    type: 'text' | 'image' | 'location' = 'text'
+  ): ChatMessage {
     const room = this.rooms.get(roomId);
     if (!room) {
       throw new Error('Room not found');
@@ -285,7 +280,7 @@ class ChatService {
       content,
       timestamp: new Date(),
       type,
-      isRead: false
+      isRead: false,
     };
 
     // 메시지 저장
@@ -301,9 +296,12 @@ class ChatService {
 
     // 자동 응답 시뮬레이션 (실제 앱에서는 웹소켓으로 실시간 메시지 수신)
     if (type === 'text') {
-      setTimeout(() => {
-        this.simulateResponse(roomId);
-      }, 1000 + Math.random() * 3000);
+      setTimeout(
+        () => {
+          this.simulateResponse(roomId);
+        },
+        1000 + Math.random() * 3000
+      );
     }
 
     return message;
@@ -330,7 +328,7 @@ class ChatService {
       '네, 좋아요!',
       '기대돼요 ✨',
       '날씨가 좋았으면 좋겠네요',
-      '다른 분들 의견은 어떠세요?'
+      '다른 분들 의견은 어떠세요?',
     ];
 
     const responseMessage: ChatMessage = {
@@ -341,7 +339,7 @@ class ChatService {
       content: responses[Math.floor(Math.random() * responses.length)],
       timestamp: new Date(),
       type: 'text',
-      isRead: false
+      isRead: false,
     };
 
     const roomMessages = this.messages.get(roomId) || [];
@@ -364,19 +362,18 @@ class ChatService {
           id: this.currentUserId,
           name: '나',
           isOnline: true,
-          lastSeen: new Date()
+          lastSeen: new Date(),
         },
         {
           id: participantId,
           name: participantName,
-          profileImage: `https://picsum.photos/50/50?random=${Math.floor(Math.random() * 100)}`,
           isOnline: Math.random() > 0.3,
-          lastSeen: new Date(Date.now() - Math.random() * 3600000)
-        }
+          lastSeen: new Date(Date.now() - Math.random() * 3600000),
+        },
       ],
       unreadCount: 0,
       createdAt: new Date(),
-      type: 'direct'
+      type: 'direct',
     };
 
     this.rooms.set(room.id, room);

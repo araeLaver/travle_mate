@@ -1,0 +1,84 @@
+{
+  "appName": {
+    "ko": "Fryndo - 여행 NFT 컬렉션",
+    "en": "Fryndo - Travel NFT Collection"
+  },
+  "shortDescription": {
+    "ko": "AI 기반 여행 동반자 앱. 특별한 장소를 NFT로 수집하고 친구들과 공유하세요.",
+    "en": "AI-powered travel companion app. Collect special locations as NFTs and share with friends."
+  },
+  "fullDescription": {
+    "ko": "Fryndo와 함께 여행을 더욱 특별하게 만들어보세요!\n\n주요 기능:\n- 위치 기반 NFT 수집: 특별한 장소를 방문하고 디지털 NFT로 수집하세요\n- 다양한 희귀도: 커먼부터 레전더리까지 다양한 등급의 NFT를 찾아보세요\n- 그룹 여행: 친구들과 그룹을 만들어 함께 여행하고 채팅하세요\n- 실시간 지도: 주변의 수집 가능한 장소를 실시간으로 확인하세요\n- NFT 민팅: 수집한 NFT를 블록체인에 영구 보관하세요\n- 오프라인 모드: 인터넷 없이도 앱을 사용할 수 있어요\n\n프리미엄 혜택:\n- 무제한 NFT 수집\n- 광고 제거\n- 프리미엄 전용 장소 접근\n- 우선 민팅 대기열\n- 상세 여행 분석\n\n지금 Fryndo를 다운로드하고 여행을 수집하세요!",
+    "en": "Make your travels more special with Fryndo!\n\nKey Features:\n- Location-based NFT Collection: Visit special places and collect them as digital NFTs\n- Various Rarities: Find NFTs ranging from Common to Legendary\n- Group Travel: Create groups with friends to travel and chat together\n- Real-time Map: Check collectible locations around you in real-time\n- NFT Minting: Permanently store your collected NFTs on the blockchain\n- Offline Mode: Use the app even without internet connection\n\nPremium Benefits:\n- Unlimited NFT collection\n- Ad-free experience\n- Access to premium-only locations\n- Priority minting queue\n- Detailed travel analytics\n\nDownload Fryndo now and start collecting your travels!"
+  },
+  "keywords": {
+    "ko": ["여행", "NFT", "블록체인", "컬렉션", "지도", "위치기반", "소셜", "그룹여행"],
+    "en": ["travel", "NFT", "blockchain", "collection", "map", "location-based", "social", "group travel"]
+  },
+  "categories": {
+    "ios": {
+      "primary": "Travel",
+      "secondary": "Lifestyle"
+    },
+    "android": {
+      "primary": "TRAVEL_AND_LOCAL",
+      "secondary": "SOCIAL"
+    }
+  },
+  "ageRating": {
+    "ios": "4+",
+    "android": "Everyone"
+  },
+  "supportUrl": "https://travelmate.app/support",
+  "privacyPolicyUrl": "https://travelmate.app/privacy",
+  "termsOfServiceUrl": "https://travelmate.app/terms",
+  "marketingUrl": "https://travelmate.app",
+  "screenshots": {
+    "ios": {
+      "iPhone6.5": [
+        "./store/screenshots/ios/6.5/1_home.png",
+        "./store/screenshots/ios/6.5/2_map.png",
+        "./store/screenshots/ios/6.5/3_collection.png",
+        "./store/screenshots/ios/6.5/4_chat.png",
+        "./store/screenshots/ios/6.5/5_profile.png"
+      ],
+      "iPhone5.5": [
+        "./store/screenshots/ios/5.5/1_home.png",
+        "./store/screenshots/ios/5.5/2_map.png",
+        "./store/screenshots/ios/5.5/3_collection.png",
+        "./store/screenshots/ios/5.5/4_chat.png",
+        "./store/screenshots/ios/5.5/5_profile.png"
+      ],
+      "iPad12.9": [
+        "./store/screenshots/ios/ipad/1_home.png",
+        "./store/screenshots/ios/ipad/2_map.png",
+        "./store/screenshots/ios/ipad/3_collection.png"
+      ]
+    },
+    "android": {
+      "phone": [
+        "./store/screenshots/android/phone/1_home.png",
+        "./store/screenshots/android/phone/2_map.png",
+        "./store/screenshots/android/phone/3_collection.png",
+        "./store/screenshots/android/phone/4_chat.png",
+        "./store/screenshots/android/phone/5_profile.png"
+      ],
+      "tablet7": [
+        "./store/screenshots/android/tablet7/1_home.png",
+        "./store/screenshots/android/tablet7/2_map.png",
+        "./store/screenshots/android/tablet7/3_collection.png"
+      ],
+      "tablet10": [
+        "./store/screenshots/android/tablet10/1_home.png",
+        "./store/screenshots/android/tablet10/2_map.png",
+        "./store/screenshots/android/tablet10/3_collection.png"
+      ]
+    }
+  },
+  "releaseNotes": {
+    "1.0.0": {
+      "ko": "Fryndo 첫 출시!\n- 위치 기반 NFT 수집 기능\n- 그룹 채팅 기능\n- 실시간 지도\n- 오프라인 모드\n- 프리미엄 구독",
+      "en": "Fryndo Initial Release!\n- Location-based NFT collection\n- Group chat feature\n- Real-time map\n- Offline mode\n- Premium subscription"
+    }
+  }
+}

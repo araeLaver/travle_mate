@@ -13,8 +13,8 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus,livenessState,readinessState
-      base-path: /management
+        include: health,info,metrics,prometheus,livenessState,readinessState,env,loggers
+      base-path: /actuator
   endpoint:
     health:
       show-details: when-authorized
@@ -22,6 +22,8 @@ management:
       probes:
         enabled: true
     metrics:
+      enabled: true
+    prometheus:
       enabled: true
   health:
     circuitbreakers:
@@ -36,10 +38,37 @@ management:
     export:
       prometheus:
         enabled: true
+    tags:
+      application: ${spring.application.name}
+      environment: ${spring.profiles.active:unknown}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5, 0.90, 0.95, 0.99
 
 spring:
   application:
     name: travel-mate-backend
+  main:
+    allow-bean-definition-overriding: true
+
+# OpenAPI/Swagger 설정
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operations-sorter: method
+    tags-sorter: alpha
+    display-request-duration: true
+    doc-expansion: none
+  show-actuator: false
+  packages-to-scan: com.travelmate.controller
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
 
   lifecycle:
     timeout-per-shutdown-phase: 30s
@@ -57,7 +86,8 @@ spring:
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/travelmate}
     username: ${DB_USERNAME:travelmate_user}
-    password: ${DB_PASSWORD:changeme}
+    # SECURITY: DB_PASSWORD 환경변수 필수 설정
+    password: ${DB_PASSWORD:}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -87,59 +117,194 @@ spring:
         order_updates: true
     database-platform: org.hibernate.dialect.PostgreSQLDialect
 
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
 logging:
   level:
     com.travelmate: DEBUG
     org.springframework.security: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-    
+
 app:
   jwt:
-    secret: ${JWT_SECRET:dev-only-secret-key-replace-in-production-environment}
-    expiration: ${JWT_EXPIRATION:86400000}  # 24 hours (환경변수로 설정 가능)
+    # SECURITY: JWT_SECRET 환경변수 필수 설정 (최소 32자, Base64 권장)
+    # 생성 명령어: openssl rand -base64 32
+    secret: ${JWT_SECRET:}
+    expiration: ${JWT_EXPIRATION:86400000}  # 24 hours
     refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000}  # 7 days
-  
+
+  mail:
+    enabled: ${MAIL_ENABLED:false}  # 개발환경에서는 비활성화
+
+  redis:
+    enabled: true  # 개발환경에서는 Redis 활성화
+
+  frontend:
+    url: ${FRONTEND_URL:http://localhost:3000}
+
   file:
     upload:
       path: ./uploads/
       max-size: 10485760  # 10MB in bytes
-      
+
   cors:
     allowed-origins: http://localhost:3000,http://localhost:8081
 
   security:
     rate-limit:
       enabled: false  # 개발환경에서는 비활성화
-    
+      requests-per-minute: 60
+      auth-requests-per-minute: 10
+    xss:
+      enabled: true
+    audit:
+      enabled: true
+
+# Sentry 설정 (개발)
+sentry:
+  enabled: ${SENTRY_ENABLED:false}
+  dsn: ${SENTRY_DSN:}
+  environment: development
+  traces-sample-rate: 0.1
+  logging:
+    minimum-event-level: warn
+    minimum-breadcrumb-level: info
+
+# 블록체인 설정 (Polygon)
+blockchain:
+  enabled: ${BLOCKCHAIN_ENABLED:false}
+  polygon:
+    rpc-url: ${POLYGON_RPC_URL:https://polygon-amoy.g.alchemy.com/v2/demo}
+    chain-id: ${POLYGON_CHAIN_ID:80002}
+    contract-address: ${NFT_CONTRACT_ADDRESS:}
+    private-key: ${BLOCKCHAIN_PRIVATE_KEY:}
+
+# IPFS 설정
+ipfs:
+  enabled: ${IPFS_ENABLED:false}
+  gateway-url: ${IPFS_GATEWAY_URL:https://ipfs.io/ipfs/}
+  api-url: ${IPFS_API_URL:}
+  api-key: ${IPFS_API_KEY:}
+
+# AWS 설정 (개발)
+aws:
+  region: ${AWS_REGION:ap-northeast-2}
+  access-key-id: ${AWS_ACCESS_KEY_ID:}
+  secret-access-key: ${AWS_SECRET_ACCESS_KEY:}
+  use-default-credentials: true
+  cloudfront:
+    distribution-id: ${CLOUDFRONT_DISTRIBUTION_ID:}
+    key-pair-id: ${CLOUDFRONT_KEY_PAIR_ID:}
+    private-key-path: ${CLOUDFRONT_PRIVATE_KEY_PATH:}
+
+# CDN 설정 (개발)
+cdn:
+  enabled: ${CDN_ENABLED:false}
+  base-url: ${CDN_BASE_URL:}
+  image-path: /images
+  static-path: /static
+  cache-duration: 86400
+
+# Toss Payments 설정
+payment:
+  toss:
+    secret-key: ${TOSS_SECRET_KEY:test_sk_}
+    client-key: ${TOSS_CLIENT_KEY:test_ck_}
+    api-url: https://api.tosspayments.com/v1
+
+# SMS 본인인증 설정
+sms:
+  provider: ${SMS_PROVIDER:mock}
+  expiration-minutes: 5
+  max-attempts: 5
+
 ---
 # 운영 환경 설정 (PostgreSQL)
 spring:
   config:
     activate:
       on-profile: prod
-  
+
+  # Redis/Elasticsearch/Mail/Sentry 자동설정 비활성화 (Koyeb 무료 플랜에서 미사용)
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchDataAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchRepositoriesAutoConfiguration
+      - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientAutoConfiguration
+      - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchClientAutoConfiguration
+      - org.springframework.boot.autoconfigure.mail.MailSenderAutoConfiguration
+      - org.springframework.boot.autoconfigure.mail.MailSenderValidatorAutoConfiguration
+      - io.sentry.spring.boot.jakarta.SentryAutoConfiguration
+      - org.springframework.boot.autoconfigure.admin.SpringApplicationAdminJmxAutoConfiguration
+      - org.springframework.boot.autoconfigure.jmx.JmxAutoConfiguration
+      - org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+
+  # Spring Boot 시작 최적화
+  main:
+    lazy-initialization: true
+    banner-mode: off
+    allow-bean-definition-overriding: true
+
+  jmx:
+    enabled: false
+
+  # JPA 초기화 지연
+  data:
+    jpa:
+      repositories:
+        bootstrap-mode: deferred
+
   datasource:
-    url: ${DB_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:travelmate}?sslmode=prefer}
+    url: ${DB_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:travelmate}?sslmode=require&options=-c%20search_path%3Dtravelmate,public}
     username: ${DB_USERNAME:travelmate_user}
-    password: ${DB_PASSWORD:CHANGE_ME_IN_KOYEB}
+    # SECURITY: 운영환경에서 DB_PASSWORD 환경변수 필수 설정
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
-      maximum-pool-size: 20
-      minimum-idle: 5
-      idle-timeout: 300000
+      maximum-pool-size: 3
+      minimum-idle: 1
+      idle-timeout: 120000
       connection-timeout: 30000
       max-lifetime: 1800000
-      leak-detection-threshold: 60000
+      validation-timeout: 5000
     continue-on-error: false
-      
+
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema-init.sql
+      continue-on-error: true
+
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: update  # 스키마 자동 업데이트
     show-sql: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_schema: travelmate
         format_sql: false
         jdbc:
           batch_size: 100
@@ -148,7 +313,7 @@ spring:
         cache:
           use_second_level_cache: false
           use_query_cache: false
-            
+
   cache:
     type: caffeine
     caffeine:
@@ -165,48 +330,136 @@ spring:
         max-idle: 5
         min-idle: 1
 
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: false
+    metrics:
+      enabled: false
+    prometheus:
+      enabled: false
+  health:
+    redis:
+      enabled: false
+    elasticsearch:
+      enabled: false
+    mail:
+      enabled: false
+    db:
+      enabled: false
+
 logging:
   level:
+    root: WARN
     com.travelmate: INFO
-    org.springframework.security: INFO
-    org.hibernate.SQL: WARN
-    org.springframework.web: INFO
-    org.springframework.boot.autoconfigure: INFO
-    org.springframework.context: INFO
-    org.springframework.jdbc.datasource: INFO
-    com.zaxxer.hikari: INFO
-    org.springframework.boot.diagnostics: INFO
-    org.springframework.boot: INFO
-    org.apache.coyote.http11: INFO
-    org.apache.tomcat.util.net: INFO
+    org.springframework: WARN
+    org.hibernate: ERROR
+    org.apache: ERROR
+    com.zaxxer.hikari: WARN
   pattern:
-    console: '%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n'
-    file: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n'
-  file:
-    name: logs/travelmate.log
-    max-size: 100MB
-    max-history: 30
-    
+    console: '%d{HH:mm:ss} %-5level %logger{20} - %msg%n'
+
 app:
   jwt:
-    secret: ${JWT_SECRET:CHANGE_ME_IN_KOYEB_THIS_IS_NOT_SECURE}
-    expiration: 3600000    # 1 hour (운영환경에서는 짧게)
-    refresh-expiration: 604800000  # 7 days
-    
+    secret: ${JWT_SECRET}  # 필수! 운영환경에서 반드시 설정 (최소 32자)
+    expiration: ${JWT_EXPIRATION:3600000}  # 1 hour
+    refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000}  # 7 days
+
+  mail:
+    enabled: ${MAIL_ENABLED:false}  # MVP: 메일 비활성화 (필요시 환경변수로 활성화)
+
+  redis:
+    enabled: false  # Koyeb 무료 플랜에서 Redis 미사용
+
+  frontend:
+    url: ${FRONTEND_URL:https://various-belva-untab-1a59bee2.koyeb.app}
+
   file:
     upload:
       path: ${FILE_UPLOAD_PATH:/app/uploads/}
       max-size: 5242880  # 5MB in bytes
-      
+
   cors:
-    allowed-origins: ${CORS_ALLOWED_ORIGINS:https://travelmate.app,https://admin.travelmate.app}
-    
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:https://various-belva-untab-1a59bee2.koyeb.app}
+
   security:
     rate-limit:
       enabled: true
       default-requests-per-minute: 60
       login-requests-per-minute: 5
-      
+      api-requests-per-minute: 30
+      upload-requests-per-minute: 10
+    xss:
+      enabled: true
+    audit:
+      enabled: true
+    headers:
+      # SECURITY: CSP 정책 강화 - unsafe-eval 제거, unsafe-inline은 style에만 허용 (CSS-in-JS 지원)
+      # 프론트엔드에서 nonce 기반 스크립트 로딩으로 전환 권장
+      content-security-policy: "default-src 'self'; script-src 'self' https://www.googletagmanager.com https://pagead2.googlesyndication.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https: https://www.google-analytics.com https://analytics.google.com; frame-src https://googleads.g.doubleclick.net https://tpc.googlesyndication.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+
+# AWS 설정 (운영)
+aws:
+  region: ${AWS_REGION:ap-northeast-2}
+  access-key-id: ${AWS_ACCESS_KEY_ID:}
+  secret-access-key: ${AWS_SECRET_ACCESS_KEY:}
+  use-default-credentials: false
+  cloudfront:
+    distribution-id: ${CLOUDFRONT_DISTRIBUTION_ID:}
+    key-pair-id: ${CLOUDFRONT_KEY_PAIR_ID:}
+    private-key-path: ${CLOUDFRONT_PRIVATE_KEY_PATH:}
+
+# CDN 설정 (운영)
+cdn:
+  enabled: ${CDN_ENABLED:false}
+  base-url: ${CDN_BASE_URL:}
+  image-path: /images
+  static-path: /static
+  cache-duration: 604800
+
+# Toss Payments 설정 (운영)
+payment:
+  toss:
+    secret-key: ${TOSS_SECRET_KEY}
+    client-key: ${TOSS_CLIENT_KEY}
+    api-url: https://api.tosspayments.com/v1
+
+# Sentry 설정 (운영) - 선택적 설정
+sentry:
+  enabled: ${SENTRY_ENABLED:false}
+  dsn: ${SENTRY_DSN:}
+  environment: production
+  traces-sample-rate: ${SENTRY_TRACES_SAMPLE_RATE:0.2}
+  logging:
+    minimum-event-level: error
+    minimum-breadcrumb-level: warn
+  send-default-pii: false
+
 ---
 # 테스트 환경 설정
 spring:

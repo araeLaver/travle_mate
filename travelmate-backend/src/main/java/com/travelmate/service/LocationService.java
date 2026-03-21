@@ -3,6 +3,7 @@ package com.travelmate.service;
 import com.travelmate.dto.UserDto;
 import com.travelmate.entity.User;
 import com.travelmate.repository.UserRepository;
+import com.travelmate.util.TravelStyleMatcher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -74,9 +75,9 @@ public class LocationService {
         // 1차: 위치 기반 필터링 (5km 반경)
         List<User> nearbyUsers = userRepository.findNearbyUsers(userId, latitude, longitude, 5.0);
         
-        // 2차: 여행 스타일 기반 필터링
+        // 2차: 여행 스타일 기반 필터링 (TravelStyleMatcher 사용)
         List<User> compatibleUsers = nearbyUsers.stream()
-            .filter(user -> isCompatibleTravelStyle(currentUser.getTravelStyle(), user.getTravelStyle()))
+            .filter(user -> TravelStyleMatcher.isCompatible(currentUser.getTravelStyle(), user.getTravelStyle()))
             .limit(20)
             .collect(Collectors.toList());
         
@@ -115,21 +116,7 @@ public class LocationService {
         double intensityFactor = Math.min(shakeIntensity / 20.0, 5.0); // 최대 5배
         return Math.min(baseRadius * intensityFactor, 10.0);
     }
-    
-    private boolean isCompatibleTravelStyle(User.TravelStyle style1, User.TravelStyle style2) {
-        if (style1 == null || style2 == null) return true;
-        
-        // 호환 가능한 여행 스타일 매트릭스
-        return switch (style1) {
-            case ADVENTURE -> style2 == User.TravelStyle.ADVENTURE || style2 == User.TravelStyle.NATURE;
-            case RELAXATION -> style2 == User.TravelStyle.RELAXATION || style2 == User.TravelStyle.CULTURE;
-            case CULTURE -> style2 == User.TravelStyle.CULTURE || style2 == User.TravelStyle.RELAXATION;
-            case FOOD -> true; // 음식은 모든 스타일과 호환
-            case SHOPPING -> style2 == User.TravelStyle.SHOPPING || style2 == User.TravelStyle.CULTURE;
-            case NATURE -> style2 == User.TravelStyle.NATURE || style2 == User.TravelStyle.ADVENTURE;
-        };
-    }
-    
+
     private boolean isHotspot(String context) {
         if (context == null) return false;
         

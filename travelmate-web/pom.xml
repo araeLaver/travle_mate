@@ -16,8 +16,8 @@
     <artifactId>travelmate-web</artifactId>
     <packaging>pom</packaging>
     
-    <name>TravelMate Web Frontend</name>
-    <description>React Web Frontend for TravelMate application</description>
+    <name>Fryndo Web Frontend</name>
+    <description>React Web Frontend for Fryndo application</description>
     
     <properties>
         <frontend.working.directory>${project.basedir}</frontend.working.directory>

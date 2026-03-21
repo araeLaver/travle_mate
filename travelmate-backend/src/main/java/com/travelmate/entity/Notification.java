@@ -72,7 +72,22 @@ public class Notification {
         LIKE("좋아요"),
         REVIEW("리뷰"),
         FRIEND_REQUEST("친구 요청"),
-        SYSTEM("시스템 알림");
+        FOLLOW("팔로우"),
+        SYSTEM("시스템 알림"),
+        // NFT 관련 알림
+        NFT_COLLECTED("NFT 수집"),
+        ACHIEVEMENT_UNLOCKED("업적 달성"),
+        // 마켓플레이스 알림
+        MARKETPLACE_SOLD("NFT 판매 완료"),
+        MARKETPLACE_PURCHASED("NFT 구매 완료"),
+        MARKETPLACE_LISTING_EXPIRED("리스팅 만료"),
+        // 포인트 알림
+        POINTS_RECEIVED("포인트 획득"),
+        POINTS_SPENT("포인트 사용"),
+        // 매칭 알림
+        MATCH_REQUEST("매칭 요청"),
+        MATCH_ACCEPTED("매칭 수락"),
+        MATCH_REJECTED("매칭 거절");
 
         private final String displayName;
 

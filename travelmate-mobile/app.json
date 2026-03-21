@@ -1,0 +1,171 @@
+{
+  "expo": {
+    "name": "Fryndo",
+    "slug": "travelmate",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "scheme": "travelmate",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#3B82F6"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "updates": {
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/your-project-id"
+    },
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.travelmate.app",
+      "buildNumber": "1",
+      "usesAppleSignIn": true,
+      "associatedDomains": [
+        "applinks:travelmate.app"
+      ],
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Fryndo는 주변 NFT 수집 장소를 찾기 위해 위치 정보가 필요합니다.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Fryndo는 백그라운드에서도 주변 장소 알림을 받기 위해 위치 정보가 필요합니다.",
+        "NSCameraUsageDescription": "Fryndo는 프로필 사진을 촬영하기 위해 카메라 접근이 필요합니다.",
+        "NSPhotoLibraryUsageDescription": "Fryndo는 프로필 사진을 선택하기 위해 사진 라이브러리 접근이 필요합니다.",
+        "UIBackgroundModes": [
+          "location",
+          "remote-notification"
+        ],
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "entitlements": {
+        "aps-environment": "production"
+      },
+      "config": {
+        "usesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#3B82F6"
+      },
+      "package": "com.travelmate.app",
+      "versionCode": 1,
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "RECEIVE_BOOT_COMPLETED",
+        "VIBRATE",
+        "BILLING"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "YOUR_GOOGLE_MAPS_API_KEY"
+        }
+      },
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "travelmate.app",
+              "pathPrefix": "/share"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ],
+      "googleServicesFile": "./google-services.json"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Fryndo가 백그라운드에서도 주변 장소 알림을 받을 수 있도록 위치 정보 접근을 허용해주세요.",
+          "isIosBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": true
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#3B82F6",
+          "sounds": [
+            "./assets/sounds/chat.wav"
+          ]
+        }
+      ],
+      "expo-apple-authentication",
+      "expo-in-app-purchases",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Fryndo는 프로필 사진 촬영 및 장소 인증을 위해 카메라 접근이 필요합니다."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Fryndo는 프로필 사진을 갤러리에서 선택하기 위해 사진 접근이 필요합니다.",
+          "cameraPermission": "Fryndo는 프로필 사진을 촬영하기 위해 카메라 접근이 필요합니다."
+        }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Fryndo는 빠른 로그인을 위해 Face ID를 사용합니다."
+        }
+      ],
+      [
+        "@sentry/react-native/expo",
+        {
+          "organization": "travelmate",
+          "project": "travelmate-mobile"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "your-project-id"
+      },
+      "apiUrl": "https://api.travelmate.app",
+      "webUrl": "https://travelmate.app",
+      "sentryDsn": "https://your-sentry-dsn@sentry.io/project-id"
+    },
+    "hooks": {
+      "postPublish": [
+        {
+          "file": "@sentry/react-native/expo",
+          "config": {
+            "organization": "travelmate",
+            "project": "travelmate-mobile"
+          }
+        }
+      ]
+    },
+    "owner": "travelmate-team",
+    "privacy": "public",
+    "platforms": [
+      "ios",
+      "android"
+    ]
+  }
+}

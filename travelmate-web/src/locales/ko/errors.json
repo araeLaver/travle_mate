@@ -1,0 +1,49 @@
+{
+  "generic": "오류가 발생했습니다. 다시 시도해주세요.",
+  "network": "네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.",
+  "timeout": "요청 시간이 초과되었습니다.",
+  "serverError": "서버 오류가 발생했습니다.",
+  "notFound": "요청하신 페이지를 찾을 수 없습니다.",
+  "unauthorized": "로그인이 필요합니다.",
+  "forbidden": "접근 권한이 없습니다.",
+  "validation": "입력 정보를 확인해주세요.",
+  "auth": {
+    "invalidCredentials": "이메일 또는 비밀번호가 올바르지 않습니다.",
+    "emailExists": "이미 사용 중인 이메일입니다.",
+    "nicknameExists": "이미 사용 중인 닉네임입니다.",
+    "tokenExpired": "세션이 만료되었습니다. 다시 로그인해주세요.",
+    "accountDisabled": "비활성화된 계정입니다.",
+    "accountNotVerified": "이메일 인증이 필요합니다."
+  },
+  "nft": {
+    "alreadyCollected": "이미 수집한 NFT입니다.",
+    "tooFarFromLocation": "장소에서 너무 멀리 있습니다.",
+    "locationNotFound": "장소를 찾을 수 없습니다.",
+    "mintingFailed": "NFT 민팅에 실패했습니다.",
+    "walletNotConnected": "지갑이 연결되지 않았습니다.",
+    "insufficientFunds": "잔액이 부족합니다."
+  },
+  "itinerary": {
+    "notFound": "일정을 찾을 수 없습니다.",
+    "accessDenied": "일정에 접근할 권한이 없습니다.",
+    "editDenied": "일정을 수정할 권한이 없습니다.",
+    "deleteDenied": "일정을 삭제할 권한이 없습니다.",
+    "alreadyCollaborator": "이미 협업자로 참여 중입니다.",
+    "inviteExpired": "초대가 만료되었습니다."
+  },
+  "chat": {
+    "groupNotFound": "그룹을 찾을 수 없습니다.",
+    "notGroupMember": "그룹 멤버가 아닙니다.",
+    "maxMembersReached": "그룹 최대 인원에 도달했습니다.",
+    "messageSendFailed": "메시지 전송에 실패했습니다."
+  },
+  "upload": {
+    "fileTooLarge": "파일 크기가 너무 큽니다. (최대 {size}MB)",
+    "invalidFileType": "지원하지 않는 파일 형식입니다.",
+    "uploadFailed": "파일 업로드에 실패했습니다."
+  },
+  "retry": "다시 시도",
+  "goBack": "뒤로 가기",
+  "goHome": "홈으로 가기",
+  "contactSupport": "고객센터 문의"
+}

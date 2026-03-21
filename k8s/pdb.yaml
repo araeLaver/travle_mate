@@ -1,0 +1,22 @@
+# PodDisruptionBudget — 노드 드레인/업그레이드 중 최소 가용성 보장
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: travelmate-backend-pdb
+  namespace: travelmate
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: travelmate-backend
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: travelmate-frontend-pdb
+  namespace: travelmate
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: travelmate-frontend

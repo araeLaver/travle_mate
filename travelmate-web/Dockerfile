@@ -1,8 +1,9 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 
-ARG REACT_APP_API_URL=https://various-belva-untab-1a59bee2.koyeb.app/api
-ARG REACT_APP_WS_URL=wss://various-belva-untab-1a59bee2.koyeb.app/ws
+# 빌드 시 --build-arg로 전달 필요
+ARG REACT_APP_API_URL
+ARG REACT_APP_WS_URL
 ARG REACT_APP_GOOGLE_CLIENT_ID=""
 ARG REACT_APP_KAKAO_APP_KEY=""
 ARG REACT_APP_NAVER_CLIENT_ID=""
@@ -16,19 +17,20 @@ ENV REACT_APP_NAVER_CLIENT_ID=$REACT_APP_NAVER_CLIENT_ID
 ENV REACT_APP_KAKAO_MAP_API_KEY=$REACT_APP_KAKAO_MAP_API_KEY
 
 COPY package*.json ./
-RUN npm install
+RUN npm ci --legacy-peer-deps
 
 COPY tsconfig.json ./
 COPY tailwind.config.js ./
 COPY postcss.config.js ./
 COPY craco.config.js ./
+COPY .eslintrc.js ./
 
-COPY src ./src
 COPY public ./public
+COPY src ./src
 
 RUN npm run build
 
-FROM nginx:1.25-alpine
+FROM nginx:1.29-alpine
 WORKDIR /usr/share/nginx/html
 
 RUN rm -rf ./*

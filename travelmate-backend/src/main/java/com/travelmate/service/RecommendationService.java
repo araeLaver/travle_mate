@@ -9,6 +9,9 @@ import com.travelmate.entity.UserGroupMembership;
 import com.travelmate.repository.TravelGroupRepository;
 import com.travelmate.repository.UserGroupMembershipRepository;
 import com.travelmate.repository.UserRepository;
+import com.travelmate.repository.UserTrustScoreRepository;
+import com.travelmate.entity.UserTrustScore;
+import com.travelmate.util.TravelStyleMatcher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
@@ -27,6 +30,7 @@ public class RecommendationService {
     private final UserRepository userRepository;
     private final TravelGroupRepository travelGroupRepository;
     private final UserGroupMembershipRepository membershipRepository;
+    private final UserTrustScoreRepository trustScoreRepository;
 
     // 가중치 설정
     private static final double TRAVEL_STYLE_WEIGHT = 0.25;
@@ -42,45 +46,47 @@ public class RecommendationService {
         // 현재 사용자 조회
         User currentUser = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-        
+
         if (currentUser.getCurrentLatitude() == null || currentUser.getCurrentLongitude() == null) {
             return Collections.emptyList();
         }
-        
-        // 모든 활성 사용자 중에서 현재 사용자 제외하고 추천
-        List<User> allUsers = userRepository.findAll()
-            .stream()
-            .filter(user -> !user.getId().equals(userId))
-            .filter(User::getIsActive)
-            .limit(10) // 성능을 위해 제한
-            .collect(Collectors.toList());
-        
-        return allUsers.stream()
+
+        // 최적화: findNearbyUsers 쿼리 사용 (DB에서 필터링)
+        List<User> nearbyUsers = userRepository.findNearbyUsers(
+            userId,
+            currentUser.getCurrentLatitude(),
+            currentUser.getCurrentLongitude(),
+            10.0  // 10km 반경
+        );
+
+        // 최대 10명으로 제한
+        return nearbyUsers.stream()
+            .limit(10)
             .map(this::convertToDto)
             .collect(Collectors.toList());
     }
-    
+
     public List<UserDto.Response> findNearbyTravelers(Long userId, Integer radiusKm) {
         // 기본 반경을 10km로 설정
-        int radius = radiusKm != null ? radiusKm : 10;
-        
+        double radius = radiusKm != null ? radiusKm.doubleValue() : 10.0;
+
         User currentUser = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-        
+
         if (currentUser.getCurrentLatitude() == null || currentUser.getCurrentLongitude() == null) {
             return Collections.emptyList();
         }
-        
-        // 간단한 구현으로 모든 사용자를 반환 (실제로는 지리적 쿼리 필요)
-        List<User> nearbyUsers = userRepository.findAll()
-            .stream()
-            .filter(user -> !user.getId().equals(userId))
-            .filter(User::getIsActive)
-            .filter(User::getIsMatchingEnabled)
-            .limit(radius) // 임시로 radius를 개수 제한으로 사용
-            .collect(Collectors.toList());
-        
+
+        // 최적화: findNearbyUsers 쿼리 사용 (DB에서 지리적 필터링)
+        List<User> nearbyUsers = userRepository.findNearbyUsers(
+            userId,
+            currentUser.getCurrentLatitude(),
+            currentUser.getCurrentLongitude(),
+            radius
+        );
+
         return nearbyUsers.stream()
+            .limit(20)
             .map(this::convertToDto)
             .collect(Collectors.toList());
     }
@@ -96,12 +102,18 @@ public class RecommendationService {
             .profileImageUrl(user.getProfileImageUrl())
             .bio(user.getBio())
             .travelStyle(user.getTravelStyle())
-            .interests(user.getInterests())
-            .languages(user.getLanguages())
+            .interests(user.getInterests() != null ? new ArrayList<>(user.getInterests()) : null)
+            .languages(user.getLanguages() != null ? new ArrayList<>(user.getLanguages()) : null)
             .rating(user.getRating())
             .reviewCount(user.getReviewCount())
             .isEmailVerified(user.getIsEmailVerified())
             .phoneVerified(user.getPhoneVerified())
+            .trustBadge(trustScoreRepository.findByUserId(user.getId())
+                    .map(ts -> ts.getTrustBadge().name())
+                    .orElse(UserTrustScore.TrustBadge.NEW.name()))
+            .trustScore(trustScoreRepository.findByUserId(user.getId())
+                    .map(UserTrustScore::getTotalScore)
+                    .orElse(50))
             .lastActivityAt(user.getLastActivityAt())
             .createdAt(user.getCreatedAt())
             .build();
@@ -217,21 +229,34 @@ public class RecommendationService {
         // 사용자의 선호도 추출
         UserPreferenceDto userPreference = extractUserPreferences(user);
 
-        // 모든 활성 그룹 조회 (사용자가 이미 가입한 그룹 제외)
-        List<TravelGroup> allGroups = travelGroupRepository.findAll();
-        Set<Long> joinedGroupIds = membershipRepository.findByUserId(userId).stream()
-                .map(m -> m.getTravelGroup().getId())
-                .collect(Collectors.toSet());
+        // 최적화: 추천 대상 그룹만 조회 (모집중 + 정원 미달)
+        List<TravelGroup> availableGroups = travelGroupRepository.findAvailableGroupsForRecommendation();
 
-        List<RecommendationDto.GroupRecommendation> recommendations = allGroups.stream()
+        // 최적화: 사용자가 가입한 그룹 ID를 한 번에 조회
+        Set<Long> joinedGroupIds = membershipRepository.findJoinedGroupIdsByUserId(userId);
+
+        // 가입하지 않은 그룹만 필터링
+        List<TravelGroup> candidateGroups = availableGroups.stream()
                 .filter(group -> !joinedGroupIds.contains(group.getId()))
-                .filter(group -> group.getCurrentMembers() < group.getMaxMembers())
+                .collect(Collectors.toList());
+
+        // 최적화: 모든 후보 그룹의 멤버십을 한 번에 조회 (N+1 방지)
+        Set<Long> candidateGroupIds = candidateGroups.stream()
+                .map(TravelGroup::getId)
+                .collect(Collectors.toSet());
+        Map<Long, List<UserGroupMembership>> membershipsByGroupId = membershipRepository
+                .findByTravelGroupIdInWithUser(candidateGroupIds)
+                .stream()
+                .collect(Collectors.groupingBy(m -> m.getTravelGroup().getId()));
+
+        List<RecommendationDto.GroupRecommendation> recommendations = candidateGroups.stream()
                 .map(group -> {
                     // 콘텐츠 기반 점수 계산
                     RecommendationDto.ScoreBreakdown breakdown = calculateContentBasedScore(userPreference, group);
 
-                    // 협업 필터링 점수 계산
-                    double collaborativeScore = calculateCollaborativeScore(userId, group);
+                    // 협업 필터링 점수 계산 (배치 로드된 멤버십 사용)
+                    List<UserGroupMembership> groupMembers = membershipsByGroupId.getOrDefault(group.getId(), Collections.emptyList());
+                    double collaborativeScore = calculateCollaborativeScoreOptimized(userId, userPreference, groupMembers);
                     breakdown.setCollaborativeScore(collaborativeScore);
 
                     // 최종 점수 계산
@@ -263,7 +288,31 @@ public class RecommendationService {
     }
 
     /**
+     * 협업 필터링 점수 계산 (배치 로드된 멤버십 사용 - N+1 방지)
+     */
+    private double calculateCollaborativeScoreOptimized(Long userId, UserPreferenceDto currentUserPref,
+                                                        List<UserGroupMembership> groupMembers) {
+        if (groupMembers.isEmpty()) return 0.0;
+
+        double totalSimilarity = 0.0;
+        int count = 0;
+
+        for (UserGroupMembership membership : groupMembers) {
+            User member = membership.getUser();
+            if (!member.getId().equals(userId)) {
+                UserPreferenceDto memberPref = extractUserPreferences(member);
+                double similarity = calculateUserSimilarity(currentUserPref, memberPref);
+                totalSimilarity += similarity;
+                count++;
+            }
+        }
+
+        return count > 0 ? totalSimilarity / count : 0.0;
+    }
+
+    /**
      * 사용자에게 동행자 추천 (고급 버전)
+     * 최적화: 위치 기반 필터링으로 후보군 축소
      */
     @Transactional(readOnly = true)
     @Cacheable(value = "userRecommendations", key = "#userId + '_' + #limit")
@@ -273,11 +322,26 @@ public class RecommendationService {
 
         UserPreferenceDto currentUserPref = extractUserPreferences(currentUser);
 
-        List<User> allUsers = userRepository.findAll();
+        // 최적화: 위치 정보가 있으면 근처 사용자만 조회, 없으면 매칭 가능한 사용자 조회
+        List<User> candidateUsers;
+        if (currentUser.getCurrentLatitude() != null && currentUser.getCurrentLongitude() != null) {
+            // 위치 기반으로 50km 이내 사용자 조회
+            candidateUsers = userRepository.findNearbyUsers(
+                    userId,
+                    currentUser.getCurrentLatitude(),
+                    currentUser.getCurrentLongitude(),
+                    50.0
+            );
+        } else {
+            // 위치 정보 없으면 매칭 가능한 사용자만 조회 (최대 100명)
+            candidateUsers = userRepository.findUsersForShake(37.5665, 126.9780, 100.0); // 서울 중심 좌표
+            candidateUsers = candidateUsers.stream()
+                    .filter(user -> !user.getId().equals(userId))
+                    .limit(100)
+                    .collect(Collectors.toList());
+        }
 
-        List<RecommendationDto.UserRecommendation> recommendations = allUsers.stream()
-                .filter(user -> !user.getId().equals(userId))
-                .filter(User::getIsActive)
+        List<RecommendationDto.UserRecommendation> recommendations = candidateUsers.stream()
                 .map(user -> {
                     UserPreferenceDto otherUserPref = extractUserPreferences(user);
 
@@ -354,42 +418,6 @@ public class RecommendationService {
                 .recentActivityScore(recentActivityScore)
                 .collaborativeScore(0.0)
                 .build();
-    }
-
-    /**
-     * 협업 필터링 점수 계산
-     */
-    private double calculateCollaborativeScore(Long userId, TravelGroup group) {
-        try {
-            User user = userRepository.findById(userId).orElse(null);
-            if (user == null) return 0.0;
-
-            UserPreferenceDto currentUserPref = extractUserPreferences(user);
-
-            // 해당 그룹의 멤버들 조회
-            List<UserGroupMembership> groupMembers = membershipRepository.findByTravelGroupId(group.getId());
-
-            if (groupMembers.isEmpty()) return 0.0;
-
-            // 그룹 멤버들과 현재 사용자의 유사도 평균 계산
-            double totalSimilarity = 0.0;
-            int count = 0;
-
-            for (UserGroupMembership membership : groupMembers) {
-                User member = membership.getUser();
-                if (!member.getId().equals(userId)) {
-                    UserPreferenceDto memberPref = extractUserPreferences(member);
-                    double similarity = calculateUserSimilarity(currentUserPref, memberPref);
-                    totalSimilarity += similarity;
-                    count++;
-                }
-            }
-
-            return count > 0 ? totalSimilarity / count : 0.0;
-        } catch (Exception e) {
-            log.error("Error calculating collaborative score", e);
-            return 0.0;
-        }
     }
 
     /**

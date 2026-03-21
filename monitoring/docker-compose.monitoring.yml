@@ -1,0 +1,168 @@
+version: '3.8'
+
+# Fryndo Monitoring Stack
+# Usage: docker-compose -f docker-compose.monitoring.yml up -d
+
+services:
+  # ===================
+  # Prometheus
+  # ===================
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: travelmate-prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+      # SECURITY: --web.enable-admin-api 는 시계열 삭제 등 위험 API를 노출합니다.
+      # 필요 시에만 활성화하고, 반드시 방화벽으로 9090 포트를 외부 차단하세요.
+      # - '--web.enable-admin-api'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/alerts.yml:/etc/prometheus/rules/alerts.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - monitoring-network
+      - travelmate-network
+
+  # ===================
+  # Grafana
+  # ===================
+  grafana:
+    image: grafana/grafana:10.2.2
+    container_name: travelmate-grafana
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      # SECURITY: GRAFANA_ADMIN_PASSWORD 환경변수를 반드시 설정하세요. 기본값 'admin' 사용 시 보안 위험!
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD is required}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=%(protocol)s://%(domain)s:%(http_port)s/grafana/
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-piechart-panel
+      - GF_SECURITY_DISABLE_GRAVATAR=true
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - monitoring-network
+
+  # ===================
+  # Alertmanager
+  # ===================
+  alertmanager:
+    image: prom/alertmanager:v0.26.0
+    container_name: travelmate-alertmanager
+    restart: unless-stopped
+    ports:
+      - "9093:9093"
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+    volumes:
+      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager_data:/alertmanager
+    networks:
+      - monitoring-network
+
+  # ===================
+  # Node Exporter (System Metrics)
+  # ===================
+  node-exporter:
+    image: prom/node-exporter:v1.7.0
+    container_name: travelmate-node-exporter
+    restart: unless-stopped
+    ports:
+      - "9100:9100"
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/rootfs'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    networks:
+      - monitoring-network
+
+  # ===================
+  # PostgreSQL Exporter
+  # ===================
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    container_name: travelmate-postgres-exporter
+    restart: unless-stopped
+    ports:
+      - "9187:9187"
+    environment:
+      # SECURITY: DB_PASSWORD 환경변수를 설정하세요. 하드코딩된 기본값은 보안 위험입니다.
+      DATA_SOURCE_NAME: "postgresql://${DB_USERNAME:-travelmate_user}:${DB_PASSWORD:?DB_PASSWORD is required}@postgres:5432/travelmate?sslmode=disable"
+    depends_on:
+      - postgres
+    networks:
+      - monitoring-network
+      - travelmate-network
+
+  # ===================
+  # Redis Exporter
+  # ===================
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.56.0
+    container_name: travelmate-redis-exporter
+    restart: unless-stopped
+    ports:
+      - "9121:9121"
+    environment:
+      REDIS_ADDR: "redis://redis:6379"
+      REDIS_PASSWORD: "${REDIS_PASSWORD:-}"
+    depends_on:
+      - redis
+    networks:
+      - monitoring-network
+      - travelmate-network
+
+  # ===================
+  # cAdvisor (Container Metrics)
+  # ===================
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.47.2
+    container_name: travelmate-cadvisor
+    restart: unless-stopped
+    privileged: true
+    ports:
+      - "8083:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    devices:
+      - /dev/kmsg
+    networks:
+      - monitoring-network
+
+networks:
+  monitoring-network:
+    driver: bridge
+  travelmate-network:
+    external: true
+    name: 01travle_mate_travelmate-network
+
+volumes:
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  alertmanager_data:
+    driver: local

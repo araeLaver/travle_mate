@@ -1,4 +1,6 @@
 import { apiClient } from './apiClient';
+import { UserProfileApiResponse, TravelHistoryApiResponse, UserReviewApiResponse } from '../types';
+import { logger } from '../lib/utils';
 
 export interface UserProfile {
   id: string;
@@ -19,6 +21,9 @@ export interface UserProfile {
   stats: UserStats;
   preferences: TravelPreferences;
   socialLinks?: SocialLinks;
+  phoneVerified?: boolean;
+  trustBadge?: string;
+  trustScore?: number;
   createdAt: Date;
   lastActive: Date;
 }
@@ -132,19 +137,19 @@ class ProfileService {
         // Date 객체 복원
         parsed.createdAt = new Date(parsed.createdAt);
         parsed.lastActive = new Date(parsed.lastActive);
-        parsed.travelHistory = parsed.travelHistory.map((trip: any) => ({
+        parsed.travelHistory = parsed.travelHistory.map((trip: TravelHistoryApiResponse) => ({
           ...trip,
           startDate: new Date(trip.startDate),
-          endDate: new Date(trip.endDate)
+          endDate: new Date(trip.endDate),
         }));
-        parsed.stats.reviews = parsed.stats.reviews.map((review: any) => ({
+        parsed.stats.reviews = parsed.stats.reviews.map((review: UserReviewApiResponse) => ({
           ...review,
-          createdAt: new Date(review.createdAt)
+          createdAt: new Date(review.createdAt),
         }));
         this.profile = parsed;
         return;
       } catch (error) {
-        console.warn('Failed to load saved profile:', error);
+        logger.warn('Failed to load saved profile:', error);
       }
     }
 
@@ -155,12 +160,20 @@ class ProfileService {
 
   private createDefaultProfile(): UserProfile {
     const interests = [
-      '사진촬영', '음식탐방', '역사문화', '자연관광', '쇼핑',
-      '공연관람', '스포츠', '야경감상', '카페투어', '박물관'
+      '사진촬영',
+      '음식탐방',
+      '역사문화',
+      '자연관광',
+      '쇼핑',
+      '공연관람',
+      '스포츠',
+      '야경감상',
+      '카페투어',
+      '박물관',
     ];
-    
+
     const languages = ['한국어', '영어', '중국어', '일본어', '스페인어', '프랑스어'];
-    
+
     return {
       id: this.currentUserId,
       name: '여행러',
@@ -177,27 +190,27 @@ class ProfileService {
         totalGroupsJoined: 0,
         totalGroupsCreated: 0,
         averageRating: 0,
-        reviews: []
+        reviews: [],
       },
       preferences: {
         budget: {
           min: 100000,
           max: 500000,
-          currency: 'KRW'
+          currency: 'KRW',
         },
         accommodationType: ['호텔', '게스트하우스'],
         transportPreference: ['대중교통', '도보'],
         groupSize: {
           min: 2,
-          max: 6
+          max: 6,
         },
         travelPace: 'medium',
         activityLevel: 'medium',
         foodPreferences: ['현지음식'],
-        dietaryRestrictions: []
+        dietaryRestrictions: [],
       },
       createdAt: new Date(),
-      lastActive: new Date()
+      lastActive: new Date(),
     };
   }
 
@@ -221,10 +234,10 @@ class ProfileService {
 
     try {
       const endpoint = userId ? `/users/profile/${userId}` : '/users/me';
-      const response = await apiClient.get<any>(endpoint);
+      const response = await apiClient.get<UserProfileApiResponse>(endpoint);
       return this.mapToUserProfile(response);
     } catch (error) {
-      console.error('Failed to fetch profile:', error);
+      logger.error('Failed to fetch profile:', error);
       return null;
     }
   }
@@ -243,15 +256,17 @@ class ProfileService {
           if (updateKey === 'preferences' && updates.preferences) {
             this.profile!.preferences = {
               ...this.profile!.preferences,
-              ...updates.preferences
+              ...updates.preferences,
             };
           } else if (updateKey === 'socialLinks' && updates.socialLinks) {
             this.profile!.socialLinks = {
               ...this.profile!.socialLinks,
-              ...updates.socialLinks
+              ...updates.socialLinks,
             };
           } else {
-            (this.profile as any)[updateKey] = updates[updateKey];
+            // Type-safe property assignment using a helper approach
+            const profile = this.profile as UserProfile;
+            Object.assign(profile, { [updateKey]: updates[updateKey] });
           }
         }
       });
@@ -263,7 +278,7 @@ class ProfileService {
     }
 
     try {
-      const response = await apiClient.put<any>('/users/profile', {
+      const response = await apiClient.put<UserProfileApiResponse>('/users/profile', {
         nickname: updates.name,
         fullName: updates.name,
         age: updates.age,
@@ -276,7 +291,7 @@ class ProfileService {
       });
       return this.mapToUserProfile(response);
     } catch (error) {
-      console.error('Failed to update profile:', error);
+      logger.error('Failed to update profile:', error);
       throw error;
     }
   }
@@ -287,11 +302,11 @@ class ProfileService {
 
     const newTravel: TravelHistory = {
       id: 'trip_' + Date.now(),
-      ...travel
+      ...travel,
     };
 
     this.profile.travelHistory.unshift(newTravel);
-    
+
     // 통계 업데이트
     this.updateStats();
     this.saveProfile();
@@ -301,10 +316,8 @@ class ProfileService {
   removeTravelHistory(travelId: string): void {
     if (!this.profile) return;
 
-    this.profile.travelHistory = this.profile.travelHistory.filter(
-      trip => trip.id !== travelId
-    );
-    
+    this.profile.travelHistory = this.profile.travelHistory.filter(trip => trip.id !== travelId);
+
     this.updateStats();
     this.saveProfile();
   }
@@ -316,15 +329,15 @@ class ProfileService {
     const newReview: UserReview = {
       id: 'review_' + Date.now(),
       ...review,
-      createdAt: new Date()
+      createdAt: new Date(),
     };
 
     this.profile.stats.reviews.push(newReview);
-    
+
     // 평균 평점 업데이트
     const totalRating = this.profile.stats.reviews.reduce((sum, r) => sum + r.rating, 0);
     this.profile.stats.averageRating = totalRating / this.profile.stats.reviews.length;
-    
+
     this.saveProfile();
   }
 
@@ -333,21 +346,22 @@ class ProfileService {
 
     const travels = this.profile.travelHistory;
     this.profile.stats.totalTrips = travels.length;
-    
+
     // 국가 및 도시 수 계산 (간단한 로직)
     const destinations = travels.map(t => t.destination);
     this.profile.stats.totalCities = new Set(destinations).size;
     this.profile.stats.totalCountries = Math.floor(this.profile.stats.totalCities / 3) + 1;
-    
+
     // 가장 많이 간 목적지
     if (destinations.length > 0) {
       const destinationCount: { [key: string]: number } = {};
       destinations.forEach(dest => {
         destinationCount[dest] = (destinationCount[dest] || 0) + 1;
       });
-      
-      this.profile.stats.favoriteDestination = Object.entries(destinationCount)
-        .sort(([,a], [,b]) => b - a)[0][0];
+
+      this.profile.stats.favoriteDestination = Object.entries(destinationCount).sort(
+        ([, a], [, b]) => b - a
+      )[0][0];
     }
   }
 
@@ -364,9 +378,9 @@ class ProfileService {
 
     try {
       const response = await apiClient.uploadFile('/upload/profile-image', file);
-      return response.url || response.imageUrl;
+      return response.url || response.imageUrl || '';
     } catch (error) {
-      console.error('Failed to upload profile image:', error);
+      logger.error('Failed to upload profile image:', error);
       throw error;
     }
   }
@@ -384,9 +398,9 @@ class ProfileService {
 
     try {
       const response = await apiClient.uploadFile('/upload/cover-image', file);
-      return response.url || response.imageUrl;
+      return response.url || response.imageUrl || '';
     } catch (error) {
-      console.error('Failed to upload cover image:', error);
+      logger.error('Failed to upload cover image:', error);
       throw error;
     }
   }
@@ -396,10 +410,10 @@ class ProfileService {
     const tempProfile = this.createDefaultProfile();
     tempProfile.name = name;
     tempProfile.bio = `안녕하세요, ${name}입니다. 여행을 좋아합니다!`;
-    
+
     this.profile = tempProfile;
     this.saveProfile();
-    
+
     return tempProfile;
   }
 
@@ -416,31 +430,65 @@ class ProfileService {
   // 사용 가능한 관심사 목록
   getAvailableInterests(): string[] {
     return [
-      '사진촬영', '음식탐방', '역사문화', '자연관광', '쇼핑',
-      '공연관람', '스포츠', '야경감상', '카페투어', '박물관',
-      '해변', '산악', '도시탐험', '축제', '요리체험', '와인',
-      '건축', '예술', '음악', '독서', '영화', '게임'
+      '사진촬영',
+      '음식탐방',
+      '역사문화',
+      '자연관광',
+      '쇼핑',
+      '공연관람',
+      '스포츠',
+      '야경감상',
+      '카페투어',
+      '박물관',
+      '해변',
+      '산악',
+      '도시탐험',
+      '축제',
+      '요리체험',
+      '와인',
+      '건축',
+      '예술',
+      '음악',
+      '독서',
+      '영화',
+      '게임',
     ];
   }
 
   // 사용 가능한 언어 목록
   getAvailableLanguages(): string[] {
     return [
-      '한국어', '영어', '중국어', '일본어', '스페인어', 
-      '프랑스어', '독일어', '이탈리아어', '러시아어', '포르투갈어'
+      '한국어',
+      '영어',
+      '중국어',
+      '일본어',
+      '스페인어',
+      '프랑스어',
+      '독일어',
+      '이탈리아어',
+      '러시아어',
+      '포르투갈어',
     ];
   }
 
   // 여행 스타일 목록
   getAvailableTravelStyles(): string[] {
     return [
-      '배낭여행', '럭셔리 여행', '문화탐방', '모험가', '미식가',
-      '사진가', '역사덕후', '자연러버', '도시탐험', '힐링여행'
+      '배낭여행',
+      '럭셔리 여행',
+      '문화탐방',
+      '모험가',
+      '미식가',
+      '사진가',
+      '역사덕후',
+      '자연러버',
+      '도시탐험',
+      '힐링여행',
     ];
   }
 
   // 백엔드 응답을 UserProfile로 변환
-  private mapToUserProfile(data: any): UserProfile {
+  private mapToUserProfile(data: UserProfileApiResponse): UserProfile {
     return {
       id: data.id?.toString() || '',
       name: data.nickname || data.name || '',
@@ -449,7 +497,12 @@ class ProfileService {
       bio: data.bio || '',
       profileImage: data.profileImageUrl || data.profileImage,
       coverImage: data.coverImageUrl || data.coverImage,
-      location: data.location,
+      location: data.location
+        ? {
+            city: data.location.city || '',
+            country: data.location.country || '',
+          }
+        : undefined,
       interests: data.interests || [],
       languages: data.languages || [],
       travelStyle: data.travelStyle || '',
@@ -481,7 +534,7 @@ class ProfileService {
         foodPreferences: ['현지음식'],
         dietaryRestrictions: [],
       },
-      createdAt: new Date(data.createdAt),
+      createdAt: new Date(data.createdAt || Date.now()),
       lastActive: new Date(data.lastActivityAt || Date.now()),
     };
   }

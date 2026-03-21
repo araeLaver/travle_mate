@@ -1,0 +1,15 @@
+# Grafana Dashboard Provisioning
+
+apiVersion: 1
+
+providers:
+  - name: 'Fryndo Dashboards'
+    orgId: 1
+    folder: 'Fryndo'
+    folderUid: 'travelmate'
+    type: file
+    disableDeletion: false
+    editable: true
+    updateIntervalSeconds: 30
+    options:
+      path: /var/lib/grafana/dashboards

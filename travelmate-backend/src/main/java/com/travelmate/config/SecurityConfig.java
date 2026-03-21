@@ -46,14 +46,15 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthenticationEntryPoint))
             .authorizeHttpRequests(auth -> auth
-                // 공개 엔드포인트 (context-path가 /api이므로 실제 path는 /users/register가 됨)
+                // 공개 엔드포인트
                 .requestMatchers("/", "/index.html", "/api", "/api/").permitAll()
                 .requestMatchers("/health", "/health/**").permitAll() // Health Check
-                .requestMatchers("/management/**").permitAll() // Management endpoints
+                .requestMatchers("/actuator/**").permitAll() // Actuator endpoints
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll() // Swagger UI
                 .requestMatchers("/users/register", "/users/login").permitAll()
                 .requestMatchers("/users/check-email", "/users/check-nickname").permitAll() // 중복체크 공개
                 .requestMatchers("/users/verify-email", "/users/request-password-reset", "/users/reset-password").permitAll() // 이메일 인증 및 비밀번호 재설정
+                .requestMatchers("/invite/**").permitAll() // 베타 초대 코드 검증
                 .requestMatchers("/auth/login", "/auth/refresh", "/auth/oauth/login").permitAll() // 인증 API
                 .requestMatchers("/location/**").permitAll() // 위치 서비스 공개
                 .requestMatchers("/h2-console/**").permitAll()
@@ -114,7 +115,9 @@ public class SecurityConfig {
             "Accept",
             "Origin",
             "Access-Control-Request-Method",
-            "Access-Control-Request-Headers"
+            "Access-Control-Request-Headers",
+            "X-Device-Id",
+            "X-Device-Name"
         ));
         configuration.setAllowCredentials(true);
         configuration.setExposedHeaders(Arrays.asList("Authorization"));

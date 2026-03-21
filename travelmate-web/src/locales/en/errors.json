@@ -1,0 +1,49 @@
+{
+  "generic": "An error occurred. Please try again.",
+  "network": "Network error. Please check your internet connection.",
+  "timeout": "Request timed out.",
+  "serverError": "Server error occurred.",
+  "notFound": "The requested page could not be found.",
+  "unauthorized": "Please log in to continue.",
+  "forbidden": "You do not have permission to access this.",
+  "validation": "Please check your input.",
+  "auth": {
+    "invalidCredentials": "Invalid email or password.",
+    "emailExists": "This email is already in use.",
+    "nicknameExists": "This nickname is already in use.",
+    "tokenExpired": "Session expired. Please log in again.",
+    "accountDisabled": "This account has been disabled.",
+    "accountNotVerified": "Email verification required."
+  },
+  "nft": {
+    "alreadyCollected": "NFT already collected.",
+    "tooFarFromLocation": "You are too far from the location.",
+    "locationNotFound": "Location not found.",
+    "mintingFailed": "NFT minting failed.",
+    "walletNotConnected": "Wallet not connected.",
+    "insufficientFunds": "Insufficient funds."
+  },
+  "itinerary": {
+    "notFound": "Itinerary not found.",
+    "accessDenied": "You do not have permission to access this itinerary.",
+    "editDenied": "You do not have permission to edit this itinerary.",
+    "deleteDenied": "You do not have permission to delete this itinerary.",
+    "alreadyCollaborator": "Already a collaborator.",
+    "inviteExpired": "Invitation has expired."
+  },
+  "chat": {
+    "groupNotFound": "Group not found.",
+    "notGroupMember": "You are not a member of this group.",
+    "maxMembersReached": "Maximum group members reached.",
+    "messageSendFailed": "Failed to send message."
+  },
+  "upload": {
+    "fileTooLarge": "File is too large. (Max {size}MB)",
+    "invalidFileType": "Unsupported file type.",
+    "uploadFailed": "File upload failed."
+  },
+  "retry": "Retry",
+  "goBack": "Go Back",
+  "goHome": "Go Home",
+  "contactSupport": "Contact Support"
+}

@@ -1,6 +1,18 @@
-import { Client, IMessage, StompSubscription } from '@stomp/stompjs';
+import { Client, IMessage, StompSubscription, IFrame } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { authService } from './authService';
+import { WebSocketError, WebSocketErrorCallback } from '../types';
+
+// 개발 환경에서만 로그 출력
+const isDev = process.env.NODE_ENV === 'development';
+const logger = {
+  // eslint-disable-next-line no-console
+  log: (...args: unknown[]) => isDev && console.log(...args),
+  // eslint-disable-next-line no-console
+  warn: (...args: unknown[]) => isDev && console.warn(...args),
+  // eslint-disable-next-line no-console
+  error: (...args: unknown[]) => isDev && console.error(...args),
+};
 
 export interface ChatMessage {
   id?: string;
@@ -19,7 +31,7 @@ export interface ChatMessage {
 type MessageCallback = (message: ChatMessage) => void;
 type ConnectCallback = () => void;
 type DisconnectCallback = () => void;
-type ErrorCallback = (error: any) => void;
+type ErrorCallback = WebSocketErrorCallback;
 
 class WebSocketService {
   private client: Client | null = null;
@@ -43,32 +55,39 @@ class WebSocketService {
     const wsUrl = process.env.REACT_APP_WS_URL || 'http://localhost:8081/ws';
     this.client = new Client({
       webSocketFactory: () => {
-        return new SockJS(wsUrl) as any;
+        return new SockJS(wsUrl) as WebSocket;
       },
-      debug: (str) => {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('[WebSocket Debug]', str);
-        }
+      debug: str => {
+        logger.log('[WebSocket Debug]', str);
       },
       reconnectDelay: this.reconnectDelay,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
       connectHeaders: this.getConnectHeaders(),
       onConnect: () => {
-        console.log('WebSocket Connected');
+        logger.log('WebSocket Connected');
         this.reconnectAttempts = 0;
         this.onConnectCallbacks.forEach(cb => cb());
       },
       onDisconnect: () => {
-        console.log('WebSocket Disconnected');
+        logger.log('WebSocket Disconnected');
         this.onDisconnectCallbacks.forEach(cb => cb());
       },
-      onStompError: (frame) => {
-        console.error('STOMP Error:', frame);
-        this.onErrorCallbacks.forEach(cb => cb(frame));
+      onStompError: (frame: IFrame) => {
+        logger.error('STOMP Error:', frame);
+        const error: WebSocketError = {
+          message: frame.headers?.message || 'STOMP Error',
+          code: frame.command,
+          timestamp: new Date(),
+        };
+        this.onErrorCallbacks.forEach(cb => cb(error));
       },
-      onWebSocketError: (error) => {
-        console.error('WebSocket Error:', error);
+      onWebSocketError: (event: Event) => {
+        logger.error('WebSocket Error:', event);
+        const error: WebSocketError = {
+          message: 'WebSocket connection error',
+          timestamp: new Date(),
+        };
         this.onErrorCallbacks.forEach(cb => cb(error));
       },
     });
@@ -111,7 +130,7 @@ class WebSocketService {
         resolve();
       };
 
-      const onErrorHandler = (error: any) => {
+      const onErrorHandler = (error: WebSocketError) => {
         this.isConnecting = false;
         reject(error);
       };
@@ -143,24 +162,21 @@ class WebSocketService {
 
     // 이미 구독 중이면 새로 구독하지 않음
     if (this.subscriptions.has(destination)) {
-      console.warn(`Already subscribed to ${destination}`);
+      logger.warn(`Already subscribed to ${destination}`);
       return () => this.unsubscribeFromRoom(roomId);
     }
 
-    const subscription = this.client!.subscribe(
-      destination,
-      (message: IMessage) => {
-        try {
-          const parsedMessage: ChatMessage = JSON.parse(message.body);
-          if (parsedMessage.sentAt) {
-            parsedMessage.sentAt = new Date(parsedMessage.sentAt);
-          }
-          onMessage(parsedMessage);
-        } catch (error) {
-          console.error('Failed to parse message:', error);
+    const subscription = this.client!.subscribe(destination, (message: IMessage) => {
+      try {
+        const parsedMessage: ChatMessage = JSON.parse(message.body);
+        if (parsedMessage.sentAt) {
+          parsedMessage.sentAt = new Date(parsedMessage.sentAt);
         }
+        onMessage(parsedMessage);
+      } catch (error) {
+        logger.error('Failed to parse message:', error);
       }
-    );
+    });
 
     this.subscriptions.set(destination, subscription);
 
@@ -176,7 +192,7 @@ class WebSocketService {
     if (subscription) {
       subscription.unsubscribe();
       this.subscriptions.delete(destination);
-      console.log(`Unsubscribed from ${destination}`);
+      logger.log(`Unsubscribed from ${destination}`);
     }
   }
 
@@ -245,9 +261,12 @@ class WebSocketService {
   }
 
   // 일반 구독 (외부에서 client 직접 접근 대신 사용)
-  subscribe(destination: string, callback: (message: IMessage) => void): StompSubscription | undefined {
+  subscribe(
+    destination: string,
+    callback: (message: IMessage) => void
+  ): StompSubscription | undefined {
     if (!this.client?.active) {
-      console.warn('WebSocket is not connected');
+      logger.warn('WebSocket is not connected');
       return undefined;
     }
 

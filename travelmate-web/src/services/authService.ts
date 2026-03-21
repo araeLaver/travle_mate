@@ -1,4 +1,6 @@
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8081/api';
+import { logger } from '../lib/utils';
+
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
 
 export interface LoginRequest {
   email: string;
@@ -52,16 +54,44 @@ export interface RegisterResponse {
   createdAt: string;
 }
 
+export interface CurrentUser {
+  id: number;
+  email: string;
+  nickname: string;
+  fullName?: string;
+  profileImageUrl?: string;
+}
+
 class AuthService {
+  // SECURITY: 토큰은 메모리에만 저장 (XSS 공격 방지)
   private accessToken: string | null = null;
-  private refreshToken: string | null = null;
   private tokenExpiresAt: number | null = null;
+  private refreshPromise: Promise<TokenResponse> | null = null; // Race condition 방지
+  private currentUser: CurrentUser | null = null;
 
   constructor() {
-    this.accessToken = localStorage.getItem('accessToken');
-    this.refreshToken = localStorage.getItem('refreshToken');
-    const expiresAt = localStorage.getItem('tokenExpiresAt');
-    this.tokenExpiresAt = expiresAt ? parseInt(expiresAt) : null;
+    // SECURITY: localStorage에서 토큰 제거 (마이그레이션)
+    // 토큰은 메모리에만 저장하고, 페이지 새로고침 시 httpOnly 쿠키로 갱신
+    this.migrateFromLocalStorage();
+
+    // 저장된 사용자 ID로 사용자 정보 복원 시도
+    const savedUserId = localStorage.getItem('currentUserId');
+    if (savedUserId) {
+      // 사용자 ID만 저장하고, 상세 정보는 토큰 갱신 시 서버에서 가져옴
+      this.currentUser = { id: parseInt(savedUserId) } as CurrentUser;
+    }
+  }
+
+  /**
+   * localStorage에 저장된 민감한 토큰 정보 제거 (마이그레이션)
+   */
+  private migrateFromLocalStorage(): void {
+    // 기존에 저장된 토큰 정보 모두 제거
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('tokenExpiresAt');
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('currentUser'); // 민감한 사용자 정보도 제거
   }
 
   async login(request: LoginRequest): Promise<LoginResponse> {
@@ -73,6 +103,7 @@ class AuthService {
           'X-Device-Id': this.getDeviceId(),
           'X-Device-Name': navigator.userAgent,
         },
+        credentials: 'include', // httpOnly 쿠키 수신을 위해 필수
         body: JSON.stringify(request),
       });
 
@@ -86,7 +117,7 @@ class AuthService {
 
       return data;
     } catch (error) {
-      console.error('Login error:', error);
+      logger.error('Login error:', error);
       throw error;
     }
   }
@@ -98,6 +129,7 @@ class AuthService {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // httpOnly 쿠키 수신을 위해 필수
         body: JSON.stringify({
           ...request,
           deviceId: this.getDeviceId(),
@@ -115,24 +147,36 @@ class AuthService {
 
       return data;
     } catch (error) {
-      console.error('OAuth login error:', error);
+      logger.error('OAuth login error:', error);
       throw error;
     }
   }
 
   async refreshAccessToken(): Promise<TokenResponse> {
-    if (!this.refreshToken) {
-      throw new Error('Refresh token이 없습니다.');
+    // 이미 갱신 중인 경우 기존 Promise 반환 (Race Condition 방지)
+    if (this.refreshPromise) {
+      return this.refreshPromise;
     }
 
+    this.refreshPromise = this.doRefreshToken();
+
     try {
+      return await this.refreshPromise;
+    } finally {
+      this.refreshPromise = null;
+    }
+  }
+
+  private async doRefreshToken(): Promise<TokenResponse> {
+    try {
+      // Refresh token은 httpOnly 쿠키로 자동 전송됨
       const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // httpOnly 쿠키 전송을 위해 필수
         body: JSON.stringify({
-          refreshToken: this.refreshToken,
           deviceId: this.getDeviceId(),
         }),
       });
@@ -145,29 +189,34 @@ class AuthService {
 
       const data: TokenResponse = await response.json();
 
+      // SECURITY: 토큰은 메모리에만 저장
       this.accessToken = data.accessToken;
       this.tokenExpiresAt = Date.now() + data.expiresIn * 1000;
-      localStorage.setItem('accessToken', data.accessToken);
-      localStorage.setItem('tokenExpiresAt', this.tokenExpiresAt.toString());
 
       return data;
     } catch (error) {
-      console.error('Token refresh error:', error);
+      logger.error('Token refresh error:', error);
       throw error;
     }
   }
 
   private saveTokens(data: LoginResponse): void {
+    // SECURITY: 토큰은 메모리에만 저장 (XSS 공격 방지)
     this.accessToken = data.accessToken;
-    this.refreshToken = data.refreshToken;
     this.tokenExpiresAt = Date.now() + data.expiresIn * 1000;
 
-    localStorage.setItem('accessToken', data.accessToken);
-    localStorage.setItem('refreshToken', data.refreshToken);
-    localStorage.setItem('tokenExpiresAt', this.tokenExpiresAt.toString());
-
-    // 기존 호환성을 위해 authToken도 저장
-    localStorage.setItem('authToken', data.accessToken);
+    // 사용자 정보 저장 (메모리)
+    if (data.user) {
+      this.currentUser = {
+        id: data.user.id,
+        email: data.user.email,
+        nickname: data.user.nickname,
+        fullName: data.user.fullName,
+        profileImageUrl: data.user.profileImageUrl,
+      };
+      // SECURITY: 사용자 ID만 localStorage에 저장 (세션 복원용)
+      localStorage.setItem('currentUserId', data.user.id.toString());
+    }
   }
 
   private getDeviceId(): string {
@@ -188,8 +237,9 @@ class AuthService {
   async getValidToken(): Promise<string | null> {
     if (!this.accessToken) return null;
 
-    if (this.isTokenExpired() && this.refreshToken) {
+    if (this.isTokenExpired()) {
       try {
+        // Refresh token은 httpOnly 쿠키로 관리되므로 별도 체크 불필요
         await this.refreshAccessToken();
       } catch (error) {
         return null;
@@ -217,7 +267,7 @@ class AuthService {
       const data: RegisterResponse = await response.json();
       return data;
     } catch (error) {
-      console.error('Register error:', error);
+      logger.error('Register error:', error);
       throw error;
     }
   }
@@ -229,47 +279,87 @@ class AuthService {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this.accessToken}`,
+            Authorization: `Bearer ${this.accessToken}`,
           },
+          credentials: 'include', // httpOnly 쿠키 전송 및 삭제를 위해 필수
           body: JSON.stringify({
-            refreshToken: this.refreshToken,
             logoutAll,
           }),
         });
       }
     } catch (error) {
-      console.error('Logout error:', error);
+      logger.error('Logout error:', error);
     } finally {
       this.clearTokens();
     }
   }
 
   private clearTokens(): void {
+    // 메모리에서 토큰 제거
     this.accessToken = null;
-    this.refreshToken = null;
     this.tokenExpiresAt = null;
+    this.currentUser = null;
+    // localStorage에서 사용자 ID 제거
+    localStorage.removeItem('currentUserId');
+    // 기존 데이터 정리 (마이그레이션)
     localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
     localStorage.removeItem('tokenExpiresAt');
     localStorage.removeItem('authToken');
+    localStorage.removeItem('currentUser');
+    // refreshToken은 서버에서 httpOnly 쿠키 삭제 처리
   }
 
   getToken(): string | null {
     return this.accessToken;
   }
 
+  getUser(): CurrentUser | null {
+    return this.currentUser;
+  }
+
   isAuthenticated(): boolean {
+    // Access Token이 있고 만료되지 않았거나, httpOnly 쿠키로 갱신 가능한 경우
     return this.accessToken !== null && !this.isTokenExpired();
+  }
+
+  hasRefreshCapability(): boolean {
+    // Refresh token은 httpOnly 쿠키로 관리되므로 클라이언트에서 확인 불가
+    // 토큰 갱신 시도 후 결과로 판단
+    return true;
+  }
+
+  /**
+   * 앱 초기화 시 세션 복원 시도
+   * httpOnly 쿠키에 저장된 refresh token을 사용하여 access token 갱신
+   */
+  async tryRestoreSession(): Promise<boolean> {
+    const savedUserId = localStorage.getItem('currentUserId');
+    if (!savedUserId) {
+      return false;
+    }
+
+    try {
+      await this.refreshAccessToken();
+      return true;
+    } catch {
+      // 세션 복원 실패 시 저장된 사용자 ID 제거
+      localStorage.removeItem('currentUserId');
+      this.currentUser = null;
+      return false;
+    }
   }
 
   async checkEmailDuplicate(email: string): Promise<boolean> {
     try {
-      const response = await fetch(`${API_BASE_URL}/users/check-email?email=${encodeURIComponent(email)}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/users/check-email?email=${encodeURIComponent(email)}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`이메일 중복 체크 실패: ${response.status}`);
@@ -278,19 +368,22 @@ class AuthService {
       const data: { exists: boolean } = await response.json();
       return data.exists;
     } catch (error) {
-      console.error('Email duplicate check error:', error);
+      logger.error('Email duplicate check error:', error);
       throw error;
     }
   }
 
   async checkNicknameDuplicate(nickname: string): Promise<boolean> {
     try {
-      const response = await fetch(`${API_BASE_URL}/users/check-nickname?nickname=${encodeURIComponent(nickname)}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/users/check-nickname?nickname=${encodeURIComponent(nickname)}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`닉네임 중복 체크 실패: ${response.status}`);
@@ -299,7 +392,7 @@ class AuthService {
       const data: { exists: boolean } = await response.json();
       return data.exists;
     } catch (error) {
-      console.error('Nickname duplicate check error:', error);
+      logger.error('Nickname duplicate check error:', error);
       throw error;
     }
   }

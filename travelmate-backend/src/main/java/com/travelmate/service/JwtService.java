@@ -9,58 +9,82 @@ import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.List;
 
 @Service
 @Slf4j
 public class JwtService {
-    
+
     @Value("${app.jwt.secret}")
     private String jwtSecret;
-    
+
     @Value("${app.jwt.expiration}")
     private Long jwtExpiration;
-    
+
+    private SecretKey getSigningKey() {
+        return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+    }
+
     public String generateToken(Long userId, String email) {
+        return generateToken(userId, email, "USER");
+    }
+
+    public String generateToken(Long userId, String email, String role) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpiration);
-        
-        SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
-        
+
         return Jwts.builder()
-            .setSubject(userId.toString())
+            .subject(userId.toString())
             .claim("email", email)
-            .setIssuedAt(now)
-            .setExpiration(expiryDate)
-            .signWith(key, SignatureAlgorithm.HS256)
+            .claim("role", role)
+            .issuedAt(now)
+            .expiration(expiryDate)
+            .signWith(getSigningKey())
             .compact();
     }
-    
+
     public Long getUserIdFromToken(String token) {
-        Claims claims = Jwts.parserBuilder()
-            .setSigningKey(Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8)))
+        Claims claims = Jwts.parser()
+            .verifyWith(getSigningKey())
             .build()
-            .parseClaimsJws(token)
-            .getBody();
-        
+            .parseSignedClaims(token)
+            .getPayload();
+
         return Long.parseLong(claims.getSubject());
     }
-    
+
     public String getEmailFromToken(String token) {
-        Claims claims = Jwts.parserBuilder()
-            .setSigningKey(Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8)))
+        Claims claims = Jwts.parser()
+            .verifyWith(getSigningKey())
             .build()
-            .parseClaimsJws(token)
-            .getBody();
-        
+            .parseSignedClaims(token)
+            .getPayload();
+
         return claims.get("email", String.class);
     }
-    
+
+    public String getRoleFromToken(String token) {
+        Claims claims = Jwts.parser()
+            .verifyWith(getSigningKey())
+            .build()
+            .parseSignedClaims(token)
+            .getPayload();
+
+        String role = claims.get("role", String.class);
+        return role != null ? role : "USER";
+    }
+
+    public List<String> getAuthoritiesFromToken(String token) {
+        String role = getRoleFromToken(token);
+        return List.of("ROLE_" + role);
+    }
+
     public boolean validateToken(String authToken) {
         try {
-            Jwts.parserBuilder()
-                .setSigningKey(Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8)))
+            Jwts.parser()
+                .verifyWith(getSigningKey())
                 .build()
-                .parseClaimsJws(authToken);
+                .parseSignedClaims(authToken);
             return true;
         } catch (SecurityException ex) {
             log.error("Invalid JWT signature");

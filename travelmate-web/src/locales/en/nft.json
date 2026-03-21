@@ -1,0 +1,94 @@
+{
+  "collection": {
+    "title": "NFT Collection",
+    "myCollections": "My Collections",
+    "totalCollected": "Total Collected",
+    "recentlyCollected": "Recently Collected",
+    "empty": "No NFTs collected yet",
+    "emptyDescription": "Visit special places nearby to collect NFTs!"
+  },
+  "collect": {
+    "title": "Collect NFT",
+    "nearby": "Nearby Collection Spots",
+    "distance": "{distance}m away",
+    "collect": "Collect",
+    "collecting": "Collecting...",
+    "collected": "Collected!",
+    "alreadyCollected": "Already Collected",
+    "tooFar": "Please move closer",
+    "requirements": "Collection Requirements",
+    "withinRange": "Within {distance}m",
+    "verifyLocation": "Verifying location..."
+  },
+  "mint": {
+    "title": "Mint NFT",
+    "subtitle": "Record your collected NFT on the blockchain",
+    "mintable": "Mintable",
+    "minting": "Minting",
+    "minted": "Minted",
+    "failed": "Minting Failed",
+    "mint": "Mint",
+    "retry": "Retry",
+    "viewOnChain": "View on Chain",
+    "viewOnOpenSea": "View on OpenSea",
+    "transactionHash": "Transaction Hash",
+    "tokenId": "Token ID",
+    "contractAddress": "Contract Address",
+    "status": {
+      "PENDING": "Pending",
+      "IN_PROGRESS": "In Progress",
+      "COMPLETED": "Completed",
+      "FAILED": "Failed"
+    },
+    "steps": {
+      "connect": "Connect Wallet",
+      "sign": "Sign",
+      "upload": "Upload Metadata",
+      "mint": "Mint",
+      "confirm": "Confirm"
+    },
+    "wallet": {
+      "connect": "Connect Wallet",
+      "connected": "Connected",
+      "disconnect": "Disconnect",
+      "notConnected": "Wallet not connected"
+    }
+  },
+  "location": {
+    "title": "Location Info",
+    "name": "Name",
+    "category": "Category",
+    "address": "Address",
+    "description": "Description",
+    "rarity": "Rarity",
+    "collectors": "Collectors",
+    "reviews": "Reviews",
+    "rating": "Rating",
+    "writeReview": "Write Review",
+    "rarityLevels": {
+      "COMMON": "Common",
+      "UNCOMMON": "Uncommon",
+      "RARE": "Rare",
+      "EPIC": "Epic",
+      "LEGENDARY": "Legendary"
+    }
+  },
+  "review": {
+    "title": "Reviews",
+    "write": "Write Review",
+    "edit": "Edit Review",
+    "rating": "Rating",
+    "comment": "Comment",
+    "season": "Visit Season",
+    "helpful": "Helpful",
+    "report": "Report",
+    "seasons": {
+      "SPRING": "Spring",
+      "SUMMER": "Summer",
+      "FALL": "Fall",
+      "WINTER": "Winter"
+    },
+    "placeholder": "Share your experience about this place",
+    "empty": "No reviews yet"
+  }
+}

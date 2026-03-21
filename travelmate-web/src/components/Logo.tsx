@@ -4,45 +4,48 @@ interface LogoProps {
   className?: string;
   variant?: 'default' | 'white' | 'gradient';
   size?: 'sm' | 'md' | 'lg';
+  onClick?: () => void;
 }
 
 const Logo: React.FC<LogoProps> = ({
   className = '',
   variant = 'default',
-  size = 'md'
+  size = 'md',
+  onClick,
 }) => {
   const sizeClasses = {
     sm: 'h-6 w-6',
     md: 'h-8 w-8',
-    lg: 'h-12 w-12'
+    lg: 'h-12 w-12',
   };
 
   const iconColors = {
     default: {
       primary: '#6366f1',
       secondary: '#8b5cf6',
-      accent: '#ec4899'
+      accent: '#ec4899',
     },
     white: {
       primary: '#ffffff',
       secondary: '#ffffff',
-      accent: '#ffffff'
+      accent: '#ffffff',
     },
     gradient: {
       primary: 'url(#logo-gradient)',
       secondary: 'url(#logo-gradient)',
-      accent: 'url(#logo-gradient)'
-    }
+      accent: 'url(#logo-gradient)',
+    },
   };
 
   const colors = iconColors[variant];
 
   return (
     <svg
-      className={`${sizeClasses[size]} ${className}`}
+      className={`${sizeClasses[size]} ${className} ${onClick ? 'cursor-pointer' : ''}`}
       viewBox="0 0 200 200"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      onClick={onClick}
     >
       {variant === 'gradient' && (
         <defs>
@@ -101,10 +104,7 @@ const Logo: React.FC<LogoProps> = ({
 
       {/* Airplane Icon */}
       <g transform="translate(80, 75)">
-        <path
-          d="M20 0L40 15L25 20L25 30L20 35L15 30L15 20L0 15L20 0Z"
-          fill={colors.accent}
-        />
+        <path d="M20 0L40 15L25 20L25 30L20 35L15 30L15 20L0 15L20 0Z" fill={colors.accent} />
         <circle cx="20" cy="12" r="3" fill={colors.primary} />
       </g>
 

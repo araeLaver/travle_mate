@@ -1,19 +1,29 @@
 package com.travelmate.service;
 
+import com.travelmate.config.CacheConfig;
 import com.travelmate.dto.UserDto;
 import com.travelmate.entity.User;
 import com.travelmate.exception.UserException;
 import com.travelmate.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import com.travelmate.entity.UserReview;
+import com.travelmate.entity.BetaInvite;
+import com.travelmate.entity.Report;
 import com.travelmate.repository.UserReviewRepository;
+import com.travelmate.repository.UserTrustScoreRepository;
+import com.travelmate.entity.UserTrustScore;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.Authentication;
 
@@ -22,22 +32,36 @@ import org.springframework.security.core.Authentication;
 @Transactional
 @Slf4j
 public class UserService {
-    
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final UserReviewRepository userReviewRepository;
     private final EmailService emailService;
-    
+    private final ReportService reportService;
+    private final BetaInviteService betaInviteService;
+    private final UserTrustScoreRepository trustScoreRepository;
+
     public UserDto.Response registerUser(UserDto.RegisterRequest request) {
+        // 베타 모드 체크
+        if (betaInviteService.isBetaEnabled()) {
+            if (request.getInviteCode() == null || request.getInviteCode().isBlank()) {
+                throw new UserException("베타 기간 중에는 초대 코드가 필요합니다.");
+            }
+            BetaInvite invite = betaInviteService.validateInviteCode(request.getInviteCode());
+            if (invite == null) {
+                throw new UserException("유효하지 않거나 만료된 초대 코드입니다.");
+            }
+        }
+
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new UserException("이미 존재하는 이메일입니다.");
         }
-        
+
         if (userRepository.existsByNickname(request.getNickname())) {
             throw new UserException("이미 존재하는 닉네임입니다.");
         }
-        
+
         User user = new User();
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -47,9 +71,15 @@ public class UserService {
         user.setIsActive(true);
         user.setIsLocationEnabled(false);
         user.setIsMatchingEnabled(false);
+        user.setPasswordChangedAt(LocalDateTime.now());
         
         User savedUser = userRepository.save(user);
         log.info("새로운 사용자 등록: {}", savedUser.getEmail());
+
+        // 베타 초대 코드 사용 처리
+        if (betaInviteService.isBetaEnabled() && request.getInviteCode() != null) {
+            betaInviteService.consumeInvite(request.getInviteCode(), savedUser.getId());
+        }
 
         // 이메일 인증 발송
         emailService.sendVerificationEmail(savedUser.getEmail(), savedUser.getFullName());
@@ -97,14 +127,15 @@ public class UserService {
             .orElseThrow(() -> new UserException("사용자를 찾을 수 없습니다."));
 
         user.setPassword(passwordEncoder.encode(newPassword));
+        user.setPasswordChangedAt(LocalDateTime.now());
         userRepository.save(user);
         log.info("비밀번호 재설정 완료: {}", email);
     }
     
     public UserDto.LoginResponse loginUser(UserDto.LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-        
+            .orElseThrow(() -> new UserException("사용자를 찾을 수 없습니다."));
+
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new UserException("비밀번호가 일치하지 않습니다.");
         }
@@ -120,15 +151,16 @@ public class UserService {
     }
     
     @Transactional(readOnly = true)
+    @Cacheable(value = CacheConfig.USER_PROFILES, key = "#userId")
     public UserDto.Response getUserProfile(Long userId) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+            .orElseThrow(() -> new UserException("사용자를 찾을 수 없습니다."));
         return convertToDto(user);
     }
     
     public void updateUserLocation(UserDto.LocationUpdateRequest request) {
         User user = userRepository.findById(request.getUserId())
-            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+            .orElseThrow(() -> new UserException("사용자를 찾을 수 없습니다."));
         
         user.setCurrentLatitude(request.getLatitude());
         user.setCurrentLongitude(request.getLongitude());
@@ -186,6 +218,12 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email)
+            .orElseThrow(() -> new UserException("사용자를 찾을 수 없습니다."));
+    }
+
+    @Transactional(readOnly = true)
     public boolean existsByNickname(String nickname) {
         return userRepository.existsByNickname(nickname);
     }
@@ -203,17 +241,31 @@ public class UserService {
             .currentLatitude(user.getCurrentLatitude())
             .currentLongitude(user.getCurrentLongitude())
             .travelStyle(user.getTravelStyle())
-            .interests(user.getInterests())
-            .languages(user.getLanguages())
+            .interests(user.getInterests() != null ? new ArrayList<>(user.getInterests()) : null)
+            .languages(user.getLanguages() != null ? new ArrayList<>(user.getLanguages()) : null)
             .rating(user.getRating())
             .reviewCount(user.getReviewCount())
             .isEmailVerified(user.getIsEmailVerified())
             .phoneVerified(user.getPhoneVerified())
+            .trustBadge(getTrustBadgeForUser(user.getId()))
+            .trustScore(getTrustScoreForUser(user.getId()))
             .lastActivityAt(user.getLastActivityAt())
             .createdAt(user.getCreatedAt())
             .build();
     }
-    
+
+    private String getTrustBadgeForUser(Long userId) {
+        return trustScoreRepository.findByUserId(userId)
+                .map(ts -> ts.getTrustBadge().name())
+                .orElse(UserTrustScore.TrustBadge.NEW.name());
+    }
+
+    private Integer getTrustScoreForUser(Long userId) {
+        return trustScoreRepository.findByUserId(userId)
+                .map(UserTrustScore::getTotalScore)
+                .orElse(50);
+    }
+
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getName() != null) {
@@ -226,9 +278,13 @@ public class UserService {
         return null;
     }
     
+    @Caching(evict = {
+        @CacheEvict(value = CacheConfig.USER_PROFILES, key = "#userId"),
+        @CacheEvict(value = CacheConfig.USERS, key = "#userId")
+    })
     public UserDto.Response updateUserProfile(Long userId, UserDto.UpdateProfileRequest request) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+            .orElseThrow(() -> new UserException("사용자를 찾을 수 없습니다."));
         
         if (request.getNickname() != null && !request.getNickname().equals(user.getNickname())) {
             if (userRepository.existsByNickname(request.getNickname())) {
@@ -261,7 +317,7 @@ public class UserService {
     
     public void updateFcmToken(Long userId, String fcmToken) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+            .orElseThrow(() -> new UserException("사용자를 찾을 수 없습니다."));
         
         user.setFcmToken(fcmToken);
         userRepository.save(user);
@@ -270,30 +326,45 @@ public class UserService {
     
     public void deleteUser(Long userId) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+            .orElseThrow(() -> new UserException("사용자를 찾을 수 없습니다."));
         
         user.setIsActive(false);
         userRepository.save(user);
         log.info("사용자 계정 비활성화: {}", userId);
     }
     
-    public void reportUser(Long reporterId, UserDto.ReportRequest request) {
-        User reporter = userRepository.findById(reporterId)
-            .orElseThrow(() -> new RuntimeException("신고자를 찾을 수 없습니다."));
-        
-        User reported = userRepository.findById(request.getReportedUserId())
-            .orElseThrow(() -> new RuntimeException("신고 대상자를 찾을 수 없습니다."));
-        
-        // 신고 로그 생성 (실제로는 별도 Report Entity 필요)
-        log.warn("사용자 신고: {} -> {} (사유: {})", reporterId, request.getReportedUserId(), request.getReason());
-        
-        // TODO: 관리자 알림 및 신고 처리 로직 구현
+    public UserDto.ReportResponse reportUser(Long reporterId, UserDto.ReportRequest request) {
+        Report.ReportType reportType;
+        try {
+            reportType = Report.ReportType.valueOf(request.getReportType().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            reportType = Report.ReportType.OTHER;
+        }
+
+        Report report = reportService.createReport(
+            reporterId,
+            request.getReportedUserId(),
+            reportType,
+            request.getReason(),
+            request.getDescription()
+        );
+
+        return UserDto.ReportResponse.builder()
+            .id(report.getId())
+            .reporterId(reporterId)
+            .reportedUserId(request.getReportedUserId())
+            .reportType(report.getReportType().name())
+            .reason(report.getReason())
+            .status(report.getStatus().name())
+            .createdAt(report.getCreatedAt())
+            .build();
     }
     
     @Transactional(readOnly = true)
     public List<UserDto.ReviewResponse> getUserReviews(Long userId) {
-        List<UserReview> reviews = userReviewRepository.findByRevieweeId(userId);
-        
+        // N+1 방지: reviewer를 함께 로드
+        List<UserReview> reviews = userReviewRepository.findByRevieweeIdWithReviewer(userId);
+
         return reviews.stream()
             .map(this::convertToReviewDto)
             .collect(Collectors.toList());
@@ -301,10 +372,10 @@ public class UserService {
     
     public UserDto.ReviewResponse writeReview(Long reviewerId, UserDto.WriteReviewRequest request) {
         User reviewer = userRepository.findById(reviewerId)
-            .orElseThrow(() -> new RuntimeException("리뷰어를 찾을 수 없습니다."));
-        
+            .orElseThrow(() -> new UserException("리뷰어를 찾을 수 없습니다."));
+
         User reviewed = userRepository.findById(request.getReviewedUserId())
-            .orElseThrow(() -> new RuntimeException("리뷰 대상자를 찾을 수 없습니다."));
+            .orElseThrow(() -> new UserException("리뷰 대상자를 찾을 수 없습니다."));
         
         // 중복 리뷰 체크
         if (userReviewRepository.existsByReviewerIdAndRevieweeId(reviewerId, request.getReviewedUserId())) {

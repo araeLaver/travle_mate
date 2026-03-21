@@ -2,6 +2,11 @@ package com.travelmate.controller;
 
 import com.travelmate.dto.UserDto;
 import com.travelmate.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,11 +20,17 @@ import org.springframework.http.HttpStatus;
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
+@Tag(name = "사용자", description = "사용자 계정 및 프로필 관리 API")
 public class UserController {
     
     private final UserService userService;
     
+    @Operation(summary = "회원가입", description = "새로운 사용자 계정을 생성합니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "회원가입 성공"),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+        @ApiResponse(responseCode = "409", description = "이메일 또는 닉네임 중복")
+    })
     @PostMapping("/register")
     public ResponseEntity<UserDto.Response> register(@Valid @RequestBody UserDto.RegisterRequest request) {
         UserDto.Response response = userService.registerUser(request);
@@ -56,11 +67,15 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
     
+    @Operation(summary = "주변 사용자 조회", description = "지정된 위치 기준으로 반경 내의 사용자를 조회합니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "조회 성공")
+    })
     @GetMapping("/nearby")
     public ResponseEntity<List<UserDto.Response>> getNearbyUsers(
-            @RequestParam Double latitude,
-            @RequestParam Double longitude,
-            @RequestParam(defaultValue = "5.0") Double radiusKm) {
+            @Parameter(description = "위도") @RequestParam Double latitude,
+            @Parameter(description = "경도") @RequestParam Double longitude,
+            @Parameter(description = "검색 반경 (km)") @RequestParam(defaultValue = "5.0") Double radiusKm) {
         List<UserDto.Response> nearbyUsers = userService.getNearbyUsers(latitude, longitude, radiusKm);
         return ResponseEntity.ok(nearbyUsers);
     }
@@ -81,6 +96,11 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
     
+    @Operation(summary = "내 프로필 조회", description = "현재 로그인한 사용자의 프로필 정보를 조회합니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "조회 성공"),
+        @ApiResponse(responseCode = "401", description = "인증 필요")
+    })
     @GetMapping("/me")
     public ResponseEntity<UserDto.Response> getMyProfile(
             @AuthenticationPrincipal String userId) {
