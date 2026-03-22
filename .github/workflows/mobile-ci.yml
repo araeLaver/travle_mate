@@ -231,13 +231,27 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Validate EAS project configuration
+        run: |
+          PROJECT_ID=$(node -e "try{const a=require('./app.json');console.log(a.expo&&a.expo.extra&&a.expo.extra.eas&&a.expo.extra.eas.projectId||'')}catch(e){console.log('')}")
+          UUID_RE='^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+          if [[ "$PROJECT_ID" =~ $UUID_RE ]]; then
+            echo "EAS_CONFIGURED=true" >> $GITHUB_ENV
+            echo "✅ EAS projectId configured: $PROJECT_ID"
+          else
+            echo "EAS_CONFIGURED=false" >> $GITHUB_ENV
+            echo "⚠️  EAS projectId is not a valid UUID (found: '$PROJECT_ID'). Skipping Play Store submission." | tee -a $GITHUB_STEP_SUMMARY
+          fi
+
       - name: Setup EAS
+        if: env.EAS_CONFIGURED == 'true'
         uses: expo/expo-github-action@v8
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Submit to Play Store
+        if: env.EAS_CONFIGURED == 'true'
         run: eas submit --platform android --latest --non-interactive
 
   submit-ios:
@@ -261,11 +275,25 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Validate EAS project configuration
+        run: |
+          PROJECT_ID=$(node -e "try{const a=require('./app.json');console.log(a.expo&&a.expo.extra&&a.expo.extra.eas&&a.expo.extra.eas.projectId||'')}catch(e){console.log('')}")
+          UUID_RE='^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+          if [[ "$PROJECT_ID" =~ $UUID_RE ]]; then
+            echo "EAS_CONFIGURED=true" >> $GITHUB_ENV
+            echo "✅ EAS projectId configured: $PROJECT_ID"
+          else
+            echo "EAS_CONFIGURED=false" >> $GITHUB_ENV
+            echo "⚠️  EAS projectId is not a valid UUID (found: '$PROJECT_ID'). Skipping App Store submission." | tee -a $GITHUB_STEP_SUMMARY
+          fi
+
       - name: Setup EAS
+        if: env.EAS_CONFIGURED == 'true'
         uses: expo/expo-github-action@v8
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Submit to App Store
+        if: env.EAS_CONFIGURED == 'true'
         run: eas submit --platform ios --latest --non-interactive
