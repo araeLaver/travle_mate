@@ -94,7 +94,21 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Validate EAS project configuration
+        run: |
+          PROJECT_ID=$(node -e "try{const a=require('./app.json');console.log(a.expo&&a.expo.extra&&a.expo.extra.eas&&a.expo.extra.eas.projectId||'')}catch(e){console.log('')}")
+          UUID_RE='^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+          if [[ "$PROJECT_ID" =~ $UUID_RE ]]; then
+            echo "EAS_CONFIGURED=true" >> $GITHUB_ENV
+            echo "✅ EAS projectId configured: $PROJECT_ID"
+          else
+            echo "EAS_CONFIGURED=false" >> $GITHUB_ENV
+            echo "⚠️  EAS projectId is not a valid UUID (found: '$PROJECT_ID'). Skipping EAS build." | tee -a $GITHUB_STEP_SUMMARY
+            echo "To enable EAS builds, run: eas init  — then update extra.eas.projectId in app.json" | tee -a $GITHUB_STEP_SUMMARY
+          fi
+
       - name: Patch expo-modules-core for EAS compatibility
+        if: env.EAS_CONFIGURED == 'true'
         run: |
           CORE_PKG="node_modules/expo-modules-core/package.json"
           if [ -f "$CORE_PKG" ]; then
@@ -114,17 +128,18 @@ jobs:
           fi
 
       - name: Setup EAS
+        if: env.EAS_CONFIGURED == 'true'
         uses: expo/expo-github-action@v8
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Build Android (Preview)
-        if: github.ref == 'refs/heads/develop'
+        if: env.EAS_CONFIGURED == 'true' && github.ref == 'refs/heads/develop'
         run: eas build --platform android --profile preview --non-interactive
 
       - name: Build Android (Production)
-        if: github.ref == 'refs/heads/main'
+        if: env.EAS_CONFIGURED == 'true' && github.ref == 'refs/heads/main'
         run: eas build --platform android --profile production --non-interactive
 
   build-ios:
@@ -147,7 +162,21 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Validate EAS project configuration
+        run: |
+          PROJECT_ID=$(node -e "try{const a=require('./app.json');console.log(a.expo&&a.expo.extra&&a.expo.extra.eas&&a.expo.extra.eas.projectId||'')}catch(e){console.log('')}")
+          UUID_RE='^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+          if [[ "$PROJECT_ID" =~ $UUID_RE ]]; then
+            echo "EAS_CONFIGURED=true" >> $GITHUB_ENV
+            echo "✅ EAS projectId configured: $PROJECT_ID"
+          else
+            echo "EAS_CONFIGURED=false" >> $GITHUB_ENV
+            echo "⚠️  EAS projectId is not a valid UUID (found: '$PROJECT_ID'). Skipping EAS build." | tee -a $GITHUB_STEP_SUMMARY
+            echo "To enable EAS builds, run: eas init  — then update extra.eas.projectId in app.json" | tee -a $GITHUB_STEP_SUMMARY
+          fi
+
       - name: Patch expo-modules-core for EAS compatibility
+        if: env.EAS_CONFIGURED == 'true'
         run: |
           CORE_PKG="node_modules/expo-modules-core/package.json"
           if [ -f "$CORE_PKG" ]; then
@@ -167,17 +196,18 @@ jobs:
           fi
 
       - name: Setup EAS
+        if: env.EAS_CONFIGURED == 'true'
         uses: expo/expo-github-action@v8
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Build iOS (Preview)
-        if: github.ref == 'refs/heads/develop'
+        if: env.EAS_CONFIGURED == 'true' && github.ref == 'refs/heads/develop'
         run: eas build --platform ios --profile preview --non-interactive
 
       - name: Build iOS (Production)
-        if: github.ref == 'refs/heads/main'
+        if: env.EAS_CONFIGURED == 'true' && github.ref == 'refs/heads/main'
         run: eas build --platform ios --profile production --non-interactive
 
   submit-android:
