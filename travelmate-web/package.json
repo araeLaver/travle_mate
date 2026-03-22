@@ -77,6 +77,10 @@
     ]
   },
   "proxy": "http://localhost:8081",
+  "overrides": {
+    "schema-utils": "3.3.0",
+    "ajv-keywords": "3.5.2"
+  },
   "devDependencies": {
     "@craco/craco": "^7.1.0",
     "@testing-library/cypress": "^10.1.0",
