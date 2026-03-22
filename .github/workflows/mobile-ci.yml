@@ -94,6 +94,25 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Patch expo-modules-core for EAS compatibility
+        run: |
+          CORE_PKG="node_modules/expo-modules-core/package.json"
+          if [ -f "$CORE_PKG" ]; then
+            MAIN_FIELD=$(node -e "const p=require('./$CORE_PKG'); console.log(p.main||'')")
+            if [[ "$MAIN_FIELD" == *.ts ]]; then
+              echo 'module.exports = {};' > node_modules/expo-modules-core/index.compat.js
+              node -e "
+                const fs = require('fs');
+                const pkg = JSON.parse(fs.readFileSync('node_modules/expo-modules-core/package.json', 'utf-8'));
+                pkg.main = 'index.compat.js';
+                fs.writeFileSync('node_modules/expo-modules-core/package.json', JSON.stringify(pkg, null, 2));
+                console.log('Patched expo-modules-core main -> index.compat.js');
+              "
+            else
+              echo "expo-modules-core main OK: $MAIN_FIELD"
+            fi
+          fi
+
       - name: Setup EAS
         uses: expo/expo-github-action@v8
         with:
@@ -127,6 +146,25 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Patch expo-modules-core for EAS compatibility
+        run: |
+          CORE_PKG="node_modules/expo-modules-core/package.json"
+          if [ -f "$CORE_PKG" ]; then
+            MAIN_FIELD=$(node -e "const p=require('./$CORE_PKG'); console.log(p.main||'')")
+            if [[ "$MAIN_FIELD" == *.ts ]]; then
+              echo 'module.exports = {};' > node_modules/expo-modules-core/index.compat.js
+              node -e "
+                const fs = require('fs');
+                const pkg = JSON.parse(fs.readFileSync('node_modules/expo-modules-core/package.json', 'utf-8'));
+                pkg.main = 'index.compat.js';
+                fs.writeFileSync('node_modules/expo-modules-core/package.json', JSON.stringify(pkg, null, 2));
+                console.log('Patched expo-modules-core main -> index.compat.js');
+              "
+            else
+              echo "expo-modules-core main OK: $MAIN_FIELD"
+            fi
+          fi
 
       - name: Setup EAS
         uses: expo/expo-github-action@v8
