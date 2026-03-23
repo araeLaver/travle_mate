@@ -78,9 +78,7 @@
   },
   "proxy": "http://localhost:8081",
   "overrides": {
-    "fork-ts-checker-webpack-plugin": {
-      "schema-utils": "2.7.1"
-    },
+    "schema-utils": "3.0.0",
     "ajv-keywords": "3.5.2"
   },
   "devDependencies": {
