@@ -26,7 +26,7 @@ export function useAnnounce() {
 /**
  * Hook for trapping focus within a container (for modals/dialogs)
  */
-export function useFocusTrap(isActive: boolean = true): React.RefObject<HTMLDivElement> {
+export function useFocusTrap(isActive: boolean = true): React.RefObject<HTMLDivElement | null> {
   const ref = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
 

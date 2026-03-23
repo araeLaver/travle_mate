@@ -18,7 +18,7 @@ interface IntersectionResult {
  */
 export function useIntersectionObserver<T extends Element>(
   options: UseIntersectionObserverOptions = {}
-): [React.RefObject<T>, IntersectionResult] {
+): [React.RefObject<T | null>, IntersectionResult] {
   const { threshold = 0, root = null, rootMargin = '0px', freezeOnceVisible = false } = options;
 
   const elementRef = useRef<T>(null);
@@ -58,7 +58,7 @@ export function useIntersectionObserver<T extends Element>(
 export function useInfiniteScroll(
   callback: () => void,
   options: UseIntersectionObserverOptions = {}
-): React.RefObject<HTMLDivElement> {
+): React.RefObject<HTMLDivElement | null> {
   const [sentinelRef, { isIntersecting }] = useIntersectionObserver<HTMLDivElement>({
     threshold: 0.1,
     rootMargin: '100px',
@@ -83,7 +83,7 @@ export function useInfiniteScroll(
 export function useLazyImage(
   src: string,
   placeholder?: string
-): { imageSrc: string; isLoaded: boolean; ref: React.RefObject<HTMLImageElement> } {
+): { imageSrc: string; isLoaded: boolean; ref: React.RefObject<HTMLImageElement | null> } {
   const [imageSrc, setImageSrc] = useState(placeholder || '');
   const [isLoaded, setIsLoaded] = useState(false);
   const [ref, { isIntersecting }] = useIntersectionObserver<HTMLImageElement>({
@@ -110,7 +110,7 @@ export function useLazyImage(
  */
 export function useOnScreen<T extends Element>(
   options: UseIntersectionObserverOptions = {}
-): [React.RefObject<T>, boolean] {
+): [React.RefObject<T | null>, boolean] {
   const [ref, { isIntersecting }] = useIntersectionObserver<T>(options);
   return [ref, isIntersecting];
 }
@@ -120,7 +120,7 @@ export function useOnScreen<T extends Element>(
  */
 export function useIsVisible<T extends Element>(
   options: UseIntersectionObserverOptions = {}
-): [React.RefObject<T>, boolean] {
+): [React.RefObject<T | null>, boolean] {
   const [ref, result] = useIntersectionObserver<T>({
     freezeOnceVisible: true,
     ...options,
