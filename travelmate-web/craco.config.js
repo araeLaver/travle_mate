@@ -17,4 +17,12 @@ module.exports = {
       return webpackConfig;
     },
   },
+  jest: {
+    configure: {
+      // react-router-dom v7+ ships as ESM; allow Jest (Babel) to transform it
+      transformIgnorePatterns: [
+        '/node_modules/(?!(react-router|react-router-dom|@remix-run)/).+',
+      ],
+    },
+  },
 };
