@@ -20,7 +20,8 @@ services:
       # 필요 시에만 활성화하고, 반드시 방화벽으로 9090 포트를 외부 차단하세요.
       # - '--web.enable-admin-api'
     ports:
-      - "9090:9090"
+      # SECURITY: 127.0.0.1로 바인딩 — 외부에서 직접 접근 불가 (nginx/터널 경유)
+      - "127.0.0.1:9090:9090"
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./prometheus/alerts.yml:/etc/prometheus/rules/alerts.yml:ro
@@ -37,7 +38,7 @@ services:
     container_name: travelmate-grafana
     restart: unless-stopped
     ports:
-      - "3001:3000"
+      - "127.0.0.1:3001:3000"
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       # SECURITY: GRAFANA_ADMIN_PASSWORD 환경변수를 반드시 설정하세요. 기본값 'admin' 사용 시 보안 위험!
@@ -64,7 +65,7 @@ services:
     container_name: travelmate-alertmanager
     restart: unless-stopped
     ports:
-      - "9093:9093"
+      - "127.0.0.1:9093:9093"
     command:
       - '--config.file=/etc/alertmanager/alertmanager.yml'
       - '--storage.path=/alertmanager'
@@ -82,7 +83,8 @@ services:
     container_name: travelmate-node-exporter
     restart: unless-stopped
     ports:
-      - "9100:9100"
+      # SECURITY: localhost only — scrapped by Prometheus internally
+      - "127.0.0.1:9100:9100"
     command:
       - '--path.procfs=/host/proc'
       - '--path.sysfs=/host/sys'
@@ -103,7 +105,7 @@ services:
     container_name: travelmate-postgres-exporter
     restart: unless-stopped
     ports:
-      - "9187:9187"
+      - "127.0.0.1:9187:9187"
     environment:
       # SECURITY: DB_PASSWORD 환경변수를 설정하세요. 하드코딩된 기본값은 보안 위험입니다.
       DATA_SOURCE_NAME: "postgresql://${DB_USERNAME:-travelmate_user}:${DB_PASSWORD:?DB_PASSWORD is required}@postgres:5432/travelmate?sslmode=disable"
@@ -121,7 +123,7 @@ services:
     container_name: travelmate-redis-exporter
     restart: unless-stopped
     ports:
-      - "9121:9121"
+      - "127.0.0.1:9121:9121"
     environment:
       REDIS_ADDR: "redis://redis:6379"
       REDIS_PASSWORD: "${REDIS_PASSWORD:-}"
@@ -140,7 +142,7 @@ services:
     restart: unless-stopped
     privileged: true
     ports:
-      - "8083:8080"
+      - "127.0.0.1:8083:8080"
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:ro

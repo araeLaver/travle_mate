@@ -130,7 +130,7 @@ services:
   # Adminer (DB Admin UI)
   # ===================
   adminer:
-    image: adminer:latest
+    image: adminer:4.8.1
     container_name: travelmate-adminer
     restart: unless-stopped
     ports:
@@ -148,7 +148,7 @@ services:
   # Redis Commander (Redis Admin UI)
   # ===================
   redis-commander:
-    image: rediscommander/redis-commander:latest
+    image: rediscommander/redis-commander:0.8.0
     container_name: travelmate-redis-commander
     restart: unless-stopped
     ports:

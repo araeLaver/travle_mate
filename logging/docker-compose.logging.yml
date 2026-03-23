@@ -26,8 +26,9 @@ services:
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
     ports:
-      - "9200:9200"
-      - "9300:9300"
+      # SECURITY: localhost only — xpack.security=false 상태에서 외부 노출 절대 금지
+      - "127.0.0.1:9200:9200"
+      - "127.0.0.1:9300:9300"
     networks:
       - logging-network
     healthcheck:
@@ -68,7 +69,8 @@ services:
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
       - ELASTICSEARCH_USERNAME=kibana_system
-      - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD:-changeme}
+      # SECURITY: KIBANA_PASSWORD 환경변수를 반드시 설정하세요. 기본값 없음.
+      - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD:?KIBANA_PASSWORD is required}
       - SERVER_NAME=kibana
       - SERVER_HOST=0.0.0.0
       - SERVER_BASEPATH=/kibana
