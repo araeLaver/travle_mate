@@ -13,7 +13,7 @@ interface UsePullToRefreshResult {
 }
 
 export function usePullToRefresh(
-  containerRef: React.RefObject<HTMLElement>,
+  containerRef: React.RefObject<HTMLElement | null>,
   { onRefresh, threshold = 60, disabled = false }: UsePullToRefreshOptions
 ): UsePullToRefreshResult {
   const [isPulling, setIsPulling] = useState(false);
