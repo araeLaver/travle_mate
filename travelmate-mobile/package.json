@@ -35,7 +35,7 @@
     "expo-auth-session": "~5.4.0",
     "expo-camera": "^55.0.9",
     "expo-crypto": "~12.8.0",
-    "expo-device": "~5.9.0",
+    "expo-device": "~55.0.10",
     "expo-image-picker": "~16.0.6",
     "expo-in-app-purchases": "~14.5.0",
     "expo-local-authentication": "^55.0.8",
