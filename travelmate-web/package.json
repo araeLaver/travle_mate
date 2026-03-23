@@ -78,7 +78,8 @@
   },
   "proxy": "http://localhost:8081",
   "overrides": {
-    "ajv-keywords": "3.5.2"
+    "ajv-keywords": "3.5.2",
+    "schema-utils": "3.0.0"
   },
   "devDependencies": {
     "@craco/craco": "^7.1.0",
