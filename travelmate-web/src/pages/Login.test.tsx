@@ -108,7 +108,8 @@ describe('Login', () => {
 
   test('renders register link', () => {
     renderLogin();
-    expect(screen.getByText('회원가입')).toBeInTheDocument();
+    // Use getAllByText since '회원가입' may appear in multiple places (e.g. button + link)
+    expect(screen.getAllByText('회원가입').length).toBeGreaterThanOrEqual(1);
   });
 
   test('submits form with email and password', async () => {
