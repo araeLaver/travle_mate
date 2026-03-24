@@ -17,6 +17,19 @@ import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
 import SEOHead from '../components/SEOHead';
 
+const navItems = [
+  { label: '소개', path: '/about' },
+  { label: '기능', path: '/features' },
+  { label: '그룹', path: '/groups' },
+];
+
+const footerItems = [
+  { label: '소개', path: '/about' },
+  { label: '로그인', path: '/login' },
+  { label: '회원가입', path: '/register' },
+  { label: '그룹', path: '/groups' },
+];
+
 const aboutJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
@@ -70,17 +83,17 @@ const About: React.FC = () => {
               </Link>
 
               <div className="hidden md:flex items-center gap-1">
-                {['About', 'Features', 'Groups'].map(item => (
+                {navItems.map(item => (
                   <Link
-                    key={item}
-                    to={`/${item.toLowerCase()}`}
+                    key={item.path}
+                    to={item.path}
                     className={`px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 ${
-                      item === 'About'
+                      item.path === '/about'
                         ? 'text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20'
                         : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800'
                     }`}
                   >
-                    {item}
+                    {item.label}
                   </Link>
                 ))}
               </div>
@@ -91,13 +104,13 @@ const About: React.FC = () => {
                   to="/login"
                   className="hidden md:inline-flex px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
                 >
-                  Login
+                  로그인
                 </Link>
                 <Link
                   to="/register"
                   className="px-5 py-2.5 text-sm font-semibold text-white bg-gray-900 dark:bg-white dark:text-gray-900 rounded-xl hover:bg-gray-800 dark:hover:bg-gray-100 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
                 >
-                  Get Started
+                  시작하기
                 </Link>
               </div>
             </div>
@@ -112,7 +125,7 @@ const About: React.FC = () => {
           <div className="max-w-4xl mx-auto text-center">
             <motion.div {...fadeInUp}>
               <span className="inline-block px-4 py-1.5 bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 rounded-full text-sm font-semibold mb-6">
-                About Fryndo
+                Fryndo 소개
               </span>
             </motion.div>
 
@@ -150,7 +163,7 @@ const About: React.FC = () => {
               viewport={{ once: true }}
             >
               <span className="inline-block px-4 py-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-full text-sm font-semibold mb-4">
-                Our Mission
+                미션
               </span>
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-6">
                 모든 여행자에게
@@ -235,7 +248,7 @@ const About: React.FC = () => {
             className="text-center mb-16"
           >
             <span className="inline-block px-4 py-1.5 bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 rounded-full text-sm font-semibold mb-4">
-              Our Values
+              가치
             </span>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
               Fryndo가 추구하는 가치
@@ -329,18 +342,18 @@ const About: React.FC = () => {
             </div>
 
             <div className="flex gap-8 text-sm">
-              {['About', 'Login', 'Register', 'Groups'].map(item => (
+              {footerItems.map(item => (
                 <Link
-                  key={item}
-                  to={`/${item.toLowerCase()}`}
+                  key={item.path}
+                  to={item.path}
                   className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                 >
-                  {item}
+                  {item.label}
                 </Link>
               ))}
             </div>
 
-            <div className="text-sm text-gray-500 dark:text-gray-500">© 2025 Fryndo</div>
+            <div className="text-sm text-gray-500 dark:text-gray-500">&copy; 2026 Fryndo</div>
           </div>
         </div>
       </footer>

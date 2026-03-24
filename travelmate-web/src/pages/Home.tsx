@@ -19,6 +19,19 @@ import { useTutorial } from '../contexts/TutorialContext';
 import { cn } from '../lib/utils';
 import AdBanner from '../components/ads/AdBanner';
 
+const navItems = [
+  { label: '소개', path: '/about' },
+  { label: '기능', path: '/features' },
+  { label: '그룹', path: '/groups' },
+];
+
+const footerItems = [
+  { label: '소개', path: '/about' },
+  { label: '로그인', path: '/login' },
+  { label: '회원가입', path: '/register' },
+  { label: '그룹', path: '/groups' },
+];
+
 const Home: React.FC = () => {
   const { startTutorial } = useTutorial();
 
@@ -47,13 +60,13 @@ const Home: React.FC = () => {
               </Link>
 
               <div className="hidden md:flex items-center gap-1">
-                {['About', 'Features', 'Groups'].map(item => (
+                {navItems.map(item => (
                   <Link
-                    key={item}
-                    to={`/${item.toLowerCase()}`}
+                    key={item.path}
+                    to={item.path}
                     className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all duration-200"
                   >
-                    {item}
+                    {item.label}
                   </Link>
                 ))}
               </div>
@@ -64,13 +77,13 @@ const Home: React.FC = () => {
                   to="/login"
                   className="hidden md:inline-flex px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
                 >
-                  Login
+                  로그인
                 </Link>
                 <Link
                   to="/register"
                   className="px-5 py-2.5 text-sm font-semibold text-white bg-gray-900 dark:bg-white dark:text-gray-900 rounded-xl hover:bg-gray-800 dark:hover:bg-gray-100 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
                 >
-                  Get Started
+                  시작하기
                 </Link>
               </div>
             </div>
@@ -108,7 +121,7 @@ const Home: React.FC = () => {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
               </span>
               <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                500+ travelers online now
+                500명 이상의 여행자가 접속 중
               </span>
             </motion.div>
 
@@ -116,10 +129,10 @@ const Home: React.FC = () => {
               {...fadeInUp}
               className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight mb-8"
             >
-              <span className="text-gray-900 dark:text-white">Find Your</span>
+              <span className="text-gray-900 dark:text-white">나만의</span>
               <br />
               <span className="bg-gradient-to-r from-violet-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                Travel Buddy
+                여행 동반자 찾기
               </span>
             </motion.h1>
 
@@ -128,8 +141,8 @@ const Home: React.FC = () => {
               transition={{ delay: 0.1 }}
               className="text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-12 leading-relaxed"
             >
-              Connect with like-minded travelers worldwide. Share adventures, create memories, and
-              explore together.
+              전 세계 취향이 맞는 여행자와 연결하세요. 함께 모험하고, 추억을 만들고, 새로운 세상을
+              탐험하세요.
             </motion.p>
 
             <motion.div
@@ -141,14 +154,14 @@ const Home: React.FC = () => {
                 to="/register"
                 className="group inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-white bg-gradient-to-r from-violet-600 to-purple-600 rounded-2xl hover:from-violet-700 hover:to-purple-700 transition-all duration-300 hover:shadow-xl hover:shadow-violet-500/25 hover:-translate-y-1"
               >
-                Start Exploring
+                탐험 시작하기
                 <ArrowRightIcon className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Link>
               <button
                 onClick={startTutorial}
                 className="inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-2xl hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 tutorial-guest-mode-btn"
               >
-                Take a Tour
+                둘러보기
               </button>
             </motion.div>
           </div>
@@ -164,25 +177,25 @@ const Home: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                 {[
                   {
-                    name: 'Sarah K.',
-                    location: 'Tokyo, Japan',
-                    tags: ['Photography', 'Food'],
+                    name: '김사라',
+                    location: '도쿄, 일본',
+                    tags: ['사진', '맛집'],
                     match: 95,
                     gradient: 'from-rose-500 to-pink-500',
                     delay: 0,
                   },
                   {
-                    name: 'Alex M.',
-                    location: 'Seoul, Korea',
-                    tags: ['Adventure', 'Culture'],
+                    name: '이민수',
+                    location: '서울, 한국',
+                    tags: ['모험', '문화'],
                     match: 92,
                     gradient: 'from-violet-500 to-purple-500',
                     delay: 0.1,
                   },
                   {
-                    name: 'Emma L.',
-                    location: 'Barcelona, Spain',
-                    tags: ['Art', 'Music'],
+                    name: '박하늘',
+                    location: '바르셀로나, 스페인',
+                    tags: ['예술', '음악'],
                     match: 88,
                     gradient: 'from-cyan-500 to-blue-500',
                     delay: 0.2,
@@ -247,13 +260,13 @@ const Home: React.FC = () => {
             className="text-center mb-16"
           >
             <span className="inline-block px-4 py-1.5 bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 rounded-full text-sm font-semibold mb-4">
-              Features
+              주요 기능
             </span>
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-              Everything you need
+              필요한 모든 것
             </h2>
             <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              Powerful tools designed to make finding travel companions effortless
+              여행 동반자를 쉽게 찾을 수 있는 강력한 도구
             </p>
           </motion.div>
 
@@ -271,10 +284,9 @@ const Home: React.FC = () => {
                 <div className="w-14 h-14 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center mb-6">
                   <SparklesIcon className="h-7 w-7" />
                 </div>
-                <h3 className="text-2xl md:text-3xl font-bold mb-3">Smart Matching</h3>
+                <h3 className="text-2xl md:text-3xl font-bold mb-3">스마트 매칭</h3>
                 <p className="text-white/80 text-lg max-w-sm">
-                  AI-powered algorithm finds travelers with matching interests, travel styles, and
-                  schedules
+                  AI 기반 알고리즘이 관심사, 여행 스타일, 일정이 맞는 여행자를 찾아드립니다
                 </p>
               </div>
               <div className="relative z-10 mt-6">
@@ -294,7 +306,7 @@ const Home: React.FC = () => {
                       />
                     ))}
                   </div>
-                  <span className="text-white/90 text-sm font-medium">+2.5k matched today</span>
+                  <span className="text-white/90 text-sm font-medium">오늘 +2,500명 매칭</span>
                 </div>
               </div>
             </motion.div>
@@ -310,11 +322,9 @@ const Home: React.FC = () => {
               <div className="w-12 h-12 bg-cyan-100 dark:bg-cyan-900/30 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <ChatBubbleLeftRightIcon className="h-6 w-6 text-cyan-600 dark:text-cyan-400" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                Real-time Chat
-              </h3>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">실시간 채팅</h3>
               <p className="text-gray-600 dark:text-gray-400 text-sm">
-                Instant messaging with read receipts
+                읽음 확인이 가능한 즉시 메시지
               </p>
             </motion.div>
 
@@ -329,10 +339,8 @@ const Home: React.FC = () => {
               <div className="w-12 h-12 bg-rose-100 dark:bg-rose-900/30 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <MapPinIcon className="h-6 w-6 text-rose-600 dark:text-rose-400" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                Location Based
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 text-sm">Find travelers near you</p>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">위치 기반</h3>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">주변 여행자 찾기</p>
             </motion.div>
 
             {/* Wide Card - Groups */}
@@ -344,9 +352,9 @@ const Home: React.FC = () => {
               className="bento-item bento-wide bg-gradient-to-r from-amber-400 to-orange-500 text-white flex items-center justify-between overflow-hidden"
             >
               <div className="relative z-10">
-                <h3 className="text-xl font-bold mb-2">Travel Groups</h3>
+                <h3 className="text-xl font-bold mb-2">여행 그룹</h3>
                 <p className="text-white/80 text-sm max-w-xs">
-                  Create or join groups heading to the same destination
+                  같은 목적지로 향하는 그룹에 참여하거나 만들어보세요
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -365,8 +373,8 @@ const Home: React.FC = () => {
               <div className="w-12 h-12 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center mb-4">
                 <ShieldCheckIcon className="h-6 w-6" />
               </div>
-              <h3 className="text-xl font-bold mb-2">Verified Users</h3>
-              <p className="text-white/80 text-sm">Safe & trusted community</p>
+              <h3 className="text-xl font-bold mb-2">검증된 사용자</h3>
+              <p className="text-white/80 text-sm">안전하고 신뢰할 수 있는 커뮤니티</p>
             </motion.div>
 
             {/* Global Feature */}
@@ -380,10 +388,8 @@ const Home: React.FC = () => {
               <div className="w-12 h-12 bg-violet-100 dark:bg-violet-900/30 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <GlobeAltIcon className="h-6 w-6 text-violet-600 dark:text-violet-400" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                50+ Countries
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 text-sm">Connect globally</p>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">50+ 국가</h3>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">전 세계와 연결</p>
             </motion.div>
           </div>
         </div>
@@ -405,53 +411,53 @@ const Home: React.FC = () => {
           >
             <div>
               <span className="inline-block px-4 py-1.5 bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 rounded-full text-sm font-semibold mb-4">
-                Community
+                커뮤니티
               </span>
               <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white">
-                Meet Travelers
+                여행자 만나기
               </h2>
             </div>
             <Link
               to="/register"
               className="inline-flex items-center gap-2 text-violet-600 dark:text-violet-400 font-semibold hover:gap-3 transition-all"
             >
-              View all <ArrowRightIcon className="h-4 w-4" />
+              전체 보기 <ArrowRightIcon className="h-4 w-4" />
             </Link>
           </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
               {
-                name: 'Sophie Anderson',
+                name: '소피 앤더슨',
                 age: 28,
-                location: 'Tokyo, Japan',
+                location: '도쿄, 일본',
                 interests: [
-                  { icon: CameraIcon, label: 'Photography' },
-                  { icon: HeartIcon, label: 'Culture' },
+                  { icon: CameraIcon, label: '사진' },
+                  { icon: HeartIcon, label: '문화' },
                 ],
-                bio: 'Exploring hidden gems and capturing moments',
+                bio: '숨겨진 명소를 탐험하고 순간을 담는 여행자',
                 gradient: 'from-rose-400 to-pink-500',
               },
               {
-                name: 'Alex Chen',
+                name: '알렉스 첸',
                 age: 32,
-                location: 'Seoul, Korea',
+                location: '서울, 한국',
                 interests: [
-                  { icon: GlobeAltIcon, label: 'Adventure' },
-                  { icon: MapPinIcon, label: 'Hiking' },
+                  { icon: GlobeAltIcon, label: '모험' },
+                  { icon: MapPinIcon, label: '등산' },
                 ],
-                bio: 'Adventure seeker planning Southeast Asia trek',
+                bio: '동남아 트레킹을 계획 중인 모험가',
                 gradient: 'from-blue-400 to-cyan-500',
               },
               {
-                name: 'Maria Santos',
+                name: '마리아 산토스',
                 age: 25,
-                location: 'Barcelona, Spain',
+                location: '바르셀로나, 스페인',
                 interests: [
-                  { icon: MusicalNoteIcon, label: 'Music' },
-                  { icon: SparklesIcon, label: 'Art' },
+                  { icon: MusicalNoteIcon, label: '음악' },
+                  { icon: SparklesIcon, label: '예술' },
                 ],
-                bio: 'Art enthusiast exploring European cities',
+                bio: '유럽 도시를 탐험하는 예술 애호가',
                 gradient: 'from-violet-400 to-purple-500',
               },
             ].map((user, i) => (
@@ -506,7 +512,7 @@ const Home: React.FC = () => {
                     to="/register"
                     className="block w-full py-3 text-center text-sm font-semibold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 rounded-xl hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors"
                   >
-                    Connect
+                    연결하기
                   </Link>
                 </div>
               </motion.div>
@@ -526,42 +532,42 @@ const Home: React.FC = () => {
           >
             <div>
               <span className="inline-block px-4 py-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-full text-sm font-semibold mb-4">
-                Groups
+                그룹
               </span>
               <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white">
-                Join a Journey
+                여행에 참여하기
               </h2>
             </div>
             <Link
               to="/groups"
               className="inline-flex items-center gap-2 text-violet-600 dark:text-violet-400 font-semibold hover:gap-3 transition-all"
             >
-              Browse all <ArrowRightIcon className="h-4 w-4" />
+              전체 보기 <ArrowRightIcon className="h-4 w-4" />
             </Link>
           </motion.div>
 
           <div className="grid md:grid-cols-3 gap-6">
             {[
               {
-                name: 'Southeast Asia Backpackers',
-                route: 'Thailand → Vietnam → Cambodia',
-                dates: 'Jan 2025',
+                name: '동남아 배낭여행',
+                route: '태국 → 베트남 → 캄보디아',
+                dates: '2026년 1월',
                 members: 5,
                 max: 8,
                 gradient: 'from-emerald-400 to-teal-500',
               },
               {
-                name: 'European Art Tour',
-                route: 'Paris → Rome → Barcelona',
-                dates: 'Feb 2025',
+                name: '유럽 미술관 투어',
+                route: '파리 → 로마 → 바르셀로나',
+                dates: '2026년 2월',
                 members: 3,
                 max: 6,
                 gradient: 'from-violet-400 to-purple-500',
               },
               {
-                name: 'Japan Cherry Blossom',
-                route: 'Tokyo → Kyoto → Osaka',
-                dates: 'Mar 2025',
+                name: '일본 벚꽃 여행',
+                route: '도쿄 → 교토 → 오사카',
+                dates: '2026년 3월',
                 members: 6,
                 max: 10,
                 gradient: 'from-pink-400 to-rose-500',
@@ -627,23 +633,25 @@ const Home: React.FC = () => {
             <div className="absolute bottom-0 left-0 w-72 h-72 bg-pink-400/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
 
             <div className="relative z-10 text-center max-w-3xl mx-auto">
-              <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">Ready to explore?</h2>
+              <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
+                여행을 시작할 준비가 되셨나요?
+              </h2>
               <p className="text-xl text-white/80 mb-10 max-w-xl mx-auto">
-                Join thousands of travelers finding their perfect companions every day
+                매일 수천 명의 여행자가 완벽한 동반자를 찾고 있습니다
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link
                   to="/register"
                   className="inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-violet-600 bg-white rounded-2xl hover:bg-gray-100 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
                 >
-                  Get Started Free
+                  무료로 시작하기
                   <ArrowRightIcon className="h-5 w-5" />
                 </Link>
                 <button
                   onClick={startTutorial}
                   className="inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-white bg-white/20 backdrop-blur border border-white/30 rounded-2xl hover:bg-white/30 transition-all duration-300 tutorial-guest-mode-btn"
                 >
-                  Take a Tour
+                  둘러보기
                 </button>
               </div>
             </div>
@@ -661,18 +669,18 @@ const Home: React.FC = () => {
             </div>
 
             <div className="flex gap-8 text-sm">
-              {['About', 'Login', 'Register', 'Groups'].map(item => (
+              {footerItems.map(item => (
                 <Link
-                  key={item}
-                  to={`/${item.toLowerCase()}`}
+                  key={item.path}
+                  to={item.path}
                   className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                 >
-                  {item}
+                  {item.label}
                 </Link>
               ))}
             </div>
 
-            <div className="text-sm text-gray-500 dark:text-gray-500">© 2026 Fryndo</div>
+            <div className="text-sm text-gray-500 dark:text-gray-500">&copy; 2026 Fryndo</div>
           </div>
         </div>
       </footer>

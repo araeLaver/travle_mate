@@ -228,7 +228,7 @@ const Login: React.FC = () => {
                   to="/register"
                   className="px-5 py-2.5 text-sm font-semibold text-white bg-gray-900 dark:bg-white dark:text-gray-900 rounded-xl hover:bg-gray-800 dark:hover:bg-gray-100 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
                 >
-                  Sign Up
+                  회원가입
                 </Link>
               </div>
             </div>
