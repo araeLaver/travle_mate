@@ -73,7 +73,7 @@ public class SecurityConfig {
                 if (isProd) {
                     headers
                         .contentSecurityPolicy(csp -> csp
-                            .policyDirectives("default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:"))
+                            .policyDirectives("default-src 'self'; script-src 'self' https://accounts.google.com https://apis.google.com https://t1.kakaocdn.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https: https://kapi.kakao.com; frame-src https://accounts.google.com"))
                         .referrerPolicy(referrer -> referrer
                             .policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
                         .permissionsPolicy(permissions -> permissions

@@ -25,6 +25,34 @@ const AuthCallback: React.FC = () => {
 
   useEffect(() => {
     const handleAuthCallback = async () => {
+      // 1) Hash fragment 파싱 (Naver implicit flow: #access_token=xxx&state=naver)
+      const hash = location.hash.substring(1); // '#' 제거
+      if (hash) {
+        const hashParams = new URLSearchParams(hash);
+        const accessToken = hashParams.get('access_token');
+        const state = hashParams.get('state');
+
+        if (accessToken && state) {
+          try {
+            await authService.oauthLogin({
+              provider: state as 'google' | 'kakao' | 'naver',
+              accessToken,
+            });
+            toast.success(
+              `${state.charAt(0).toUpperCase() + state.slice(1)} 로그인 성공! 환영합니다!`
+            );
+            navigate('/dashboard');
+          } catch (err) {
+            const message = err instanceof Error ? err.message : 'OAuth 로그인에 실패했습니다.';
+            setErrorMessage(message);
+            toast.error(message);
+            setTimeout(() => navigate('/login'), 3000);
+          }
+          return;
+        }
+      }
+
+      // 2) Query parameter 파싱 (기존 authorization code flow)
       const urlParams = new URLSearchParams(location.search);
       const code = urlParams.get('code');
       const state = urlParams.get('state');
@@ -39,7 +67,6 @@ const AuthCallback: React.FC = () => {
 
       if (code && provider) {
         try {
-          // 백엔드에 authorization code 전달하여 토큰 교환
           const response = await fetch(
             `${process.env.REACT_APP_API_URL || 'http://localhost:8080/api'}/auth/oauth/callback`,
             {
@@ -63,8 +90,6 @@ const AuthCallback: React.FC = () => {
 
           const data = await response.json();
 
-          // authService.oauthLogin()을 사용하여 안전하게 토큰 저장
-          // 백엔드에서 이미 토큰 교환이 완료되었으므로 accessToken으로 로그인 처리
           await authService.oauthLogin({
             provider: provider as 'google' | 'kakao' | 'naver',
             accessToken: data.accessToken,
@@ -81,7 +106,6 @@ const AuthCallback: React.FC = () => {
           setTimeout(() => navigate('/login'), 3000);
         }
       } else {
-        // 파라미터가 없는 경우 로그인 페이지로 리다이렉트
         navigate('/login');
       }
     };

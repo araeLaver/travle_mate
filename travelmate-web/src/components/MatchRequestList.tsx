@@ -21,7 +21,7 @@ const MatchRequestList: React.FC<MatchRequestListProps> = ({
 }) => {
   if (requests.length === 0) {
     return (
-      <div className="match-empty">
+      <div className="text-center py-12 text-gray-400 dark:text-white/50">
         <p>{type === 'received' ? '받은 매칭 요청이 없습니다.' : '보낸 매칭 요청이 없습니다.'}</p>
       </div>
     );
@@ -37,66 +37,77 @@ const MatchRequestList: React.FC<MatchRequestListProps> = ({
   };
 
   const renderUser = (user: MatchUserSummary) => (
-    <div className="match-request-user">
-      <div className="match-request-avatar">
+    <div className="flex items-center gap-3">
+      <div>
         {user.profileImageUrl ? (
-          <img src={user.profileImageUrl} alt={user.nickname} />
+          <img
+            src={user.profileImageUrl}
+            alt={user.nickname}
+            className="w-11 h-11 rounded-full object-cover"
+          />
         ) : (
-          <div className="match-request-avatar-placeholder">
+          <div className="w-11 h-11 rounded-full bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center font-bold text-white">
             {user.nickname.charAt(0).toUpperCase()}
           </div>
         )}
       </div>
       <div>
-        <span className="match-request-nickname">{user.nickname}</span>
-        {user.age && <span className="match-request-age">{user.age}세</span>}
+        <span className="text-gray-900 dark:text-white font-bold">{user.nickname}</span>
+        {user.age && (
+          <span className="text-gray-400 dark:text-white/50 text-sm ml-2">{user.age}세</span>
+        )}
       </div>
     </div>
   );
 
   return (
-    <div className="match-request-list">
+    <div className="flex flex-col gap-4">
       {requests.map(req => {
         const displayUser = type === 'received' ? req.requester : req.receiver;
 
         return (
-          <div key={req.id} className="match-request-item">
-            <div className="match-request-header">
+          <div
+            key={req.id}
+            className="bg-white/80 dark:bg-white/[0.08] backdrop-blur-xl border border-gray-200/50 dark:border-white/[0.12] rounded-2xl p-5"
+          >
+            <div className="flex justify-between items-center mb-3">
               {renderUser(displayUser)}
-              <div className="match-request-score">
+              <div className="bg-violet-100 dark:bg-violet-500/20 text-violet-600 dark:text-violet-300 px-3.5 py-1.5 rounded-xl font-bold">
                 <span>{Math.round(req.totalScore)}점</span>
               </div>
             </div>
 
             {req.message && (
-              <p className="match-request-message">
+              <p className="text-gray-500 dark:text-white/60 italic text-sm mb-2.5">
                 {'"'}
                 {req.message}
                 {'"'}
               </p>
             )}
 
-            <div className="match-request-meta">
+            <div className="flex gap-4 text-gray-400 dark:text-white/40 text-xs mb-3">
               <span>{formatDate(req.createdAt)}</span>
               {req.expiresAt && (
-                <span className="match-request-expires">만료: {formatDate(req.expiresAt)}</span>
+                <span className="text-amber-500 dark:text-amber-400">
+                  만료: {formatDate(req.expiresAt)}
+                </span>
               )}
             </div>
 
             <MatchScoreBreakdown breakdown={req.scoreBreakdown} />
 
-            <div className="match-request-actions">
+            <div className="flex gap-2.5 mt-3.5">
               {type === 'received' && (
                 <>
                   <button
-                    className="btn-accept"
+                    className="flex-1 py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-xl font-bold transition-shadow hover:shadow-[0_6px_20px_rgba(16,185,129,0.4)] disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={() => onAccept?.(req.id)}
                     disabled={isResponding}
                   >
                     수락
                   </button>
                   <button
-                    className="btn-reject"
+                    className="flex-1 py-2.5 bg-red-50 dark:bg-red-500/20 text-red-500 dark:text-red-300 border border-red-200 dark:border-red-500/30 rounded-xl font-bold transition-colors hover:bg-red-100 dark:hover:bg-red-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={() => onReject?.(req.id)}
                     disabled={isResponding}
                   >
@@ -106,7 +117,7 @@ const MatchRequestList: React.FC<MatchRequestListProps> = ({
               )}
               {type === 'sent' && (
                 <button
-                  className="btn-cancel-request"
+                  className="flex-1 py-2.5 bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-white/70 border border-gray-200 dark:border-white/15 rounded-xl font-semibold transition-colors hover:bg-gray-200 dark:hover:bg-white/15 disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={() => onCancel?.(req.id)}
                   disabled={isResponding}
                 >

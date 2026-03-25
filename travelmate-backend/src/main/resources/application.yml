@@ -421,7 +421,7 @@ app:
     headers:
       # SECURITY: CSP 정책 강화 - unsafe-eval 제거, unsafe-inline은 style에만 허용 (CSS-in-JS 지원)
       # 프론트엔드에서 nonce 기반 스크립트 로딩으로 전환 권장
-      content-security-policy: "default-src 'self'; script-src 'self' https://www.googletagmanager.com https://pagead2.googlesyndication.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https: https://www.google-analytics.com https://analytics.google.com; frame-src https://googleads.g.doubleclick.net https://tpc.googlesyndication.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+      content-security-policy: "default-src 'self'; script-src 'self' https://www.googletagmanager.com https://pagead2.googlesyndication.com https://www.google-analytics.com https://accounts.google.com https://apis.google.com https://t1.kakaocdn.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https: https://www.google-analytics.com https://analytics.google.com https://kapi.kakao.com; frame-src https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://accounts.google.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
 
 # AWS 설정 (운영)
 aws:

@@ -356,44 +356,55 @@ const PointShop: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="space-y-4"
+                className="space-y-6"
               >
-                {/* Coming Soon Banner */}
-                <div className="bg-gradient-to-r from-violet-100 to-pink-100 dark:from-violet-900/30 dark:to-pink-900/30 rounded-2xl p-6 text-center border border-violet-200/50 dark:border-violet-800/50">
-                  <span className="text-4xl mb-3 block">🎁</span>
-                  <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
-                    상점 준비 중
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400">다양한 아이템이 곧 출시됩니다!</p>
+                {/* Coming Soon Hero */}
+                <div className="relative overflow-hidden bg-gradient-to-br from-violet-600 via-purple-600 to-pink-500 rounded-3xl p-8 text-center text-white shadow-2xl">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.15),transparent_50%)]" />
+                  <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
+                  <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
+                  <div className="relative z-10">
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/20 backdrop-blur-sm rounded-full text-sm font-medium mb-4">
+                      <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                      개발 진행 중
+                    </div>
+                    <h3 className="text-2xl md:text-3xl font-bold mb-3">포인트 상점 곧 오픈</h3>
+                    <p className="text-white/80 max-w-md mx-auto">
+                      포인트로 프로필 꾸미기, 배지, 이벤트 참여 등 다양한 아이템을 만나보세요
+                    </p>
+                  </div>
                 </div>
 
-                {/* Shop Items */}
-                <div className="grid gap-4">
+                {/* Preview Items Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {shopItems.map(item => (
                     <div
                       key={item.id}
-                      className={`bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-4 border border-gray-200/50 dark:border-gray-800/50 shadow-lg ${
-                        !item.available ? 'opacity-60' : ''
-                      }`}
+                      className="relative group bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-800/50 shadow-lg overflow-hidden"
                     >
-                      <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 rounded-xl bg-gradient-to-r from-violet-100 to-pink-100 dark:from-violet-900/30 dark:to-pink-900/30 flex items-center justify-center text-2xl">
-                          {item.icon}
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="font-bold text-gray-800 dark:text-white">{item.name}</h3>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
-                            {item.description}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <div className="flex items-center gap-1 text-yellow-600 dark:text-yellow-400 font-bold">
-                            <span>💰</span>
-                            <span>{item.price.toLocaleString()}P</span>
+                      <div className="p-5">
+                        <div className="flex items-start gap-4">
+                          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-100 to-pink-100 dark:from-violet-900/40 dark:to-pink-900/40 flex items-center justify-center text-2xl shrink-0">
+                            {item.icon}
                           </div>
-                          {!item.available && (
-                            <span className="text-xs text-pink-500 font-medium">준비 중</span>
-                          )}
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-bold text-gray-800 dark:text-white mb-1">
+                              {item.name}
+                            </h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+                              {item.description}
+                            </p>
+                            <div className="flex items-center gap-1.5 text-yellow-600 dark:text-yellow-400 font-bold text-lg">
+                              <span>💰</span>
+                              <span>{item.price.toLocaleString()}P</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      {/* Blur overlay */}
+                      <div className="absolute inset-0 bg-white/40 dark:bg-gray-900/50 backdrop-blur-[2px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div className="px-5 py-2.5 bg-violet-600 text-white rounded-xl font-semibold text-sm shadow-lg shadow-violet-500/25">
+                          곧 오픈 예정
                         </div>
                       </div>
                     </div>
