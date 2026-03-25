@@ -105,20 +105,6 @@ const Home: React.FC = () => {
           <div className="absolute inset-0 bg-gradient-to-b from-white/80 via-white/60 to-white/90 dark:from-[#0a0a0b]/80 dark:via-[#0a0a0b]/60 dark:to-[#0a0a0b]/90" />
         </div>
 
-        {/* Blob animations */}
-        <div
-          className="absolute top-20 left-10 w-72 h-72 bg-violet-400/20 rounded-full blur-3xl"
-          style={{ animation: 'blob 7s infinite' }}
-        />
-        <div
-          className="absolute bottom-20 right-10 w-96 h-96 bg-cyan-400/15 rounded-full blur-3xl"
-          style={{ animation: 'blob 7s infinite', animationDelay: '2s' }}
-        />
-        <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-pink-400/10 rounded-full blur-3xl"
-          style={{ animation: 'glow 4s infinite' }}
-        />
-
         <div className="container-custom relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <motion.div

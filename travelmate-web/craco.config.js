@@ -26,6 +26,43 @@ module.exports = {
       webpackConfig.plugins = webpackConfig.plugins.filter(
         (plugin) => plugin.constructor.name !== 'ForkTsCheckerWebpackPlugin'
       );
+
+      // Chunk splitting for better caching and smaller initial bundle
+      webpackConfig.optimization = {
+        ...webpackConfig.optimization,
+        splitChunks: {
+          chunks: 'all',
+          maxInitialRequests: 20,
+          minSize: 20000,
+          cacheGroups: {
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name(module) {
+                const match = module.context.match(/[\\/]node_modules[\\/](.*?)([\\/]|$)/);
+                const packageName = match ? match[1] : 'vendor';
+                return `vendor.${packageName.replace('@', '')}`;
+              },
+              priority: 10,
+            },
+            framerMotion: {
+              test: /[\\/]node_modules[\\/]framer-motion[\\/]/,
+              name: 'vendor.framer-motion',
+              priority: 20,
+            },
+            firebase: {
+              test: /[\\/]node_modules[\\/](firebase|@firebase)[\\/]/,
+              name: 'vendor.firebase',
+              priority: 20,
+            },
+            ethers: {
+              test: /[\\/]node_modules[\\/]ethers[\\/]/,
+              name: 'vendor.ethers',
+              priority: 20,
+            },
+          },
+        },
+      };
+
       return webpackConfig;
     },
   },

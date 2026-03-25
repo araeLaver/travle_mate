@@ -59,25 +59,11 @@
     <!-- DNS Prefetch -->
     <link rel="dns-prefetch" href="//breakable-barbee-untab-34f4435e.koyeb.app" />
 
-    <!-- Google Analytics 4 (GA4 측정 ID 설정 후 활성화) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-GT2487FZ6L"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag('js', new Date());
-      gtag('config', 'G-GT2487FZ6L');
-    </script>
-
-    <!-- Google AdSense (승인 후 ca-pub ID 교체) -->
-    <script
-      async
-      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
-      crossorigin="anonymous"
-    ></script>
-
     <title>Fryndo - 여행 동반자를 찾는 소셜 플랫폼</title>
+
+    <!-- Preload background images -->
+    <link rel="preload" as="image" href="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1920&q=75&auto=format&fit=crop" />
+    <link rel="preload" as="image" href="https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=1920&q=75&auto=format&fit=crop" />
   </head>
   <body>
     <!-- Skip to main content link for accessibility -->
@@ -98,7 +84,7 @@
 
     <div id="root" role="application" aria-label="Fryndo 애플리케이션"></div>
 
-    <!-- Service Worker Registration -->
+    <!-- Service Worker Registration + GA4 (페이지 로드 후 비동기) -->
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', function () {
@@ -112,6 +98,19 @@
             });
         });
       }
+      window.addEventListener('load', function() {
+        var s = document.createElement('script');
+        s.src = 'https://www.googletagmanager.com/gtag/js?id=G-GT2487FZ6L';
+        s.async = true;
+        document.head.appendChild(s);
+        s.onload = function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() { dataLayer.push(arguments); }
+          window.gtag = gtag;
+          gtag('js', new Date());
+          gtag('config', 'G-GT2487FZ6L');
+        };
+      });
     </script>
   </body>
 </html>

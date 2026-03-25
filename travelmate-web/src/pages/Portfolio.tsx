@@ -16,6 +16,7 @@ import {
 } from '@heroicons/react/24/outline';
 import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
+import PageBackground from '../components/PageBackground';
 import { cn } from '../lib/utils';
 
 const Portfolio: React.FC = () => {
@@ -27,6 +28,8 @@ const Portfolio: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] overflow-hidden">
+      <PageBackground />
+
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50">
         <div className="mx-4 mt-4">
@@ -73,18 +76,6 @@ const Portfolio: React.FC = () => {
       <section className="relative pt-40 pb-20 md:pt-48 md:pb-32">
         {/* Background */}
         <div className="absolute inset-0 gradient-mesh opacity-60 dark:opacity-40" />
-        <div
-          className="absolute top-20 left-10 w-72 h-72 bg-emerald-400/30 rounded-full blur-3xl"
-          style={{ animation: 'blob 7s infinite' }}
-        />
-        <div
-          className="absolute bottom-20 right-10 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl"
-          style={{ animation: 'blob 7s infinite', animationDelay: '2s' }}
-        />
-        <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-violet-400/10 rounded-full blur-3xl"
-          style={{ animation: 'glow 4s infinite' }}
-        />
 
         <div className="container-custom relative z-10">
           <div className="max-w-4xl mx-auto text-center">
