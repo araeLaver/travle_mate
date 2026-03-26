@@ -25,8 +25,10 @@ const AuthCallback: React.FC = () => {
 
   useEffect(() => {
     const handleAuthCallback = async () => {
-      // 1) Hash fragment 파싱 (Naver implicit flow: #access_token=xxx&state=naver)
-      const hash = location.hash.substring(1); // '#' 제거
+      const redirectUri = `${window.location.origin}/auth/callback`;
+
+      // 1) Hash fragment 파싱 (implicit flow: #access_token=xxx&state=provider)
+      const hash = location.hash.substring(1);
       if (hash) {
         const hashParams = new URLSearchParams(hash);
         const accessToken = hashParams.get('access_token');
@@ -52,7 +54,7 @@ const AuthCallback: React.FC = () => {
         }
       }
 
-      // 2) Query parameter 파싱 (기존 authorization code flow)
+      // 2) Query parameter 파싱 (authorization code flow: ?code=xxx&state=provider)
       const urlParams = new URLSearchParams(location.search);
       const code = urlParams.get('code');
       const state = urlParams.get('state');
@@ -67,32 +69,11 @@ const AuthCallback: React.FC = () => {
 
       if (code && provider) {
         try {
-          const response = await fetch(
-            `${process.env.REACT_APP_API_URL || 'http://localhost:8080/api'}/auth/oauth/callback`,
-            {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              credentials: 'include',
-              body: JSON.stringify({
-                code,
-                provider,
-                redirectUri: `${window.location.origin}/auth/callback`,
-              }),
-            }
-          );
-
-          if (!response.ok) {
-            const errorData = await response.text();
-            throw new Error(errorData || 'OAuth 인증에 실패했습니다.');
-          }
-
-          const data = await response.json();
-
-          await authService.oauthLogin({
-            provider: provider as 'google' | 'kakao' | 'naver',
-            accessToken: data.accessToken,
+          // 백엔드에서 코드 → 토큰 교환 + 로그인 처리
+          await authService.oauthCodeLogin({
+            provider: provider as 'naver' | 'kakao',
+            code,
+            redirectUri,
           });
 
           toast.success(

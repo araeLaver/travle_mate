@@ -59,6 +59,21 @@ public class AuthDto {
     }
 
     @Data
+    public static class OAuthCodeLoginRequest {
+        @NotBlank(message = "Provider는 필수입니다")
+        private String provider;  // naver, kakao
+
+        @NotBlank(message = "Authorization code는 필수입니다")
+        private String code;
+
+        @NotBlank(message = "Redirect URI는 필수입니다")
+        private String redirectUri;
+
+        private String deviceId;
+        private String deviceName;
+    }
+
+    @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor

@@ -39,6 +39,14 @@ export interface OAuthLoginRequest {
   deviceName?: string;
 }
 
+export interface OAuthCodeLoginRequest {
+  provider: 'naver' | 'kakao';
+  code: string;
+  redirectUri: string;
+  deviceId?: string;
+  deviceName?: string;
+}
+
 export interface RegisterRequest {
   email: string;
   password: string;
@@ -148,6 +156,34 @@ class AuthService {
       return data;
     } catch (error) {
       logger.error('OAuth login error:', error);
+      throw error;
+    }
+  }
+
+  async oauthCodeLogin(request: OAuthCodeLoginRequest): Promise<LoginResponse> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/oauth/code-login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          ...request,
+          deviceId: this.getDeviceId(),
+          deviceName: navigator.userAgent,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(`OAuth 코드 로그인 실패: ${response.status} - ${errorData}`);
+      }
+
+      const data: LoginResponse = await response.json();
+      this.saveTokens(data);
+
+      return data;
+    } catch (error) {
+      logger.error('OAuth code login error:', error);
       throw error;
     }
   }

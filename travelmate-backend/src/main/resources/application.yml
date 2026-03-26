@@ -159,6 +159,14 @@ app:
   redis:
     enabled: true  # 개발환경에서는 Redis 활성화
 
+  oauth:
+    naver:
+      client-id: ${NAVER_CLIENT_ID:}
+      client-secret: ${NAVER_CLIENT_SECRET:}
+    kakao:
+      client-id: ${KAKAO_CLIENT_ID:}
+      client-secret: ${KAKAO_CLIENT_SECRET:}
+
   frontend:
     url: ${FRONTEND_URL:http://localhost:3000}
 
@@ -395,6 +403,14 @@ app:
 
   redis:
     enabled: false  # Koyeb 무료 플랜에서 Redis 미사용
+
+  oauth:
+    naver:
+      client-id: ${NAVER_CLIENT_ID:}
+      client-secret: ${NAVER_CLIENT_SECRET:}
+    kakao:
+      client-id: ${KAKAO_CLIENT_ID:}
+      client-secret: ${KAKAO_CLIENT_SECRET:}
 
   frontend:
     url: ${FRONTEND_URL:https://various-belva-untab-1a59bee2.koyeb.app}

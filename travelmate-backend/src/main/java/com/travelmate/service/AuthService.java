@@ -46,6 +46,18 @@ public class AuthService {
     @Value("${app.jwt.refresh-expiration}")
     private Long refreshExpiration;
 
+    @Value("${app.oauth.naver.client-id:}")
+    private String naverClientId;
+
+    @Value("${app.oauth.naver.client-secret:}")
+    private String naverClientSecret;
+
+    @Value("${app.oauth.kakao.client-id:}")
+    private String kakaoClientId;
+
+    @Value("${app.oauth.kakao.client-secret:}")
+    private String kakaoClientSecret;
+
     /**
      * 로그인 처리 - Access Token + Refresh Token 발급
      */
@@ -153,6 +165,83 @@ public class AuthService {
             .tokenType("Bearer")
             .user(convertToDto(user))
             .build();
+    }
+
+    /**
+     * OAuth 인가 코드로 로그인 (코드 → 토큰 교환 → 로그인)
+     */
+    public AuthDto.LoginResponse oauthCodeLogin(AuthDto.OAuthCodeLoginRequest request, String ipAddress, String userAgent) {
+        String accessToken = exchangeCodeForToken(request.getProvider(), request.getCode(), request.getRedirectUri());
+
+        AuthDto.OAuthLoginRequest oauthRequest = new AuthDto.OAuthLoginRequest();
+        oauthRequest.setProvider(request.getProvider());
+        oauthRequest.setAccessToken(accessToken);
+        oauthRequest.setDeviceId(request.getDeviceId());
+        oauthRequest.setDeviceName(request.getDeviceName());
+
+        return oauthLogin(oauthRequest, ipAddress, userAgent);
+    }
+
+    /**
+     * 인가 코드를 액세스 토큰으로 교환
+     */
+    @SuppressWarnings("unchecked")
+    private String exchangeCodeForToken(String provider, String code, String redirectUri) {
+        return switch (provider.toLowerCase()) {
+            case "naver" -> exchangeNaverCode(code, redirectUri);
+            case "kakao" -> exchangeKakaoCode(code, redirectUri);
+            default -> throw new UserException("코드 교환을 지원하지 않는 제공자입니다: " + provider);
+        };
+    }
+
+    @SuppressWarnings("unchecked")
+    private String exchangeNaverCode(String code, String redirectUri) {
+        String tokenUrl = String.format(
+            "https://nid.naver.com/oauth2.0/token?grant_type=authorization_code&client_id=%s&client_secret=%s&code=%s&state=naver",
+            naverClientId, naverClientSecret, code);
+
+        try {
+            ResponseEntity<Map> response = restTemplate.getForEntity(tokenUrl, Map.class);
+            Map<String, Object> body = response.getBody();
+            if (body == null || body.containsKey("error")) {
+                String error = body != null ? (String) body.get("error_description") : "응답 없음";
+                log.error("네이버 토큰 교환 실패: {}", error);
+                throw new UserException("네이버 인증에 실패했습니다: " + error);
+            }
+            return (String) body.get("access_token");
+        } catch (UserException e) { throw e;
+        } catch (Exception e) {
+            log.error("네이버 토큰 교환 중 오류", e);
+            throw new UserException("네이버 토큰 교환에 실패했습니다.");
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private String exchangeKakaoCode(String code, String redirectUri) {
+        String tokenUrl = "https://kauth.kakao.com/oauth/token";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED);
+
+        String body = String.format(
+            "grant_type=authorization_code&client_id=%s&client_secret=%s&redirect_uri=%s&code=%s",
+            kakaoClientId, kakaoClientSecret, redirectUri, code);
+
+        HttpEntity<String> entity = new HttpEntity<>(body, headers);
+
+        try {
+            ResponseEntity<Map> response = restTemplate.postForEntity(tokenUrl, entity, Map.class);
+            Map<String, Object> responseBody = response.getBody();
+            if (responseBody == null || responseBody.containsKey("error")) {
+                String error = responseBody != null ? (String) responseBody.get("error_description") : "응답 없음";
+                log.error("카카오 토큰 교환 실패: {}", error);
+                throw new UserException("카카오 인증에 실패했습니다: " + error);
+            }
+            return (String) responseBody.get("access_token");
+        } catch (UserException e) { throw e;
+        } catch (Exception e) {
+            log.error("카카오 토큰 교환 중 오류", e);
+            throw new UserException("카카오 토큰 교환에 실패했습니다.");
+        }
     }
 
     /**

@@ -176,6 +176,27 @@ public class AuthController {
     }
 
     /**
+     * OAuth 인가 코드 로그인 (코드 → 토큰 교환 → 로그인)
+     * Naver, Kakao의 authorization code flow 지원
+     */
+    @PostMapping("/oauth/code-login")
+    public ResponseEntity<AuthDto.LoginResponse> oauthCodeLogin(
+            @Valid @RequestBody AuthDto.OAuthCodeLoginRequest request,
+            HttpServletRequest httpRequest,
+            HttpServletResponse httpResponse) {
+
+        String ipAddress = getClientIpAddress(httpRequest);
+        String userAgent = httpRequest.getHeader("User-Agent");
+
+        AuthDto.LoginResponse response = authService.oauthCodeLogin(request, ipAddress, userAgent);
+
+        setRefreshTokenCookie(httpResponse, response.getRefreshToken());
+        response.setRefreshToken(null);
+
+        return ResponseEntity.ok(response);
+    }
+
+    /**
      * 현재 사용자 세션 정보 조회
      */
     @GetMapping("/me")
