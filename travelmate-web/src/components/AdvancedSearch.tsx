@@ -24,11 +24,12 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({ onResults }) => {
   const { data: popularTags } = usePopularTags();
 
   const travelStyles = [
-    { value: 'BACKPACKER', label: '배낭여행' },
-    { value: 'LUXURY', label: '럭셔리' },
-    { value: 'CULTURAL', label: '문화탐방' },
     { value: 'ADVENTURE', label: '모험' },
+    { value: 'CULTURE', label: '문화탐방' },
+    { value: 'FOOD', label: '미식' },
     { value: 'RELAXATION', label: '휴양' },
+    { value: 'NATURE', label: '자연' },
+    { value: 'SHOPPING', label: '쇼핑' },
   ];
 
   const handleSearch = async () => {

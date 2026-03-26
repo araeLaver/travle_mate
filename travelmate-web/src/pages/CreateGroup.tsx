@@ -33,7 +33,7 @@ const CreateGroup: React.FC = () => {
     endDate: new Date(),
     maxMembers: 4,
     tags: [],
-    travelStyle: '문화탐방',
+    travelStyle: 'CULTURE',
     requirements: [],
     budget: {
       min: 100000,
@@ -63,16 +63,12 @@ const CreateGroup: React.FC = () => {
   };
 
   const travelStyles = [
-    '문화탐방',
-    '자연관광',
-    '미식투어',
-    '모험가',
-    '힐링여행',
-    '사진가',
-    '배낭여행',
-    '럭셔리 여행',
-    '등산/트레킹',
-    '도시탐험',
+    { value: 'CULTURE', label: '문화탐방' },
+    { value: 'NATURE', label: '자연관광' },
+    { value: 'FOOD', label: '미식투어' },
+    { value: 'ADVENTURE', label: '모험가' },
+    { value: 'RELAXATION', label: '힐링여행' },
+    { value: 'SHOPPING', label: '쇼핑' },
   ];
 
   const popularTags = [
@@ -420,8 +416,8 @@ const CreateGroup: React.FC = () => {
                     className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white focus:ring-2 focus:ring-violet-500/50 transition-all"
                   >
                     {travelStyles.map(style => (
-                      <option key={style} value={style}>
-                        {style}
+                      <option key={style.value} value={style.value}>
+                        {style.label}
                       </option>
                     ))}
                   </select>

@@ -122,7 +122,7 @@ class GroupService {
             role: 'leader',
             status: 'active',
             age: 28,
-            travelStyle: '사진가',
+            travelStyle: 'CULTURE',
           },
           {
             id: 'member_1',
@@ -131,7 +131,7 @@ class GroupService {
             role: 'member',
             status: 'active',
             age: 25,
-            travelStyle: '자연러버',
+            travelStyle: 'NATURE',
           },
           {
             id: 'member_2',
@@ -140,7 +140,7 @@ class GroupService {
             role: 'member',
             status: 'active',
             age: 32,
-            travelStyle: '힐링여행',
+            travelStyle: 'RELAXATION',
           },
           {
             id: 'member_3',
@@ -149,7 +149,7 @@ class GroupService {
             role: 'member',
             status: 'active',
             age: 29,
-            travelStyle: '사진가',
+            travelStyle: 'CULTURE',
           },
         ],
         tags: ['벚꽃', '봄여행', '사진촬영', '자연관광'],
@@ -161,7 +161,7 @@ class GroupService {
           max: 250000,
           currency: 'KRW',
         },
-        travelStyle: '자연관광',
+        travelStyle: 'NATURE',
         requirements: ['사진 찍기 좋아하는 분', '새벽 일찍 출발 가능한 분', '걷기 좋아하는 분'],
       },
       {
@@ -182,7 +182,7 @@ class GroupService {
             role: 'leader',
             status: 'active',
             age: 31,
-            travelStyle: '미식가',
+            travelStyle: 'FOOD',
           },
           {
             id: 'member_4',
@@ -191,7 +191,7 @@ class GroupService {
             role: 'member',
             status: 'active',
             age: 27,
-            travelStyle: '미식가',
+            travelStyle: 'FOOD',
           },
         ],
         tags: ['맛집', '부산', '미식투어', '현지맛집'],
@@ -203,7 +203,7 @@ class GroupService {
           max: 350000,
           currency: 'KRW',
         },
-        travelStyle: '미식투어',
+        travelStyle: 'FOOD',
         requirements: ['매운 음식 괜찮은 분', '해산물 알레르기 없는 분', '새로운 음식 도전하는 분'],
       },
       {
@@ -224,7 +224,7 @@ class GroupService {
             role: 'leader',
             status: 'active',
             age: 35,
-            travelStyle: '모험가',
+            travelStyle: 'ADVENTURE',
           },
           {
             id: 'member_5',
@@ -233,7 +233,7 @@ class GroupService {
             role: 'member',
             status: 'active',
             age: 28,
-            travelStyle: '자연러버',
+            travelStyle: 'NATURE',
           },
           {
             id: 'member_6',
@@ -242,7 +242,7 @@ class GroupService {
             role: 'member',
             status: 'active',
             age: 33,
-            travelStyle: '힐링여행',
+            travelStyle: 'RELAXATION',
           },
           {
             id: 'member_7',
@@ -251,7 +251,7 @@ class GroupService {
             role: 'member',
             status: 'active',
             age: 30,
-            travelStyle: '모험가',
+            travelStyle: 'ADVENTURE',
           },
           {
             id: 'member_8',
@@ -260,7 +260,7 @@ class GroupService {
             role: 'member',
             status: 'active',
             age: 27,
-            travelStyle: '자연관광',
+            travelStyle: 'NATURE',
           },
           {
             id: 'member_9',
@@ -269,7 +269,7 @@ class GroupService {
             role: 'member',
             status: 'active',
             age: 31,
-            travelStyle: '등산/트레킹',
+            travelStyle: 'NATURE',
           },
         ],
         tags: ['등산', '지리산', '천왕봉', '자연관광'],
@@ -281,7 +281,7 @@ class GroupService {
           max: 180000,
           currency: 'KRW',
         },
-        travelStyle: '등산/트레킹',
+        travelStyle: 'NATURE',
         requirements: ['기본 체력 필요', '등산화 필수', '안전수칙 준수'],
       },
       {
@@ -302,7 +302,7 @@ class GroupService {
             role: 'leader',
             status: 'active',
             age: 29,
-            travelStyle: '문화탐방',
+            travelStyle: 'CULTURE',
           },
           {
             id: 'member_10',
@@ -311,7 +311,7 @@ class GroupService {
             role: 'member',
             status: 'active',
             age: 27,
-            travelStyle: '문화탐방',
+            travelStyle: 'CULTURE',
           },
           {
             id: 'member_11',
@@ -320,7 +320,7 @@ class GroupService {
             role: 'member',
             status: 'active',
             age: 32,
-            travelStyle: '문화탐방',
+            travelStyle: 'CULTURE',
           },
           {
             id: 'member_12',
@@ -329,7 +329,7 @@ class GroupService {
             role: 'member',
             status: 'active',
             age: 25,
-            travelStyle: '문화탐방',
+            travelStyle: 'CULTURE',
           },
           {
             id: 'member_13',
@@ -338,7 +338,7 @@ class GroupService {
             role: 'member',
             status: 'active',
             age: 28,
-            travelStyle: '문화탐방',
+            travelStyle: 'CULTURE',
           },
         ],
         tags: ['문화', '박물관', '미술관', '전통체험'],
@@ -350,7 +350,7 @@ class GroupService {
           max: 120000,
           currency: 'KRW',
         },
-        travelStyle: '문화탐방',
+        travelStyle: 'CULTURE',
         requirements: ['문화에 관심 있는 분', '박물관 관람 좋아하는 분'],
       },
       {
@@ -371,7 +371,7 @@ class GroupService {
             role: 'leader',
             status: 'active',
             age: 26,
-            travelStyle: '힐링여행',
+            travelStyle: 'RELAXATION',
           },
           {
             id: 'member_5',
@@ -380,7 +380,7 @@ class GroupService {
             role: 'member',
             status: 'active',
             age: 30,
-            travelStyle: '힐링여행',
+            travelStyle: 'RELAXATION',
           },
           {
             id: 'member_6',
@@ -389,7 +389,7 @@ class GroupService {
             role: 'member',
             status: 'active',
             age: 24,
-            travelStyle: '카페투어',
+            travelStyle: 'FOOD',
           },
         ],
         tags: ['제주도', '힐링', '카페투어', '해변산책', '자연관광'],
@@ -401,7 +401,7 @@ class GroupService {
           max: 500000,
           currency: 'KRW',
         },
-        travelStyle: '힐링여행',
+        travelStyle: 'RELAXATION',
         requirements: ['여유로운 일정 선호', '새벽 출발 가능', '운전 가능자 우대'],
       },
       {
@@ -422,7 +422,7 @@ class GroupService {
             role: 'leader',
             status: 'active',
             age: 22,
-            travelStyle: '문화탐방',
+            travelStyle: 'CULTURE',
           },
           {
             id: 'member_6_1',
@@ -431,7 +431,7 @@ class GroupService {
             role: 'member',
             status: 'active',
             age: 24,
-            travelStyle: '문화탐방',
+            travelStyle: 'CULTURE',
           },
           {
             id: 'member_6_2',
@@ -440,7 +440,7 @@ class GroupService {
             role: 'member',
             status: 'active',
             age: 21,
-            travelStyle: '문화탐방',
+            travelStyle: 'CULTURE',
           },
           {
             id: 'member_6_3',
@@ -449,7 +449,7 @@ class GroupService {
             role: 'member',
             status: 'active',
             age: 23,
-            travelStyle: '문화탐방',
+            travelStyle: 'CULTURE',
           },
         ],
         tags: ['K-POP', '한류', '성지순례', '아이돌', '뮤직비디오'],
@@ -461,7 +461,7 @@ class GroupService {
           max: 200000,
           currency: 'KRW',
         },
-        travelStyle: '문화탐방',
+        travelStyle: 'CULTURE',
         requirements: ['K-POP에 관심 있는 분', '사진 많이 찍을 예정', '한류 문화 좋아하는 분'],
       },
       {
@@ -482,7 +482,7 @@ class GroupService {
             role: 'leader',
             status: 'active',
             age: 28,
-            travelStyle: '사진가',
+            travelStyle: 'CULTURE',
           },
           {
             id: 'member_7_1',
@@ -491,7 +491,7 @@ class GroupService {
             role: 'member',
             status: 'active',
             age: 26,
-            travelStyle: '사진가',
+            travelStyle: 'CULTURE',
           },
         ],
         tags: ['강릉', '야경', '일출', '바다', '사진촬영'],
@@ -503,7 +503,7 @@ class GroupService {
           max: 280000,
           currency: 'KRW',
         },
-        travelStyle: '사진가',
+        travelStyle: 'CULTURE',
         requirements: ['카메라 지참', '새벽 일찍 일어날 수 있는 분', '차량 이동 가능'],
       },
       {
@@ -524,7 +524,7 @@ class GroupService {
             role: 'leader',
             status: 'active',
             age: 25,
-            travelStyle: '쇼핑투어',
+            travelStyle: 'SHOPPING',
           },
           {
             id: 'member_8_1',
@@ -533,7 +533,7 @@ class GroupService {
             role: 'member',
             status: 'active',
             age: 23,
-            travelStyle: '쇼핑투어',
+            travelStyle: 'SHOPPING',
           },
           {
             id: 'member_8_2',
@@ -542,7 +542,7 @@ class GroupService {
             role: 'member',
             status: 'active',
             age: 27,
-            travelStyle: '쇼핑투어',
+            travelStyle: 'SHOPPING',
           },
           {
             id: 'member_8_3',
@@ -551,7 +551,7 @@ class GroupService {
             role: 'member',
             status: 'active',
             age: 24,
-            travelStyle: '쇼핑투어',
+            travelStyle: 'SHOPPING',
           },
           {
             id: 'member_8_4',
@@ -560,7 +560,7 @@ class GroupService {
             role: 'member',
             status: 'active',
             age: 26,
-            travelStyle: '쇼핑투어',
+            travelStyle: 'SHOPPING',
           },
         ],
         tags: ['홍대', '쇼핑', '빈티지', '패션', '스타일링'],
@@ -572,7 +572,7 @@ class GroupService {
           max: 300000,
           currency: 'KRW',
         },
-        travelStyle: '도시탐험',
+        travelStyle: 'CULTURE',
         requirements: ['패션에 관심 있는 분', '쇼핑 좋아하는 분', '트렌드에 민감한 분'],
       },
     ];

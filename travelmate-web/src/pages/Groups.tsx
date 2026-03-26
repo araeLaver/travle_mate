@@ -40,16 +40,13 @@ const Groups: React.FC = () => {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const travelStyles = [
-    '전체',
-    '자연관광',
-    '문화탐방',
-    '미식투어',
-    '모험가',
-    '힐링여행',
-    '사진가',
-    '배낭여행',
-    '럭셔리 여행',
-    '등산/트레킹',
+    { value: '', label: '전체' },
+    { value: 'ADVENTURE', label: '모험가' },
+    { value: 'CULTURE', label: '문화탐방' },
+    { value: 'FOOD', label: '미식투어' },
+    { value: 'RELAXATION', label: '힐링여행' },
+    { value: 'NATURE', label: '자연관광' },
+    { value: 'SHOPPING', label: '쇼핑' },
   ];
 
   const statusLabels: Record<string, string> = {
@@ -109,7 +106,7 @@ const Groups: React.FC = () => {
         filtered = await groupService.searchGroups(searchQuery.trim(), {
           destination: filters.destination || undefined,
           travelStyle:
-            filters.travelStyle && filters.travelStyle !== '전체' ? filters.travelStyle : undefined,
+            filters.travelStyle && filters.travelStyle !== '' ? filters.travelStyle : undefined,
           status: filters.status || undefined,
         });
       } catch {
@@ -122,7 +119,7 @@ const Groups: React.FC = () => {
         );
       }
 
-      if (filters.travelStyle && filters.travelStyle !== '전체') {
+      if (filters.travelStyle && filters.travelStyle !== '') {
         filtered = filtered.filter(group => group.travelStyle === filters.travelStyle);
       }
 
@@ -317,8 +314,8 @@ const Groups: React.FC = () => {
                 className="px-4 py-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
               >
                 {travelStyles.map(style => (
-                  <option key={style} value={style}>
-                    {style}
+                  <option key={style.value} value={style.value}>
+                    {style.label}
                   </option>
                 ))}
               </select>
