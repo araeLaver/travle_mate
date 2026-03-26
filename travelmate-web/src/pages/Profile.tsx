@@ -464,8 +464,8 @@ const Profile: React.FC = () => {
                       className="w-full px-4 py-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
                     >
                       {profileService.getAvailableTravelStyles().map(style => (
-                        <option key={style} value={style}>
-                          {style}
+                        <option key={style.value} value={style.value}>
+                          {style.label}
                         </option>
                       ))}
                     </select>
@@ -522,7 +522,7 @@ const Profile: React.FC = () => {
                       🎯 여행 스타일
                     </h3>
                     <span className="px-4 py-2 bg-gradient-to-r from-violet-600 to-pink-600 text-white rounded-full font-medium">
-                      {profile.travelStyle}
+                      {profileService.getTravelStyleLabel(profile.travelStyle)}
                     </span>
                   </div>
 

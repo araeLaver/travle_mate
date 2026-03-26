@@ -180,7 +180,7 @@ class ProfileService {
       bio: '새로운 곳을 탐험하고 사람들과 만나는 것을 좋아합니다!',
       interests: this.getRandomItems(interests, 3, 5),
       languages: this.getRandomItems(languages, 1, 3),
-      travelStyle: '문화탐방',
+      travelStyle: 'CULTURE',
       travelHistory: [],
       stats: {
         totalTrips: 0,
@@ -471,20 +471,22 @@ class ProfileService {
     ];
   }
 
-  // 여행 스타일 목록
-  getAvailableTravelStyles(): string[] {
+  // 여행 스타일 목록 (백엔드 enum 값 기준)
+  getAvailableTravelStyles(): { value: string; label: string }[] {
     return [
-      '배낭여행',
-      '럭셔리 여행',
-      '문화탐방',
-      '모험가',
-      '미식가',
-      '사진가',
-      '역사덕후',
-      '자연러버',
-      '도시탐험',
-      '힐링여행',
+      { value: 'ADVENTURE', label: '모험가' },
+      { value: 'CULTURE', label: '문화탐방' },
+      { value: 'FOOD', label: '미식가' },
+      { value: 'RELAXATION', label: '힐링여행' },
+      { value: 'NATURE', label: '자연러버' },
+      { value: 'SHOPPING', label: '쇼핑' },
     ];
+  }
+
+  // 여행 스타일 enum → 한글 라벨 변환
+  getTravelStyleLabel(value: string | undefined): string {
+    const styles = this.getAvailableTravelStyles();
+    return styles.find(s => s.value === value)?.label || value || '';
   }
 
   // 백엔드 응답을 UserProfile로 변환
