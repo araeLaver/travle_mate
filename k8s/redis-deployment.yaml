@@ -19,6 +19,13 @@ spec:
         app: redis
         tier: cache
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999   # redis user in official image
+        runAsGroup: 999
+        fsGroup: 999
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: redis
           image: redis:7-alpine
@@ -41,6 +48,10 @@ spec:
           ports:
             - containerPort: 6379
               name: redis
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
           resources:
             requests:
               memory: "128Mi"

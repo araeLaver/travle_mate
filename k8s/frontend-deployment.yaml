@@ -22,6 +22,13 @@ spec:
         app: travelmate-frontend
         tier: frontend
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101   # nginx default user (nginx:alpine)
+        runAsGroup: 101
+        fsGroup: 101
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: frontend
           image: travelmate/frontend:latest
@@ -29,6 +36,11 @@ spec:
           ports:
             - containerPort: 80
               name: http
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+              add: ["NET_BIND_SERVICE"]  # nginx needs port 80
           resources:
             requests:
               memory: "64Mi"

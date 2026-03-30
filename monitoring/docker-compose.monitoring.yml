@@ -8,7 +8,7 @@ services:
   # Prometheus
   # ===================
   prometheus:
-    image: prom/prometheus:v2.48.0
+    image: prom/prometheus:v2.52.0
     container_name: travelmate-prometheus
     restart: unless-stopped
     command:
@@ -34,7 +34,7 @@ services:
   # Grafana
   # ===================
   grafana:
-    image: grafana/grafana:10.2.2
+    image: grafana/grafana:11.1.0
     container_name: travelmate-grafana
     restart: unless-stopped
     ports:
@@ -61,7 +61,7 @@ services:
   # Alertmanager
   # ===================
   alertmanager:
-    image: prom/alertmanager:v0.26.0
+    image: prom/alertmanager:v0.27.0
     container_name: travelmate-alertmanager
     restart: unless-stopped
     ports:
@@ -79,7 +79,7 @@ services:
   # Node Exporter (System Metrics)
   # ===================
   node-exporter:
-    image: prom/node-exporter:v1.7.0
+    image: prom/node-exporter:v1.8.1
     container_name: travelmate-node-exporter
     restart: unless-stopped
     ports:
@@ -101,7 +101,7 @@ services:
   # PostgreSQL Exporter
   # ===================
   postgres-exporter:
-    image: prometheuscommunity/postgres-exporter:v0.15.0
+    image: prometheuscommunity/postgres-exporter:v0.15.0  # latest stable as of 2025
     container_name: travelmate-postgres-exporter
     restart: unless-stopped
     ports:
@@ -119,7 +119,7 @@ services:
   # Redis Exporter
   # ===================
   redis-exporter:
-    image: oliver006/redis_exporter:v1.56.0
+    image: oliver006/redis_exporter:v1.62.0
     container_name: travelmate-redis-exporter
     restart: unless-stopped
     ports:
@@ -137,7 +137,7 @@ services:
   # cAdvisor (Container Metrics)
   # ===================
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:v0.47.2
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
     container_name: travelmate-cadvisor
     restart: unless-stopped
     privileged: true
