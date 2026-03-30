@@ -45,7 +45,7 @@ jobs:
           CI: true
 
       - name: Upload coverage report
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           directory: travelmate-web/coverage
           flags: frontend
@@ -123,7 +123,7 @@ jobs:
         if: always()
 
       - name: Upload coverage report
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           directory: travelmate-backend/target/site/jacoco
           flags: backend
