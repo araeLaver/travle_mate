@@ -506,14 +506,14 @@ class OfflineService {
       const keys = await AsyncStorage.getAllKeys();
       const cacheKeys = keys.filter(k => k.startsWith('@travelmate:cache:'));
       if (cacheKeys.length > 0) {
-        await AsyncStorage.multiRemove(cacheKeys);
+        await Promise.all(cacheKeys.map(key => AsyncStorage.removeItem(key)));
       }
       // Also clear pending actions and offline pages
-      await AsyncStorage.multiRemove([
+      await Promise.all([
         CACHE_KEYS.PENDING_ACTIONS,
         CACHE_KEYS.LAST_SYNC,
         CACHE_KEYS.OFFLINE_PAGES,
-      ]);
+      ].map(key => AsyncStorage.removeItem(key)));
     } catch (error) {
       console.error('Failed to clear cache:', error);
     }
