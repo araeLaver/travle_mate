@@ -96,14 +96,13 @@ class ApiClient {
   }
 
   async setTokens(accessToken: string, refreshToken: string): Promise<void> {
-    await AsyncStorage.multiSet([
-      [TOKEN_KEY, accessToken],
-      [REFRESH_TOKEN_KEY, refreshToken],
-    ]);
+    await AsyncStorage.setItem(TOKEN_KEY, accessToken);
+    await AsyncStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
   }
 
   async clearTokens(): Promise<void> {
-    await AsyncStorage.multiRemove([TOKEN_KEY, REFRESH_TOKEN_KEY]);
+    await AsyncStorage.removeItem(TOKEN_KEY);
+    await AsyncStorage.removeItem(REFRESH_TOKEN_KEY);
   }
 
   // HTTP methods
