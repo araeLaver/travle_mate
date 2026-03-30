@@ -40,7 +40,7 @@
     "expo-in-app-purchases": "~14.5.0",
     "expo-local-authentication": "^55.0.8",
     "expo-location": "~18.0.6",
-    "expo-notifications": "~0.27.0",
+    "expo-notifications": "~55.0.14",
     "expo-status-bar": "^55.0.4",
     "expo-web-browser": "~55.0.10",
     "react": "18.3.1",
