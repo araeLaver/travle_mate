@@ -48,9 +48,10 @@ services:
       - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
       - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
     ports:
-      - "5044:5044"   # Beats input
-      - "5000:5000"   # TCP input
-      - "9600:9600"   # Monitoring API
+      # SECURITY: localhost only — Filebeat→Logstash는 내부 통신, 외부 노출 불필요
+      - "127.0.0.1:5044:5044"   # Beats input
+      - "127.0.0.1:5000:5000"   # TCP input
+      - "127.0.0.1:9600:9600"   # Monitoring API
     environment:
       LS_JAVA_OPTS: "-Xmx256m -Xms256m"
     depends_on:
@@ -76,7 +77,8 @@ services:
       - SERVER_BASEPATH=/kibana
       - SERVER_REWRITEBASEPATH=true
     ports:
-      - "5601:5601"
+      # SECURITY: localhost only — 외부 직접 접근 차단 (nginx/터널 경유)
+      - "127.0.0.1:5601:5601"
     depends_on:
       elasticsearch:
         condition: service_healthy

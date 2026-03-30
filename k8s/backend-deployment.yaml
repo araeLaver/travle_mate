@@ -27,6 +27,13 @@ spec:
         prometheus.io/path: "/api/actuator/prometheus"
     spec:
       serviceAccountName: travelmate-sa
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: backend
           image: travelmate/backend:latest
@@ -39,6 +46,11 @@ spec:
                 name: travelmate-config
             - secretRef:
                 name: travelmate-secrets
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            readOnlyRootFilesystem: false  # Spring Boot writes temp files; true requires tmpfs mounts
           resources:
             requests:
               memory: "512Mi"

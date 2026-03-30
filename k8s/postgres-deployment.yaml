@@ -19,6 +19,13 @@ spec:
         app: postgres
         tier: database
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999   # postgres user in official image
+        runAsGroup: 999
+        fsGroup: 999
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: postgres
           image: postgres:15-alpine
@@ -40,12 +47,16 @@ spec:
                   key: DB_PASSWORD
             - name: PGDATA
               value: /var/lib/postgresql/data/pgdata
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
           resources:
             requests:
               memory: "256Mi"
               cpu: "100m"
             limits:
-              memory: "512Mi"
+              memory: "1Gi"   # 512Mi → 1Gi: 실제 워크로드에서 OOM 방지
               cpu: "500m"
           livenessProbe:
             exec:

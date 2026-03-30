@@ -1,4 +1,4 @@
-FROM maven:3-eclipse-temurin-17-alpine AS builder
+FROM maven:3.9.9-eclipse-temurin-17-alpine AS builder
 
 WORKDIR /app
 
@@ -32,9 +32,9 @@ RUN chown travelmate:travelmate app.jar
 USER travelmate
 
 # Production JVM settings:
-# - Removed -XX:TieredStopAtLevel=1 (limits JIT to C1 only -> hurts throughput in prod)
-# - UseSerialGC is appropriate for small containers (< 2 CPU / 1 GB RAM)
-ENV JAVA_OPTS="-Xms256m -Xmx512m -XX:+UseSerialGC -XX:MaxMetaspaceSize=192m -XX:ReservedCodeCacheSize=64m -XX:+ExitOnOutOfMemoryError -Dspring.jpa.open-in-view=false -Dfile.encoding=UTF-8"
+# - MaxRAMPercentage: 컨테이너 메모리 제한의 75%를 힙으로 사용 (k8s limits에 자동 적응)
+# - UseSerialGC: 소형 컨테이너 (< 2 CPU / 1 GB RAM) 에 적합
+ENV JAVA_OPTS="-XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -XX:+UseSerialGC -XX:MaxMetaspaceSize=192m -XX:ReservedCodeCacheSize=64m -XX:+ExitOnOutOfMemoryError -Dspring.jpa.open-in-view=false -Dfile.encoding=UTF-8"
 
 ENV SPRING_PROFILES_ACTIVE=prod
 
