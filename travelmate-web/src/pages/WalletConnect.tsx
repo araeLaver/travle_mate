@@ -4,7 +4,6 @@ import { motion } from 'framer-motion';
 import { useWallet } from '../hooks/useWallet';
 import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
-import PageBackground from '../components/PageBackground';
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -45,7 +44,27 @@ const WalletConnect: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] relative overflow-hidden">
-      <PageBackground />
+      {/* Background Effects */}
+      <div
+        className="absolute top-20 left-10 w-72 h-72 bg-orange-400/30 dark:bg-orange-600/20 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite' }}
+      />
+      <div
+        className="absolute top-40 right-10 w-96 h-96 bg-violet-400/20 dark:bg-violet-600/10 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite 2s' }}
+      />
+      <div
+        className="absolute bottom-20 left-1/3 w-80 h-80 bg-pink-400/20 dark:bg-pink-600/10 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite 4s' }}
+      />
+
+      <style>{`
+        @keyframes blob {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          33% { transform: translate(30px, -50px) scale(1.1); }
+          66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+      `}</style>
 
       {/* Navigation */}
       <motion.nav

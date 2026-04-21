@@ -9,8 +9,9 @@ import {
   SparklesIcon,
   ArrowRightIcon,
   GlobeAltIcon,
-  UserPlusIcon,
-  ClockIcon,
+  HeartIcon,
+  CameraIcon,
+  MusicalNoteIcon,
 } from '@heroicons/react/24/outline';
 import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
@@ -30,13 +31,6 @@ const footerItems = [
   { label: '회원가입', path: '/register' },
   { label: '그룹', path: '/groups' },
 ];
-
-const HERO_BG =
-  'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1920&q=80';
-const CTA_BG =
-  'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1920&q=80';
-const STATS_BG =
-  'https://images.unsplash.com/photo-1488085061387-422e29b40080?auto=format&fit=crop&w=1920&q=80';
 
 const Home: React.FC = () => {
   const { startTutorial } = useTutorial();
@@ -98,12 +92,21 @@ const Home: React.FC = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-40 pb-20 md:pt-48 md:pb-32 min-h-[90vh] flex items-center">
-        {/* Background Image */}
-        <div className="absolute inset-0">
-          <img src={HERO_BG} alt="" className="w-full h-full object-cover" loading="eager" />
-          <div className="absolute inset-0 bg-gradient-to-b from-white/80 via-white/60 to-white/90 dark:from-[#0a0a0b]/80 dark:via-[#0a0a0b]/60 dark:to-[#0a0a0b]/90" />
-        </div>
+      <section className="relative pt-40 pb-20 md:pt-48 md:pb-32">
+        {/* Background */}
+        <div className="absolute inset-0 gradient-mesh opacity-60 dark:opacity-40" />
+        <div
+          className="absolute top-20 left-10 w-72 h-72 bg-violet-400/30 rounded-full blur-3xl"
+          style={{ animation: 'blob 7s infinite' }}
+        />
+        <div
+          className="absolute bottom-20 right-10 w-96 h-96 bg-cyan-400/20 rounded-full blur-3xl"
+          style={{ animation: 'blob 7s infinite', animationDelay: '2s' }}
+        />
+        <div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-pink-400/10 rounded-full blur-3xl"
+          style={{ animation: 'glow 4s infinite' }}
+        />
 
         <div className="container-custom relative z-10">
           <div className="max-w-4xl mx-auto text-center">
@@ -111,14 +114,14 @@ const Home: React.FC = () => {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur rounded-full shadow-md shadow-gray-200/50 dark:shadow-black/20 border border-gray-100 dark:border-gray-700 mb-8"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 rounded-full shadow-md shadow-gray-200/50 dark:shadow-black/20 border border-gray-100 dark:border-gray-700 mb-8"
             >
               <span className="flex h-2 w-2 relative">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
               </span>
               <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                지금 바로 여행 동반자를 찾아보세요
+                500명 이상의 여행자가 접속 중
               </span>
             </motion.div>
 
@@ -156,12 +159,94 @@ const Home: React.FC = () => {
               </Link>
               <button
                 onClick={startTutorial}
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-gray-700 dark:text-gray-300 bg-white/80 dark:bg-gray-800/80 backdrop-blur border-2 border-gray-200 dark:border-gray-700 rounded-2xl hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 tutorial-guest-mode-btn"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-2xl hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 tutorial-guest-mode-btn"
               >
                 둘러보기
               </button>
             </motion.div>
           </div>
+
+          {/* Floating Cards Preview */}
+          <motion.div
+            initial={{ opacity: 0, y: 60 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.8 }}
+            className="mt-20 relative"
+          >
+            <div className="max-w-5xl mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                {[
+                  {
+                    name: '김사라',
+                    location: '도쿄, 일본',
+                    tags: ['사진', '맛집'],
+                    match: 95,
+                    gradient: 'from-rose-500 to-pink-500',
+                    delay: 0,
+                  },
+                  {
+                    name: '이민수',
+                    location: '서울, 한국',
+                    tags: ['모험', '문화'],
+                    match: 92,
+                    gradient: 'from-violet-500 to-purple-500',
+                    delay: 0.1,
+                  },
+                  {
+                    name: '박하늘',
+                    location: '바르셀로나, 스페인',
+                    tags: ['예술', '음악'],
+                    match: 88,
+                    gradient: 'from-cyan-500 to-blue-500',
+                    delay: 0.2,
+                  },
+                ].map((user, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 + user.delay, duration: 0.5 }}
+                    className="group"
+                  >
+                    <div className="card-glass-modern rounded-3xl p-5 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
+                      <div className="flex items-center gap-4 mb-4">
+                        <div
+                          className={cn(
+                            'w-14 h-14 rounded-2xl bg-gradient-to-br flex items-center justify-center text-white text-xl font-bold',
+                            user.gradient
+                          )}
+                        >
+                          {user.name.charAt(0)}
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-gray-900 dark:text-white">
+                            {user.name}
+                          </h4>
+                          <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
+                            <MapPinIcon className="h-3.5 w-3.5" />
+                            {user.location}
+                          </div>
+                        </div>
+                        <div className="px-3 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-sm font-semibold">
+                          {user.match}%
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        {user.tags.map((tag, j) => (
+                          <span
+                            key={j}
+                            className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 rounded-lg text-xs font-medium"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
         </div>
       </section>
 
@@ -315,149 +400,219 @@ const Home: React.FC = () => {
         <AdBanner adSlot="HOME_TOP" adFormat="horizontal" className="max-w-4xl mx-auto" />
       </div>
 
-      {/* How It Works Section */}
+      {/* Travelers Section */}
       <section className="py-24 bg-gray-50 dark:bg-gray-900/50">
         <div className="container-custom">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12"
           >
-            <span className="inline-block px-4 py-1.5 bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 rounded-full text-sm font-semibold mb-4">
-              시작하기
-            </span>
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-              이렇게 사용하세요
-            </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              간단한 3단계로 여행 동반자를 찾아보세요
-            </p>
+            <div>
+              <span className="inline-block px-4 py-1.5 bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 rounded-full text-sm font-semibold mb-4">
+                커뮤니티
+              </span>
+              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white">
+                여행자 만나기
+              </h2>
+            </div>
+            <Link
+              to="/register"
+              className="inline-flex items-center gap-2 text-violet-600 dark:text-violet-400 font-semibold hover:gap-3 transition-all"
+            >
+              전체 보기 <ArrowRightIcon className="h-4 w-4" />
+            </Link>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
               {
-                step: 1,
-                icon: UserPlusIcon,
-                title: '가입하기',
-                description:
-                  '여행 스타일과 관심사를 설정하세요. 프로필이 풍부할수록 더 정확한 매칭이 가능합니다.',
-                gradient: 'from-rose-500 to-pink-500',
-                bgColor: 'bg-rose-100 dark:bg-rose-900/30',
-                textColor: 'text-rose-600 dark:text-rose-400',
+                name: '소피 앤더슨',
+                age: 28,
+                location: '도쿄, 일본',
+                interests: [
+                  { icon: CameraIcon, label: '사진' },
+                  { icon: HeartIcon, label: '문화' },
+                ],
+                bio: '숨겨진 명소를 탐험하고 순간을 담는 여행자',
+                gradient: 'from-rose-400 to-pink-500',
               },
               {
-                step: 2,
-                icon: SparklesIcon,
-                title: '매칭 받기',
-                description:
-                  'AI가 딱 맞는 여행 동반자를 추천합니다. 여행지, 일정, 취향까지 분석합니다.',
-                gradient: 'from-violet-500 to-purple-500',
-                bgColor: 'bg-violet-100 dark:bg-violet-900/30',
-                textColor: 'text-violet-600 dark:text-violet-400',
+                name: '알렉스 첸',
+                age: 32,
+                location: '서울, 한국',
+                interests: [
+                  { icon: GlobeAltIcon, label: '모험' },
+                  { icon: MapPinIcon, label: '등산' },
+                ],
+                bio: '동남아 트레킹을 계획 중인 모험가',
+                gradient: 'from-blue-400 to-cyan-500',
               },
               {
-                step: 3,
-                icon: ChatBubbleLeftRightIcon,
-                title: '함께 떠나기',
-                description:
-                  '실시간 채팅으로 여행을 계획하세요. 그룹을 만들어 함께 모험을 시작하세요.',
-                gradient: 'from-cyan-500 to-blue-500',
-                bgColor: 'bg-cyan-100 dark:bg-cyan-900/30',
-                textColor: 'text-cyan-600 dark:text-cyan-400',
+                name: '마리아 산토스',
+                age: 25,
+                location: '바르셀로나, 스페인',
+                interests: [
+                  { icon: MusicalNoteIcon, label: '음악' },
+                  { icon: SparklesIcon, label: '예술' },
+                ],
+                bio: '유럽 도시를 탐험하는 예술 애호가',
+                gradient: 'from-violet-400 to-purple-500',
               },
-            ].map((item, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.15 }}
-                className="relative"
-              >
-                <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 border border-gray-100 dark:border-gray-700 hover:shadow-xl hover:shadow-gray-200/50 dark:hover:shadow-black/20 transition-all duration-300 hover:-translate-y-1 text-center h-full">
-                  {/* Step Number */}
-                  <div
-                    className={cn(
-                      'inline-flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br text-white text-sm font-bold mb-6',
-                      item.gradient
-                    )}
-                  >
-                    {item.step}
-                  </div>
-
-                  {/* Icon */}
-                  <div
-                    className={cn(
-                      'w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6',
-                      item.bgColor
-                    )}
-                  >
-                    <item.icon className={cn('h-8 w-8', item.textColor)} />
-                  </div>
-
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
-                    {item.title}
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
-                    {item.description}
-                  </p>
-                </div>
-
-                {/* Connector Line (between cards) */}
-                {i < 2 && (
-                  <div className="hidden md:block absolute top-1/2 -right-4 w-8 border-t-2 border-dashed border-gray-300 dark:border-gray-600" />
-                )}
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="relative py-24 overflow-hidden">
-        {/* Background Image */}
-        <div className="absolute inset-0">
-          <img src={STATS_BG} alt="" className="w-full h-full object-cover" loading="lazy" />
-          <div className="absolute inset-0 bg-gray-900/75 backdrop-blur-sm" />
-        </div>
-
-        <div className="container-custom relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <span className="inline-block px-4 py-1.5 bg-white/10 text-white/90 rounded-full text-sm font-semibold mb-4 backdrop-blur">
-              실적
-            </span>
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">숫자로 보는 Fryndo</h2>
-            <p className="text-lg text-white/70 max-w-2xl mx-auto">
-              전 세계 여행자들이 Fryndo와 함께하고 있습니다
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
-            {[
-              { value: '50+', label: '국가', icon: GlobeAltIcon },
-              { value: '10,000+', label: '여행자', icon: UserGroupIcon },
-              { value: '95%', label: '매칭 만족도', icon: SparklesIcon },
-              { value: '24시간', label: '평균 응답', icon: ClockIcon },
-            ].map((stat, i) => (
+            ].map((user, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="text-center"
+                className="group"
               >
-                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10 hover:bg-white/15 transition-colors">
-                  <stat.icon className="h-8 w-8 text-white/70 mx-auto mb-4" />
-                  <div className="text-3xl md:text-4xl font-bold text-white mb-2">{stat.value}</div>
-                  <div className="text-sm text-white/60 font-medium">{stat.label}</div>
+                <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 border border-gray-100 dark:border-gray-700 hover:shadow-xl hover:shadow-gray-200/50 dark:hover:shadow-black/20 transition-all duration-300 hover:-translate-y-1">
+                  <div className="flex items-start gap-4 mb-5">
+                    <div
+                      className={cn(
+                        'w-16 h-16 rounded-2xl bg-gradient-to-br flex items-center justify-center text-white text-2xl font-bold shadow-lg',
+                        user.gradient
+                      )}
+                    >
+                      {user.name.charAt(0)}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-lg text-gray-900 dark:text-white">
+                        {user.name}, {user.age}
+                      </h3>
+                      <div className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
+                        <MapPinIcon className="h-4 w-4" />
+                        {user.location}
+                      </div>
+                    </div>
+                  </div>
+
+                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-5 line-clamp-2">
+                    {user.bio}
+                  </p>
+
+                  <div className="flex gap-2 mb-5">
+                    {user.interests.map((interest, j) => (
+                      <div
+                        key={j}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-gray-700 rounded-lg"
+                      >
+                        <interest.icon className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
+                        <span className="text-xs font-medium text-gray-600 dark:text-gray-300">
+                          {interest.label}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <Link
+                    to="/register"
+                    className="block w-full py-3 text-center text-sm font-semibold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/20 rounded-xl hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-colors"
+                  >
+                    연결하기
+                  </Link>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Groups Section */}
+      <section className="py-24">
+        <div className="container-custom">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-12"
+          >
+            <div>
+              <span className="inline-block px-4 py-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-full text-sm font-semibold mb-4">
+                그룹
+              </span>
+              <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white">
+                여행에 참여하기
+              </h2>
+            </div>
+            <Link
+              to="/groups"
+              className="inline-flex items-center gap-2 text-violet-600 dark:text-violet-400 font-semibold hover:gap-3 transition-all"
+            >
+              전체 보기 <ArrowRightIcon className="h-4 w-4" />
+            </Link>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              {
+                name: '동남아 배낭여행',
+                route: '태국 → 베트남 → 캄보디아',
+                dates: '2026년 1월',
+                members: 5,
+                max: 8,
+                gradient: 'from-emerald-400 to-teal-500',
+              },
+              {
+                name: '유럽 미술관 투어',
+                route: '파리 → 로마 → 바르셀로나',
+                dates: '2026년 2월',
+                members: 3,
+                max: 6,
+                gradient: 'from-violet-400 to-purple-500',
+              },
+              {
+                name: '일본 벚꽃 여행',
+                route: '도쿄 → 교토 → 오사카',
+                dates: '2026년 3월',
+                members: 6,
+                max: 10,
+                gradient: 'from-pink-400 to-rose-500',
+              },
+            ].map((group, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+              >
+                <div className="bg-white dark:bg-gray-800 rounded-3xl overflow-hidden border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                  <div className={cn('h-32 bg-gradient-to-br relative', group.gradient)}>
+                    <div className="absolute inset-0 bg-black/10" />
+                    <div className="absolute bottom-4 left-4 right-4">
+                      <h3 className="font-bold text-white text-lg truncate">{group.name}</h3>
+                    </div>
+                  </div>
+                  <div className="p-5">
+                    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-3">
+                      <MapPinIcon className="h-4 w-4" />
+                      <span className="truncate">{group.route}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="flex -space-x-2">
+                          {Array(Math.min(group.members, 3))
+                            .fill(0)
+                            .map((_, j) => (
+                              <div
+                                key={j}
+                                className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-600 dark:to-gray-700 border-2 border-white dark:border-gray-800"
+                              />
+                            ))}
+                        </div>
+                        <span className="text-sm text-gray-500 dark:text-gray-400">
+                          {group.members}/{group.max}
+                        </span>
+                      </div>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">
+                        {group.dates}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             ))}
@@ -472,14 +627,8 @@ const Home: React.FC = () => {
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            className="relative overflow-hidden rounded-[2.5rem] p-12 md:p-20"
+            className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-violet-600 via-purple-600 to-pink-600 p-12 md:p-20"
           >
-            {/* Background Image */}
-            <div className="absolute inset-0">
-              <img src={CTA_BG} alt="" className="w-full h-full object-cover" loading="lazy" />
-              <div className="absolute inset-0 bg-gradient-to-br from-violet-600/85 via-purple-600/85 to-pink-600/85" />
-            </div>
-
             <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
             <div className="absolute bottom-0 left-0 w-72 h-72 bg-pink-400/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
 

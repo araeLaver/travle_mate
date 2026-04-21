@@ -8,7 +8,6 @@ import { useToast } from '../components/Toast';
 import { getErrorMessage, logError } from '../utils/errorHandler';
 import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
-import PageBackground from '../components/PageBackground';
 import { trackEvent, trackSignUpComplete } from '../utils/analytics';
 
 const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '';
@@ -357,7 +356,20 @@ const Register: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] flex items-center justify-center p-4 relative overflow-hidden">
-      <PageBackground variant="auth" />
+      {/* Background Effects */}
+      <div className="absolute inset-0 gradient-mesh opacity-60 dark:opacity-40" />
+      <div
+        className="absolute top-20 right-10 w-72 h-72 bg-pink-400/30 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite' }}
+      />
+      <div
+        className="absolute bottom-20 left-10 w-96 h-96 bg-violet-400/20 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite', animationDelay: '2s' }}
+      />
+      <div
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-cyan-400/10 rounded-full blur-3xl"
+        style={{ animation: 'glow 4s infinite' }}
+      />
 
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50">

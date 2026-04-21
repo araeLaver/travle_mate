@@ -10,7 +10,6 @@ import FollowerList from '../components/social/FollowerList';
 import PhoneVerification from '../components/PhoneVerification';
 import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
-import PageBackground from '../components/PageBackground';
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -199,7 +198,19 @@ const Profile: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] relative overflow-hidden">
-      <PageBackground />
+      {/* Background Effects */}
+      <div
+        className="absolute top-20 left-10 w-72 h-72 bg-violet-400/30 dark:bg-violet-600/20 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite' }}
+      />
+      <div
+        className="absolute top-40 right-10 w-96 h-96 bg-pink-400/20 dark:bg-pink-600/15 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite 2s' }}
+      />
+      <div
+        className="absolute bottom-20 left-1/3 w-80 h-80 bg-blue-400/20 dark:bg-blue-600/15 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite 4s' }}
+      />
 
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 px-4 py-3">
@@ -751,6 +762,16 @@ const Profile: React.FC = () => {
           setShowPhoneVerification(false);
         }}
       />
+
+      {/* Blob animation keyframes */}
+      <style>{`
+        @keyframes blob {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          25% { transform: translate(20px, -30px) scale(1.1); }
+          50% { transform: translate(-20px, 20px) scale(0.9); }
+          75% { transform: translate(30px, 10px) scale(1.05); }
+        }
+      `}</style>
     </div>
   );
 };

@@ -39,6 +39,64 @@
   }
 }
 
+/* Floating Blob 1 */
+.auth-container .blob-1 {
+  position: absolute;
+  top: 10%;
+  left: 10%;
+  width: 400px;
+  height: 400px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.4) 0%, rgba(236, 72, 153, 0.3) 100%);
+  border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+  filter: blur(60px);
+  animation: blobFloat 15s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Floating Blob 2 */
+.auth-container .blob-2 {
+  position: absolute;
+  bottom: 10%;
+  right: 10%;
+  width: 350px;
+  height: 350px;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(139, 92, 246, 0.4) 100%);
+  border-radius: 40% 60% 70% 30% / 40% 70% 30% 60%;
+  filter: blur(50px);
+  animation: blobFloat 18s ease-in-out infinite reverse;
+  pointer-events: none;
+}
+
+/* Floating Blob 3 */
+.auth-container .blob-3 {
+  position: absolute;
+  top: 50%;
+  right: 30%;
+  width: 250px;
+  height: 250px;
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.25) 0%, rgba(167, 139, 250, 0.3) 100%);
+  border-radius: 50% 50% 40% 60% / 60% 40% 60% 40%;
+  filter: blur(40px);
+  animation: blobFloat 12s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes blobFloat {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+  }
+  33% {
+    transform: translate(30px, -30px) scale(1.1);
+    border-radius: 40% 60% 70% 30% / 40% 70% 30% 60%;
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.95);
+    border-radius: 50% 50% 40% 60% / 60% 40% 60% 40%;
+  }
+}
+
 /* Auth Card */
 .auth-card {
   position: relative;
@@ -775,6 +833,9 @@
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
   .auth-container::before,
+  .blob-1,
+  .blob-2,
+  .blob-3,
   .auth-card,
   .auth-error,
   .auth-success,

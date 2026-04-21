@@ -8,7 +8,6 @@ import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
 import { trackChatMessageSent } from '../utils/analytics';
 import SEOHead from '../components/SEOHead';
-import PageBackground from '../components/PageBackground';
 
 // Typing user interface
 interface TypingUser {
@@ -301,7 +300,28 @@ const Chat: React.FC = () => {
       aria-label={`${room.name} 채팅방`}
     >
       <SEOHead title="채팅" description="Fryndo 채팅" noIndex={true} />
-      <PageBackground />
+      {/* Background Effects */}
+      <div
+        className="absolute top-20 left-10 w-72 h-72 bg-violet-400/30 dark:bg-violet-600/20 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite' }}
+      />
+      <div
+        className="absolute top-40 right-10 w-72 h-72 bg-pink-400/30 dark:bg-pink-600/20 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite 2s' }}
+      />
+      <div
+        className="absolute bottom-20 left-1/3 w-72 h-72 bg-blue-400/30 dark:bg-blue-600/20 rounded-full blur-3xl"
+        style={{ animation: 'blob 7s infinite 4s' }}
+      />
+
+      <style>{`
+        @keyframes blob {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          25% { transform: translate(20px, -30px) scale(1.1); }
+          50% { transform: translate(-20px, 20px) scale(0.9); }
+          75% { transform: translate(30px, 10px) scale(1.05); }
+        }
+      `}</style>
 
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 px-4 py-3">

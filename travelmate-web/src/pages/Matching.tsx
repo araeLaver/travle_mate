@@ -19,7 +19,6 @@ import {
   usePendingMatchCount,
 } from '../hooks/useMatching';
 import { MatchCardSkeleton, ListItemSkeleton, SkeletonList } from '../components/SkeletonLoader';
-import PageBackground from '../components/PageBackground';
 
 type TabType = 'recommendations' | 'requests' | 'history';
 
@@ -75,7 +74,30 @@ const Matching: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] relative overflow-x-hidden">
-      <PageBackground />
+      {/* Background Effects */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div
+          className="absolute top-[20%] left-[20%] w-72 h-72 bg-violet-400/20 dark:bg-violet-500/30 rounded-full blur-3xl"
+          style={{ animation: 'blob 7s infinite' }}
+        />
+        <div
+          className="absolute top-[20%] right-[20%] w-72 h-72 bg-pink-400/15 dark:bg-pink-500/25 rounded-full blur-3xl"
+          style={{ animation: 'blob 7s infinite 2s' }}
+        />
+        <div
+          className="absolute bottom-[30%] left-[40%] w-80 h-80 bg-blue-400/15 dark:bg-blue-500/25 rounded-full blur-3xl"
+          style={{ animation: 'blob 7s infinite 4s' }}
+        />
+      </div>
+
+      <style>{`
+        @keyframes blob {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          25% { transform: translate(20px, -30px) scale(1.1); }
+          50% { transform: translate(-20px, 20px) scale(0.9); }
+          75% { transform: translate(30px, 10px) scale(1.05); }
+        }
+      `}</style>
 
       <div className="relative z-10 max-w-[1200px] mx-auto px-6 py-8 md:py-10">
         {/* Header */}
