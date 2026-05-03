@@ -8,16 +8,16 @@ CREATE TABLE IF NOT EXISTS conversations (
     participant2_id   BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     created_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     last_message_at   TIMESTAMP,
-    CONSTRAINT chk_conversation_not_self CHECK (participant1_id <> participant2_id),
-    CONSTRAINT uq_conversation_pair UNIQUE (
-        LEAST(participant1_id, participant2_id),
-        GREATEST(participant1_id, participant2_id)
-    )
+    CONSTRAINT chk_conversation_not_self CHECK (participant1_id <> participant2_id)
 );
 
 CREATE INDEX idx_conversations_p1 ON conversations (participant1_id);
 CREATE INDEX idx_conversations_p2 ON conversations (participant2_id);
 CREATE INDEX idx_conversations_last_message ON conversations (last_message_at DESC NULLS LAST);
+CREATE UNIQUE INDEX uq_conversation_pair ON conversations (
+    LEAST(participant1_id, participant2_id),
+    GREATEST(participant1_id, participant2_id)
+);
 
 -- 2. messages 테이블 (conversation 기반 1:1 메시지, isRead 포함)
 CREATE TABLE IF NOT EXISTS messages (

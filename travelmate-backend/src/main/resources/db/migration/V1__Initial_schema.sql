@@ -6,8 +6,7 @@ CREATE TABLE users (
     id BIGSERIAL PRIMARY KEY,
     email VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    username VARCHAR(50) NOT NULL UNIQUE,
-    full_name VARCHAR(100) NOT NULL,
+    nickname VARCHAR(50) NOT NULL UNIQUE,
     age INTEGER,
     gender VARCHAR(10),
     bio TEXT,
@@ -161,7 +160,7 @@ CREATE TABLE notifications (
 
 -- 인덱스 생성
 CREATE INDEX idx_users_email ON users(email);
-CREATE INDEX idx_users_username ON users(username);
+CREATE INDEX idx_users_nickname ON users(nickname);
 CREATE INDEX idx_users_location ON users(location_latitude, location_longitude) WHERE location_latitude IS NOT NULL AND location_longitude IS NOT NULL;
 CREATE INDEX idx_users_active ON users(is_active) WHERE is_active = true;
 CREATE INDEX idx_users_created_at ON users(created_at);
@@ -210,5 +209,5 @@ CREATE INDEX idx_notifications_unread ON notifications(is_read) WHERE is_read = 
 CREATE INDEX idx_notifications_created_at ON notifications(created_at);
 
 -- 전문 검색 인덱스 (PostgreSQL Full-Text Search)
-CREATE INDEX idx_travel_groups_search ON travel_groups USING gin(to_tsvector('korean', title || ' ' || description || ' ' || destination));
-CREATE INDEX idx_users_search ON users USING gin(to_tsvector('korean', username || ' ' || full_name || ' ' || COALESCE(bio, '')));
+CREATE INDEX idx_travel_groups_search ON travel_groups USING gin(to_tsvector('simple', title || ' ' || COALESCE(description, '') || ' ' || destination));
+CREATE INDEX idx_users_search ON users USING gin(to_tsvector('simple', nickname || ' ' || COALESCE(bio, '')));

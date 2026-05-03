@@ -5,7 +5,7 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS budget_preference VARCHAR(20) DEFAULT
 
 -- 2. match_requests 테이블 생성
 CREATE TABLE IF NOT EXISTS match_requests (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     requester_id BIGINT NOT NULL,
     receiver_id BIGINT NOT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS match_requests (
     expires_at TIMESTAMP,
     responded_at TIMESTAMP NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_match_requester FOREIGN KEY (requester_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT fk_match_receiver FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT chk_not_self_match CHECK (requester_id != receiver_id)

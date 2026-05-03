@@ -40,36 +40,43 @@ public class SecurityConfig {
     
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        boolean isProd = Arrays.asList(environment.getActiveProfiles()).contains("prod");
+
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthenticationEntryPoint))
-            .authorizeHttpRequests(auth -> auth
+            .authorizeHttpRequests(auth -> {
                 // 공개 엔드포인트
-                .requestMatchers("/", "/index.html", "/api", "/api/").permitAll()
-                .requestMatchers("/health", "/health/**").permitAll() // Health Check
-                .requestMatchers("/actuator/**").permitAll() // Actuator endpoints
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll() // Swagger UI
-                .requestMatchers("/users/register", "/users/login").permitAll()
-                .requestMatchers("/users/check-email", "/users/check-nickname").permitAll() // 중복체크 공개
-                .requestMatchers("/users/verify-email", "/users/request-password-reset", "/users/reset-password").permitAll() // 이메일 인증 및 비밀번호 재설정
-                .requestMatchers("/invite/**").permitAll() // 베타 초대 코드 검증
-                .requestMatchers("/auth/login", "/auth/refresh", "/auth/oauth/login", "/auth/oauth/code-login").permitAll() // 인증 API
-                .requestMatchers("/location/**").permitAll() // 위치 서비스 공개
-                .requestMatchers("/h2-console/**").permitAll()
-                .requestMatchers("/uploads/**").permitAll()
-                .requestMatchers("/ws/**").permitAll() // WebSocket
-                .requestMatchers("/error").permitAll()
+                auth
+                    .requestMatchers("/", "/index.html", "/api", "/api/").permitAll()
+                    .requestMatchers("/health", "/health/**").permitAll() // Health Check
+                    .requestMatchers("/actuator/health", "/actuator/health/**").permitAll() // Health only
+                    .requestMatchers("/users/register", "/users/login").permitAll()
+                    .requestMatchers("/users/check-email", "/users/check-nickname").permitAll() // 중복체크 공개
+                    .requestMatchers("/users/verify-email", "/users/request-password-reset", "/users/reset-password").permitAll() // 이메일 인증 및 비밀번호 재설정
+                    .requestMatchers("/invite/**").permitAll() // 베타 초대 코드 검증
+                    .requestMatchers("/auth/login", "/auth/refresh", "/auth/oauth/login", "/auth/oauth/code-login").permitAll() // 인증 API
+                    .requestMatchers("/location/**").permitAll() // 위치 서비스 공개
+                    .requestMatchers("/uploads/**").permitAll()
+                    .requestMatchers("/ws/**").permitAll() // WebSocket
+                    .requestMatchers("/error").permitAll();
+
+                if (!isProd) {
+                    // 개발 환경에서만 허용
+                    auth
+                        .requestMatchers("/h2-console/**").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll();
+                }
 
                 // 인증이 필요한 엔드포인트
-                .requestMatchers("/**").authenticated()
-                .anyRequest().authenticated()
-            )
+                auth
+                    .requestMatchers("/**").authenticated()
+                    .anyRequest().authenticated();
+            })
             .headers(headers -> {
-                // 프로덕션 환경에서는 보안 헤더 활성화
-                boolean isProd = Arrays.asList(environment.getActiveProfiles()).contains("prod");
-
                 if (isProd) {
                     headers
                         .contentSecurityPolicy(csp -> csp

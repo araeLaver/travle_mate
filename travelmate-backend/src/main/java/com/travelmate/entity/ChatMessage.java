@@ -27,8 +27,7 @@ public class ChatMessage {
     @JoinColumn(name = "sender_id")
     private User sender;
     
-    @Lob
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
     
     @Enumerated(EnumType.STRING)
