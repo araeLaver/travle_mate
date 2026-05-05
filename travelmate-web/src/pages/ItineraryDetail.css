@@ -1,0 +1,587 @@
+/* ItineraryDetail — Dark Glass Design */
+
+.itin-detail-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0c1445 100%);
+  position: relative;
+  overflow-x: hidden;
+  padding: 0 0 60px 0;
+}
+
+.itin-detail-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(at 20% 20%, rgba(99, 102, 241, 0.2) 0px, transparent 50%),
+    radial-gradient(at 80% 10%, rgba(236, 72, 153, 0.15) 0px, transparent 50%),
+    radial-gradient(at 50% 80%, rgba(59, 130, 246, 0.15) 0px, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+.itin-detail-page > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Header ── */
+.itin-detail-header {
+  padding: 28px 32px 0;
+}
+
+.itin-back-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.7);
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-bottom: 20px;
+  display: inline-block;
+}
+.itin-back-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.itin-detail-cover {
+  width: 100%;
+  height: 220px;
+  border-radius: 20px;
+  background-size: cover;
+  background-position: center;
+  margin-bottom: 20px;
+}
+
+.itin-detail-info h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.5px;
+}
+.itin-detail-desc {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.95rem;
+  margin: 0 0 14px 0;
+}
+
+.itin-detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 16px;
+}
+.itin-detail-meta span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.itin-detail-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.itin-like-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.75);
+  border-radius: 20px;
+  padding: 8px 18px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.itin-like-btn.liked {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #f87171;
+}
+.itin-like-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.14);
+}
+.itin-like-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.itin-view-count,
+.itin-copy-count {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ── Day tabs ── */
+.itin-day-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 0 32px 20px;
+  scrollbar-width: none;
+}
+.itin-day-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.itin-day-tab {
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.55);
+  border-radius: 14px;
+  padding: 10px 20px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.itin-day-tab.active {
+  background: rgba(99, 102, 241, 0.65);
+  border-color: rgba(99, 102, 241, 0.5);
+  color: #fff;
+  font-weight: 600;
+}
+.itin-day-tab:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.itin-day-count {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 1px 7px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.itin-day-tab.active .itin-day-count {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* ── Items area ── */
+.itin-items-area {
+  padding: 0 32px;
+}
+
+.itin-items-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.itin-items-header h2 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+}
+
+/* ── Shared buttons (reuse from Itineraries.css pattern) ── */
+.itin-btn-primary {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    opacity 0.2s,
+    transform 0.1s;
+}
+.itin-btn-primary:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+.itin-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.itin-btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.itin-btn-secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+/* ── Empty state ── */
+.itin-items-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: rgba(255, 255, 255, 0.45);
+}
+.itin-items-empty p {
+  font-size: 1rem;
+  margin-bottom: 20px;
+}
+
+/* ── Item list ── */
+.itin-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ── Item card ── */
+.itin-item-card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+.itin-item-card:hover {
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.1);
+}
+
+.itin-item-image {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+}
+
+.itin-item-body {
+  padding: 16px;
+}
+
+.itin-item-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.itin-item-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+.itin-item-meta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.itin-item-type-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(99, 102, 241, 0.9);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.itin-item-time {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.itin-item-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.itin-icon-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.15s;
+  color: rgba(255, 255, 255, 0.7);
+}
+.itin-icon-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.16);
+}
+.itin-icon-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.itin-icon-btn.danger:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.itin-item-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 6px 0;
+}
+.itin-item-place {
+  font-size: 0.83rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0 0 4px 0;
+}
+.itin-item-desc {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 0 4px 0;
+}
+.itin-item-notes {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.45);
+  margin: 4px 0;
+  font-style: italic;
+}
+
+.itin-item-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+.itin-item-cost {
+  font-size: 0.82rem;
+  color: rgba(99, 241, 180, 0.8);
+}
+
+.itin-booking-badge {
+  font-size: 0.73rem;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 2px 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.itin-booking-badge.pending {
+  background: rgba(234, 179, 8, 0.2);
+  color: #fbbf24;
+}
+.itin-booking-badge.booked {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+}
+.itin-booking-badge.cancelled {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+.itin-booking-link {
+  font-size: 0.8rem;
+  color: rgba(99, 102, 241, 0.85);
+  text-decoration: none;
+}
+.itin-booking-link:hover {
+  color: #a5b4fc;
+  text-decoration: underline;
+}
+
+/* ── Skeleton ── */
+.itin-detail-skeleton {
+  padding: 28px 32px;
+}
+.itin-skeleton-header {
+  height: 200px;
+  border-radius: 20px;
+  margin-bottom: 24px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 25%,
+    rgba(255, 255, 255, 0.09) 50%,
+    rgba(255, 255, 255, 0.05) 75%
+  );
+  background-size: 200% 100%;
+  animation: itin-shimmer 1.5s infinite;
+}
+.itin-skeleton-tabs {
+  height: 48px;
+  width: 60%;
+  border-radius: 14px;
+  margin-bottom: 24px;
+  background: rgba(255, 255, 255, 0.05);
+  animation: itin-shimmer 1.5s infinite;
+  background-size: 200% 100%;
+}
+.itin-skeleton-items {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.itin-skeleton-item {
+  height: 100px;
+  border-radius: 18px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 25%,
+    rgba(255, 255, 255, 0.09) 50%,
+    rgba(255, 255, 255, 0.05) 75%
+  );
+  background-size: 200% 100%;
+  animation: itin-shimmer 1.5s infinite;
+}
+@keyframes itin-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* ── Item modal ── */
+.itin-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+.itin-modal-content {
+  background: linear-gradient(135deg, #1e1b4b, #0f172a);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 24px;
+  padding: 32px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.itin-item-modal {
+  max-width: 600px;
+}
+.itin-modal-content h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 22px 0;
+}
+
+.itin-type-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.itin-type-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 7px 4px;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.itin-type-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.85);
+}
+.itin-type-btn.active {
+  background: rgba(99, 102, 241, 0.4);
+  border-color: rgba(99, 102, 241, 0.6);
+  color: #fff;
+}
+
+.itin-form-group {
+  margin-bottom: 16px;
+}
+.itin-form-group label {
+  display: block;
+  font-size: 0.83rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.65);
+  margin-bottom: 5px;
+}
+.itin-form-group input,
+.itin-form-group textarea,
+.itin-form-group select {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 11px;
+  padding: 9px 13px;
+  font-size: 0.88rem;
+  color: #fff;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+.itin-form-group input:focus,
+.itin-form-group textarea:focus,
+.itin-form-group select:focus {
+  border-color: rgba(99, 102, 241, 0.7);
+}
+.itin-form-group input::placeholder,
+.itin-form-group textarea::placeholder {
+  color: rgba(255, 255, 255, 0.28);
+}
+.itin-form-group textarea {
+  resize: vertical;
+}
+.itin-form-group select option {
+  background: #1e1b4b;
+  color: #fff;
+}
+.itin-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.itin-modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 22px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .itin-detail-header {
+    padding: 16px 16px 0;
+  }
+  .itin-detail-info h1 {
+    font-size: 1.5rem;
+  }
+  .itin-day-tabs {
+    padding: 0 16px 16px;
+  }
+  .itin-items-area {
+    padding: 0 16px;
+  }
+  .itin-type-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .itin-form-row {
+    grid-template-columns: 1fr;
+  }
+  .itin-item-actions {
+    flex-wrap: wrap;
+  }
+}

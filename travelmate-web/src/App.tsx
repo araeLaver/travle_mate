@@ -44,6 +44,7 @@ const NFTCollection = lazy(() => import('./pages/NFTCollection'));
 const PointShop = lazy(() => import('./pages/PointShop'));
 const WalletConnect = lazy(() => import('./pages/WalletConnect'));
 const Itineraries = lazy(() => import('./pages/Itineraries'));
+const ItineraryDetail = lazy(() => import('./pages/ItineraryDetail'));
 
 // Loading fallback component
 const PageLoader: React.FC = () => (
@@ -322,6 +323,14 @@ function App() {
                       element={
                         <Layout>
                           <Itineraries />
+                        </Layout>
+                      }
+                    />
+                    <Route
+                      path="/itineraries/:id"
+                      element={
+                        <Layout>
+                          <ItineraryDetail />
                         </Layout>
                       }
                     />
