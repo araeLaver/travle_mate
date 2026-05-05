@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '../components/Toast';
 import { authService } from '../services/authService';
 import ItinerarySharePanel from '../components/ItinerarySharePanel';
+import ItineraryMap from '../components/ItineraryMap';
 import {
   getItinerary,
   addItem,
@@ -376,6 +377,8 @@ const ItineraryDetail: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [liking, setLiking] = useState(false);
   const [showShare, setShowShare] = useState(false);
+  const [mapView, setMapView] = useState(false);
+  const [focusItemId, setFocusItemId] = useState<number | null>(null);
 
   const isAuthenticated = authService.isAuthenticated();
 
@@ -628,71 +631,98 @@ const ItineraryDetail: React.FC = () => {
         {days.map(d => (
           <button
             key={d}
-            className={`itin-day-tab ${activeDay === d ? 'active' : ''}`}
-            onClick={() => setActiveDay(d)}
+            className={`itin-day-tab ${!mapView && activeDay === d ? 'active' : ''}`}
+            onClick={() => {
+              setMapView(false);
+              setActiveDay(d);
+              setFocusItemId(null);
+            }}
           >
             Day {d}
             <span className="itin-day-count">{dayItems(d).length}</span>
           </button>
         ))}
+        <button
+          className={`itin-day-tab itin-map-tab ${mapView ? 'active' : ''}`}
+          onClick={() => setMapView(v => !v)}
+        >
+          🗺️ 지도
+        </button>
       </div>
+
+      {/* Map view */}
+      {mapView && (
+        <div className="itin-items-area">
+          <ItineraryMap
+            items={itinerary.items ?? []}
+            focusItemId={focusItemId}
+            onMarkerClick={item => {
+              setMapView(false);
+              setActiveDay(item.dayNumber);
+              setFocusItemId(item.id);
+            }}
+          />
+        </div>
+      )}
 
       {/* Items */}
-      <div className="itin-items-area">
-        <div className="itin-items-header">
-          <h2>Day {activeDay}</h2>
-          {canEdit && (
-            <button className="itin-btn-primary" onClick={() => setShowAddModal(true)}>
-              + 추가
-            </button>
-          )}
-        </div>
+      {!mapView && (
+        <div className="itin-items-area">
+          <div className="itin-items-header">
+            <h2>Day {activeDay}</h2>
+            {canEdit && (
+              <button className="itin-btn-primary" onClick={() => setShowAddModal(true)}>
+                + 추가
+              </button>
+            )}
+          </div>
 
-        <AnimatePresence mode="wait">
-          {currentItems.length === 0 ? (
-            <motion.div
-              key="empty"
-              className="itin-items-empty"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <p>
-                {canEdit
-                  ? 'Day ' + activeDay + '에 일정을 추가해보세요! ✈️'
-                  : '아직 일정이 없습니다.'}
-              </p>
-              {canEdit && (
-                <button className="itin-btn-primary" onClick={() => setShowAddModal(true)}>
-                  첫 일정 추가
-                </button>
-              )}
-            </motion.div>
-          ) : (
-            <motion.div
-              key="list"
-              className="itin-items-list"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              {currentItems.map((item, idx) => (
-                <ItemCard
-                  key={item.id}
-                  item={item}
-                  canEdit={canEdit}
-                  isFirst={idx === 0}
-                  isLast={idx === currentItems.length - 1}
-                  onEdit={() => setEditingItem(item)}
-                  onDelete={() => handleDeleteItem(item)}
-                  onMoveUp={() => handleMove(item, 'up')}
-                  onMoveDown={() => handleMove(item, 'down')}
-                />
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+          <AnimatePresence mode="wait">
+            {currentItems.length === 0 ? (
+              <motion.div
+                key="empty"
+                className="itin-items-empty"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <p>
+                  {canEdit
+                    ? 'Day ' + activeDay + '에 일정을 추가해보세요! ✈️'
+                    : '아직 일정이 없습니다.'}
+                </p>
+                {canEdit && (
+                  <button className="itin-btn-primary" onClick={() => setShowAddModal(true)}>
+                    첫 일정 추가
+                  </button>
+                )}
+              </motion.div>
+            ) : (
+              <motion.div
+                key="list"
+                className="itin-items-list"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                {currentItems.map((item, idx) => (
+                  <ItemCard
+                    key={item.id}
+                    item={item}
+                    canEdit={canEdit}
+                    isFirst={idx === 0}
+                    isLast={idx === currentItems.length - 1}
+                    onEdit={() => setEditingItem(item)}
+                    onDelete={() => handleDeleteItem(item)}
+                    onMoveUp={() => handleMove(item, 'up')}
+                    onMoveDown={() => handleMove(item, 'down')}
+                  />
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
 
       {/* Modals */}
       {showAddModal && (

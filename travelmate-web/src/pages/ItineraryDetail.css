@@ -186,6 +186,9 @@
   font-size: 0.78rem;
   font-weight: 600;
 }
+.itin-map-tab {
+  border-style: dashed;
+}
 .itin-day-tab.active .itin-day-count {
   background: rgba(255, 255, 255, 0.25);
 }
