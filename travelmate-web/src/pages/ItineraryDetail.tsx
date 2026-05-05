@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '../components/Toast';
 import { authService } from '../services/authService';
+import ItinerarySharePanel from '../components/ItinerarySharePanel';
 import {
   getItinerary,
   addItem,
@@ -374,6 +375,7 @@ const ItineraryDetail: React.FC = () => {
   const [editingItem, setEditingItem] = useState<ItineraryItem | null>(null);
   const [saving, setSaving] = useState(false);
   const [liking, setLiking] = useState(false);
+  const [showShare, setShowShare] = useState(false);
 
   const isAuthenticated = authService.isAuthenticated();
 
@@ -612,6 +614,11 @@ const ItineraryDetail: React.FC = () => {
             </button>
             <span className="itin-view-count">👁️ {itinerary.viewCount}</span>
             <span className="itin-copy-count">📋 {itinerary.copyCount}</span>
+            {itinerary.isOwner && (
+              <button className="itin-share-btn" onClick={() => setShowShare(true)}>
+                🔗 공유 & 협업
+              </button>
+            )}
           </div>
         </div>
       </motion.div>
@@ -717,6 +724,13 @@ const ItineraryDetail: React.FC = () => {
           }}
           onSave={handleEditItem}
           onClose={() => setEditingItem(null)}
+        />
+      )}
+      {showShare && itinerary && (
+        <ItinerarySharePanel
+          itinerary={itinerary}
+          onClose={() => setShowShare(false)}
+          onUpdated={patch => setItinerary(prev => (prev ? { ...prev, ...patch } : prev))}
         />
       )}
     </div>
