@@ -38,6 +38,12 @@ const Matching = lazy(() => import('./pages/Matching'));
 const Payment = lazy(() => import('./pages/Payment'));
 const PaymentSuccess = lazy(() => import('./pages/PaymentSuccess'));
 const PaymentFail = lazy(() => import('./pages/PaymentFail'));
+const Marketplace = lazy(() => import('./pages/Marketplace'));
+const NFTMap = lazy(() => import('./pages/NFTMap'));
+const NFTCollection = lazy(() => import('./pages/NFTCollection'));
+const PointShop = lazy(() => import('./pages/PointShop'));
+const WalletConnect = lazy(() => import('./pages/WalletConnect'));
+const Itineraries = lazy(() => import('./pages/Itineraries'));
 
 // Loading fallback component
 const PageLoader: React.FC = () => (
@@ -257,6 +263,68 @@ function App() {
                     />
                     <Route path="/payment/success" element={<PaymentSuccess />} />
                     <Route path="/payment/fail" element={<PaymentFail />} />
+
+                    {/* NFT/마켓/지갑/포인트 기능 */}
+                    <Route
+                      path="/nft/map"
+                      element={
+                        <AuthRequiredRoute>
+                          <Layout>
+                            <NFTMap />
+                          </Layout>
+                        </AuthRequiredRoute>
+                      }
+                    />
+                    <Route
+                      path="/nft/collection"
+                      element={
+                        <AuthRequiredRoute>
+                          <Layout>
+                            <NFTCollection />
+                          </Layout>
+                        </AuthRequiredRoute>
+                      }
+                    />
+                    <Route
+                      path="/marketplace"
+                      element={
+                        <AuthRequiredRoute>
+                          <Layout>
+                            <Marketplace />
+                          </Layout>
+                        </AuthRequiredRoute>
+                      }
+                    />
+                    <Route
+                      path="/points/shop"
+                      element={
+                        <AuthRequiredRoute>
+                          <Layout>
+                            <PointShop />
+                          </Layout>
+                        </AuthRequiredRoute>
+                      }
+                    />
+                    <Route
+                      path="/wallet"
+                      element={
+                        <AuthRequiredRoute>
+                          <Layout>
+                            <WalletConnect />
+                          </Layout>
+                        </AuthRequiredRoute>
+                      }
+                    />
+
+                    {/* 여행 일정 페이지 */}
+                    <Route
+                      path="/itineraries"
+                      element={
+                        <Layout>
+                          <Itineraries />
+                        </Layout>
+                      }
+                    />
                   </Routes>
                 </Suspense>
               </Router>

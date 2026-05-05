@@ -105,6 +105,72 @@ const InfoIcon = () => (
   </svg>
 );
 
+const NftIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M12 2l7 4v12l-7 4-7-4V6l7-4z" />
+    <path d="M12 22V10" />
+    <path d="M5 6l7 4 7-4" />
+    <path d="M5 18l7-4 7 4" />
+  </svg>
+);
+
+const StoreIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M3 9l1.5-5h15L21 9" />
+    <path d="M4 9h16v11H4z" />
+    <path d="M9 20v-6h6v6" />
+    <path d="M3 9c0 1.1.9 2 2 2s2-.9 2-2" />
+    <path d="M7 9c0 1.1.9 2 2 2s2-.9 2-2" />
+    <path d="M11 9c0 1.1.9 2 2 2s2-.9 2-2" />
+    <path d="M15 9c0 1.1.9 2 2 2s2-.9 2-2" />
+  </svg>
+);
+
+const PointsIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <circle cx="12" cy="12" r="9" />
+    <path d="M9 8h4.5a2.5 2.5 0 0 1 0 5H10" />
+    <path d="M10 13v3" />
+    <path d="M9 16h6" />
+  </svg>
+);
+
+const WalletIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2" />
+    <path d="M16 12h5v5h-5a2.5 2.5 0 0 1 0-5z" />
+    <circle cx="18" cy="14.5" r=".5" />
+  </svg>
+);
+
 interface LayoutProps {
   children: ReactNode;
 }
@@ -114,8 +180,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const navItems = [
     { path: '/dashboard', label: '여행 메이트 찾기', icon: <SearchIcon /> },
+    { path: '/itineraries', label: '여행 일정', icon: <MapIcon /> },
     { path: '/chat', label: '채팅', icon: <MessageIcon /> },
     { path: '/groups', label: '여행 그룹', icon: <MapIcon /> },
+    { path: '/nft/map', label: 'NFT 지도', icon: <MapIcon /> },
+    { path: '/nft/collection', label: '내 NFT', icon: <NftIcon /> },
+    { path: '/marketplace', label: 'NFT 마켓', icon: <StoreIcon /> },
+    { path: '/points/shop', label: '포인트 샵', icon: <PointsIcon /> },
+    { path: '/wallet', label: '지갑 연결', icon: <WalletIcon /> },
     { path: '/profile', label: '내 프로필', icon: <UserIcon /> },
     { path: '/', label: '홈으로', icon: <HomeIcon /> },
   ];
@@ -174,7 +246,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <aside className="sidebar" aria-label="주요 네비게이션">
           <nav className="nav" aria-label="메인 메뉴">
             {navItems.map(item => {
-              const isActive = location.pathname === item.path;
+              const isActive =
+                item.path === '/'
+                  ? location.pathname === item.path
+                  : location.pathname === item.path ||
+                    location.pathname.startsWith(`${item.path}/`);
               return (
                 <Link
                   key={item.path}
