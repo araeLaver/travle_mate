@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useEffect } from 'react';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
@@ -10,6 +10,7 @@ import Layout from './layouts/Layout';
 import AdminRoute from './components/auth/AdminRoute';
 import AuthCallback from './components/AuthCallback';
 import { ProtectedRoute, AuthRequiredRoute } from './components/auth/ProtectedRoute';
+import { authService } from './services/authService';
 import { TutorialProvider, useTutorial } from './contexts/TutorialContext';
 import Tutorial from './components/Tutorial';
 import { ToastProvider } from './components/Toast';
@@ -64,6 +65,32 @@ const GlobalTutorial: React.FC = () => {
 // clientId가 비어있으면 Google 로그인 버튼이 작동하지 않지만 앱은 정상 동작
 
 function App() {
+  const [isSessionRestored, setIsSessionRestored] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const restoreSession = async () => {
+      try {
+        await authService.tryRestoreSession();
+      } finally {
+        if (isMounted) {
+          setIsSessionRestored(true);
+        }
+      }
+    };
+
+    restoreSession();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  if (!isSessionRestored) {
+    return <PageLoader />;
+  }
+
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>

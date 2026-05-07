@@ -32,6 +32,8 @@ public class SecurityConfig {
 
     @Value("${app.cors.allowed-origins:http://localhost:3000}")
     private String allowedOrigins;
+    @Value("${app.security.headers.content-security-policy:default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:; frame-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'}")
+    private String contentSecurityPolicy;
     
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -80,11 +82,11 @@ public class SecurityConfig {
                 if (isProd) {
                     headers
                         .contentSecurityPolicy(csp -> csp
-                            .policyDirectives("default-src 'self'; script-src 'self' https://accounts.google.com https://apis.google.com https://t1.kakaocdn.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https: https://kapi.kakao.com; frame-src https://accounts.google.com"))
-                        .referrerPolicy(referrer -> referrer
-                            .policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
-                        .permissionsPolicy(permissions -> permissions
-                            .policy("geolocation=(self), microphone=(), camera=()"));
+                            .policyDirectives(contentSecurityPolicy)
+                            .referrerPolicy(referrer -> referrer
+                                .policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
+                            .permissionsPolicy(permissions -> permissions
+                                .policy("geolocation=(self), microphone=(), camera=()"));
                     headers.frameOptions(frameOptions -> frameOptions.deny());
                 } else {
                     // 개발 환경: H2 Console 허용

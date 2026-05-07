@@ -17,6 +17,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -39,26 +40,36 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         
         try {
             String jwt = getJwtFromRequest(request);
-            
             if (StringUtils.hasText(jwt) && jwtService.validateToken(jwt)) {
                 Long userId = jwtService.getUserIdFromToken(jwt);
-                String email = jwtService.getEmailFromToken(jwt);
-                List<String> authorities = jwtService.getAuthoritiesFromToken(jwt);
+                if (userId == null) {
+                    log.warn("JWT에서 사용자 ID 추출 실패");
+                    SecurityContextHolder.clearContext();
+                    // 사용자 ID가 없는 경우 인증을 설정하지 않고 계속 진행
+                }
+                else {
+                    String email = jwtService.getEmailFromToken(jwt);
+                    List<String> authorities = jwtService.getAuthoritiesFromToken(jwt);
+                    if (authorities == null || authorities.isEmpty()) {
+                        authorities = Collections.singletonList("ROLE_USER");
+                    }
 
-                List<SimpleGrantedAuthority> grantedAuthorities = authorities.stream()
-                    .map(SimpleGrantedAuthority::new)
-                    .toList();
+                    List<SimpleGrantedAuthority> grantedAuthorities = authorities.stream()
+                        .map(SimpleGrantedAuthority::new)
+                        .toList();
 
-                UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(userId.toString(), null, grantedAuthorities);
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(userId.toString(), null, grantedAuthorities);
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                log.debug("JWT 인증 성공: userId={}, email={}, authorities={}", userId, email, authorities);
+                    log.debug("JWT 인증 성공: userId={}, email={}, authorities={}", userId, email, authorities);
+                }
             }
         } catch (Exception ex) {
             log.error("JWT 인증 처리 중 오류 발생", ex);
+            SecurityContextHolder.clearContext();
         }
         
         filterChain.doFilter(request, response);

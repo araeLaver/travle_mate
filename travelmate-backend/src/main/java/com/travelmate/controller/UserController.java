@@ -1,6 +1,8 @@
 package com.travelmate.controller;
 
+import com.travelmate.dto.AuthDto;
 import com.travelmate.dto.UserDto;
+import com.travelmate.service.AuthService;
 import com.travelmate.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -10,6 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.HttpServletRequest;
 
 import jakarta.validation.Valid;
 import java.util.List;
@@ -24,6 +27,7 @@ import org.springframework.http.HttpStatus;
 public class UserController {
     
     private final UserService userService;
+    private final AuthService authService;
     
     @Operation(summary = "회원가입", description = "새로운 사용자 계정을 생성합니다.")
     @ApiResponses({
@@ -38,8 +42,25 @@ public class UserController {
     }
     
     @PostMapping("/login")
-    public ResponseEntity<UserDto.LoginResponse> login(@Valid @RequestBody UserDto.LoginRequest request) {
-        UserDto.LoginResponse response = userService.loginUser(request);
+    @Deprecated
+    public ResponseEntity<UserDto.LoginResponse> login(
+            @Valid @RequestBody UserDto.LoginRequest request,
+            @RequestHeader(value = "X-Device-Id", required = false) String deviceId,
+            @RequestHeader(value = "X-Device-Name", required = false) String deviceName,
+            HttpServletRequest httpRequest) {
+
+        AuthDto.LoginResponse authResponse = authService.login(
+            request,
+            deviceId,
+            deviceName,
+            getClientIpAddress(httpRequest),
+            httpRequest.getHeader("User-Agent")
+        );
+
+        UserDto.LoginResponse response = new UserDto.LoginResponse();
+        response.setToken(authResponse.getAccessToken());
+        response.setUser(authResponse.getUser());
+
         return ResponseEntity.ok(response);
     }
 
@@ -184,5 +205,29 @@ public class UserController {
         return ResponseEntity.ok(Map.of(
             "message", "비밀번호가 성공적으로 변경되었습니다."
         ));
+    }
+
+    private String getClientIpAddress(HttpServletRequest request) {
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
+            String clientIp = xForwardedFor.split(",")[0].trim();
+            if (isValidIpAddress(clientIp)) {
+                return clientIp;
+            }
+        }
+
+        String xRealIp = request.getHeader("X-Real-IP");
+        if (xRealIp != null && !xRealIp.isEmpty() && isValidIpAddress(xRealIp)) {
+            return xRealIp;
+        }
+
+        return request.getRemoteAddr();
+    }
+
+    private boolean isValidIpAddress(String ip) {
+        if (ip == null || ip.isEmpty()) {
+            return false;
+        }
+        return ip.matches("^[0-9a-fA-F.:]+$") && ip.length() <= 45;
     }
 }

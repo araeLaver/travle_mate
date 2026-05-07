@@ -190,6 +190,8 @@ app:
       enabled: true
     audit:
       enabled: true
+    headers:
+      content-security-policy: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:; frame-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
 
 # Sentry 설정 (개발)
 sentry:

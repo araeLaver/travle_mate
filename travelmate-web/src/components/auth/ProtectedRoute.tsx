@@ -10,7 +10,7 @@ interface ProtectedRouteProps {
 // 로그인 필수 라우트 (그룹 생성 등)
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
-  requireAuth = false,
+  requireAuth = true,
 }) => {
   const isAuthenticated = authService.isAuthenticated();
 

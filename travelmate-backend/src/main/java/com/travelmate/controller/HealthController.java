@@ -2,6 +2,7 @@ package com.travelmate.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,6 +15,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/health")
+@Slf4j
 public class HealthController {
 
     @Autowired
@@ -32,7 +34,7 @@ public class HealthController {
             health.put("database", "UP");
         } catch (Exception e) {
             health.put("database", "DOWN");
-            health.put("error", e.getMessage());
+            log.warn("Health check DB 연결 실패", e);
             health.put("status", "DEGRADED");
         }
         
