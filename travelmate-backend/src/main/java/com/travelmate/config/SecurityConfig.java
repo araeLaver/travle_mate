@@ -81,12 +81,11 @@ public class SecurityConfig {
             .headers(headers -> {
                 if (isProd) {
                     headers
-                        .contentSecurityPolicy(csp -> csp
-                            .policyDirectives(contentSecurityPolicy)
-                            .referrerPolicy(referrer -> referrer
-                                .policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
-                            .permissionsPolicy(permissions -> permissions
-                                .policy("geolocation=(self), microphone=(), camera=()"));
+                        .contentSecurityPolicy(csp -> csp.policyDirectives(contentSecurityPolicy))
+                        .referrerPolicy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN);
+
+                    headers.permissionsPolicy(permissions ->
+                        permissions.policy("geolocation=(self), microphone=(), camera=()"));
                     headers.frameOptions(frameOptions -> frameOptions.deny());
                 } else {
                     // 개발 환경: H2 Console 허용
