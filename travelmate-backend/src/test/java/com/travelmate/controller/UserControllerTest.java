@@ -1,9 +1,11 @@
 package com.travelmate.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.travelmate.dto.AuthDto;
 import com.travelmate.dto.UserDto;
 import com.travelmate.entity.User;
 import com.travelmate.security.JwtAuthenticationFilter;
+import com.travelmate.service.AuthService;
 import com.travelmate.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -44,7 +46,7 @@ class UserControllerTest {
     private UserService userService;
 
     @MockBean
-    private com.travelmate.service.JwtService jwtService;
+    private AuthService authService;
 
     @MockBean
     private com.travelmate.repository.UserRepository userRepository;
@@ -60,7 +62,7 @@ class UserControllerTest {
 
     private UserDto.RegisterRequest registerRequest;
     private UserDto.Response userResponse;
-    private UserDto.LoginResponse loginResponse;
+    private AuthDto.LoginResponse loginResponse;
 
     @BeforeEach
     void setUp() {
@@ -88,9 +90,10 @@ class UserControllerTest {
                 .reviewCount(0)
                 .build();
 
-        loginResponse = new UserDto.LoginResponse();
-        loginResponse.setToken("jwt.token.here");
-        loginResponse.setUser(userResponse);
+        loginResponse = AuthDto.LoginResponse.builder()
+                .accessToken("jwt.token.here")
+                .user(userResponse)
+                .build();
     }
 
     @Test
@@ -120,7 +123,7 @@ class UserControllerTest {
         loginRequest.setEmail("test@example.com");
         loginRequest.setPassword("Password1!");
 
-        when(userService.loginUser(loginRequest))
+        when(authService.login(any(UserDto.LoginRequest.class), any(), any(), any(), any()))
                 .thenReturn(loginResponse);
 
         // When & Then
@@ -130,7 +133,7 @@ class UserControllerTest {
                 .content(objectMapper.writeValueAsString(loginRequest)))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").value(loginResponse.getToken()))
+                .andExpect(jsonPath("$.token").value(loginResponse.getAccessToken()))
                 .andExpect(jsonPath("$.user.id").value(userResponse.getId()));
     }
 

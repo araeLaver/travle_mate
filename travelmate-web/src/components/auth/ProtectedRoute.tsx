@@ -8,10 +8,7 @@ interface ProtectedRouteProps {
 }
 
 // 로그인 필수 라우트 (그룹 생성 등)
-export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
-  children,
-  requireAuth = true,
-}) => {
+export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requireAuth = true }) => {
   const isAuthenticated = authService.isAuthenticated();
 
   // requireAuth가 true일 때만 로그인 페이지로 리다이렉트
