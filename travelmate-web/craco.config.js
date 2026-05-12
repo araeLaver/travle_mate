@@ -1,5 +1,42 @@
 const path = require('path');
 
+const isReactRefreshBabelPlugin = (plugin) => {
+  const pluginName = Array.isArray(plugin) ? plugin[0] : plugin;
+
+  return typeof pluginName === 'string' && pluginName.includes('react-refresh/babel');
+};
+
+const removeProductionReactRefreshBabelPlugin = (rule) => {
+  if (!rule || typeof rule !== 'object') {
+    return;
+  }
+
+  if (rule.options && Array.isArray(rule.options.plugins)) {
+    rule.options.plugins = rule.options.plugins.filter((plugin) => !isReactRefreshBabelPlugin(plugin));
+  }
+
+  if (
+    rule.options &&
+    typeof rule.options.cacheIdentifier === 'string' &&
+    rule.loader &&
+    rule.loader.includes('babel-loader')
+  ) {
+    rule.options.cacheIdentifier = `${rule.options.cacheIdentifier}:no-react-refresh-production`;
+  }
+
+  if (Array.isArray(rule.use)) {
+    rule.use.forEach(removeProductionReactRefreshBabelPlugin);
+  }
+
+  if (Array.isArray(rule.oneOf)) {
+    rule.oneOf.forEach(removeProductionReactRefreshBabelPlugin);
+  }
+
+  if (Array.isArray(rule.rules)) {
+    rule.rules.forEach(removeProductionReactRefreshBabelPlugin);
+  }
+};
+
 // Stub ForkTsCheckerWebpackPlugin before react-scripts loads it.
 // fork-ts-checker-webpack-plugin@6.x calls schema_utils_1.default() as a function,
 // but schema-utils@3.x exports an object (not a function) -- this throws in the constructor.
@@ -24,8 +61,14 @@ module.exports = {
       // Belt-and-suspenders: also filter any ForkTsCheckerWebpackPlugin instances
       // in case the stub is bypassed or a different instance slips through.
       webpackConfig.plugins = webpackConfig.plugins.filter(
-        (plugin) => plugin.constructor.name !== 'ForkTsCheckerWebpackPlugin'
+        (plugin) =>
+          plugin.constructor.name !== 'ForkTsCheckerWebpackPlugin' &&
+          (process.env.NODE_ENV !== 'production' || plugin.constructor.name !== 'ReactRefreshPlugin')
       );
+
+      if (process.env.NODE_ENV === 'production') {
+        webpackConfig.module.rules.forEach(removeProductionReactRefreshBabelPlugin);
+      }
 
       // Chunk splitting for better caching and smaller initial bundle
       webpackConfig.optimization = {
