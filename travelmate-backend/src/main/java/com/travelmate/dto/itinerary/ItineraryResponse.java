@@ -1,5 +1,6 @@
 package com.travelmate.dto.itinerary;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.travelmate.entity.TravelItinerary.ItineraryVisibility;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
@@ -57,9 +58,11 @@ public class ItineraryResponse {
     private OwnerInfo owner;
 
     @Schema(description = "현재 사용자가 소유자인지 여부", example = "true")
+    @JsonProperty("isOwner")
     private boolean isOwner;
 
     @Schema(description = "현재 사용자가 좋아요 했는지 여부", example = "false")
+    @JsonProperty("isLiked")
     private boolean isLiked;
 
     @Schema(description = "생성 일시")
