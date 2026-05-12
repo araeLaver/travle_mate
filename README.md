@@ -45,7 +45,7 @@
 백엔드 실행:
 ```bash
 cd travelmate-backend
-./mvnw spring-boot:run
+mvn spring-boot:run
 ```
 
 프론트엔드 실행:
@@ -54,6 +54,8 @@ cd travelmate-web
 npm install
 npm start
 ```
+
+현재 저장소에는 Windows용 `travelmate-backend/mvnw.cmd`만 있으며 Unix용 `mvnw`는 없습니다. macOS/Linux에서는 Maven 3.8+를 설치한 뒤 `mvn` 명령을 사용하세요.
 
 ### Docker로 실행
 
@@ -82,7 +84,7 @@ docker run -p 80:80 travelmate-web
 - 웹 애플리케이션: http://localhost:3000
 - API 서버: http://localhost:8080/api
 - WebSocket: ws://localhost:8080/ws
-- H2 콘솔 (개발용): http://localhost:8080/h2-console
+- 개발 프록시: `travelmate-web/package.json`의 CRA proxy가 `http://localhost:8080` 백엔드로 전달합니다.
 
 ## 기술 스택
 
@@ -268,6 +270,8 @@ REACT_APP_KAKAO_MAP_API_KEY=your-kakao-map-key
 4. 환경 변수 설정
    - 백엔드: JWT_SECRET, DB 설정
    - 프론트엔드: REACT_APP_API_URL, REACT_APP_WS_URL
+
+백엔드 운영 DB는 Flyway가 스키마를 관리하고 Hibernate는 검증만 수행합니다. 기존 DB 최초 전환 및 신규 DB 검증 순서는 [travelmate-backend/DEPLOYMENT.md](travelmate-backend/DEPLOYMENT.md)를 따릅니다.
 
 ### Docker Compose 배포
 

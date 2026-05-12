@@ -17,6 +17,9 @@ updates:
       - "frontend"
     commit-message:
       prefix: "chore(deps)"
+    ignore:
+      - dependency-name: "tailwindcss"
+        update-types: ["version-update:semver-major"]
     groups:
       react:
         patterns:

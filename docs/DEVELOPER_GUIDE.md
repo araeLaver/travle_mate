@@ -62,14 +62,16 @@ cd travelmate
 # 2. 백엔드 실행
 cd travelmate-backend
 cp .env.example .env  # 환경변수 설정
-./mvnw spring-boot:run
+mvn spring-boot:run
 
 # 3. 프론트엔드 실행 (새 터미널)
 cd travelmate-web
 cp .env.example .env.local  # 환경변수 설정
-npm install --legacy-peer-deps
+npm install
 npm start
 ```
+
+현재 저장소에는 Windows용 `travelmate-backend/mvnw.cmd`만 있으며 Unix용 `mvnw`는 없습니다. macOS/Linux 개발 환경에서는 Maven 3.8+의 `mvn` 명령을 사용합니다.
 
 ---
 
