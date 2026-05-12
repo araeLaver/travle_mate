@@ -37,7 +37,6 @@
     "expo-crypto": "~12.8.0",
     "expo-device": "~5.9.0",
     "expo-image-picker": "~16.0.6",
-    "expo-in-app-purchases": "~14.5.0",
     "expo-local-authentication": "^55.0.8",
     "expo-location": "~18.0.6",
     "expo-notifications": "~0.27.0",
@@ -54,7 +53,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.23.7",
-    "@types/react": "^19.1.1",
+    "@types/react": "~18.3.0",
     "babel-preset-expo": "~10.0.0",
     "eslint": "^8.56.0",
     "jest": "^29.7.0",

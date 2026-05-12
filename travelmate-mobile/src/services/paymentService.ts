@@ -1,10 +1,9 @@
 /**
  * Payment Service for TravelMate Mobile
- * Handles in-app purchases and subscriptions using Expo IAP
+ * In-app purchases deferred to v2 — currently provides server-side subscription/points API only.
  */
 
-import { Platform, Alert } from 'react-native';
-import * as InAppPurchases from 'expo-in-app-purchases';
+import { Alert } from 'react-native';
 import { apiClient } from './apiClient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -51,6 +50,20 @@ export interface PointsBalance {
   total: number;
 }
 
+interface ApiSubscriptionInfo {
+  tier: string | null;
+  status: 'ACTIVE' | 'CANCELLED' | 'EXPIRED' | string | null;
+  endDate: string | null;
+  nextBillingDate: string | null;
+  autoRenew: boolean | null;
+}
+
+interface ApiPointBalance {
+  totalPoints?: number | null;
+  lifetimeEarned?: number | null;
+  seasonPoints?: number | null;
+}
+
 const STORAGE_KEYS = {
   SUBSCRIPTION_STATUS: '@travelmate:subscription',
   POINTS_BALANCE: '@travelmate:points',
@@ -59,101 +72,22 @@ const STORAGE_KEYS = {
 class PaymentService {
   private isInitialized = false;
   private products: Map<string, Product> = new Map();
-  private purchaseListenerActive = false;
 
   /**
-   * Initialize in-app purchases
+   * Initialize payment service (IAP deferred to v2)
    */
   async initialize(): Promise<boolean> {
     if (this.isInitialized) return true;
-
-    try {
-      // Connect to the store
-      await InAppPurchases.connectAsync();
-
-      this.isInitialized = true;
-
-      // Set up purchase listener
-      this.setupPurchaseListener();
-
-      // Load products
-      await this.loadProducts();
-
-      // Process any pending purchases
-      await this.processPendingPurchases();
-
-      return true;
-    } catch (error) {
-      console.error('IAP initialization failed:', error);
-      return false;
-    }
+    this.isInitialized = true;
+    console.log('[PaymentService] Initialized (IAP deferred to v2)');
+    return true;
   }
 
   /**
-   * Set up listener for purchase updates
-   */
-  private setupPurchaseListener(): void {
-    if (this.purchaseListenerActive) return;
-
-    InAppPurchases.setPurchaseListener(async ({ responseCode, results, errorCode }) => {
-      if (responseCode === InAppPurchases.IAPResponseCode.OK) {
-        for (const purchase of results || []) {
-          await this.handlePurchase(purchase);
-        }
-      } else if (responseCode === InAppPurchases.IAPResponseCode.USER_CANCELED) {
-        console.log('User cancelled the purchase');
-      } else {
-        console.error('Purchase error:', errorCode);
-      }
-    });
-
-    this.purchaseListenerActive = true;
-  }
-
-  /**
-   * Load available products from the store
+   * Load available products — returns empty until IAP is integrated
    */
   async loadProducts(): Promise<Product[]> {
-    try {
-      const productIds = Object.values(PRODUCT_IDS);
-      const { responseCode, results } = await InAppPurchases.getProductsAsync(productIds);
-
-      if (responseCode === InAppPurchases.IAPResponseCode.OK && results) {
-        this.products.clear();
-        const products: Product[] = [];
-
-        for (const result of results) {
-          const product: Product = {
-            productId: result.productId,
-            title: result.title,
-            description: result.description,
-            price: result.price,
-            priceAmountMicros: result.priceAmountMicros,
-            priceCurrencyCode: result.priceCurrencyCode,
-            type: this.getProductType(result.productId),
-          };
-
-          this.products.set(result.productId, product);
-          products.push(product);
-        }
-
-        return products;
-      }
-
-      return [];
-    } catch (error) {
-      console.error('Failed to load products:', error);
-      return [];
-    }
-  }
-
-  /**
-   * Get product type based on product ID
-   */
-  private getProductType(productId: string): Product['type'] {
-    if (productId.includes('premium')) return 'subscription';
-    if (productId.includes('points')) return 'consumable';
-    return 'non-consumable';
+    return [];
   }
 
   /**
@@ -171,93 +105,18 @@ class PaymentService {
   }
 
   /**
-   * Purchase a product
+   * Purchase a product — not available until IAP is integrated
    */
   async purchaseProduct(productId: ProductId): Promise<boolean> {
-    if (!this.isInitialized) {
-      const initialized = await this.initialize();
-      if (!initialized) {
-        Alert.alert('오류', '결제 시스템을 초기화할 수 없습니다.');
-        return false;
-      }
-    }
-
-    try {
-      await InAppPurchases.purchaseItemAsync(productId);
-      return true;
-    } catch (error) {
-      console.error('Purchase failed:', error);
-      Alert.alert('구매 실패', '결제 중 오류가 발생했습니다. 다시 시도해주세요.');
-      return false;
-    }
+    Alert.alert('준비 중', '인앱 결제 기능은 곧 제공될 예정입니다.');
+    return false;
   }
 
   /**
-   * Handle completed purchase
-   */
-  private async handlePurchase(purchase: InAppPurchases.InAppPurchase): Promise<void> {
-    try {
-      // Verify purchase on server
-      const verified = await this.verifyPurchaseOnServer(purchase);
-
-      if (verified) {
-        // Acknowledge/finish the purchase
-        if (!purchase.acknowledged) {
-          await InAppPurchases.finishTransactionAsync(purchase, true);
-        }
-
-        // Update local state based on product type
-        const productType = this.getProductType(purchase.productId);
-
-        if (productType === 'subscription') {
-          await this.updateSubscriptionStatus();
-        } else if (productType === 'consumable') {
-          await this.updatePointsBalance();
-        }
-
-        Alert.alert('구매 완료', '구매가 성공적으로 완료되었습니다!');
-      }
-    } catch (error) {
-      console.error('Failed to handle purchase:', error);
-    }
-  }
-
-  /**
-   * Verify purchase on server
-   */
-  private async verifyPurchaseOnServer(purchase: InAppPurchases.InAppPurchase): Promise<boolean> {
-    try {
-      const response = await apiClient.post<{ verified: boolean }>('/payments/verify', {
-        productId: purchase.productId,
-        transactionId: purchase.orderId,
-        receipt: purchase.transactionReceipt,
-        platform: Platform.OS,
-      });
-
-      return response.verified;
-    } catch (error) {
-      console.error('Server verification failed:', error);
-      return false;
-    }
-  }
-
-  /**
-   * Process any pending purchases (e.g., from previous sessions)
+   * Process any pending purchases
    */
   async processPendingPurchases(): Promise<void> {
-    try {
-      const { responseCode, results } = await InAppPurchases.getPurchaseHistoryAsync();
-
-      if (responseCode === InAppPurchases.IAPResponseCode.OK && results) {
-        for (const purchase of results) {
-          if (!purchase.acknowledged) {
-            await this.handlePurchase(purchase);
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Failed to process pending purchases:', error);
-    }
+    // No-op until IAP is integrated
   }
 
   // ================== Subscription Management ==================
@@ -267,20 +126,15 @@ class PaymentService {
    */
   async getSubscriptionStatus(): Promise<SubscriptionStatus> {
     try {
-      // Try to get from server first
-      const status = await apiClient.get<SubscriptionStatus>('/payments/subscription/status');
-
-      // Cache locally
+      const info = await apiClient.get<ApiSubscriptionInfo>('/payment/subscription');
+      const status = this.mapSubscriptionInfo(info);
       await AsyncStorage.setItem(STORAGE_KEYS.SUBSCRIPTION_STATUS, JSON.stringify(status));
-
       return status;
     } catch (error) {
-      // Fall back to cached status
       const cached = await AsyncStorage.getItem(STORAGE_KEYS.SUBSCRIPTION_STATUS);
       if (cached) {
         return JSON.parse(cached);
       }
-
       return {
         isActive: false,
         planId: null,
@@ -302,7 +156,7 @@ class PaymentService {
    */
   async cancelSubscription(): Promise<boolean> {
     try {
-      await apiClient.post('/payments/subscription/cancel');
+      await apiClient.post('/payment/subscription/cancel');
       await this.updateSubscriptionStatus();
       return true;
     } catch (error) {
@@ -312,32 +166,11 @@ class PaymentService {
   }
 
   /**
-   * Restore purchases (useful for iOS)
+   * Restore purchases — not available until IAP is integrated
    */
   async restorePurchases(): Promise<boolean> {
-    try {
-      const { responseCode, results } = await InAppPurchases.getPurchaseHistoryAsync();
-
-      if (responseCode === InAppPurchases.IAPResponseCode.OK && results) {
-        // Verify each purchase on server
-        for (const purchase of results) {
-          await this.verifyPurchaseOnServer(purchase);
-        }
-
-        await this.updateSubscriptionStatus();
-        await this.updatePointsBalance();
-
-        Alert.alert('복원 완료', '구매 내역이 복원되었습니다.');
-        return true;
-      }
-
-      Alert.alert('복원 실패', '복원할 구매 내역이 없습니다.');
-      return false;
-    } catch (error) {
-      console.error('Failed to restore purchases:', error);
-      Alert.alert('복원 실패', '구매 복원 중 오류가 발생했습니다.');
-      return false;
-    }
+    Alert.alert('준비 중', '구매 복원 기능은 곧 제공될 예정입니다.');
+    return false;
   }
 
   // ================== Points Management ==================
@@ -347,19 +180,15 @@ class PaymentService {
    */
   async getPointsBalance(): Promise<PointsBalance> {
     try {
-      const balance = await apiClient.get<PointsBalance>('/payments/points/balance');
-
-      // Cache locally
+      const apiBalance = await apiClient.get<ApiPointBalance>('/points/balance');
+      const balance = this.mapPointsBalance(apiBalance);
       await AsyncStorage.setItem(STORAGE_KEYS.POINTS_BALANCE, JSON.stringify(balance));
-
       return balance;
     } catch (error) {
-      // Fall back to cached balance
       const cached = await AsyncStorage.getItem(STORAGE_KEYS.POINTS_BALANCE);
       if (cached) {
         return JSON.parse(cached);
       }
-
       return {
         available: 0,
         pending: 0,
@@ -429,18 +258,37 @@ class PaymentService {
     ];
   }
 
+  private mapSubscriptionInfo(info: ApiSubscriptionInfo): SubscriptionStatus {
+    const expiresAt = info.endDate ?? info.nextBillingDate ?? null;
+    const expiresInFuture = expiresAt ? new Date(expiresAt).getTime() > Date.now() : false;
+    const status = info.status ?? 'EXPIRED';
+
+    return {
+      isActive: status === 'ACTIVE' || (status === 'CANCELLED' && expiresInFuture),
+      planId: info.tier ? info.tier.toLowerCase() : null,
+      expiresAt,
+      autoRenew: Boolean(info.autoRenew),
+    };
+  }
+
+  private mapPointsBalance(balance: ApiPointBalance): PointsBalance {
+    const total = balance.totalPoints ?? 0;
+
+    return {
+      available: total,
+      pending: 0,
+      total,
+    };
+  }
+
   // ================== Cleanup ==================
 
   /**
    * Disconnect from the store
    */
   async disconnect(): Promise<void> {
-    if (this.isInitialized) {
-      await InAppPurchases.disconnectAsync();
-      this.isInitialized = false;
-      this.purchaseListenerActive = false;
-      this.products.clear();
-    }
+    this.isInitialized = false;
+    this.products.clear();
   }
 }
 
