@@ -30,7 +30,7 @@ COPY src ./src
 
 RUN npm run build
 
-FROM nginx:1.29-alpine
+FROM nginx:1.31-alpine
 WORKDIR /usr/share/nginx/html
 
 RUN rm -rf ./*
