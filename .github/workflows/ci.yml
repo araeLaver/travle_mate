@@ -63,81 +63,37 @@ jobs:
           path: travelmate-web/build
           retention-days: 7
 
-  # Backend Tests and Build
+  # Backend TypeScript Build
   backend:
     name: Backend CI
     runs-on: ubuntu-latest
 
     defaults:
       run:
-        working-directory: travelmate-backend
-
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: travelmate_test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
-      redis:
-        image: redis:7
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
+        working-directory: travelmate-node-backend
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Setup Java
-        uses: actions/setup-java@v5
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
         with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: 'maven'
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: travelmate-node-backend/package-lock.json
 
-      - name: Run tests
-        run: mvn test -B
-        env:
-          SPRING_PROFILES_ACTIVE: test
-          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/travelmate_test
-          SPRING_DATASOURCE_USERNAME: postgres
-          SPRING_DATASOURCE_PASSWORD: postgres
-          SPRING_DATA_REDIS_HOST: localhost
-          SPRING_DATA_REDIS_PORT: 6379
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Generate test report
-        run: mvn jacoco:report -B
-        if: always()
+      - name: Build backend
+        run: npm run build
 
-      - name: Upload coverage report
-        uses: codecov/codecov-action@v5
-        with:
-          directory: travelmate-backend/target/site/jacoco
-          flags: backend
-          fail_ci_if_error: false
-        if: always()
-
-      - name: Build JAR
-        run: mvn package -DskipTests -B
-
-      - name: Upload JAR artifact
+      - name: Upload backend artifact
         uses: actions/upload-artifact@v6
         with:
-          name: backend-jar
-          path: travelmate-backend/target/*.jar
+          name: backend-dist
+          path: travelmate-node-backend/dist
           retention-days: 7
 
   # E2E Tests (optional, runs on main branch only)

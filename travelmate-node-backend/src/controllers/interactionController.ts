@@ -31,21 +31,27 @@ export const togglePostLike = async (req: AuthRequest, res: Response) => {
 // ==================== User Follows ====================
 
 export const followUser = async (req: AuthRequest, res: Response) => {
-  const { followingId } = req.params;
+  const followingIdParam = req.params.followingId;
+  const followingId = Array.isArray(followingIdParam) ? followingIdParam[0] : followingIdParam;
+  const followingUserId = Number.parseInt(followingId, 10);
   const followerId = req.user?.id;
 
-  if (followerId === parseInt(followingId)) {
+  if (Number.isNaN(followingUserId)) {
+    return res.status(400).json({ error: 'Invalid following user id' });
+  }
+
+  if (followerId === followingUserId) {
     return res.status(400).json({ error: 'Cannot follow yourself' });
   }
 
   try {
-    const followCheck = await query('SELECT id FROM user_follows WHERE follower_id = $1 AND following_id = $2', [followerId, followingId]);
+    const followCheck = await query('SELECT id FROM user_follows WHERE follower_id = $1 AND following_id = $2', [followerId, followingUserId]);
     
     if (followCheck.rows.length > 0) {
       return res.status(400).json({ error: 'Already following this user' });
     }
 
-    await query('INSERT INTO user_follows (follower_id, following_id, created_at) VALUES ($1, $2, NOW())', [followerId, followingId]);
+    await query('INSERT INTO user_follows (follower_id, following_id, created_at) VALUES ($1, $2, NOW())', [followerId, followingUserId]);
     res.json({ followed: true });
   } catch (error) {
     console.error('Follow error:', error);
