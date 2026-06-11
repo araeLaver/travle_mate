@@ -12,6 +12,8 @@ import { setupWebSocket } from './config/websocket';
 import userRoutes from './routes/userRoutes';
 import postRoutes from './routes/postRoutes';
 import itineraryRoutes from './routes/itineraryRoutes';
+import nftRoutes from './routes/nftRoutes';
+import systemRoutes from './routes/systemRoutes';
 
 // Load environment variables
 dotenv.config();
@@ -28,15 +30,21 @@ app.use(corsMiddleware({
   origin: process.env.CORS_ALLOWED_ORIGINS || '*'
 }));
 app.use(helmet({
-  contentSecurityPolicy: false // WebSocket 호환을 위해 CSP 일시 완화
+  contentSecurityPolicy: false
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve Uploaded Files
+const uploadDir = process.env.FILE_UPLOAD_PATH || 'uploads/';
+app.use('/uploads', express.static(uploadDir));
 
 // Routes
 app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/itineraries', itineraryRoutes);
+app.use('/api/nfts', nftRoutes);
+app.use('/api/system', systemRoutes);
 
 // Health Check
 app.get('/api/health/live', (req, res) => {
