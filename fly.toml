@@ -1,0 +1,50 @@
+# fly.toml app configuration file generated for travelmate-consolidated
+
+app = "travelmate-consolidated"
+primary_region = "nrt" # 도쿄 리전 (서울 icn 불가 시 대안)
+
+[build]
+  dockerfile = "Dockerfile.node"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 512 # Fly.io 무료 티어 내에서 안정적인 구동을 위해 512MB 권장
+
+[env]
+  SPRING_PROFILES_ACTIVE = "prod"
+  SERVER_PORT = "8080"
+  SERVER_ADDRESS = "0.0.0.0"
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 8080
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  [services.concurrency]
+    type = "connections"
+    hard_limit = 25
+    soft_limit = 20
+
+  [[services.http_checks]]
+    interval = "10s"
+    timeout = "2s"
+    method = "get"
+    path = "/api/health/live"
+    protocol = "http"
+    restart_limit = 0

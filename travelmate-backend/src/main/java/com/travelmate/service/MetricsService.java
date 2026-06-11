@@ -123,7 +123,7 @@ public class MetricsService {
      * Update gauge metrics every minute
      * Only runs after ApplicationReadyEvent is fired
      */
-    @Scheduled(fixedRate = 60000, initialDelay = 30000)
+    //@Scheduled(fixedRate = 60000, initialDelay = 30000)
     public void updateGaugeMetrics() {
         if (!applicationReady.get()) {
             log.debug("Skipping metrics update - application not ready yet");
