@@ -36,6 +36,10 @@ export const getLocations = async (req: AuthRequest, res: Response) => {
 
 // ==================== User Collections ====================
 
+import { mintNftOnChain } from '../config/blockchain';
+
+// ... existing calculateDistance helper ...
+
 export const collectNft = async (req: AuthRequest, res: Response) => {
   const { locationId, latitude, longitude, deviceId } = req.body;
   const userId = req.user?.id;
@@ -72,11 +76,17 @@ export const collectNft = async (req: AuthRequest, res: Response) => {
       [userId, locationId, 'PENDING', latitude, longitude, deviceId, location.point_reward || 10]
     );
 
+    const collection = result.rows[0];
+
     // 5. Update location and user stats
     await query('UPDATE collectible_locations SET total_collected = total_collected + 1 WHERE id = $1', [locationId]);
     await query('UPDATE users SET total_nfts_collected = total_nfts_collected + 1 WHERE id = $1', [userId]);
 
-    res.status(201).json(result.rows[0]);
+    // 6. Async Mint on Blockchain
+    // background process
+    mintNftOnChain(collection.id).catch(err => console.error('Background minting error:', err));
+
+    res.status(201).json(collection);
   } catch (error) {
     console.error('Collect NFT error:', error);
     res.status(500).json({ error: 'Server error during NFT collection' });
