@@ -7,6 +7,7 @@ import ItinerarySharePanel from '../components/ItinerarySharePanel';
 import ItineraryMap from '../components/ItineraryMap';
 import {
   getItinerary,
+  getItineraryByShareCode,
   addItem,
   updateItem,
   deleteItem,
@@ -365,7 +366,7 @@ const ItemCard: React.FC<{
 // ── Main page ───────────────────────────────────────────────────────────────
 
 const ItineraryDetail: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id, shareCode } = useParams<{ id?: string; shareCode?: string }>();
   const navigate = useNavigate();
   const toast = useToast();
 
@@ -383,10 +384,12 @@ const ItineraryDetail: React.FC = () => {
   const isAuthenticated = authService.isAuthenticated();
 
   const load = useCallback(async () => {
-    if (!id) return;
+    if (!id && !shareCode) return;
     setLoading(true);
     try {
-      const data = await getItinerary(Number(id));
+      const data = shareCode
+        ? await getItineraryByShareCode(shareCode)
+        : await getItinerary(Number(id));
       setItinerary(data);
     } catch {
       toast.error('일정을 불러오는 데 실패했습니다.');
@@ -394,7 +397,7 @@ const ItineraryDetail: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [id, navigate, toast]);
+  }, [id, shareCode, navigate, toast]);
 
   useEffect(() => {
     load();

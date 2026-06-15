@@ -327,6 +327,14 @@ function App() {
                       }
                     />
                     <Route
+                      path="/itineraries/share/:shareCode"
+                      element={
+                        <Layout>
+                          <ItineraryDetail />
+                        </Layout>
+                      }
+                    />
+                    <Route
                       path="/itineraries/:id"
                       element={
                         <Layout>

@@ -52,6 +52,11 @@ spring:
     name: travel-mate-backend
   main:
     allow-bean-definition-overriding: true
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
 
 # OpenAPI/Swagger 설정
 springdoc:

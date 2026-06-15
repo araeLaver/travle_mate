@@ -1,5 +1,6 @@
 package com.travelmate.dto.itinerary;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.travelmate.entity.ItineraryItem.BookingStatus;
 import com.travelmate.entity.ItineraryItem.ItemType;
 import lombok.*;

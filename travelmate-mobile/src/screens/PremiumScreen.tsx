@@ -18,6 +18,7 @@ import { RootStackParamList } from '../navigation/AppNavigator';
 import {
   paymentService,
   Product,
+  ProductId,
   SubscriptionStatus,
   PRODUCT_IDS,
 } from '../services/paymentService';
@@ -33,7 +34,7 @@ const PremiumScreen: React.FC<Props> = ({ navigation }) => {
   const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isPurchasing, setIsPurchasing] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<string>(PRODUCT_IDS.PREMIUM_YEARLY);
+  const [selectedPlan, setSelectedPlan] = useState<ProductId>(PRODUCT_IDS.PREMIUM_YEARLY);
 
   const loadData = useCallback(async () => {
     setIsLoading(true);
@@ -62,7 +63,7 @@ const PremiumScreen: React.FC<Props> = ({ navigation }) => {
 
     setIsPurchasing(true);
     try {
-      const success = await paymentService.purchaseProduct(selectedPlan as any);
+      const success = await paymentService.purchaseProduct(selectedPlan);
       if (success) {
         // Refresh subscription status
         const status = await paymentService.getSubscriptionStatus();
@@ -116,6 +117,7 @@ const PremiumScreen: React.FC<Props> = ({ navigation }) => {
 
   const monthlyProduct = getSubscriptionProduct(PRODUCT_IDS.PREMIUM_MONTHLY);
   const yearlyProduct = getSubscriptionProduct(PRODUCT_IDS.PREMIUM_YEARLY);
+  const hasPurchasableProducts = Boolean(monthlyProduct || yearlyProduct);
 
   if (isLoading) {
     return (
@@ -214,6 +216,15 @@ const PremiumScreen: React.FC<Props> = ({ navigation }) => {
       <View style={styles.plansSection}>
         <Text style={styles.sectionTitle}>구독 플랜 선택</Text>
 
+        {!hasPurchasableProducts && (
+          <View style={styles.unavailableCard}>
+            <Text style={styles.unavailableTitle}>모바일 결제 준비 중</Text>
+            <Text style={styles.unavailableDescription}>
+              현재 앱에서는 구독 구매와 구매 복원을 제공하지 않습니다. 이미 활성화된 프리미엄 상태는 서버에서 자동으로 확인됩니다.
+            </Text>
+          </View>
+        )}
+
         {/* Yearly Plan */}
         {yearlyProduct && (
           <TouchableOpacity
@@ -267,26 +278,35 @@ const PremiumScreen: React.FC<Props> = ({ navigation }) => {
 
       {/* Purchase Button */}
       <TouchableOpacity
-        style={[styles.purchaseButton, isPurchasing && styles.purchaseButtonDisabled]}
+        style={[
+          styles.purchaseButton,
+          (!hasPurchasableProducts || isPurchasing) && styles.purchaseButtonDisabled,
+        ]}
         onPress={handlePurchase}
-        disabled={isPurchasing}
+        disabled={!hasPurchasableProducts || isPurchasing}
       >
         {isPurchasing ? (
           <ActivityIndicator color="#FFFFFF" />
         ) : (
-          <Text style={styles.purchaseButtonText}>프리미엄 시작하기</Text>
+          <Text style={styles.purchaseButtonText}>
+            {hasPurchasableProducts ? '프리미엄 시작하기' : '결제 준비 중'}
+          </Text>
         )}
       </TouchableOpacity>
 
       {/* Restore Button */}
-      <TouchableOpacity style={styles.restoreButton} onPress={handleRestore}>
+      <TouchableOpacity
+        style={[styles.restoreButton, !hasPurchasableProducts && styles.restoreButtonDisabled]}
+        onPress={handleRestore}
+        disabled={!hasPurchasableProducts || isPurchasing}
+      >
         <Text style={styles.restoreButtonText}>구매 복원</Text>
       </TouchableOpacity>
 
       {/* Terms */}
       <Text style={styles.termsText}>
-        구독은 현재 기간이 끝나기 24시간 전에 자동으로 갱신됩니다.{'\n'}
-        구독은 설정에서 언제든지 취소할 수 있습니다.
+        모바일 인앱 결제는 v2에서 제공될 예정입니다.{'\n'}
+        프리미엄 상태와 포인트는 서버 계정 정보를 기준으로 표시됩니다.
       </Text>
 
       <View style={styles.bottomPadding} />
@@ -382,6 +402,25 @@ const styles = StyleSheet.create({
     borderColor: '#3B82F6',
     backgroundColor: '#EFF6FF',
   },
+  unavailableCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    marginBottom: 12,
+  },
+  unavailableTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 6,
+  },
+  unavailableDescription: {
+    fontSize: 14,
+    color: '#6B7280',
+    lineHeight: 20,
+  },
   planBadge: {
     position: 'absolute',
     top: -12,
@@ -458,6 +497,9 @@ const styles = StyleSheet.create({
     marginHorizontal: 24,
     paddingVertical: 12,
     alignItems: 'center',
+  },
+  restoreButtonDisabled: {
+    opacity: 0.45,
   },
   restoreButtonText: {
     color: '#3B82F6',

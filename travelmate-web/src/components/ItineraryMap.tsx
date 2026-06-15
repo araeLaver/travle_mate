@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { ItineraryItem, ItemType } from '../services/itineraryService';
+import { escapeHtml } from '../lib/sanitize';
 import 'leaflet/dist/leaflet.css';
 import './ItineraryMap.css';
 
@@ -95,6 +96,11 @@ const ItineraryMap: React.FC<Props> = ({ items, focusItemId, onMarkerClick }) =>
       const lng = item.longitude!;
       const color = TYPE_COLORS[item.type];
       const emoji = ITEM_EMOJIS[item.type];
+      const safeTitle = escapeHtml(item.title);
+      const safeStartTime = item.startTime ? escapeHtml(item.startTime) : '';
+      const safeEndTime = item.endTime ? escapeHtml(item.endTime) : '';
+      const safePlaceName = item.placeName ? escapeHtml(item.placeName) : '';
+      const safeCurrency = escapeHtml(item.currency || 'KRW');
 
       const icon = L.divIcon({
         className: '',
@@ -109,10 +115,10 @@ const ItineraryMap: React.FC<Props> = ({ items, focusItemId, onMarkerClick }) =>
         .bindPopup(
           `
           <div class="itin-map-popup">
-            <strong>${item.title}</strong>
-            ${item.startTime ? `<br/><small>⏰ ${item.startTime}${item.endTime ? ' ~ ' + item.endTime : ''}</small>` : ''}
-            ${item.placeName ? `<br/><small>📍 ${item.placeName}</small>` : ''}
-            ${item.estimatedCost ? `<br/><small>💰 ${item.estimatedCost.toLocaleString()} ${item.currency || 'KRW'}</small>` : ''}
+            <strong>${safeTitle}</strong>
+            ${safeStartTime ? `<br/><small>⏰ ${safeStartTime}${safeEndTime ? ' ~ ' + safeEndTime : ''}</small>` : ''}
+            ${safePlaceName ? `<br/><small>📍 ${safePlaceName}</small>` : ''}
+            ${item.estimatedCost ? `<br/><small>💰 ${item.estimatedCost.toLocaleString()} ${safeCurrency}</small>` : ''}
           </div>
         `,
           { maxWidth: 220 }
