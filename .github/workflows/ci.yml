@@ -57,7 +57,7 @@ jobs:
           CI: false  # Allow warnings in build
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: frontend-build
           path: travelmate-web/build
@@ -134,7 +134,7 @@ jobs:
         run: mvn package -DskipTests -B
 
       - name: Upload JAR artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: backend-jar
           path: travelmate-backend/target/*.jar
@@ -177,7 +177,7 @@ jobs:
           CI: true
 
       - name: Upload Cypress screenshots
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: cypress-screenshots
@@ -185,7 +185,7 @@ jobs:
           retention-days: 7
 
       - name: Upload Cypress videos
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: cypress-videos
