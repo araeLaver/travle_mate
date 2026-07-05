@@ -19,116 +19,72 @@ const Logo: React.FC<LogoProps> = ({
     lg: 'h-12 w-12',
   };
 
-  const iconColors = {
+  const palette = {
     default: {
-      primary: '#6366f1',
-      secondary: '#8b5cf6',
-      accent: '#ec4899',
+      ink: '#14213D',
+      route: '#F97316',
+      mint: '#2DD4BF',
+      sand: '#F7F2E8',
     },
     white: {
-      primary: '#ffffff',
-      secondary: '#ffffff',
-      accent: '#ffffff',
+      ink: '#FFFFFF',
+      route: '#FFFFFF',
+      mint: '#FFFFFF',
+      sand: 'rgba(255,255,255,0.18)',
     },
     gradient: {
-      primary: 'url(#logo-gradient)',
-      secondary: 'url(#logo-gradient)',
-      accent: 'url(#logo-gradient)',
+      ink: 'url(#fryndo-ink)',
+      route: '#F97316',
+      mint: '#2DD4BF',
+      sand: '#FFFDF7',
     },
   };
 
-  const colors = iconColors[variant];
+  const colors = palette[variant];
 
   return (
     <svg
       className={`${sizeClasses[size]} ${className} ${onClick ? 'cursor-pointer' : ''}`}
-      viewBox="0 0 200 200"
+      viewBox="0 0 160 160"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       onClick={onClick}
+      role="img"
+      aria-label="Fryndo logo"
     >
       {variant === 'gradient' && (
         <defs>
-          <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#6366f1" />
-            <stop offset="50%" stopColor="#8b5cf6" />
-            <stop offset="100%" stopColor="#ec4899" />
+          <linearGradient
+            id="fryndo-ink"
+            x1="24"
+            y1="20"
+            x2="138"
+            y2="138"
+            gradientUnits="userSpaceOnUse"
+          >
+            <stop stopColor="#14213D" />
+            <stop offset="0.52" stopColor="#0F766E" />
+            <stop offset="1" stopColor="#F97316" />
           </linearGradient>
         </defs>
       )}
-
-      {/* World Circle */}
-      <circle
-        cx="100"
-        cy="100"
-        r="85"
-        stroke={colors.primary}
+      <rect x="14" y="14" width="132" height="132" rx="42" fill={colors.sand} />
+      <path
+        d="M42 92C42 66.5949 62.5949 46 88 46H120V68H88C74.7452 68 64 78.7452 64 92V122H42V92Z"
+        fill={colors.ink}
+      />
+      <path
+        d="M76 98C76 83.6406 87.6406 72 102 72H121V94H102C99.7909 94 98 95.7909 98 98V122H76V98Z"
+        fill={colors.route}
+      />
+      <circle cx="48" cy="48" r="12" fill={colors.mint} />
+      <path
+        d="M47 48C68.5 60 82.5 71.5 93 91"
+        stroke={colors.mint}
         strokeWidth="8"
-        fill="none"
-        opacity="0.3"
+        strokeLinecap="round"
+        strokeDasharray="1 15"
       />
-
-      {/* Latitude Lines */}
-      <ellipse
-        cx="100"
-        cy="100"
-        rx="85"
-        ry="40"
-        stroke={colors.secondary}
-        strokeWidth="4"
-        fill="none"
-        opacity="0.4"
-      />
-      <ellipse
-        cx="100"
-        cy="100"
-        rx="85"
-        ry="60"
-        stroke={colors.secondary}
-        strokeWidth="3"
-        fill="none"
-        opacity="0.3"
-      />
-
-      {/* Longitude Line */}
-      <ellipse
-        cx="100"
-        cy="100"
-        rx="40"
-        ry="85"
-        stroke={colors.secondary}
-        strokeWidth="4"
-        fill="none"
-        opacity="0.4"
-      />
-
-      {/* Airplane Icon */}
-      <g transform="translate(80, 75)">
-        <path d="M20 0L40 15L25 20L25 30L20 35L15 30L15 20L0 15L20 0Z" fill={colors.accent} />
-        <circle cx="20" cy="12" r="3" fill={colors.primary} />
-      </g>
-
-      {/* Location Pin */}
-      <g transform="translate(130, 120)">
-        <path
-          d="M10 0C4.5 0 0 4.5 0 10C0 17.5 10 30 10 30C10 30 20 17.5 20 10C20 4.5 15.5 0 10 0ZM10 14C7.8 14 6 12.2 6 10C6 7.8 7.8 6 10 6C12.2 6 14 7.8 14 10C14 12.2 12.2 14 10 14Z"
-          fill={colors.primary}
-        />
-      </g>
-
-      {/* Connection Lines - representing matching */}
-      <line
-        x1="60"
-        y1="60"
-        x2="140"
-        y2="140"
-        stroke={colors.accent}
-        strokeWidth="3"
-        strokeDasharray="5,5"
-        opacity="0.5"
-      />
-      <circle cx="60" cy="60" r="6" fill={colors.accent} />
-      <circle cx="140" cy="140" r="6" fill={colors.accent} />
     </svg>
   );
 };

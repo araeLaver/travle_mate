@@ -2,541 +2,431 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  UserGroupIcon,
+  ArrowRightIcon,
+  CalendarDaysIcon,
   ChatBubbleLeftRightIcon,
+  CheckBadgeIcon,
+  GlobeAltIcon,
+  LockClosedIcon,
   MapPinIcon,
   ShieldCheckIcon,
   SparklesIcon,
-  ArrowRightIcon,
-  GlobeAltIcon,
-  UserPlusIcon,
-  ClockIcon,
 } from '@heroicons/react/24/outline';
 import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
 import { useTutorial } from '../contexts/TutorialContext';
-import { cn } from '../lib/utils';
-import AdBanner from '../components/ads/AdBanner';
 
 const navItems = [
-  { label: '소개', path: '/about' },
-  { label: '기능', path: '/features' },
-  { label: '그룹', path: '/groups' },
+  { label: '왜 Fryndo인가', href: '#why' },
+  { label: '안전 기준', href: '#safety' },
+  { label: '사용 방법', href: '#how' },
 ];
 
-const footerItems = [
-  { label: '소개', path: '/about' },
-  { label: '로그인', path: '/login' },
-  { label: '회원가입', path: '/register' },
-  { label: '그룹', path: '/groups' },
+const trustSignals = ['검증 프로필 우선', '일정 기반 매칭', '대화 전 안전 신호', '공개 베타 운영'];
+
+const featureCards = [
+  {
+    title: '일정이 맞는 사람부터',
+    body: '목적지, 출발일, 여행 기간을 먼저 맞춰서 실제로 함께 움직일 수 있는 후보를 보여줍니다.',
+    icon: CalendarDaysIcon,
+    tone: 'bg-[#FFFDF7] border-[#E5DCC8]',
+  },
+  {
+    title: '여행 성향 매칭',
+    body: '예산, 속도, 관심사, 오전형/야간형 같은 여행 습관을 기준으로 대화 전에 궁합을 확인합니다.',
+    icon: SparklesIcon,
+    tone: 'bg-[#14213D] border-[#14213D] text-white',
+  },
+  {
+    title: '그룹과 채팅 연결',
+    body: '혼자 찾기 어렵다면 같은 목적지 그룹에 들어가고, 매칭 후에는 채팅으로 바로 계획을 이어갑니다.',
+    icon: ChatBubbleLeftRightIcon,
+    tone: 'bg-[#FFFDF7] border-[#E5DCC8]',
+  },
 ];
 
-const HERO_BG =
-  'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1920&q=80';
-const CTA_BG =
-  'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1920&q=80';
-const STATS_BG =
-  'https://images.unsplash.com/photo-1488085061387-422e29b40080?auto=format&fit=crop&w=1920&q=80';
+const safetyItems = [
+  {
+    title: '프로필 완성도',
+    body: '사진, 관심사, 여행 스타일을 기반으로 대화 전 신뢰도를 파악합니다.',
+  },
+  { title: '일정 겹침', body: '같은 지역에 같은 날짜로 움직일 가능성이 높은 사람을 우선합니다.' },
+  { title: '대화 전 맥락', body: '무작위 채팅보다 목적지와 계획 중심으로 대화를 시작합니다.' },
+];
+
+const steps = [
+  {
+    label: '01',
+    title: '여행 프로필 만들기',
+    body: '가고 싶은 곳, 날짜, 여행 속도, 관심사를 간단히 입력합니다.',
+  },
+  {
+    label: '02',
+    title: '맞는 메이트 확인',
+    body: '일정과 성향이 겹치는 후보, 그룹, 여행 계획을 비교합니다.',
+  },
+  {
+    label: '03',
+    title: '채팅으로 계획 확정',
+    body: '대화로 일정과 역할을 맞추고 함께 움직일 준비를 마칩니다.',
+  },
+];
 
 const Home: React.FC = () => {
   const { startTutorial } = useTutorial();
 
-  const fadeInUp = {
-    initial: { opacity: 0, y: 30 },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.6, ease: 'easeOut' as const },
-  };
-
   return (
-    <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] overflow-hidden">
-      {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50">
-        <div className="mx-4 mt-4">
-          <div className="max-w-6xl mx-auto bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-800/50 shadow-lg shadow-gray-200/20 dark:shadow-black/20">
-            <div className="flex items-center justify-between h-16 px-6">
-              <Link to="/" className="flex items-center gap-3 group">
-                <Logo
-                  variant="gradient"
-                  size="md"
-                  className="group-hover:scale-110 transition-transform duration-300"
-                />
-                <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
-                  Fryndo
-                </span>
-              </Link>
+    <div className="min-h-screen overflow-hidden bg-[#F7F2E8] text-[#14213D] selection:bg-[#F97316] selection:text-white">
+      <nav className="fixed inset-x-0 top-0 z-50 px-4 pt-4 md:px-8" aria-label="주요 메뉴">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between rounded-[1.5rem] border border-[#E5DCC8]/80 bg-[#FFFDF7]/85 px-4 shadow-[0_24px_80px_rgba(20,33,61,0.12)] backdrop-blur-xl md:px-6">
+          <Link to="/" className="flex items-center gap-3" aria-label="Fryndo 홈">
+            <Logo variant="gradient" size="md" />
+            <span className="font-display text-2xl font-black tracking-[-0.04em] text-[#14213D]">
+              Fryndo
+            </span>
+          </Link>
 
-              <div className="hidden md:flex items-center gap-1">
-                {navItems.map(item => (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all duration-200"
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-              </div>
+          <div className="hidden items-center gap-1 md:flex">
+            {navItems.map(item => (
+              <a
+                key={item.href}
+                href={item.href}
+                className="rounded-full px-4 py-2 text-sm font-bold text-[#52606D] transition hover:bg-[#F7F2E8] hover:text-[#14213D]"
+              >
+                {item.label}
+              </a>
+            ))}
+          </div>
 
-              <div className="flex items-center gap-3">
-                <ThemeToggle />
-                <Link
-                  to="/login"
-                  className="hidden md:inline-flex px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
-                >
-                  로그인
-                </Link>
-                <Link
-                  to="/register"
-                  className="px-5 py-2.5 text-sm font-semibold text-white bg-gray-900 dark:bg-white dark:text-gray-900 rounded-xl hover:bg-gray-800 dark:hover:bg-gray-100 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
-                >
-                  시작하기
-                </Link>
-              </div>
-            </div>
+          <div className="flex items-center gap-2 md:gap-3">
+            <ThemeToggle />
+            <Link
+              to="/login"
+              className="hidden rounded-full px-4 py-2 text-sm font-bold text-[#52606D] transition hover:text-[#14213D] md:inline-flex"
+            >
+              로그인
+            </Link>
+            <Link
+              to="/register"
+              className="inline-flex items-center gap-2 rounded-full bg-[#14213D] px-4 py-2.5 text-sm font-black text-white shadow-[0_14px_30px_rgba(20,33,61,0.22)] transition hover:-translate-y-0.5 hover:bg-[#0F172A] md:px-5"
+            >
+              메이트 찾기
+              <ArrowRightIcon className="h-4 w-4" />
+            </Link>
           </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative pt-40 pb-20 md:pt-48 md:pb-32 min-h-[90vh] flex items-center">
-        {/* Background Image */}
-        <div className="absolute inset-0">
-          <img src={HERO_BG} alt="" className="w-full h-full object-cover" loading="eager" />
-          <div className="absolute inset-0 bg-gradient-to-b from-white/80 via-white/60 to-white/90 dark:from-[#0a0a0b]/80 dark:via-[#0a0a0b]/60 dark:to-[#0a0a0b]/90" />
-        </div>
+      <main id="main-content">
+        <section className="relative min-h-screen px-4 pb-20 pt-32 md:px-8 md:pb-28 md:pt-40">
+          <div className="absolute left-[-18rem] top-24 h-[34rem] w-[34rem] rounded-full bg-[#2DD4BF]/20 blur-3xl" />
+          <div className="absolute right-[-10rem] top-16 h-[38rem] w-[38rem] rounded-full bg-[#F97316]/20 blur-3xl" />
+          <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#F7F2E8] to-transparent" />
 
-        <div className="container-custom relative z-10">
-          <div className="max-w-4xl mx-auto text-center">
+          <div className="relative mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur rounded-full shadow-md shadow-gray-200/50 dark:shadow-black/20 border border-gray-100 dark:border-gray-700 mb-8"
+              initial={{ opacity: 0, y: 28 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.65, ease: 'easeOut' }}
             >
-              <span className="flex h-2 w-2 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
-              </span>
-              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                지금 바로 여행 동반자를 찾아보세요
-              </span>
-            </motion.div>
-
-            <motion.h1
-              {...fadeInUp}
-              className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight mb-8"
-            >
-              <span className="text-gray-900 dark:text-white">나만의</span>
-              <br />
-              <span className="bg-gradient-to-r from-violet-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                여행 동반자 찾기
-              </span>
-            </motion.h1>
-
-            <motion.p
-              {...fadeInUp}
-              transition={{ delay: 0.1 }}
-              className="text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-12 leading-relaxed"
-            >
-              전 세계 취향이 맞는 여행자와 연결하세요. 함께 모험하고, 추억을 만들고, 새로운 세상을
-              탐험하세요.
-            </motion.p>
-
-            <motion.div
-              {...fadeInUp}
-              transition={{ delay: 0.2 }}
-              className="flex flex-col sm:flex-row gap-4 justify-center"
-            >
-              <Link
-                to="/register"
-                className="group inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-white bg-gradient-to-r from-violet-600 to-purple-600 rounded-2xl hover:from-violet-700 hover:to-purple-700 transition-all duration-300 hover:shadow-xl hover:shadow-violet-500/25 hover:-translate-y-1"
-              >
-                탐험 시작하기
-                <ArrowRightIcon className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-              </Link>
-              <button
-                onClick={startTutorial}
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-gray-700 dark:text-gray-300 bg-white/80 dark:bg-gray-800/80 backdrop-blur border-2 border-gray-200 dark:border-gray-700 rounded-2xl hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 tutorial-guest-mode-btn"
-              >
-                둘러보기
-              </button>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Bento Grid */}
-      <section className="py-24 md:py-32 relative">
-        <div className="container-custom">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <span className="inline-block px-4 py-1.5 bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 rounded-full text-sm font-semibold mb-4">
-              주요 기능
-            </span>
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-              필요한 모든 것
-            </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              여행 동반자를 쉽게 찾을 수 있는 강력한 도구
-            </p>
-          </motion.div>
-
-          {/* Bento Grid */}
-          <div className="bento-grid">
-            {/* Large Card - Smart Matching */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              className="bento-item bento-lg bg-gradient-to-br from-violet-500 to-purple-600 text-white flex flex-col justify-between overflow-hidden group"
-            >
-              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-700" />
-              <div className="relative z-10">
-                <div className="w-14 h-14 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center mb-6">
-                  <SparklesIcon className="h-7 w-7" />
-                </div>
-                <h3 className="text-2xl md:text-3xl font-bold mb-3">스마트 매칭</h3>
-                <p className="text-white/80 text-lg max-w-sm">
-                  AI 기반 알고리즘이 관심사, 여행 스타일, 일정이 맞는 여행자를 찾아드립니다
-                </p>
+              <div className="mb-8 inline-flex items-center gap-3 rounded-full border border-[#E5DCC8] bg-[#FFFDF7]/80 px-4 py-2 shadow-sm backdrop-blur">
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#2DD4BF] opacity-70" />
+                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#2DD4BF]" />
+                </span>
+                <span className="text-sm font-black text-[#14213D]">공개 베타 출시 중</span>
+                <span className="hidden text-sm font-semibold text-[#52606D] sm:inline">
+                  일정 기반 여행 동행 매칭
+                </span>
               </div>
-              <div className="relative z-10 mt-6">
-                <div className="flex items-center gap-3">
-                  <div className="flex -space-x-3">
-                    {[
-                      'from-pink-400 to-rose-400',
-                      'from-blue-400 to-cyan-400',
-                      'from-green-400 to-emerald-400',
-                    ].map((g, i) => (
-                      <div
-                        key={i}
-                        className={cn(
-                          'w-10 h-10 rounded-full bg-gradient-to-br border-2 border-white',
-                          g
-                        )}
-                      />
-                    ))}
-                  </div>
-                  <span className="text-white/90 text-sm font-medium">오늘 +2,500명 매칭</span>
-                </div>
-              </div>
-            </motion.div>
 
-            {/* Chat Feature */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-              className="bento-item bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 group hover:border-cyan-200 dark:hover:border-cyan-800"
-            >
-              <div className="w-12 h-12 bg-cyan-100 dark:bg-cyan-900/30 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <ChatBubbleLeftRightIcon className="h-6 w-6 text-cyan-600 dark:text-cyan-400" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">실시간 채팅</h3>
-              <p className="text-gray-600 dark:text-gray-400 text-sm">
-                읽음 확인이 가능한 즉시 메시지
+              <h1 className="font-display text-[4.2rem] font-black leading-[0.9] tracking-[-0.075em] text-[#14213D] sm:text-[5.8rem] lg:text-[7.2rem]">
+                혼자 떠나도,
+                <br />
+                <span className="relative inline-block text-[#F97316]">
+                  혼자가 아닌
+                  <span className="absolute -bottom-2 left-1 h-3 w-[96%] rounded-full bg-[#2DD4BF]/45" />
+                </span>
+                <br />
+                여행.
+              </h1>
+
+              <p className="mt-8 max-w-2xl text-xl font-medium leading-9 text-[#52606D] md:text-2xl md:leading-10">
+                Fryndo는 목적지, 일정, 여행 성향, 검증 신호를 기준으로 지금 함께 움직일 수 있는 여행
+                메이트를 찾는 서비스입니다.
               </p>
-            </motion.div>
 
-            {/* Location Feature */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
-              className="bento-item bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 group hover:border-rose-200 dark:hover:border-rose-800"
-            >
-              <div className="w-12 h-12 bg-rose-100 dark:bg-rose-900/30 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <MapPinIcon className="h-6 w-6 text-rose-600 dark:text-rose-400" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">위치 기반</h3>
-              <p className="text-gray-600 dark:text-gray-400 text-sm">주변 여행자 찾기</p>
-            </motion.div>
-
-            {/* Wide Card - Groups */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.3 }}
-              className="bento-item bento-wide bg-gradient-to-r from-amber-400 to-orange-500 text-white flex items-center justify-between overflow-hidden"
-            >
-              <div className="relative z-10">
-                <h3 className="text-xl font-bold mb-2">여행 그룹</h3>
-                <p className="text-white/80 text-sm max-w-xs">
-                  같은 목적지로 향하는 그룹에 참여하거나 만들어보세요
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <UserGroupIcon className="h-12 w-12 text-white/80" />
-              </div>
-            </motion.div>
-
-            {/* Verified Feature */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.4 }}
-              className="bento-item bg-gradient-to-br from-emerald-500 to-teal-600 text-white"
-            >
-              <div className="w-12 h-12 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center mb-4">
-                <ShieldCheckIcon className="h-6 w-6" />
-              </div>
-              <h3 className="text-xl font-bold mb-2">검증된 사용자</h3>
-              <p className="text-white/80 text-sm">안전하고 신뢰할 수 있는 커뮤니티</p>
-            </motion.div>
-
-            {/* Global Feature */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.5 }}
-              className="bento-item bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 group hover:border-violet-200 dark:hover:border-violet-800"
-            >
-              <div className="w-12 h-12 bg-violet-100 dark:bg-violet-900/30 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <GlobeAltIcon className="h-6 w-6 text-violet-600 dark:text-violet-400" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">50+ 국가</h3>
-              <p className="text-gray-600 dark:text-gray-400 text-sm">전 세계와 연결</p>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* Ad Banner */}
-      <div className="container-custom py-8">
-        <AdBanner adSlot="HOME_TOP" adFormat="horizontal" className="max-w-4xl mx-auto" />
-      </div>
-
-      {/* How It Works Section */}
-      <section className="py-24 bg-gray-50 dark:bg-gray-900/50">
-        <div className="container-custom">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <span className="inline-block px-4 py-1.5 bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 rounded-full text-sm font-semibold mb-4">
-              시작하기
-            </span>
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-              이렇게 사용하세요
-            </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              간단한 3단계로 여행 동반자를 찾아보세요
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {[
-              {
-                step: 1,
-                icon: UserPlusIcon,
-                title: '가입하기',
-                description:
-                  '여행 스타일과 관심사를 설정하세요. 프로필이 풍부할수록 더 정확한 매칭이 가능합니다.',
-                gradient: 'from-rose-500 to-pink-500',
-                bgColor: 'bg-rose-100 dark:bg-rose-900/30',
-                textColor: 'text-rose-600 dark:text-rose-400',
-              },
-              {
-                step: 2,
-                icon: SparklesIcon,
-                title: '매칭 받기',
-                description:
-                  'AI가 딱 맞는 여행 동반자를 추천합니다. 여행지, 일정, 취향까지 분석합니다.',
-                gradient: 'from-violet-500 to-purple-500',
-                bgColor: 'bg-violet-100 dark:bg-violet-900/30',
-                textColor: 'text-violet-600 dark:text-violet-400',
-              },
-              {
-                step: 3,
-                icon: ChatBubbleLeftRightIcon,
-                title: '함께 떠나기',
-                description:
-                  '실시간 채팅으로 여행을 계획하세요. 그룹을 만들어 함께 모험을 시작하세요.',
-                gradient: 'from-cyan-500 to-blue-500',
-                bgColor: 'bg-cyan-100 dark:bg-cyan-900/30',
-                textColor: 'text-cyan-600 dark:text-cyan-400',
-              },
-            ].map((item, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.15 }}
-                className="relative"
-              >
-                <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 border border-gray-100 dark:border-gray-700 hover:shadow-xl hover:shadow-gray-200/50 dark:hover:shadow-black/20 transition-all duration-300 hover:-translate-y-1 text-center h-full">
-                  {/* Step Number */}
-                  <div
-                    className={cn(
-                      'inline-flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br text-white text-sm font-bold mb-6',
-                      item.gradient
-                    )}
-                  >
-                    {item.step}
-                  </div>
-
-                  {/* Icon */}
-                  <div
-                    className={cn(
-                      'w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6',
-                      item.bgColor
-                    )}
-                  >
-                    <item.icon className={cn('h-8 w-8', item.textColor)} />
-                  </div>
-
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
-                    {item.title}
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
-                    {item.description}
-                  </p>
-                </div>
-
-                {/* Connector Line (between cards) */}
-                {i < 2 && (
-                  <div className="hidden md:block absolute top-1/2 -right-4 w-8 border-t-2 border-dashed border-gray-300 dark:border-gray-600" />
-                )}
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="relative py-24 overflow-hidden">
-        {/* Background Image */}
-        <div className="absolute inset-0">
-          <img src={STATS_BG} alt="" className="w-full h-full object-cover" loading="lazy" />
-          <div className="absolute inset-0 bg-gray-900/75 backdrop-blur-sm" />
-        </div>
-
-        <div className="container-custom relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <span className="inline-block px-4 py-1.5 bg-white/10 text-white/90 rounded-full text-sm font-semibold mb-4 backdrop-blur">
-              실적
-            </span>
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">숫자로 보는 Fryndo</h2>
-            <p className="text-lg text-white/70 max-w-2xl mx-auto">
-              전 세계 여행자들이 Fryndo와 함께하고 있습니다
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
-            {[
-              { value: '50+', label: '국가', icon: GlobeAltIcon },
-              { value: '10,000+', label: '여행자', icon: UserGroupIcon },
-              { value: '95%', label: '매칭 만족도', icon: SparklesIcon },
-              { value: '24시간', label: '평균 응답', icon: ClockIcon },
-            ].map((stat, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="text-center"
-              >
-                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10 hover:bg-white/15 transition-colors">
-                  <stat.icon className="h-8 w-8 text-white/70 mx-auto mb-4" />
-                  <div className="text-3xl md:text-4xl font-bold text-white mb-2">{stat.value}</div>
-                  <div className="text-sm text-white/60 font-medium">{stat.label}</div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-24">
-        <div className="container-custom">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            className="relative overflow-hidden rounded-[2.5rem] p-12 md:p-20"
-          >
-            {/* Background Image */}
-            <div className="absolute inset-0">
-              <img src={CTA_BG} alt="" className="w-full h-full object-cover" loading="lazy" />
-              <div className="absolute inset-0 bg-gradient-to-br from-violet-600/85 via-purple-600/85 to-pink-600/85" />
-            </div>
-
-            <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-            <div className="absolute bottom-0 left-0 w-72 h-72 bg-pink-400/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
-
-            <div className="relative z-10 text-center max-w-3xl mx-auto">
-              <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
-                여행을 시작할 준비가 되셨나요?
-              </h2>
-              <p className="text-xl text-white/80 mb-10 max-w-xl mx-auto">
-                매일 수천 명의 여행자가 완벽한 동반자를 찾고 있습니다
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="mt-10 flex flex-col gap-3 sm:flex-row">
                 <Link
                   to="/register"
-                  className="inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-violet-600 bg-white rounded-2xl hover:bg-gray-100 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+                  className="group inline-flex items-center justify-center gap-3 rounded-full bg-[#F97316] px-7 py-4 text-base font-black text-white shadow-[0_22px_50px_rgba(249,115,22,0.35)] transition hover:-translate-y-1 hover:bg-[#EA580C]"
+                >
+                  지금 메이트 찾기
+                  <ArrowRightIcon className="h-5 w-5 transition group-hover:translate-x-1" />
+                </Link>
+                <Link
+                  to="/groups"
+                  className="inline-flex items-center justify-center gap-3 rounded-full border border-[#E5DCC8] bg-[#FFFDF7] px-7 py-4 text-base font-black text-[#14213D] shadow-sm transition hover:-translate-y-1 hover:border-[#F97316]/50"
+                >
+                  여행 그룹 둘러보기
+                </Link>
+                <button
+                  onClick={startTutorial}
+                  className="tutorial-guest-mode-btn inline-flex items-center justify-center rounded-full px-5 py-4 text-base font-black text-[#52606D] transition hover:text-[#14213D]"
+                >
+                  60초 둘러보기
+                </button>
+              </div>
+
+              <div className="mt-10 grid max-w-2xl grid-cols-2 gap-3 md:grid-cols-4">
+                {trustSignals.map(signal => (
+                  <div
+                    key={signal}
+                    className="rounded-2xl border border-[#E5DCC8] bg-[#FFFDF7]/75 px-4 py-3 text-sm font-black text-[#14213D] shadow-sm"
+                  >
+                    <CheckBadgeIcon className="mb-2 h-5 w-5 text-[#2DD4BF]" />
+                    {signal}
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 34, rotate: -2 }}
+              animate={{ opacity: 1, y: 0, rotate: 0 }}
+              transition={{ duration: 0.75, delay: 0.1, ease: 'easeOut' }}
+              className="relative"
+            >
+              <div className="absolute -left-6 top-14 hidden rounded-[2rem] bg-[#14213D] px-6 py-5 text-white shadow-2xl md:block">
+                <p className="text-sm font-bold text-white/60">오늘의 매칭 기준</p>
+                <p className="mt-1 font-display text-3xl font-black tracking-[-0.04em]">
+                  일정 + 신뢰
+                </p>
+              </div>
+
+              <div className="rounded-[2.5rem] border border-[#E5DCC8] bg-[#FFFDF7] p-5 shadow-[0_34px_100px_rgba(20,33,61,0.18)] md:p-7">
+                <div className="rounded-[2rem] bg-[#14213D] p-6 text-white">
+                  <div className="flex items-start justify-between gap-6">
+                    <div>
+                      <p className="text-sm font-bold uppercase tracking-[0.24em] text-[#2DD4BF]">
+                        Route Card
+                      </p>
+                      <h2 className="mt-3 font-display text-4xl font-black tracking-[-0.055em]">
+                        서울 → 후쿠오카
+                      </h2>
+                      <p className="mt-2 text-white/65">3박 4일 · 음식 여행 · 오전형</p>
+                    </div>
+                    <div className="rounded-full bg-white/10 p-3">
+                      <MapPinIcon className="h-7 w-7 text-[#F97316]" />
+                    </div>
+                  </div>
+
+                  <div className="mt-8 grid grid-cols-3 gap-3">
+                    {['82%', '4명', 'Beta'].map((value, index) => (
+                      <div
+                        key={value}
+                        className="rounded-2xl bg-white/10 p-4 text-center backdrop-blur"
+                      >
+                        <div className="font-display text-2xl font-black">{value}</div>
+                        <div className="mt-1 text-xs font-bold text-white/55">
+                          {index === 0 ? '일정 겹침' : index === 1 ? '후보' : '출시 상태'}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-5 space-y-3">
+                  {[
+                    { label: '검증 프로필', value: '완료', icon: ShieldCheckIcon },
+                    { label: '선호 여행 속도', value: '여유형', icon: ClockIconFallback },
+                    { label: '대화 가능 상태', value: '지금 가능', icon: ChatBubbleLeftRightIcon },
+                  ].map(item => (
+                    <div
+                      key={item.label}
+                      className="flex items-center justify-between rounded-3xl border border-[#E5DCC8] bg-[#F7F2E8]/70 px-5 py-4"
+                    >
+                      <div className="flex items-center gap-4">
+                        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#FFFDF7] text-[#F97316]">
+                          <item.icon className="h-6 w-6" />
+                        </span>
+                        <span className="font-bold text-[#52606D]">{item.label}</span>
+                      </div>
+                      <span className="font-black text-[#14213D]">{item.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
+        <section id="why" className="px-4 py-20 md:px-8 md:py-28">
+          <div className="mx-auto max-w-7xl">
+            <div className="mb-12 flex flex-col justify-between gap-6 md:flex-row md:items-end">
+              <div>
+                <p className="text-sm font-black uppercase tracking-[0.32em] text-[#F97316]">
+                  Why Fryndo
+                </p>
+                <h2 className="mt-4 max-w-3xl font-display text-5xl font-black leading-[0.95] tracking-[-0.06em] md:text-6xl">
+                  그냥 친구 찾기가 아니라, 여행을 같이 완주할 사람 찾기.
+                </h2>
+              </div>
+              <p className="max-w-md text-lg font-medium leading-8 text-[#52606D]">
+                여행 동행은 취향만 맞아서는 부족합니다. 일정, 목적지, 안전 신호가 동시에 맞아야 실제
+                약속으로 이어집니다.
+              </p>
+            </div>
+
+            <div className="grid gap-5 md:grid-cols-3">
+              {featureCards.map((card, index) => (
+                <motion.article
+                  key={card.title}
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.25 }}
+                  transition={{ delay: index * 0.08 }}
+                  className={`rounded-[2rem] border p-7 shadow-sm ${card.tone}`}
+                >
+                  <div className="mb-10 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#F97316] text-white shadow-lg shadow-[#F97316]/25">
+                    <card.icon className="h-7 w-7" />
+                  </div>
+                  <h3 className="font-display text-3xl font-black tracking-[-0.05em]">
+                    {card.title}
+                  </h3>
+                  <p
+                    className={`mt-4 text-base font-medium leading-8 ${index === 1 ? 'text-white/70' : 'text-[#52606D]'}`}
+                  >
+                    {card.body}
+                  </p>
+                </motion.article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="safety" className="px-4 py-20 md:px-8 md:py-28">
+          <div className="mx-auto grid max-w-7xl gap-8 rounded-[2.5rem] bg-[#14213D] p-6 text-white md:grid-cols-[0.9fr_1.1fr] md:p-12">
+            <div className="rounded-[2rem] bg-[#FFFDF7] p-8 text-[#14213D]">
+              <LockClosedIcon className="h-12 w-12 text-[#F97316]" />
+              <h2 className="mt-8 font-display text-5xl font-black leading-none tracking-[-0.06em]">
+                안전 기준을 숨기지 않습니다.
+              </h2>
+              <p className="mt-6 text-lg font-medium leading-8 text-[#52606D]">
+                Fryndo는 공개 베타 단계부터 신뢰 신호를 화면 전면에 둡니다. 빠른 매칭보다 안전하게
+                대화할 수 있는 맥락이 우선입니다.
+              </p>
+            </div>
+
+            <div className="grid gap-4">
+              {safetyItems.map((item, index) => (
+                <div
+                  key={item.title}
+                  className="rounded-[1.75rem] border border-white/10 bg-white/[0.07] p-6"
+                >
+                  <div className="mb-5 flex h-9 w-9 items-center justify-center rounded-full bg-[#2DD4BF] font-display text-lg font-black text-[#083C36]">
+                    {index + 1}
+                  </div>
+                  <h3 className="font-display text-3xl font-black tracking-[-0.04em]">
+                    {item.title}
+                  </h3>
+                  <p className="mt-3 text-base font-medium leading-7 text-white/65">{item.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="how" className="px-4 py-20 md:px-8 md:py-28">
+          <div className="mx-auto max-w-7xl">
+            <div className="max-w-2xl">
+              <p className="text-sm font-black uppercase tracking-[0.32em] text-[#F97316]">
+                How it works
+              </p>
+              <h2 className="mt-4 font-display text-5xl font-black leading-[0.95] tracking-[-0.06em] md:text-6xl">
+                3단계면 충분합니다.
+              </h2>
+            </div>
+
+            <div className="mt-12 grid gap-5 md:grid-cols-3">
+              {steps.map(step => (
+                <div
+                  key={step.label}
+                  className="rounded-[2rem] border border-[#E5DCC8] bg-[#FFFDF7] p-7"
+                >
+                  <div className="font-display text-6xl font-black tracking-[-0.08em] text-[#F97316]">
+                    {step.label}
+                  </div>
+                  <h3 className="mt-8 font-display text-3xl font-black tracking-[-0.05em]">
+                    {step.title}
+                  </h3>
+                  <p className="mt-4 text-base font-medium leading-8 text-[#52606D]">{step.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="px-4 pb-20 md:px-8 md:pb-28">
+          <div className="mx-auto max-w-7xl overflow-hidden rounded-[2.5rem] bg-[#F97316] p-8 text-white shadow-[0_34px_90px_rgba(249,115,22,0.3)] md:p-14">
+            <div className="grid gap-10 md:grid-cols-[1fr_auto] md:items-center">
+              <div>
+                <p className="text-sm font-black uppercase tracking-[0.32em] text-white/70">
+                  Launch Beta
+                </p>
+                <h2 className="mt-4 max-w-3xl font-display text-5xl font-black leading-[0.95] tracking-[-0.06em] md:text-6xl">
+                  지금 공개 베타에서 첫 여행 메이트를 찾아보세요.
+                </h2>
+              </div>
+              <div className="flex flex-col gap-3 sm:flex-row md:flex-col">
+                <Link
+                  to="/register"
+                  className="inline-flex items-center justify-center gap-3 rounded-full bg-white px-7 py-4 font-black text-[#F97316] transition hover:-translate-y-1 hover:bg-[#FFF7ED]"
                 >
                   무료로 시작하기
                   <ArrowRightIcon className="h-5 w-5" />
                 </Link>
-                <button
-                  onClick={startTutorial}
-                  className="inline-flex items-center justify-center gap-2 px-8 py-4 text-base font-semibold text-white bg-white/20 backdrop-blur border border-white/30 rounded-2xl hover:bg-white/30 transition-all duration-300 tutorial-guest-mode-btn"
+                <Link
+                  to="/legal"
+                  className="inline-flex items-center justify-center rounded-full border border-white/30 px-7 py-4 font-black text-white transition hover:bg-white/10"
                 >
-                  둘러보기
-                </button>
+                  약관/개인정보 안내
+                </Link>
               </div>
             </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="py-12 border-t border-gray-200 dark:border-gray-800">
-        <div className="container-custom">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-3">
-              <Logo variant="gradient" size="md" />
-              <span className="text-xl font-bold text-gray-900 dark:text-white">Fryndo</span>
-            </div>
-
-            <div className="flex gap-8 text-sm">
-              {footerItems.map(item => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </div>
-
-            <div className="text-sm text-gray-500 dark:text-gray-500">&copy; 2026 Fryndo</div>
           </div>
+        </section>
+      </main>
+
+      <footer className="border-t border-[#E5DCC8] bg-[#FFFDF7] px-4 py-10 md:px-8">
+        <div className="mx-auto flex max-w-7xl flex-col gap-6 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-3">
+            <Logo variant="gradient" size="sm" />
+            <span className="font-display text-xl font-black tracking-[-0.04em]">Fryndo</span>
+            <span className="rounded-full bg-[#F7F2E8] px-3 py-1 text-xs font-black text-[#52606D]">
+              Public Beta
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-5 text-sm font-bold text-[#52606D]">
+            <Link to="/about" className="hover:text-[#14213D]">
+              소개
+            </Link>
+            <Link to="/groups" className="hover:text-[#14213D]">
+              그룹
+            </Link>
+            <Link to="/legal" className="hover:text-[#14213D]">
+              약관/개인정보
+            </Link>
+          </div>
+          <p className="text-sm font-semibold text-[#52606D]">
+            © 2026 Fryndo. Built for safer travel matching.
+          </p>
         </div>
       </footer>
     </div>
   );
 };
+
+const ClockIconFallback = GlobeAltIcon;
 
 export default Home;

@@ -348,3 +348,20 @@
     @apply hidden;
   }
 }
+
+:root {
+  --fryndo-ink: #14213d;
+  --fryndo-route: #f97316;
+  --fryndo-mint: #2dd4bf;
+  --fryndo-sand: #f7f2e8;
+  --fryndo-cloud: #fffdf7;
+}
+
+body {
+  font-family: 'IBM Plex Sans KR', ui-sans-serif, system-ui, sans-serif;
+  background: var(--fryndo-sand);
+}
+
+.font-display {
+  font-family: 'Space Grotesk', 'IBM Plex Sans KR', ui-sans-serif, system-ui, sans-serif;
+}

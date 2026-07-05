@@ -1,102 +1,39 @@
 {
   "short_name": "Fryndo",
-  "name": "Fryndo - 여행 동반자를 찾는 소셜 플랫폼",
-  "description": "함께 여행할 친구를 찾고, 특별한 여행 경험을 공유하는 플랫폼",
+  "name": "Fryndo - 검증된 여행 동행 매칭",
+  "description": "목적지, 일정, 여행 성향, 검증 신호를 기준으로 안전하게 여행 동행을 찾는 공개 베타 서비스",
   "icons": [
-    {
-      "src": "icons/icon-72x72.png",
-      "sizes": "72x72",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "icons/icon-96x96.png",
-      "sizes": "96x96",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "icons/icon-128x128.png",
-      "sizes": "128x128",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "icons/icon-144x144.png",
-      "sizes": "144x144",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "icons/icon-152x152.png",
-      "sizes": "152x152",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "icons/icon-192x192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "icons/icon-384x384.png",
-      "sizes": "384x384",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "icons/icon-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable any"
-    }
+    { "src": "icons/icon-72x72.png", "sizes": "72x72", "type": "image/png", "purpose": "maskable any" },
+    { "src": "icons/icon-96x96.png", "sizes": "96x96", "type": "image/png", "purpose": "maskable any" },
+    { "src": "icons/icon-128x128.png", "sizes": "128x128", "type": "image/png", "purpose": "maskable any" },
+    { "src": "icons/icon-144x144.png", "sizes": "144x144", "type": "image/png", "purpose": "maskable any" },
+    { "src": "icons/icon-152x152.png", "sizes": "152x152", "type": "image/png", "purpose": "maskable any" },
+    { "src": "icons/icon-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable any" },
+    { "src": "icons/icon-384x384.png", "sizes": "384x384", "type": "image/png", "purpose": "maskable any" },
+    { "src": "icons/icon-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable any" }
   ],
   "start_url": "/",
   "display": "standalone",
-  "theme_color": "#4F46E5",
-  "background_color": "#ffffff",
+  "theme_color": "#F7F2E8",
+  "background_color": "#F7F2E8",
   "orientation": "portrait-primary",
   "scope": "/",
   "lang": "ko",
   "categories": ["travel", "social", "lifestyle"],
-  "screenshots": [
-    {
-      "src": "screenshots/home.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "홈 화면"
-    },
-    {
-      "src": "screenshots/mobile.png",
-      "sizes": "750x1334",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "모바일 홈 화면"
-    }
-  ],
   "shortcuts": [
     {
-      "name": "그룹 찾기",
+      "name": "메이트 찾기",
+      "short_name": "매칭",
+      "description": "여행 메이트 찾기",
+      "url": "/register",
+      "icons": [{ "src": "icons/icon-96x96.png", "sizes": "96x96", "type": "image/png" }]
+    },
+    {
+      "name": "여행 그룹",
       "short_name": "그룹",
-      "description": "여행 그룹 검색",
+      "description": "여행 그룹 둘러보기",
       "url": "/groups",
-      "icons": [{ "src": "icons/groups-96x96.png", "sizes": "96x96" }]
-    },
-    {
-      "name": "NFT 컬렉션",
-      "short_name": "NFT",
-      "description": "내 NFT 컬렉션 보기",
-      "url": "/nft/collection",
-      "icons": [{ "src": "icons/nft-96x96.png", "sizes": "96x96" }]
-    },
-    {
-      "name": "채팅",
-      "short_name": "채팅",
-      "description": "채팅방 열기",
-      "url": "/chat",
-      "icons": [{ "src": "icons/chat-96x96.png", "sizes": "96x96" }]
+      "icons": [{ "src": "icons/icon-96x96.png", "sizes": "96x96", "type": "image/png" }]
     }
   ],
   "related_applications": [],

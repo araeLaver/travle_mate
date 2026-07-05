@@ -2,7 +2,9 @@ import { authService } from './authService';
 import { ApiError, FileUploadResponse } from '../types';
 
 // API Base URL 설정
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+const API_BASE_URL =
+  process.env.REACT_APP_API_URL ||
+  (process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:8080/api');
 
 export type { ApiError };
 

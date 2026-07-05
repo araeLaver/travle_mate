@@ -52,7 +52,7 @@ class WebSocketService {
 
   private initializeClient(): void {
     // STOMP over SockJS 설정
-    const wsUrl = process.env.REACT_APP_WS_URL || 'http://localhost:8081/ws';
+    const wsUrl = process.env.REACT_APP_WS_URL || `${window.location.origin}/api/ws`;
     this.client = new Client({
       webSocketFactory: () => {
         return new SockJS(wsUrl) as WebSocket;
