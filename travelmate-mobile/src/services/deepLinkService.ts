@@ -4,8 +4,8 @@
  */
 
 import { Linking } from 'react-native';
-import { NavigationContainerRef } from '@react-navigation/native';
-import { RootStackParamList } from '../navigation/AppNavigator';
+import type { NavigationContainerRef } from '@react-navigation/native';
+import type { RootStackParamList } from '../navigation/AppNavigator';
 
 type NavigationRef = NavigationContainerRef<RootStackParamList>;
 
@@ -20,7 +20,16 @@ interface DeepLinkRoute {
   params?: Record<string, unknown>;
 }
 
-function parseDeepLink(url: string): DeepLinkRoute | null {
+const parsePositiveIntegerSegment = (value: string | undefined): number | null => {
+  if (!value || !/^[1-9]\d*$/.test(value)) {
+    return null;
+  }
+
+  const parsed = Number(value);
+  return Number.isSafeInteger(parsed) ? parsed : null;
+};
+
+export function parseDeepLink(url: string): DeepLinkRoute | null {
   try {
     const parsed = new URL(url.replace('travelmate://', 'https://travelmate.app/'));
     const path = parsed.pathname.replace(/^\//, '').replace(/\/$/, '');
@@ -29,28 +38,36 @@ function parseDeepLink(url: string): DeepLinkRoute | null {
     switch (segments[0]) {
       case 'location':
       case 'share': {
-        const locationId = parseInt(segments[1], 10);
-        if (!isNaN(locationId)) {
+        const locationId = parsePositiveIntegerSegment(segments[1]);
+        if (locationId) {
           return { screen: 'LocationDetail', params: { locationId } };
         }
         break;
       }
       case 'profile':
       case 'user': {
-        const userId = parseInt(segments[1], 10);
-        if (!isNaN(userId)) {
+        const userId = parsePositiveIntegerSegment(segments[1]);
+        if (userId) {
           return { screen: 'UserProfile', params: { userId } };
         }
         break;
       }
       case 'chat':
       case 'group': {
-        const groupId = parseInt(segments[1], 10);
-        if (!isNaN(groupId)) {
+        const groupId = parsePositiveIntegerSegment(segments[1]);
+        if (groupId) {
           return {
             screen: 'ChatRoom',
             params: { groupId, groupName: parsed.searchParams.get('name') || '채팅' },
           };
+        }
+        break;
+      }
+      case 'review': {
+        const matchId = parsePositiveIntegerSegment(segments[1]);
+        const targetUserId = parsePositiveIntegerSegment(segments[2]);
+        if (matchId && targetUserId) {
+          return { screen: 'Review', params: { matchId, targetUserId } };
         }
         break;
       }
@@ -73,17 +90,19 @@ function parseDeepLink(url: string): DeepLinkRoute | null {
   return null;
 }
 
-function navigate(route: DeepLinkRoute) {
-  if (!navigationRef?.isReady()) return;
+function navigate(route: DeepLinkRoute): boolean {
+  if (!navigationRef?.isReady()) return false;
   navigationRef.navigate(route.screen as any, route.params as any);
+  return true;
 }
 
-function handleUrl(url: string | null) {
-  if (!url) return;
+export function handleDeepLinkUrl(url: string | null): boolean {
+  if (!url) return false;
   const route = parseDeepLink(url);
   if (route) {
-    navigate(route);
+    return navigate(route);
   }
+  return false;
 }
 
 export async function initDeepLinks() {
@@ -91,12 +110,12 @@ export async function initDeepLinks() {
   const initialUrl = await Linking.getInitialURL();
   if (initialUrl) {
     // Delay to allow navigation to mount
-    setTimeout(() => handleUrl(initialUrl), 500);
+    setTimeout(() => handleDeepLinkUrl(initialUrl), 500);
   }
 
   // Listen for incoming URLs while app is open
   const subscription = Linking.addEventListener('url', (event) => {
-    handleUrl(event.url);
+    handleDeepLinkUrl(event.url);
   });
 
   return () => subscription.remove();
@@ -124,7 +143,13 @@ export const linkingConfig = {
       Notifications: 'notifications',
       Settings: 'settings',
       Premium: 'premium',
-      Review: 'review/:matchId',
+      Review: {
+        path: 'review/:matchId/:targetUserId',
+        parse: {
+          matchId: (value: string) => parsePositiveIntegerSegment(value) ?? Number.NaN,
+          targetUserId: (value: string) => parsePositiveIntegerSegment(value) ?? Number.NaN,
+        },
+      },
     },
   },
 };

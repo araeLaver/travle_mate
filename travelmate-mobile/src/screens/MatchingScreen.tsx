@@ -27,8 +27,43 @@ interface Props {
   navigation: MatchingScreenNavigationProp;
 }
 
-type MatchStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'COMPLETED' | 'CANCELLED';
+type MatchStatus =
+  | 'PENDING'
+  | 'ACCEPTED'
+  | 'REJECTED'
+  | 'COMPLETED'
+  | 'CANCELLED'
+  | 'EXPIRED'
+  | 'MATCHED';
 type TabType = 'received' | 'sent' | 'active';
+
+interface MatchUserSummary {
+  id: number;
+  nickname: string;
+  profileImageUrl?: string;
+  rating?: number;
+  reviewCount?: number;
+}
+
+interface BackendMatchRequest {
+  id: number;
+  requester: MatchUserSummary;
+  receiver: MatchUserSummary;
+  status: MatchStatus;
+  message?: string;
+  createdAt: string;
+}
+
+interface BackendMatchHistory {
+  matchRequestId: number;
+  partner: MatchUserSummary;
+  status?: MatchStatus;
+  matchedAt: string;
+}
+
+interface BackendPage<T> {
+  content: T[];
+}
 
 interface MatchRequest {
   id: number;
@@ -51,6 +86,8 @@ const STATUS_LABELS: Record<MatchStatus, { text: string; color: string }> = {
   REJECTED: { text: '거절됨', color: '#EF4444' },
   COMPLETED: { text: '완료', color: '#6B7280' },
   CANCELLED: { text: '취소됨', color: '#9CA3AF' },
+  EXPIRED: { text: '만료됨', color: '#9CA3AF' },
+  MATCHED: { text: '매칭됨', color: '#10B981' },
 };
 
 const MatchingScreen: React.FC<Props> = ({ navigation }) => {
@@ -61,10 +98,21 @@ const MatchingScreen: React.FC<Props> = ({ navigation }) => {
 
   const loadMatches = useCallback(async () => {
     try {
-      const data = await apiClient.get<MatchRequest[]>(
-        `/matching?type=${tab}`
-      );
-      setMatches(data);
+      if (tab === 'active') {
+        const data = await apiClient.get<BackendMatchHistory[]>('/matching/history');
+        setMatches(data.map(toActiveMatchRequest));
+        return;
+      }
+
+      const page =
+        tab === 'received'
+          ? await apiClient.get<BackendPage<BackendMatchRequest>>(
+              '/matching/requests/received?page=0&size=50'
+            )
+          : await apiClient.get<BackendPage<BackendMatchRequest>>(
+              '/matching/requests/sent?page=0&size=50'
+            );
+      setMatches(page.content.map(request => toMatchRequest(request, tab)));
     } catch (error) {
       console.log('Failed to load matches:', error);
     } finally {
@@ -85,7 +133,7 @@ const MatchingScreen: React.FC<Props> = ({ navigation }) => {
 
   const handleAccept = async (matchId: number) => {
     try {
-      await apiClient.post(`/matching/${matchId}/accept`);
+      await apiClient.put(`/matching/requests/${matchId}/accept`);
       Alert.alert('완료', '매칭 요청을 수락했습니다.');
       loadMatches();
     } catch {
@@ -104,7 +152,7 @@ const MatchingScreen: React.FC<Props> = ({ navigation }) => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await apiClient.post(`/matching/${matchId}/reject`);
+              await apiClient.put(`/matching/requests/${matchId}/reject`);
               loadMatches();
             } catch {
               Alert.alert('오류', '요청 처리에 실패했습니다.');
@@ -116,13 +164,24 @@ const MatchingScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const handleComplete = async (matchId: number) => {
-    try {
-      await apiClient.post(`/matching/${matchId}/complete`);
-      Alert.alert('완료', '동행이 완료 처리되었습니다.');
-      loadMatches();
-    } catch {
-      Alert.alert('오류', '요청 처리에 실패했습니다.');
-    }
+    Alert.alert(
+      '동행 완료',
+      '이 매칭을 완료 처리하시겠습니까?',
+      [
+        { text: '취소', style: 'cancel' },
+        {
+          text: '완료',
+          onPress: async () => {
+            try {
+              await apiClient.put(`/matching/requests/${matchId}/complete`);
+              await loadMatches();
+            } catch {
+              Alert.alert('오류', '동행 완료 처리에 실패했습니다.');
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleCancel = async (matchId: number) => {
@@ -136,7 +195,7 @@ const MatchingScreen: React.FC<Props> = ({ navigation }) => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await apiClient.post(`/matching/${matchId}/cancel`);
+              await apiClient.delete(`/matching/requests/${matchId}`);
               loadMatches();
             } catch {
               Alert.alert('오류', '요청 처리에 실패했습니다.');
@@ -157,6 +216,32 @@ const MatchingScreen: React.FC<Props> = ({ navigation }) => {
     if (diffDays < 7) return `${diffDays}일 전`;
     return date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
   };
+
+  const toMatchRequest = (request: BackendMatchRequest, requestTab: TabType): MatchRequest => {
+    const otherUser = requestTab === 'received' ? request.requester : request.receiver;
+    return {
+      id: request.id,
+      status: request.status,
+      otherUser: toOtherUser(otherUser),
+      message: request.message,
+      createdAt: request.createdAt,
+    };
+  };
+
+  const toActiveMatchRequest = (history: BackendMatchHistory): MatchRequest => ({
+    id: history.matchRequestId,
+    status: history.status || 'ACCEPTED',
+    otherUser: toOtherUser(history.partner),
+    createdAt: history.matchedAt,
+  });
+
+  const toOtherUser = (user: MatchUserSummary): MatchRequest['otherUser'] => ({
+    id: user.id,
+    nickname: user.nickname,
+    profileImageUrl: user.profileImageUrl,
+    isVerified: false,
+    averageRating: user.rating || 0,
+  });
 
   const renderMatchCard = ({ item }: { item: MatchRequest }) => {
     const statusInfo = STATUS_LABELS[item.status];
@@ -240,7 +325,7 @@ const MatchingScreen: React.FC<Props> = ({ navigation }) => {
               <Text style={styles.cancelButtonText}>취소</Text>
             </TouchableOpacity>
           )}
-          {tab === 'active' && item.status === 'ACCEPTED' && (
+          {tab === 'active' && (item.status === 'ACCEPTED' || item.status === 'MATCHED') && (
             <TouchableOpacity
               style={styles.completeButton}
               onPress={() => handleComplete(item.id)}
@@ -256,6 +341,7 @@ const MatchingScreen: React.FC<Props> = ({ navigation }) => {
                 onPress={() =>
                   navigation.navigate('Review', {
                     matchId: item.id,
+                    targetUserId: item.otherUser.id,
                     targetUserNickname: item.otherUser.nickname,
                   })
                 }

@@ -11,7 +11,6 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  Switch,
   Alert,
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -20,6 +19,17 @@ import {
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { chatService } from '../services/chatService';
+import {
+  GROUP_DESCRIPTION_MAX_LENGTH,
+  GROUP_DESTINATION_MAX_LENGTH,
+  GROUP_NAME_MAX_LENGTH,
+  MAX_MEMBERS_OPTIONS,
+  PURPOSE_OPTIONS,
+  getCreateGroupValidationMessage,
+  isoDateDaysFromNow,
+  toCreateGroupRequest,
+} from './createGroupForm';
+import type { Purpose } from './createGroupForm';
 
 type CreateGroupScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'CreateGroup'>;
 
@@ -27,30 +37,28 @@ interface Props {
   navigation: CreateGroupScreenNavigationProp;
 }
 
-const MAX_MEMBERS_OPTIONS = [5, 10, 20, 50, 100];
-
 const CreateGroupScreen: React.FC<Props> = ({ navigation }) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [isPublic, setIsPublic] = useState(true);
-  const [maxMembers, setMaxMembers] = useState(20);
+  const [destination, setDestination] = useState('');
+  const [startDate, setStartDate] = useState(isoDateDaysFromNow(7));
+  const [endDate, setEndDate] = useState(isoDateDaysFromNow(10));
+  const [purpose, setPurpose] = useState<Purpose>('LEISURE');
+  const [maxMembers, setMaxMembers] = useState(4);
   const [isLoading, setIsLoading] = useState(false);
 
   const validateForm = (): boolean => {
-    if (!name.trim()) {
-      Alert.alert('입력 오류', '그룹 이름을 입력해주세요.');
-      return false;
-    }
-    if (name.trim().length < 2) {
-      Alert.alert('입력 오류', '그룹 이름은 2자 이상이어야 합니다.');
-      return false;
-    }
-    if (name.trim().length > 50) {
-      Alert.alert('입력 오류', '그룹 이름은 50자 이하여야 합니다.');
-      return false;
-    }
-    if (description.length > 500) {
-      Alert.alert('입력 오류', '설명은 500자 이하여야 합니다.');
+    const message = getCreateGroupValidationMessage({
+      name,
+      description,
+      destination,
+      startDate,
+      endDate,
+      purpose,
+      maxMembers,
+    });
+    if (message) {
+      Alert.alert('입력 오류', message);
       return false;
     }
     return true;
@@ -61,12 +69,15 @@ const CreateGroupScreen: React.FC<Props> = ({ navigation }) => {
 
     setIsLoading(true);
     try {
-      const group = await chatService.createGroup({
-        name: name.trim(),
-        description: description.trim(),
-        isPublic,
+      const group = await chatService.createGroup(toCreateGroupRequest({
+        name,
+        description,
+        destination,
+        startDate,
+        endDate,
+        purpose,
         maxMembers,
-      });
+      }));
 
       Alert.alert('성공', '그룹이 생성되었습니다.', [
         {
@@ -103,9 +114,9 @@ const CreateGroupScreen: React.FC<Props> = ({ navigation }) => {
             onChangeText={setName}
             placeholder="그룹 이름을 입력하세요"
             placeholderTextColor="#9CA3AF"
-            maxLength={50}
+            maxLength={GROUP_NAME_MAX_LENGTH}
           />
-          <Text style={styles.charCount}>{name.length}/50</Text>
+          <Text style={styles.charCount}>{name.length}/{GROUP_NAME_MAX_LENGTH}</Text>
         </View>
 
         {/* Description */}
@@ -119,29 +130,81 @@ const CreateGroupScreen: React.FC<Props> = ({ navigation }) => {
             placeholderTextColor="#9CA3AF"
             multiline
             numberOfLines={4}
-            maxLength={500}
+            maxLength={GROUP_DESCRIPTION_MAX_LENGTH}
             textAlignVertical="top"
           />
-          <Text style={styles.charCount}>{description.length}/500</Text>
+          <Text style={styles.charCount}>
+            {description.length}/{GROUP_DESCRIPTION_MAX_LENGTH}
+          </Text>
         </View>
 
-        {/* Public/Private Toggle */}
         <View style={styles.section}>
-          <View style={styles.toggleRow}>
-            <View style={styles.toggleInfo}>
-              <Text style={styles.label}>공개 그룹</Text>
-              <Text style={styles.toggleDescription}>
-                {isPublic
-                  ? '누구나 그룹을 검색하고 참여할 수 있습니다'
-                  : '초대를 통해서만 참여할 수 있습니다'}
-              </Text>
+          <Text style={styles.label}>목적지 *</Text>
+          <TextInput
+            style={styles.input}
+            value={destination}
+            onChangeText={setDestination}
+            placeholder="예: 제주도, 도쿄, 파리"
+            placeholderTextColor="#9CA3AF"
+            maxLength={GROUP_DESTINATION_MAX_LENGTH}
+          />
+          <Text style={styles.charCount}>
+            {destination.length}/{GROUP_DESTINATION_MAX_LENGTH}
+          </Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.label}>여행 기간 *</Text>
+          <View style={styles.dateRow}>
+            <View style={styles.dateField}>
+              <Text style={styles.fieldHint}>시작일</Text>
+              <TextInput
+                style={styles.input}
+                value={startDate}
+                onChangeText={setStartDate}
+                placeholder="YYYY-MM-DD"
+                placeholderTextColor="#9CA3AF"
+                keyboardType="numbers-and-punctuation"
+                maxLength={10}
+              />
             </View>
-            <Switch
-              value={isPublic}
-              onValueChange={setIsPublic}
-              trackColor={{ false: '#D1D5DB', true: '#93C5FD' }}
-              thumbColor={isPublic ? '#3B82F6' : '#F3F4F6'}
-            />
+            <View style={styles.dateField}>
+              <Text style={styles.fieldHint}>종료일</Text>
+              <TextInput
+                style={styles.input}
+                value={endDate}
+                onChangeText={setEndDate}
+                placeholder="YYYY-MM-DD"
+                placeholderTextColor="#9CA3AF"
+                keyboardType="numbers-and-punctuation"
+                maxLength={10}
+              />
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.label}>여행 목적</Text>
+          <View style={styles.optionsRow}>
+            {PURPOSE_OPTIONS.map(option => (
+              <TouchableOpacity
+                key={option.value}
+                style={[
+                  styles.optionButton,
+                  purpose === option.value && styles.optionButtonActive,
+                ]}
+                onPress={() => setPurpose(option.value)}
+              >
+                <Text
+                  style={[
+                    styles.optionButtonText,
+                    purpose === option.value && styles.optionButtonTextActive,
+                  ]}
+                >
+                  {option.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
         </View>
 
@@ -169,14 +232,6 @@ const CreateGroupScreen: React.FC<Props> = ({ navigation }) => {
               </TouchableOpacity>
             ))}
           </View>
-        </View>
-
-        {/* Tips */}
-        <View style={styles.tipsSection}>
-          <Text style={styles.tipsTitle}>💡 그룹 생성 팁</Text>
-          <Text style={styles.tipItem}>• 명확한 그룹 이름을 사용하세요</Text>
-          <Text style={styles.tipItem}>• 그룹의 목적을 설명에 작성하세요</Text>
-          <Text style={styles.tipItem}>• 여행 지역이나 테마를 포함하면 좋아요</Text>
         </View>
       </ScrollView>
 
@@ -238,24 +293,17 @@ const styles = StyleSheet.create({
     textAlign: 'right',
     marginTop: 4,
   },
-  toggleRow: {
+  dateRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    padding: 16,
+    gap: 10,
   },
-  toggleInfo: {
+  dateField: {
     flex: 1,
-    marginRight: 16,
   },
-  toggleDescription: {
+  fieldHint: {
     fontSize: 13,
     color: '#6B7280',
-    marginTop: 4,
+    marginBottom: 6,
   },
   optionsRow: {
     flexDirection: 'row',
@@ -281,23 +329,6 @@ const styles = StyleSheet.create({
   },
   optionButtonTextActive: {
     color: '#FFFFFF',
-  },
-  tipsSection: {
-    backgroundColor: '#EFF6FF',
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 8,
-  },
-  tipsTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#1E40AF',
-    marginBottom: 12,
-  },
-  tipItem: {
-    fontSize: 14,
-    color: '#3B82F6',
-    lineHeight: 22,
   },
   footer: {
     padding: 20,

@@ -5,6 +5,7 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
+import { apiClient } from './apiClient';
 
 // Storage Keys
 const CACHE_KEYS = {
@@ -57,6 +58,9 @@ export interface OfflineState {
   cacheSize: number;
 }
 
+type OfflinePageEntry = { content: unknown; savedAt: number };
+type OfflinePages = Record<string, OfflinePageEntry>;
+
 // Cache duration in milliseconds
 const CACHE_DURATION = {
   USER_PROFILE: 24 * 60 * 60 * 1000, // 24 hours
@@ -71,6 +75,56 @@ const CACHE_DURATION = {
 
 const MAX_RETRIES = 3;
 const MAX_OFFLINE_PAGES = 20;
+
+const debugLog = (...args: unknown[]): void => {
+  if (__DEV__) {
+    console.log(...args);
+  }
+};
+
+const compactPayload = (payload: Record<string, unknown>): Record<string, unknown> => {
+  const compacted: Record<string, unknown> = {};
+  Object.entries(payload).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      compacted[key] = value;
+    }
+  });
+  return compacted;
+};
+
+const isCachedData = <T>(value: unknown): value is CachedData<T> => {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const cached = value as Record<string, unknown>;
+  return (
+    'data' in cached &&
+    typeof cached.timestamp === 'number' &&
+    Number.isFinite(cached.timestamp) &&
+    typeof cached.expiresAt === 'number' &&
+    Number.isFinite(cached.expiresAt)
+  );
+};
+
+const isOfflinePages = (value: unknown): value is OfflinePages => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return false;
+  }
+
+  return Object.values(value as Record<string, unknown>).every(page => {
+    if (!page || typeof page !== 'object' || Array.isArray(page)) {
+      return false;
+    }
+
+    const entry = page as Record<string, unknown>;
+    return (
+      'content' in entry &&
+      typeof entry.savedAt === 'number' &&
+      Number.isFinite(entry.savedAt)
+    );
+  });
+};
 
 class OfflineService {
   private isOnline: boolean = true;
@@ -181,7 +235,7 @@ class OfflineService {
       return data;
     } catch (error) {
       console.error('Fetch failed, no cache available:', error);
-      return null;
+      throw error;
     }
   }
 
@@ -196,7 +250,7 @@ class OfflineService {
       await this.cacheData(cacheKey, data, duration);
       onUpdate?.(data);
     } catch (error) {
-      console.log('Background refresh failed:', error);
+      debugLog('Background refresh failed:', error);
     }
   }
 
@@ -216,7 +270,18 @@ class OfflineService {
       const stored = await AsyncStorage.getItem(key);
       if (!stored) return null;
 
-      const cached: CachedData<T> = JSON.parse(stored);
+      let cached: CachedData<T>;
+      try {
+        const parsed = JSON.parse(stored) as unknown;
+        if (!isCachedData<T>(parsed)) {
+          throw new Error('Cached data storage shape is invalid');
+        }
+        cached = parsed;
+      } catch (error) {
+        console.error('Failed to get cached data:', error);
+        await AsyncStorage.removeItem(key);
+        return null;
+      }
 
       if (Date.now() > cached.expiresAt) {
         // If offline, return stale data instead of deleting
@@ -335,11 +400,24 @@ class OfflineService {
     return pages[pageId]?.content as T || null;
   }
 
-  async getOfflinePages(): Promise<Record<string, { content: unknown; savedAt: number }>> {
+  async getOfflinePages(): Promise<OfflinePages> {
     try {
       const stored = await AsyncStorage.getItem(CACHE_KEYS.OFFLINE_PAGES);
-      return stored ? JSON.parse(stored) : {};
-    } catch {
+      if (!stored) return {};
+
+      try {
+        const parsed = JSON.parse(stored) as unknown;
+        if (!isOfflinePages(parsed)) {
+          throw new Error('Offline pages storage shape is invalid');
+        }
+        return parsed;
+      } catch (error) {
+        console.error('Failed to get offline pages:', error);
+        await AsyncStorage.removeItem(CACHE_KEYS.OFFLINE_PAGES);
+        return {};
+      }
+    } catch (error) {
+      console.error('Failed to get offline pages:', error);
       return {};
     }
   }
@@ -383,10 +461,17 @@ class OfflineService {
   async getPendingActions(): Promise<PendingAction[]> {
     try {
       const stored = await AsyncStorage.getItem(CACHE_KEYS.PENDING_ACTIONS);
-      return stored ? JSON.parse(stored) : [];
+      if (!stored) return [];
+
+      const actions = JSON.parse(stored);
+      if (!Array.isArray(actions)) {
+        throw new Error('Pending actions storage is not an array');
+      }
+
+      return actions as PendingAction[];
     } catch (error) {
       console.error('Failed to get pending actions:', error);
-      return [];
+      throw error;
     }
   }
 
@@ -442,36 +527,170 @@ class OfflineService {
   }
 
   private async executeAction(action: PendingAction): Promise<void> {
-    const { apiClient } = await import('./apiClient');
-
     switch (action.type) {
       case 'COLLECT_NFT':
-        await apiClient.post('/nft/collect', action.payload);
+        await apiClient.post('/nft/collect', this.toCollectNftPayload(action));
         break;
       case 'SEND_MESSAGE':
-        await apiClient.post('/chat/messages', action.payload);
+        await apiClient.post(
+          `/chat/rooms/${this.requirePositiveIntegerPayload(action, 'roomId')}/messages`,
+          this.toSendMessagePayload(action)
+        );
         break;
       case 'CREATE_GROUP':
-        await apiClient.post('/chat/groups', action.payload);
+        await apiClient.post('/groups', this.toCreateGroupPayload(action));
         break;
       case 'JOIN_GROUP':
-        await apiClient.post(`/chat/groups/${action.payload.groupId}/join`);
+        await apiClient.post(`/groups/${this.requirePositiveIntegerPayload(action, 'groupId')}/join`);
         break;
       case 'MARK_READ':
-        await apiClient.patch(`/notifications/${action.payload.notificationId}/read`);
+        await apiClient.post('/notifications/read', [
+          this.requirePositiveIntegerPayload(action, 'notificationId'),
+        ]);
         break;
       case 'UPDATE_PROFILE':
-        await apiClient.put('/users/profile', action.payload);
+        await apiClient.put('/users/profile', compactPayload(action.payload));
         break;
       case 'SUBMIT_REVIEW':
-        await apiClient.post('/reviews', action.payload);
+        await apiClient.post('/users/reviews', this.toUserReviewPayload(action));
         break;
       case 'MATCH_REQUEST':
-        await apiClient.post('/matching/request', action.payload);
+        await apiClient.post('/matching/requests', this.toMatchRequestPayload(action));
         break;
       default:
         console.warn(`Unknown action type: ${action.type}`);
     }
+  }
+
+  private toCollectNftPayload(action: PendingAction): Record<string, unknown> {
+    return compactPayload({
+      locationId: this.requirePositiveIntegerPayload(action, 'locationId'),
+      latitude: this.requireNumberPayload(action, 'latitude'),
+      longitude: this.requireNumberPayload(action, 'longitude'),
+      gpsAccuracy: this.optionalNumberPayload(action, 'gpsAccuracy'),
+      deviceId: this.optionalStringPayload(action, 'deviceId'),
+      isMockLocation: this.optionalBooleanPayload(action, 'isMockLocation'),
+    });
+  }
+
+  private toSendMessagePayload(action: PendingAction): Record<string, unknown> {
+    return compactPayload({
+      content: this.requireStringPayload(action, 'content'),
+      messageType: this.optionalStringPayload(action, 'messageType') || 'TEXT',
+      imageUrl: this.optionalStringPayload(action, 'imageUrl'),
+      locationLatitude:
+        this.optionalNumberPayload(action, 'locationLatitude') ??
+        this.optionalNumberPayload(action, 'latitude'),
+      locationLongitude:
+        this.optionalNumberPayload(action, 'locationLongitude') ??
+        this.optionalNumberPayload(action, 'longitude'),
+      locationName: this.optionalStringPayload(action, 'locationName'),
+    });
+  }
+
+  private toCreateGroupPayload(action: PendingAction): Record<string, unknown> {
+    return compactPayload({
+      title: this.requireStringPayload(action, ['title', 'name']),
+      description: this.optionalStringPayload(action, 'description'),
+      destination: this.requireStringPayload(action, 'destination'),
+      startDate: this.requireStringPayload(action, 'startDate'),
+      endDate: this.requireStringPayload(action, 'endDate'),
+      purpose: this.optionalStringPayload(action, 'purpose'),
+      maxMembers: this.optionalNumberPayload(action, 'maxMembers'),
+      meetingLatitude:
+        this.optionalNumberPayload(action, 'meetingLatitude') ??
+        this.optionalNumberPayload(action, 'latitude'),
+      meetingLongitude:
+        this.optionalNumberPayload(action, 'meetingLongitude') ??
+        this.optionalNumberPayload(action, 'longitude'),
+      meetingAddress: this.optionalStringPayload(action, 'meetingAddress'),
+      scheduledTime: this.optionalStringPayload(action, 'scheduledTime'),
+      travelStyle: this.optionalStringPayload(action, 'travelStyle'),
+      budgetRange: this.optionalStringPayload(action, 'budgetRange'),
+      requirements: this.optionalStringPayload(action, 'requirements'),
+      groupImageUrl: this.optionalStringPayload(action, 'groupImageUrl'),
+    });
+  }
+
+  private toUserReviewPayload(action: PendingAction): Record<string, unknown> {
+    return compactPayload({
+      reviewedUserId: this.requirePositiveIntegerPayload(action, [
+        'reviewedUserId',
+        'revieweeId',
+        'targetUserId',
+      ]),
+      rating: this.requireNumberPayload(action, 'rating'),
+      comment: this.optionalStringPayload(action, 'comment'),
+    });
+  }
+
+  private toMatchRequestPayload(action: PendingAction): Record<string, unknown> {
+    return compactPayload({
+      receiverId: this.requirePositiveIntegerPayload(action, ['receiverId', 'targetUserId']),
+      message: this.optionalStringPayload(action, 'message'),
+    });
+  }
+
+  private requirePositiveIntegerPayload(action: PendingAction, keys: string | string[]): number {
+    const value = this.requireNumberPayload(action, keys);
+    if (!Number.isInteger(value) || value <= 0) {
+      throw new Error(
+        `Pending action ${action.id} has invalid positive integer payload: ${this.formatKeys(keys)}`
+      );
+    }
+    return value;
+  }
+
+  private requireNumberPayload(action: PendingAction, keys: string | string[]): number {
+    const keyList = Array.isArray(keys) ? keys : [keys];
+    for (const key of keyList) {
+      const value = this.parseNumber(action.payload[key]);
+      if (value !== undefined) return value;
+    }
+    throw new Error(`Pending action ${action.id} is missing numeric payload: ${this.formatKeys(keys)}`);
+  }
+
+  private optionalNumberPayload(action: PendingAction, key: string): number | undefined {
+    return this.parseNumber(action.payload[key]);
+  }
+
+  private parseNumber(value: unknown): number | undefined {
+    if (typeof value === 'number' && Number.isFinite(value)) return value;
+    if (typeof value === 'string' && value.trim()) {
+      const parsed = Number(value);
+      if (Number.isFinite(parsed)) return parsed;
+    }
+    return undefined;
+  }
+
+  private requireStringPayload(action: PendingAction, keys: string | string[]): string {
+    const keyList = Array.isArray(keys) ? keys : [keys];
+    for (const key of keyList) {
+      const value = this.optionalStringPayload(action, key);
+      if (value) return value;
+    }
+    throw new Error(`Pending action ${action.id} is missing string payload: ${this.formatKeys(keys)}`);
+  }
+
+  private optionalStringPayload(action: PendingAction, key: string): string | undefined {
+    const value = action.payload[key];
+    if (typeof value !== 'string') return undefined;
+    const trimmed = value.trim();
+    return trimmed || undefined;
+  }
+
+  private optionalBooleanPayload(action: PendingAction, key: string): boolean | undefined {
+    const value = action.payload[key];
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') {
+      if (value.toLowerCase() === 'true') return true;
+      if (value.toLowerCase() === 'false') return false;
+    }
+    return undefined;
+  }
+
+  private formatKeys(keys: string | string[]): string {
+    return Array.isArray(keys) ? keys.join('|') : keys;
   }
 
   // ================== Sync Time ==================
@@ -483,8 +702,17 @@ class OfflineService {
   async getLastSyncTime(): Promise<number | null> {
     try {
       const stored = await AsyncStorage.getItem(CACHE_KEYS.LAST_SYNC);
-      return stored ? parseInt(stored, 10) : null;
-    } catch {
+      if (!stored) return null;
+
+      const parsed = Number(stored);
+      if (!Number.isFinite(parsed) || parsed < 0) {
+        await AsyncStorage.removeItem(CACHE_KEYS.LAST_SYNC);
+        return null;
+      }
+
+      return parsed;
+    } catch (error) {
+      console.error('Failed to get last sync time:', error);
       return null;
     }
   }
@@ -529,8 +757,13 @@ class OfflineService {
         if (!stored) continue;
 
         try {
-          const cached = JSON.parse(stored);
-          if (cached.expiresAt && Date.now() > cached.expiresAt && this.isOnline) {
+          const cached = JSON.parse(stored) as unknown;
+          if (!isCachedData<unknown>(cached)) {
+            await AsyncStorage.removeItem(key);
+            continue;
+          }
+
+          if (Date.now() > cached.expiresAt && this.isOnline) {
             await AsyncStorage.removeItem(key);
           }
         } catch {

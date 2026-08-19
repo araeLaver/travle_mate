@@ -96,11 +96,16 @@ const PremiumScreen: React.FC<Props> = ({ navigation }) => {
           text: '구독 취소',
           style: 'destructive',
           onPress: async () => {
-            const success = await paymentService.cancelSubscription();
-            if (success) {
-              Alert.alert('구독 취소 완료', '구독이 취소되었습니다.');
-              const status = await paymentService.getSubscriptionStatus();
-              setSubscriptionStatus(status);
+            try {
+              const success = await paymentService.cancelSubscription();
+              if (success) {
+                Alert.alert('구독 취소 완료', '구독이 취소되었습니다.');
+                const status = await paymentService.getSubscriptionStatus();
+                setSubscriptionStatus(status);
+              }
+            } catch (error) {
+              console.error('Failed to cancel subscription:', error);
+              Alert.alert('구독 취소 실패', '구독 취소 중 오류가 발생했습니다. 다시 시도해주세요.');
             }
           },
         },

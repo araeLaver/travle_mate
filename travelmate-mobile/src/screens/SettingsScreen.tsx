@@ -25,6 +25,7 @@ import {
   setBiometricEnabled,
   BiometricType,
 } from '../services/biometricService';
+import { buildWebUrl } from '../services/appConfig';
 
 type SettingsScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -110,11 +111,11 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const handleOpenPrivacyPolicy = () => {
-    Linking.openURL('https://travelmate.com/privacy');
+    Linking.openURL(buildWebUrl('/privacy'));
   };
 
   const handleOpenTerms = () => {
-    Linking.openURL('https://travelmate.com/terms');
+    Linking.openURL(buildWebUrl('/terms'));
   };
 
   return (

@@ -147,6 +147,10 @@
       },
       "apiUrl": "https://api.travelmate.app",
       "webUrl": "https://travelmate.app",
+      "googleIosClientId": "YOUR_GOOGLE_IOS_CLIENT_ID",
+      "googleAndroidClientId": "YOUR_GOOGLE_ANDROID_CLIENT_ID",
+      "googleWebClientId": "YOUR_GOOGLE_WEB_CLIENT_ID",
+      "googleExpoClientId": "YOUR_GOOGLE_EXPO_CLIENT_ID",
       "sentryDsn": "https://your-sentry-dsn@sentry.io/project-id"
     },
     "hooks": {

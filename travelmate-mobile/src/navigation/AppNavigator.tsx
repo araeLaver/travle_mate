@@ -45,7 +45,7 @@ export type RootStackParamList = {
   Premium: undefined;
   UserSearch: undefined;
   UserProfile: { userId: number };
-  Review: { matchId: number; targetUserNickname: string };
+  Review: { matchId: number | string; targetUserId?: number | string; targetUserNickname?: string };
   Matching: undefined;
 };
 

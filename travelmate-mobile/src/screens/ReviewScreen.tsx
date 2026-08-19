@@ -18,6 +18,13 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { apiClient } from '../services/apiClient';
+import {
+  buildTravelReviewPayload,
+  calculateTravelReviewAverage,
+  hasCompleteTravelReviewRatings,
+  TravelReviewRatingKey,
+  TravelReviewRatings,
+} from '../services/travelReviewPayload';
 
 type ReviewScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -31,7 +38,11 @@ interface Props {
   route: ReviewScreenRouteProp;
 }
 
-const CRITERIA = [
+const CRITERIA: Array<{
+  key: TravelReviewRatingKey;
+  label: string;
+  description: string;
+}> = [
   { key: 'punctuality', label: '시간 약속', description: '약속 시간을 잘 지켰나요?' },
   { key: 'manner', label: '매너', description: '함께 있을 때 매너가 좋았나요?' },
   { key: 'communication', label: '소통', description: '의사소통이 원활했나요?' },
@@ -39,8 +50,9 @@ const CRITERIA = [
 ];
 
 const ReviewScreen: React.FC<Props> = ({ navigation, route }) => {
-  const { matchId, targetUserNickname } = route.params;
-  const [ratings, setRatings] = useState<Record<string, number>>({
+  const { matchId, targetUserId, targetUserNickname } = route.params;
+  const targetDisplayName = targetUserNickname || '상대방';
+  const [ratings, setRatings] = useState<TravelReviewRatings>({
     punctuality: 0,
     manner: 0,
     communication: 0,
@@ -49,28 +61,35 @@ const ReviewScreen: React.FC<Props> = ({ navigation, route }) => {
   const [comment, setComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const overallRating =
-    Object.values(ratings).reduce((sum, r) => sum + r, 0) / CRITERIA.length;
+  const overallRating = calculateTravelReviewAverage(ratings);
 
-  const handleRating = (key: string, value: number) => {
+  const handleRating = (key: TravelReviewRatingKey, value: number) => {
     setRatings((prev) => ({ ...prev, [key]: value }));
   };
 
   const handleSubmit = async () => {
-    const incomplete = CRITERIA.some((c) => ratings[c.key] === 0);
-    if (incomplete) {
+    const matchRequestId = Number(matchId);
+    const revieweeId = Number(targetUserId);
+
+    if (!Number.isInteger(matchRequestId) || !Number.isInteger(revieweeId)) {
+      Alert.alert('오류', '리뷰 대상 정보를 확인할 수 없습니다. 매칭 목록에서 다시 시도해주세요.');
+      return;
+    }
+
+    if (!hasCompleteTravelReviewRatings(ratings)) {
       Alert.alert('알림', '모든 항목을 평가해주세요.');
       return;
     }
 
     setSubmitting(true);
     try {
-      await apiClient.post('/reviews', {
-        matchId,
+      const payload = buildTravelReviewPayload({
+        matchId: matchRequestId,
+        revieweeId,
         ratings,
-        overallRating: Math.round(overallRating * 10) / 10,
-        comment: comment.trim() || undefined,
+        comment,
       });
+      await apiClient.post('/reviews', payload);
       Alert.alert('완료', '리뷰가 등록되었습니다.', [
         { text: '확인', onPress: () => navigation.goBack() },
       ]);
@@ -81,7 +100,7 @@ const ReviewScreen: React.FC<Props> = ({ navigation, route }) => {
     }
   };
 
-  const renderStarRow = (key: string) => {
+  const renderStarRow = (key: TravelReviewRatingKey) => {
     const currentRating = ratings[key];
     return (
       <View style={styles.starRow}>
@@ -114,7 +133,7 @@ const ReviewScreen: React.FC<Props> = ({ navigation, route }) => {
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>
-            {targetUserNickname}님과의 동행은 어떠셨나요?
+            {targetDisplayName}님과의 동행은 어떠셨나요?
           </Text>
           <Text style={styles.subtitle}>
             솔직한 리뷰는 다른 여행자에게 도움이 됩니다

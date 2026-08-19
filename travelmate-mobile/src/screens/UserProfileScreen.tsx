@@ -50,6 +50,31 @@ interface UserDetail {
   recentReviews: Review[];
 }
 
+interface BackendUserProfile {
+  id: number;
+  nickname: string;
+  email?: string;
+  profileImageUrl?: string;
+  bio?: string;
+  travelStyle?: string;
+  languages?: string[];
+  rating?: number;
+  reviewCount?: number;
+  isEmailVerified?: boolean;
+  phoneVerified?: boolean;
+  trustBadge?: string;
+  trustScore?: number;
+  createdAt: string;
+}
+
+interface BackendReview {
+  id: number;
+  reviewerNickname: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+}
+
 interface Review {
   id: number;
   reviewerNickname: string;
@@ -59,6 +84,7 @@ interface Review {
 }
 
 const TRUST_BADGES: Record<string, { label: string; color: string }> = {
+  NEW: { label: '새싹', color: '#9CA3AF' },
   NEWCOMER: { label: '새싹', color: '#9CA3AF' },
   BRONZE: { label: '브론즈', color: '#CD7F32' },
   SILVER: { label: '실버', color: '#A0AEC0' },
@@ -74,8 +100,11 @@ const UserProfileScreen: React.FC<Props> = ({ navigation, route }) => {
 
   const loadUser = useCallback(async () => {
     try {
-      const data = await apiClient.get<UserDetail>(`/users/${userId}/profile`);
-      setUser(data);
+      const [profile, reviews] = await Promise.all([
+        apiClient.get<BackendUserProfile>(`/users/profile/${userId}`),
+        apiClient.get<BackendReview[]>(`/users/reviews/${userId}`),
+      ]);
+      setUser(toUserDetail(profile, reviews));
     } catch (error) {
       console.log('Failed to load user profile:', error);
       Alert.alert('오류', '프로필을 불러올 수 없습니다.');
@@ -96,7 +125,7 @@ const UserProfileScreen: React.FC<Props> = ({ navigation, route }) => {
 
   const handleSendMatchRequest = async () => {
     try {
-      await apiClient.post('/matching/request', { targetUserId: userId });
+      await apiClient.post('/matching/requests', { receiverId: userId });
       Alert.alert('완료', '매칭 요청을 보냈습니다.');
     } catch (error) {
       Alert.alert('오류', '매칭 요청에 실패했습니다.');
@@ -114,10 +143,11 @@ const UserProfileScreen: React.FC<Props> = ({ navigation, route }) => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await apiClient.post('/reports', {
-                targetType: 'USER',
-                targetId: userId,
-                reason: 'USER_REPORT',
+              await apiClient.post('/users/report', {
+                reportedUserId: userId,
+                reportType: 'OTHER',
+                reason: '사용자 신고',
+                description: '모바일 앱에서 접수된 사용자 신고입니다.',
               });
               Alert.alert('완료', '신고가 접수되었습니다.');
             } catch {
@@ -144,6 +174,27 @@ const UserProfileScreen: React.FC<Props> = ({ navigation, route }) => {
       i < filled ? '\u2605' : '\u2606'
     ).join('');
   };
+
+  const toUserDetail = (
+    profile: BackendUserProfile,
+    reviews: BackendReview[] = []
+  ): UserDetail => ({
+    id: profile.id,
+    nickname: profile.nickname,
+    email: profile.email,
+    profileImageUrl: profile.profileImageUrl,
+    bio: profile.bio,
+    travelStyle: profile.travelStyle,
+    languages: profile.languages || [],
+    isVerified: Boolean(profile.isEmailVerified || profile.phoneVerified),
+    trustLevel: profile.trustBadge || 'NEW',
+    trustScore: profile.trustScore || 50,
+    totalTrips: 0,
+    averageRating: profile.rating || 0,
+    totalReviews: profile.reviewCount || reviews.length,
+    createdAt: profile.createdAt,
+    recentReviews: reviews.slice(0, 5),
+  });
 
   if (loading) {
     return (

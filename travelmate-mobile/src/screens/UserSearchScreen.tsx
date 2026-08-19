@@ -39,6 +39,20 @@ interface UserProfile {
   isVerified: boolean;
 }
 
+interface MatchUserSummary {
+  id: number;
+  nickname: string;
+  profileImageUrl?: string;
+  bio?: string;
+  travelStyle?: string;
+  rating?: number;
+}
+
+interface MatchRecommendation {
+  user: MatchUserSummary;
+  totalScore?: number;
+}
+
 const UserSearchScreen: React.FC<Props> = ({ navigation }) => {
   const [query, setQuery] = useState('');
   const [users, setUsers] = useState<UserProfile[]>([]);
@@ -49,8 +63,8 @@ const UserSearchScreen: React.FC<Props> = ({ navigation }) => {
 
   const loadRecommendations = useCallback(async () => {
     try {
-      const data = await apiClient.get<UserProfile[]>('/matching/recommendations');
-      setRecommended(data);
+      const data = await apiClient.get<MatchRecommendation[]>('/matching/recommendations?limit=20');
+      setRecommended(data.map(toUserProfile));
     } catch (error) {
       console.log('Failed to load recommendations:', error);
     }
@@ -70,10 +84,17 @@ const UserSearchScreen: React.FC<Props> = ({ navigation }) => {
     setSearchMode(true);
     setLoading(true);
     try {
-      const data = await apiClient.get<UserProfile[]>(
-        `/users/search?q=${encodeURIComponent(text)}`
+      const data = await apiClient.get<MatchRecommendation[]>('/matching/recommendations?limit=50');
+      const normalized = text.trim().toLowerCase();
+      setUsers(
+        data
+          .map(toUserProfile)
+          .filter(user =>
+            [user.nickname, user.bio, user.travelStyle]
+              .filter(Boolean)
+              .some(value => value!.toLowerCase().includes(normalized))
+          )
       );
-      setUsers(data);
     } catch (error) {
       console.log('Search error:', error);
     } finally {
@@ -90,6 +111,18 @@ const UserSearchScreen: React.FC<Props> = ({ navigation }) => {
   const navigateToProfile = (userId: number) => {
     navigation.navigate('UserProfile', { userId });
   };
+
+  const toUserProfile = (recommendation: MatchRecommendation): UserProfile => ({
+    id: recommendation.user.id,
+    nickname: recommendation.user.nickname,
+    profileImageUrl: recommendation.user.profileImageUrl,
+    bio: recommendation.user.bio,
+    travelStyle: recommendation.user.travelStyle,
+    compatibilityScore: recommendation.totalScore ? Math.round(recommendation.totalScore) : undefined,
+    totalTrips: 0,
+    averageRating: recommendation.user.rating || 0,
+    isVerified: false,
+  });
 
   const renderUserCard = ({ item }: { item: UserProfile }) => (
     <TouchableOpacity

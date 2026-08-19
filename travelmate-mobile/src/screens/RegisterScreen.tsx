@@ -15,12 +15,12 @@ import {
   ActivityIndicator,
   ScrollView,
 } from 'react-native';
-import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '../navigation/AppNavigator';
 import { useAuth } from '../contexts/AuthContext';
 import { socialAuthService } from '../services/socialAuthService';
+import GoogleAuthButton from '../components/GoogleAuthButton';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -40,24 +40,17 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
   const [isSocialLoading, setIsSocialLoading] = useState(false);
   const [isAppleAvailable, setIsAppleAvailable] = useState(false);
 
-  const googleConfig = socialAuthService.getGoogleAuthConfig();
-  const [request, response, promptAsync] = Google.useAuthRequest(googleConfig);
+  const isGoogleAvailable = socialAuthService.isGoogleSignInConfigured();
 
   useEffect(() => {
     socialAuthService.isAppleSignInAvailable().then(setIsAppleAvailable);
   }, []);
 
-  useEffect(() => {
-    if (response?.type === 'success') {
-      handleGoogleResponse(response.authentication);
-    }
-  }, [response]);
-
-  const handleGoogleResponse = async (authentication: any) => {
-    if (!authentication) return;
+  const handleGoogleResponse = async (idToken?: string, accessToken?: string) => {
+    if (!idToken && !accessToken) return;
     setIsSocialLoading(true);
     try {
-      await loginWithGoogle(authentication.idToken, authentication.accessToken);
+      await loginWithGoogle(idToken, accessToken);
     } catch (error: any) {
       Alert.alert('Google 가입 실패', error.message || 'Google 계정으로 가입할 수 없습니다.');
     } finally {
@@ -139,14 +132,16 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
 
           {/* Social Login */}
           <View style={styles.socialContainer}>
-            <TouchableOpacity
-              style={[styles.socialButton, styles.googleButton]}
-              onPress={() => promptAsync()}
-              disabled={!request || anyLoading}
-            >
-              <Text style={styles.socialIcon}>G</Text>
-              <Text style={styles.socialButtonText}>Google로 가입하기</Text>
-            </TouchableOpacity>
+            {isGoogleAvailable && (
+              <GoogleAuthButton
+                label="Google로 가입하기"
+                buttonStyle={[styles.socialButton, styles.googleButton]}
+                iconStyle={styles.socialIcon}
+                textStyle={styles.socialButtonText}
+                disabled={anyLoading}
+                onAuthenticated={handleGoogleResponse}
+              />
+            )}
 
             {isAppleAvailable && (
               <TouchableOpacity
