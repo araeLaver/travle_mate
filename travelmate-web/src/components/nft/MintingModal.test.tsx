@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { act, render, screen, fireEvent, waitFor } from '@testing-library/react';
 import MintingModal from './MintingModal';
 import { mintingService } from '../../services/mintingService';
 import * as useWalletHook from '../../hooks/useWallet';
@@ -35,6 +35,13 @@ describe('MintingModal', () => {
   };
 
   const mockWalletAddress = '0x1234567890abcdef1234567890abcdef12345678';
+  const renderMintingModal = async (props: Partial<Parameters<typeof MintingModal>[0]> = {}) => {
+    const view = render(<MintingModal {...defaultProps} {...props} />);
+    await act(async () => {
+      await Promise.resolve();
+    });
+    return view;
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -47,12 +54,7 @@ describe('MintingModal', () => {
       isConnecting: false,
     });
 
-    mockGetMintingStatus.mockResolvedValue({
-      mintStatus: 'PENDING',
-      transactionHash: null,
-      tokenId: null,
-      contractAddress: null,
-    });
+    mockGetMintingStatus.mockReturnValue(new Promise(() => {}));
   });
 
   afterEach(() => {
@@ -60,7 +62,7 @@ describe('MintingModal', () => {
   });
 
   test('모달 렌더링 및 NFT 정보 표시', async () => {
-    render(<MintingModal {...defaultProps} />);
+    await renderMintingModal();
 
     expect(screen.getByText('NFT 민팅')).toBeInTheDocument();
     expect(screen.getByText('경복궁')).toBeInTheDocument();
@@ -71,13 +73,13 @@ describe('MintingModal', () => {
   });
 
   test('NFT 이미지 없을 때 플레이스홀더 표시', async () => {
-    render(<MintingModal {...defaultProps} nftImageUrl={null} />);
+    await renderMintingModal({ nftImageUrl: null });
 
     expect(screen.getByTestId('nft-placeholder')).toBeInTheDocument();
   });
 
   test('지갑 미연결 시 연결 버튼 표시', async () => {
-    render(<MintingModal {...defaultProps} />);
+    await renderMintingModal();
 
     const connectBtn = screen.getByTestId('connect-wallet-btn');
     expect(connectBtn).toHaveTextContent('지갑 연결');
@@ -93,7 +95,7 @@ describe('MintingModal', () => {
       isConnecting: false,
     });
 
-    render(<MintingModal {...defaultProps} />);
+    await renderMintingModal();
 
     const connectBtn = screen.getByTestId('connect-wallet-btn');
     fireEvent.click(connectBtn);
@@ -109,7 +111,7 @@ describe('MintingModal', () => {
       isConnecting: true,
     });
 
-    render(<MintingModal {...defaultProps} />);
+    await renderMintingModal();
 
     expect(screen.getByText('연결 중...')).toBeInTheDocument();
   });
@@ -122,7 +124,7 @@ describe('MintingModal', () => {
       isConnecting: false,
     });
 
-    render(<MintingModal {...defaultProps} />);
+    await renderMintingModal();
 
     expect(screen.getByText('NFT 민팅하기')).toBeInTheDocument();
     expect(screen.getByText('민팅 버튼을 눌러 NFT를 블록체인에 기록하세요.')).toBeInTheDocument();
@@ -136,7 +138,7 @@ describe('MintingModal', () => {
       isConnecting: false,
     });
 
-    render(<MintingModal {...defaultProps} />);
+    await renderMintingModal();
 
     // 주소 축약 형태 확인 (0x1234...5678)
     expect(screen.getByText('0x1234...5678')).toBeInTheDocument();
@@ -151,7 +153,7 @@ describe('MintingModal', () => {
     });
     mockRequestMinting.mockResolvedValueOnce({});
 
-    render(<MintingModal {...defaultProps} />);
+    await renderMintingModal();
 
     const mintBtn = screen.getByText('NFT 민팅하기');
     fireEvent.click(mintBtn);
@@ -176,7 +178,7 @@ describe('MintingModal', () => {
       contractAddress: null,
     });
 
-    render(<MintingModal {...defaultProps} currentMintStatus="MINTING" />);
+    await renderMintingModal({ currentMintStatus: 'MINTING' });
 
     await waitFor(() => {
       expect(screen.getByText('블록체인에 NFT를 기록하고 있습니다...')).toBeInTheDocument();
@@ -198,7 +200,7 @@ describe('MintingModal', () => {
       contractAddress: null,
     });
 
-    render(<MintingModal {...defaultProps} currentMintStatus="CONFIRMING" />);
+    await renderMintingModal({ currentMintStatus: 'CONFIRMING' });
 
     await waitFor(() => {
       expect(screen.getByText('트랜잭션 확인 중입니다...')).toBeInTheDocument();
@@ -220,7 +222,7 @@ describe('MintingModal', () => {
       contractAddress: '0xcontract123',
     });
 
-    render(<MintingModal {...defaultProps} currentMintStatus="MINTED" />);
+    await renderMintingModal({ currentMintStatus: 'MINTED' });
 
     await waitFor(() => {
       expect(screen.getByText('민팅이 완료되었습니다!')).toBeInTheDocument();
@@ -246,7 +248,7 @@ describe('MintingModal', () => {
       contractAddress: '0xcontract123',
     });
 
-    render(<MintingModal {...defaultProps} currentMintStatus="MINTED" />);
+    await renderMintingModal({ currentMintStatus: 'MINTED' });
 
     await waitFor(() => {
       expect(screen.getByText('Polygonscan에서 보기')).toBeInTheDocument();
@@ -272,7 +274,7 @@ describe('MintingModal', () => {
       contractAddress: null,
     });
 
-    render(<MintingModal {...defaultProps} currentMintStatus="FAILED" />);
+    await renderMintingModal({ currentMintStatus: 'FAILED' });
 
     await waitFor(() => {
       expect(screen.getByText('민팅에 실패했습니다.')).toBeInTheDocument();
@@ -299,7 +301,7 @@ describe('MintingModal', () => {
     });
     mockRetryMinting.mockResolvedValueOnce({});
 
-    render(<MintingModal {...defaultProps} currentMintStatus="FAILED" />);
+    await renderMintingModal({ currentMintStatus: 'FAILED' });
 
     await waitFor(() => {
       expect(screen.getByText('민팅 재시도')).toBeInTheDocument();
@@ -310,10 +312,14 @@ describe('MintingModal', () => {
     await waitFor(() => {
       expect(mockRetryMinting).toHaveBeenCalledWith(1);
     });
+
+    await waitFor(() => {
+      expect(screen.getByText('민팅 재시도')).not.toBeDisabled();
+    });
   });
 
   test('진행 단계 표시', async () => {
-    render(<MintingModal {...defaultProps} />);
+    await renderMintingModal();
 
     expect(screen.getByTestId('step-label-0')).toHaveTextContent('지갑 연결');
     expect(screen.getByTestId('step-label-1')).toHaveTextContent('민팅 요청');
@@ -323,7 +329,7 @@ describe('MintingModal', () => {
 
   test('닫기 버튼 동작', async () => {
     const mockOnClose = jest.fn();
-    render(<MintingModal {...defaultProps} onClose={mockOnClose} />);
+    await renderMintingModal({ onClose: mockOnClose });
 
     const closeBtn = screen.getByTestId('minting-close-btn');
     fireEvent.click(closeBtn);
@@ -333,7 +339,7 @@ describe('MintingModal', () => {
 
   test('오버레이 클릭 시 닫기', async () => {
     const mockOnClose = jest.fn();
-    render(<MintingModal {...defaultProps} onClose={mockOnClose} />);
+    await renderMintingModal({ onClose: mockOnClose });
 
     const overlay = screen.getByTestId('minting-modal-overlay');
     fireEvent.click(overlay);
@@ -343,7 +349,7 @@ describe('MintingModal', () => {
 
   test('모달 내부 클릭 시 닫히지 않음', async () => {
     const mockOnClose = jest.fn();
-    render(<MintingModal {...defaultProps} onClose={mockOnClose} />);
+    await renderMintingModal({ onClose: mockOnClose });
 
     const modal = screen.getByTestId('minting-modal');
     fireEvent.click(modal);
@@ -366,7 +372,7 @@ describe('MintingModal', () => {
       contractAddress: '0xcontract',
     });
 
-    render(<MintingModal {...defaultProps} currentMintStatus="MINTED" />);
+    await renderMintingModal({ currentMintStatus: 'MINTED' });
 
     await waitFor(() => {
       const closeActionBtn = screen.getByTestId('minting-close-action-btn');
@@ -375,7 +381,7 @@ describe('MintingModal', () => {
   });
 
   test('레어리티 색상 적용', async () => {
-    render(<MintingModal {...defaultProps} rarity="LEGENDARY" />);
+    await renderMintingModal({ rarity: 'LEGENDARY' });
 
     const badge = screen.getByTestId('rarity-badge');
     expect(badge).toHaveStyle('background-color: rgb(245, 158, 11)');
@@ -396,7 +402,7 @@ describe('MintingModal', () => {
       contractAddress: null,
     });
 
-    render(<MintingModal {...defaultProps} />);
+    await renderMintingModal();
 
     await waitFor(() => {
       expect(screen.getByText('NFT 민팅하기')).toBeInTheDocument();
@@ -419,7 +425,7 @@ describe('MintingModal', () => {
 
     mockRequestMinting.mockRejectedValueOnce(new Error('네트워크 오류'));
 
-    render(<MintingModal {...defaultProps} />);
+    await renderMintingModal();
 
     fireEvent.click(screen.getByText('NFT 민팅하기'));
 
@@ -435,7 +441,7 @@ describe('MintingModal', () => {
       isConnecting: false,
     });
 
-    render(<MintingModal {...defaultProps} />);
+    await renderMintingModal();
 
     const connectBtn = screen.getByTestId('connect-wallet-btn');
 

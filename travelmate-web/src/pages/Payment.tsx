@@ -17,6 +17,7 @@ import {
 import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
 import PageBackground from '../components/PageBackground';
+import { useToast } from '../components/Toast';
 
 type TabType = 'points' | 'subscription' | 'history';
 
@@ -29,6 +30,7 @@ const fadeInUp = {
 
 const Payment: React.FC = () => {
   const navigate = useNavigate();
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState<TabType>('points');
   const [pointProducts, setPointProducts] = useState<PointProduct[]>([]);
   const [subscriptionProducts, setSubscriptionProducts] = useState<SubscriptionProduct[]>([]);
@@ -70,10 +72,11 @@ const Payment: React.FC = () => {
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Failed to load data:', error);
+      toast.error('결제 정보를 불러오지 못했습니다.');
     } finally {
       setIsLoading(false);
     }
-  }, [activeTab]);
+  }, [activeTab, toast]);
 
   useEffect(() => {
     loadData();
@@ -130,7 +133,7 @@ const Payment: React.FC = () => {
       if (err.code === 'USER_CANCEL') return;
       // eslint-disable-next-line no-console
       console.error('Payment failed:', error);
-      alert(err.message || '결제에 실패했습니다.');
+      toast.error(err.message || '결제에 실패했습니다.');
     }
   };
 
@@ -140,11 +143,11 @@ const Payment: React.FC = () => {
     try {
       const result = await paymentService.cancelSubscription('사용자 요청');
       setSubscriptionInfo(result);
-      alert('구독이 취소되었습니다.');
+      toast.success('구독이 취소되었습니다.');
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Cancel failed:', error);
-      alert('구독 취소에 실패했습니다.');
+      toast.error('구독 취소에 실패했습니다.');
     }
   };
 

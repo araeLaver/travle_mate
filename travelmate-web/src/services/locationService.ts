@@ -1,3 +1,7 @@
+import { getBackendBaseUrl } from './apiConfig';
+import { apiClient } from './apiClient';
+import { logger } from '../lib/utils';
+
 export interface Location {
   latitude: number;
   longitude: number;
@@ -20,6 +24,35 @@ export interface TravelMate {
   lastSeen: Date;
   matchScore: number;
   profileImage?: string;
+}
+
+interface NearbyUserResponse {
+  id: number | string;
+  nickname?: string;
+  fullName?: string;
+  age?: number;
+  gender?: string;
+  profileImageUrl?: string;
+  bio?: string;
+  currentLatitude?: number;
+  currentLongitude?: number;
+  travelStyle?: string;
+  interests?: string[];
+  languages?: string[];
+  rating?: number;
+  lastActivityAt?: string;
+}
+
+interface AddressLookupResponse {
+  documents?: Array<{
+    road_address?: {
+      address_name?: string;
+    } | null;
+    address?: {
+      address_name?: string;
+    } | null;
+  }>;
+  error?: unknown;
 }
 
 class LocationService {
@@ -82,40 +115,13 @@ class LocationService {
   // 백엔드 API를 통해 좌표를 주소로 변환
   private async getAddressFromCoords(lat: number, lng: number): Promise<string> {
     try {
-      // 먼저 좌표 범위로 대략적인 지역 판단
-      const estimatedLocation = this.getEstimatedLocationByCoords(lat, lng);
-      if (estimatedLocation) {
-        return estimatedLocation;
-      }
-
       // 한국 내 좌표인 경우에만 카카오맵 API 시도
       if (this.isKoreaCoords(lat, lng)) {
         // 먼저 백엔드 API를 시도
         try {
-          const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8080/api';
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 3000);
-
-          const response = await fetch(`${backendUrl}/location/address?lat=${lat}&lng=${lng}`, {
-            signal: controller.signal,
-          });
-
-          clearTimeout(timeoutId);
-
-          if (response.ok) {
-            const data = await response.json();
-
-            if (!data.error && data && data.documents && data.documents.length > 0) {
-              const doc = data.documents[0];
-
-              if (doc.road_address && doc.road_address.address_name) {
-                return doc.road_address.address_name;
-              }
-
-              if (doc.address && doc.address.address_name) {
-                return doc.address.address_name;
-              }
-            }
+          const backendAddress = await this.fetchBackendAddress(lat, lng);
+          if (backendAddress) {
+            return backendAddress;
           }
         } catch (backendError) {
           // 백엔드 연결 실패, 직접 API 호출로 전환
@@ -137,17 +143,9 @@ class LocationService {
 
             if (directResponse.ok) {
               const directData = await directResponse.json();
-
-              if (directData.documents && directData.documents.length > 0) {
-                const doc = directData.documents[0];
-
-                if (doc.road_address && doc.road_address.address_name) {
-                  return doc.road_address.address_name;
-                }
-
-                if (doc.address && doc.address.address_name) {
-                  return doc.address.address_name;
-                }
+              const directAddress = this.extractAddress(directData);
+              if (directAddress) {
+                return directAddress;
               }
             }
           } catch (kakaoError) {
@@ -156,10 +154,45 @@ class LocationService {
         }
       }
 
+      // 외부 주소 조회가 불가능하면 좌표 범위로 대략적인 지역 판단
+      const estimatedLocation = this.getEstimatedLocationByCoords(lat, lng);
+      if (estimatedLocation) {
+        return estimatedLocation;
+      }
+
       return `위도 ${lat.toFixed(4)}, 경도 ${lng.toFixed(4)}`;
     } catch (error) {
       return `위도 ${lat.toFixed(4)}, 경도 ${lng.toFixed(4)}`;
     }
+  }
+
+  private async fetchBackendAddress(lat: number, lng: number): Promise<string | null> {
+    const backendUrl = getBackendBaseUrl();
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+    try {
+      const response = await fetch(`${backendUrl}/location/address?lat=${lat}&lng=${lng}`, {
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        return null;
+      }
+
+      return this.extractAddress(await response.json());
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  }
+
+  private extractAddress(data: AddressLookupResponse): string | null {
+    if (data.error || !data.documents || data.documents.length === 0) {
+      return null;
+    }
+
+    const doc = data.documents[0];
+    return doc.road_address?.address_name || doc.address?.address_name || null;
   }
 
   // 좌표가 한국 내인지 확인
@@ -298,180 +331,75 @@ class LocationService {
 
   // 근처 여행 메이트 찾기
   async findNearbyTravelMates(radius: number = 5): Promise<TravelMate[]> {
+    const currentLoc = this.currentLocation || (await this.getCurrentLocation());
+
     try {
-      const currentLoc = this.currentLocation || (await this.getCurrentLocation());
-      const mates = this.generateMockTravelMates(currentLoc, radius);
-      return mates;
+      const params = new URLSearchParams({
+        latitude: String(currentLoc.latitude),
+        longitude: String(currentLoc.longitude),
+        radiusKm: String(radius),
+      });
+      const users = await apiClient.get<NearbyUserResponse[]>(`/users/nearby?${params.toString()}`);
+      return users
+        .map(user => this.mapToTravelMate(user, currentLoc))
+        .sort((a, b) => a.distance - b.distance);
     } catch (error) {
-      const defaultLocation: Location = {
-        latitude: 37.5665,
-        longitude: 126.978,
-        address: '서울특별시 중구 태평로1가',
-      };
-      return this.generateMockTravelMates(defaultLocation, radius);
+      logger.error('Failed to fetch nearby travel mates:', error);
+      throw error;
     }
   }
 
-  private generateMockTravelMates(currentLoc: Location, radius: number): TravelMate[] {
-    const names = [
-      '김도현',
-      '이서연',
-      '박민준',
-      '최지은',
-      '정우진',
-      '한소영',
-      '송태호',
-      '차유나',
-      '강민수',
-      '윤채원',
-      '임성훈',
-      '장하늘',
-      '오현지',
-      '신재현',
-      '류소담',
-      '홍준혁',
-      '김나라',
-      '이바다',
-      '박하늘',
-      '최별님',
-      '정달님',
-      '한가은',
-      '송유진',
-      '차민아',
-      '백여행가',
-      '김탐험가',
-      '이모험가',
-      '박세계인',
-      '최글로벌',
-      '정국제인',
-      '한유목민',
-      '송자유인',
-    ];
+  private mapToTravelMate(user: NearbyUserResponse, currentLoc: Location): TravelMate {
+    const latitude = user.currentLatitude ?? currentLoc.latitude;
+    const longitude = user.currentLongitude ?? currentLoc.longitude;
+    const ratingScore = user.rating ? Math.round(user.rating * 20) : 70;
 
-    const moods = [
-      '🌟 여행 중',
-      '🍜 맛집 탐방',
-      '🏔️ 산 좋아',
-      '📸 인생샷 찍기',
-      '☕ 카페 투어',
-      '🎨 문화 체험',
-      '🏖️ 휴양지 선호',
-      '🎭 공연 관람',
-      '🛍️ 쇼핑 러버',
-      '🌃 야경 덕후',
-      '🚶‍♀️ 도보 탐험',
-      '🎵 음악 투어',
-      '🍷 와이너리 투어',
-      '🏛️ 역사 탐방',
-      '🌸 꽃 구경',
-      '⛩️ 사찰 순례',
-      '🎪 축제 참가',
-      '🏄‍♂️ 액티비티',
-      '🧘‍♀️ 명상 여행',
-      '📚 도서관 투어',
-    ];
-
-    const travelStyles = [
-      '배낭여행',
-      '럭셔리 여행',
-      '문화탐방',
-      '모험가',
-      '미식가',
-      '사진가',
-      '역사덕후',
-      '자연러버',
-      '도시탐험',
-      '힐링여행',
-    ];
-
-    const interests = [
-      '사진촬영',
-      '음식탐방',
-      '역사문화',
-      '자연관광',
-      '쇼핑',
-      '공연관람',
-      '스포츠',
-      '야경감상',
-      '카페투어',
-      '박물관',
-    ];
-
-    const languages = [
-      ['한국어', '영어'],
-      ['한국어', '중국어'],
-      ['한국어', '일본어'],
-      ['한국어', '영어', '중국어'],
-      ['한국어', '스페인어'],
-      ['한국어', '프랑스어'],
-    ];
-
-    const bios = [
-      '세계 곳곳을 탐험하며 새로운 문화를 경험하고 싶어요! 🌍',
-      '맛있는 음식과 아름다운 풍경을 함께 즐길 여행 친구를 찾아요. 🍽️✨',
-      '사진 찍기 좋아하고 인생샷 남기는 걸 좋아해요. 📸',
-      '여행을 통해 새로운 사람들과 인연을 만들고 싶어요. 🤝',
-      '혼자 여행보다는 함께하는 여행이 더 즐거운 것 같아요! 👫',
-      '현지인처럼 여행하며 진짜 문화를 체험해보고 싶어요. 🏛️',
-      '자연과 함께하는 힐링 여행을 좋아해요. 🌿',
-      '역사와 예술에 관심이 많아서 박물관 투어를 즐겨요. 🎨',
-      '맛집 탐방이 여행의 50% 이상을 차지한다고 생각해요! 🍜',
-      '새벽 일출부터 밤 야경까지 모든 순간을 담고 싶어요. 🌅🌃',
-      '배낭 하나로 떠나는 자유로운 여행을 꿈꿔요. 🎒',
-      '각 나라의 전통 축제와 문화를 직접 체험하고 싶어요. 🎪',
-      '느린 여행, 깊은 여행을 추구합니다. ☕',
-      '모험과 스릴을 즐기는 액티비티 여행러예요! 🏄‍♂️',
-      '여행지의 로컬 마켓과 골목길 탐험을 좋아해요. 🛒',
-      '다양한 언어와 문화 교류에 관심이 많아요. 🗣️',
-    ];
-
-    const mockMates: TravelMate[] = [];
-    const count = Math.floor(Math.random() * 8) + 3;
-
-    for (let i = 0; i < count; i++) {
-      const angle = Math.random() * 2 * Math.PI;
-      const distance = Math.random() * radius;
-      const deltaLat = (distance * Math.cos(angle)) / 111;
-      const deltaLng =
-        (distance * Math.sin(angle)) / (111 * Math.cos((currentLoc.latitude * Math.PI) / 180));
-
-      const mateLoc: Location = {
-        latitude: currentLoc.latitude + deltaLat,
-        longitude: currentLoc.longitude + deltaLng,
-      };
-
-      const actualDistance = this.calculateDistance(
+    return {
+      id: user.id?.toString() || '',
+      name: user.nickname || user.fullName || '여행자',
+      age: user.age || 0,
+      gender: this.mapGender(user.gender),
+      location: { latitude, longitude },
+      distance: this.calculateDistance(
         currentLoc.latitude,
         currentLoc.longitude,
-        mateLoc.latitude,
-        mateLoc.longitude
-      );
-
-      mockMates.push({
-        id: `mate_${i + 1}_${Date.now()}`,
-        name: names[Math.floor(Math.random() * names.length)],
-        age: Math.floor(Math.random() * 25) + 20,
-        gender: Math.random() > 0.5 ? 'female' : 'male',
-        location: mateLoc,
-        distance: actualDistance,
-        mood: moods[Math.floor(Math.random() * moods.length)],
-        travelStyle: travelStyles[Math.floor(Math.random() * travelStyles.length)],
-        interests: this.getRandomItems(interests, 2, 4),
-        languages: languages[Math.floor(Math.random() * languages.length)],
-        bio: bios[Math.floor(Math.random() * bios.length)],
-        isOnline: Math.random() > 0.3,
-        lastSeen: new Date(Date.now() - Math.random() * 3600000),
-        matchScore: Math.floor(Math.random() * 30) + 70,
-      });
-    }
-
-    return mockMates.sort((a, b) => a.distance - b.distance);
+        latitude,
+        longitude
+      ),
+      mood: '여행 메이트 찾는 중',
+      travelStyle: user.travelStyle || 'UNKNOWN',
+      interests: user.interests || [],
+      languages: user.languages || [],
+      bio: user.bio || '',
+      isOnline: this.isRecentlyActive(user.lastActivityAt),
+      lastSeen: user.lastActivityAt ? new Date(user.lastActivityAt) : new Date(),
+      matchScore: Math.min(100, Math.max(0, ratingScore)),
+      profileImage: user.profileImageUrl,
+    };
   }
 
-  private getRandomItems<T>(array: T[], min: number, max: number): T[] {
-    const count = Math.floor(Math.random() * (max - min + 1)) + min;
-    const shuffled = [...array].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, count);
+  private mapGender(gender?: string): 'male' | 'female' | 'other' {
+    switch (gender?.toUpperCase()) {
+      case 'MALE':
+        return 'male';
+      case 'FEMALE':
+        return 'female';
+      default:
+        return 'other';
+    }
+  }
+
+  private isRecentlyActive(lastActivityAt?: string): boolean {
+    if (!lastActivityAt) {
+      return false;
+    }
+
+    const lastActivityTime = new Date(lastActivityAt).getTime();
+    if (Number.isNaN(lastActivityTime)) {
+      return false;
+    }
+
+    return Date.now() - lastActivityTime < 15 * 60 * 1000;
   }
 
   // 위치 변화 감지 시작
@@ -516,6 +444,24 @@ class LocationService {
 
   getCurrentLocationSync(): Location | null {
     return this.currentLocation;
+  }
+
+  async setManualLocation(location: Location): Promise<Location> {
+    const resolvedLocation = { ...location };
+
+    try {
+      resolvedLocation.address = await this.getAddressFromCoords(
+        resolvedLocation.latitude,
+        resolvedLocation.longitude
+      );
+    } catch {
+      resolvedLocation.address =
+        resolvedLocation.address ||
+        `위도 ${resolvedLocation.latitude.toFixed(4)}, 경도 ${resolvedLocation.longitude.toFixed(4)}`;
+    }
+
+    this.currentLocation = resolvedLocation;
+    return resolvedLocation;
   }
 }
 

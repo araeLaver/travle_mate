@@ -5,18 +5,16 @@ import {
   getMintStatusLabel,
   getMintStatusColor,
 } from './mintingService';
+import { apiClient } from './apiClient';
 
-// Mock fetch
-global.fetch = jest.fn();
-
-// Mock authService
-jest.mock('./authService', () => ({
-  authService: {
-    getToken: jest.fn(() => 'mock-token'),
+jest.mock('./apiClient', () => ({
+  apiClient: {
+    get: jest.fn(),
+    post: jest.fn(),
   },
 }));
 
-const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
+const mockApiClient = apiClient as jest.Mocked<typeof apiClient>;
 
 describe('MintingService', () => {
   beforeEach(() => {
@@ -34,29 +32,19 @@ describe('MintingService', () => {
         message: '민팅이 시작되었습니다.',
       };
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-      } as Response);
+      mockApiClient.post.mockResolvedValueOnce(mockResponse);
 
       const result = await mintingService.requestMinting(1, '0x1234567890abcdef');
 
       expect(result.mintStatus).toBe('MINTING');
       expect(result.message).toBe('민팅이 시작되었습니다.');
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/nft/mint/1'),
-        expect.objectContaining({
-          method: 'POST',
-          body: JSON.stringify({ walletAddress: '0x1234567890abcdef' }),
-        })
-      );
+      expect(mockApiClient.post).toHaveBeenCalledWith('/nft/mint/1', {
+        walletAddress: '0x1234567890abcdef',
+      });
     });
 
     it('should throw error when not owner', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        json: async () => ({ message: '권한이 없습니다.' }),
-      } as Response);
+      mockApiClient.post.mockRejectedValueOnce({ message: '권한이 없습니다.', status: 403 });
 
       await expect(mintingService.requestMinting(1, '0x1234567890abcdef')).rejects.toThrow(
         '권한이 없습니다.'
@@ -64,10 +52,7 @@ describe('MintingService', () => {
     });
 
     it('should throw error when already minted', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        json: async () => ({ message: '이미 민팅된 NFT입니다.' }),
-      } as Response);
+      mockApiClient.post.mockRejectedValueOnce({ message: '이미 민팅된 NFT입니다.', status: 409 });
 
       await expect(mintingService.requestMinting(1, '0x1234567890abcdef')).rejects.toThrow(
         '이미 민팅된 NFT입니다.'
@@ -75,10 +60,7 @@ describe('MintingService', () => {
     });
 
     it('should throw error when minting in progress', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        json: async () => ({ message: '민팅이 진행 중입니다.' }),
-      } as Response);
+      mockApiClient.post.mockRejectedValueOnce({ message: '민팅이 진행 중입니다.', status: 409 });
 
       await expect(mintingService.requestMinting(1, '0x1234567890abcdef')).rejects.toThrow(
         '민팅이 진행 중입니다.'
@@ -103,16 +85,14 @@ describe('MintingService', () => {
         openseaUrl: 'https://testnets.opensea.io/assets/amoy/0xcontract/12345',
       };
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-      } as Response);
+      mockApiClient.get.mockResolvedValueOnce(mockResponse);
 
       const result = await mintingService.getMintingStatus(1);
 
       expect(result.mintStatus).toBe('MINTED');
       expect(result.tokenId).toBe('12345');
       expect(result.transactionHash).toBe('0xabc123def456');
+      expect(mockApiClient.get).toHaveBeenCalledWith('/nft/mint/status/1');
     });
 
     it('should fetch minting status - MINTING', async () => {
@@ -131,10 +111,7 @@ describe('MintingService', () => {
         openseaUrl: null,
       };
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-      } as Response);
+      mockApiClient.get.mockResolvedValueOnce(mockResponse);
 
       const result = await mintingService.getMintingStatus(1);
 
@@ -143,10 +120,10 @@ describe('MintingService', () => {
     });
 
     it('should throw error on failure', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        json: async () => ({ message: 'NFT 컬렉션을 찾을 수 없습니다.' }),
-      } as Response);
+      mockApiClient.get.mockRejectedValueOnce({
+        message: 'NFT 컬렉션을 찾을 수 없습니다.',
+        status: 404,
+      });
 
       await expect(mintingService.getMintingStatus(999)).rejects.toThrow(
         'NFT 컬렉션을 찾을 수 없습니다.'
@@ -189,16 +166,14 @@ describe('MintingService', () => {
         last: true,
       };
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-      } as Response);
+      mockApiClient.get.mockResolvedValueOnce(mockResponse);
 
       const result = await mintingService.getMintableNfts(0, 20);
 
       expect(result.content).toHaveLength(2);
       expect(result.content[0].mintStatus).toBe('PENDING');
       expect(result.content[1].mintStatus).toBe('FAILED');
+      expect(mockApiClient.get).toHaveBeenCalledWith('/nft/mint/mintable?page=0&size=20');
     });
 
     it('should return empty list', async () => {
@@ -212,20 +187,15 @@ describe('MintingService', () => {
         last: true,
       };
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-      } as Response);
+      mockApiClient.get.mockResolvedValueOnce(mockResponse);
 
       const result = await mintingService.getMintableNfts(0, 20);
 
       expect(result.content).toHaveLength(0);
     });
 
-    it('should throw error on failure', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-      } as Response);
+    it('should throw fallback error on failure without server message', async () => {
+      mockApiClient.get.mockRejectedValueOnce({ status: 500 });
 
       await expect(mintingService.getMintableNfts()).rejects.toThrow(
         '민팅 가능한 NFT 목록을 불러오는데 실패했습니다.'
@@ -244,26 +214,20 @@ describe('MintingService', () => {
         message: '민팅이 재시도됩니다.',
       };
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-      } as Response);
+      mockApiClient.post.mockResolvedValueOnce(mockResponse);
 
       const result = await mintingService.retryMinting(1);
 
       expect(result.mintStatus).toBe('MINTING');
       expect(result.message).toBe('민팅이 재시도됩니다.');
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/nft/mint/1/retry'),
-        expect.objectContaining({ method: 'POST' })
-      );
+      expect(mockApiClient.post).toHaveBeenCalledWith('/nft/mint/1/retry');
     });
 
     it('should throw error when not failed status', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        json: async () => ({ message: '실패한 NFT만 재시도할 수 있습니다.' }),
-      } as Response);
+      mockApiClient.post.mockRejectedValueOnce({
+        message: '실패한 NFT만 재시도할 수 있습니다.',
+        status: 400,
+      });
 
       await expect(mintingService.retryMinting(1)).rejects.toThrow(
         '실패한 NFT만 재시도할 수 있습니다.'
@@ -281,10 +245,7 @@ describe('MintingService', () => {
         failedCount: 1,
       };
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-      } as Response);
+      mockApiClient.get.mockResolvedValueOnce(mockResponse);
 
       const result = await mintingService.getMintingStats();
 
@@ -293,6 +254,7 @@ describe('MintingService', () => {
       expect(result.pendingCount).toBe(3);
       expect(result.mintingCount).toBe(1);
       expect(result.failedCount).toBe(1);
+      expect(mockApiClient.get).toHaveBeenCalledWith('/nft/mint/stats');
     });
 
     it('should return zero stats when no NFTs', async () => {
@@ -304,20 +266,15 @@ describe('MintingService', () => {
         failedCount: 0,
       };
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-      } as Response);
+      mockApiClient.get.mockResolvedValueOnce(mockResponse);
 
       const result = await mintingService.getMintingStats();
 
       expect(result.totalCollected).toBe(0);
     });
 
-    it('should throw error on failure', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-      } as Response);
+    it('should throw fallback error on failure without server message', async () => {
+      mockApiClient.get.mockRejectedValueOnce({ status: 500 });
 
       await expect(mintingService.getMintingStats()).rejects.toThrow(
         '민팅 통계를 불러오는데 실패했습니다.'

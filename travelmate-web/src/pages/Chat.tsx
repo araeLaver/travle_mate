@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { chatService, ChatMessage, ChatRoom } from '../services/chatService';
+import { apiClient } from '../services/apiClient';
+import { authService } from '../services/authService';
+import { chatRestService, ChatMessage, ChatRoom } from '../services/chatRestService';
 import { useToast } from '../components/Toast';
 import { ImageMessage, LocationMessage, TypingIndicator } from '../components/chat';
 import Logo from '../components/Logo';
@@ -48,33 +50,49 @@ const Chat: React.FC = () => {
       return;
     }
 
-    const rooms = chatService.getChatRooms();
-    const currentRoom = rooms.find(r => r.id === roomId);
+    let isMounted = true;
 
-    if (!currentRoom) {
-      toastRef.current.error('채팅방을 찾을 수 없습니다.');
-      navigate('/dashboard');
-      return;
-    }
+    const loadChat = async (showBlockingError: boolean) => {
+      try {
+        const [currentRoom, roomMessages] = await Promise.all([
+          chatRestService.getChatRoom(roomId),
+          chatRestService.getMessages(roomId),
+        ]);
 
-    setRoom(currentRoom);
+        if (!isMounted) return;
 
-    const roomMessages = chatService.getMessages(roomId);
-    setMessages(roomMessages);
+        if (!currentRoom) {
+          toastRef.current.error('채팅방을 찾을 수 없습니다.');
+          navigate('/dashboard');
+          return;
+        }
 
-    chatService.markMessagesAsRead(roomId);
-
-    const messageListener = (updatedMessages: ChatMessage[]) => {
-      setMessages(updatedMessages);
-      chatService.markMessagesAsRead(roomId);
+        setRoom(currentRoom);
+        setMessages(roomMessages);
+        await chatRestService.markAsRead(roomId);
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to load chat:', error);
+        if (showBlockingError && isMounted) {
+          toastRef.current.error('채팅방을 불러오지 못했습니다.');
+          navigate('/chat');
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
     };
 
-    chatService.addMessageListener(roomId, messageListener);
+    loadChat(true);
 
-    setIsLoading(false);
+    const interval = setInterval(() => {
+      loadChat(false);
+    }, 5000);
 
     return () => {
-      chatService.removeMessageListener(roomId, messageListener);
+      isMounted = false;
+      clearInterval(interval);
     };
   }, [roomId, navigate]);
 
@@ -86,18 +104,31 @@ const Chat: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!newMessage.trim() || !roomId) return;
 
-    chatService.sendMessage(roomId, newMessage.trim());
-    trackChatMessageSent();
+    const content = newMessage.trim();
     setNewMessage('');
+
+    try {
+      const sentMessage = await chatRestService.sendMessage(roomId, {
+        content,
+        messageType: 'TEXT',
+      });
+      setMessages(prev => [...prev, sentMessage]);
+      trackChatMessageSent();
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to send message:', error);
+      setNewMessage(content);
+      toast.error('메시지 전송에 실패했습니다.');
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSendMessage();
+      void handleSendMessage();
     }
   };
 
@@ -122,10 +153,22 @@ const Chat: React.FC = () => {
     setIsUploading(true);
 
     try {
-      const imageUrl = URL.createObjectURL(file);
-      chatService.sendMessage(roomId, imageUrl, 'image');
+      const uploadResponse = await apiClient.uploadFile('/files/upload/image', file);
+      const imageUrl = uploadResponse.url || uploadResponse.imageUrl;
+      if (!imageUrl) {
+        throw new Error('Uploaded image URL is missing');
+      }
+
+      const sentMessage = await chatRestService.sendMessage(roomId, {
+        content: imageUrl,
+        messageType: 'IMAGE',
+        imageUrl,
+      });
+      setMessages(prev => [...prev, sentMessage]);
       toast.success('이미지가 전송되었습니다.');
-    } catch {
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to upload chat image:', error);
       toast.error('이미지 업로드에 실패했습니다.');
     } finally {
       setIsUploading(false);
@@ -146,16 +189,23 @@ const Chat: React.FC = () => {
     toast.info('현재 위치를 가져오는 중...');
 
     navigator.geolocation.getCurrentPosition(
-      position => {
+      async position => {
         const { latitude, longitude } = position.coords;
-        const locationData = JSON.stringify({
-          latitude,
-          longitude,
-          locationName: '현재 위치',
-        });
-
-        chatService.sendMessage(roomId, locationData, 'location');
-        toast.success('위치가 공유되었습니다.');
+        try {
+          const sentMessage = await chatRestService.sendMessage(roomId, {
+            content: '현재 위치',
+            messageType: 'LOCATION',
+            locationLatitude: latitude,
+            locationLongitude: longitude,
+            locationName: '현재 위치',
+          });
+          setMessages(prev => [...prev, sentMessage]);
+          toast.success('위치가 공유되었습니다.');
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error('Failed to share location:', error);
+          toast.error('위치 공유에 실패했습니다.');
+        }
       },
       error => {
         switch (error.code) {
@@ -181,27 +231,32 @@ const Chat: React.FC = () => {
   };
 
   const renderMessageContent = (message: ChatMessage, isMyMessage: boolean) => {
-    switch (message.type) {
-      case 'image':
+    switch (message.messageType) {
+      case 'IMAGE':
         return (
-          <ImageMessage imageUrl={message.content} isMyMessage={isMyMessage} alt="전송된 이미지" />
+          <ImageMessage
+            imageUrl={message.imageUrl || message.content}
+            isMyMessage={isMyMessage}
+            alt="전송된 이미지"
+          />
         );
-      case 'location':
-        try {
-          const locationData = JSON.parse(message.content);
+      case 'LOCATION':
+        if (
+          typeof message.locationLatitude === 'number' &&
+          typeof message.locationLongitude === 'number'
+        ) {
           return (
             <LocationMessage
-              latitude={locationData.latitude}
-              longitude={locationData.longitude}
-              locationName={locationData.locationName}
-              address={locationData.address}
+              latitude={message.locationLatitude}
+              longitude={message.locationLongitude}
+              locationName={message.locationName || message.content}
               isMyMessage={isMyMessage}
             />
           );
-        } catch {
-          return <div className="text-gray-800 dark:text-white">{message.content}</div>;
         }
-      case 'system':
+
+        return <div className="text-gray-800 dark:text-white">{message.content}</div>;
+      case 'SYSTEM':
         return (
           <div
             className="text-center text-sm text-gray-500 dark:text-gray-400 italic py-2 px-4 bg-gray-100/50 dark:bg-gray-800/50 rounded-xl"
@@ -210,7 +265,7 @@ const Chat: React.FC = () => {
             {message.content}
           </div>
         );
-      case 'text':
+      case 'TEXT':
       default:
         return <div className="text-gray-800 dark:text-white">{message.content}</div>;
     }
@@ -292,7 +347,9 @@ const Chat: React.FC = () => {
     );
   }
 
-  const otherParticipants = room.participants.filter(p => p.id !== chatService.getCurrentUserId());
+  const currentUserId = authService.getUser()?.id?.toString() || '';
+  const isDirectRoom = room.roomType === 'PRIVATE';
+  const otherParticipants = room.participants.filter(p => (p.userId || p.id) !== currentUserId);
 
   return (
     <div
@@ -337,7 +394,7 @@ const Chat: React.FC = () => {
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-1">
                   <h1 className="text-lg font-bold text-gray-800 dark:text-white">{room.name}</h1>
-                  {room.type === 'direct' && otherParticipants[0] && (
+                  {isDirectRoom && otherParticipants[0] && (
                     <span
                       className={`text-xs px-2 py-1 rounded-full flex items-center gap-1 ${
                         otherParticipants[0].isOnline
@@ -399,13 +456,13 @@ const Chat: React.FC = () => {
                     const prevMessage = messages[index - 1];
                     const showDate =
                       !prevMessage ||
-                      new Date(message.timestamp).toDateString() !==
-                        new Date(prevMessage.timestamp).toDateString();
+                      new Date(message.sentAt).toDateString() !==
+                        new Date(prevMessage.sentAt).toDateString();
 
-                    const isMyMessage = message.senderId === chatService.getCurrentUserId();
+                    const isMyMessage = message.senderId === currentUserId;
                     const showSenderName =
                       !isMyMessage &&
-                      room.type === 'group' &&
+                      !isDirectRoom &&
                       (!prevMessage || prevMessage.senderId !== message.senderId);
 
                     return (
@@ -415,17 +472,17 @@ const Chat: React.FC = () => {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.3 }}
-                        aria-label={`${message.senderName}: ${message.content}, ${formatTime(message.timestamp)}`}
+                        aria-label={`${message.senderName}: ${message.content}, ${formatTime(message.sentAt)}`}
                       >
                         {showDate && (
                           <div
                             className="flex items-center justify-center my-6"
                             role="separator"
-                            aria-label={`${formatDate(message.timestamp)} 메시지`}
+                            aria-label={`${formatDate(message.sentAt)} 메시지`}
                           >
                             <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent" />
                             <span className="px-4 py-1.5 text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 rounded-full">
-                              {formatDate(message.timestamp)}
+                              {formatDate(message.sentAt)}
                             </span>
                             <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent" />
                           </div>
@@ -458,10 +515,10 @@ const Chat: React.FC = () => {
                               className={`flex items-center gap-2 mt-1 px-2 ${isMyMessage ? 'justify-end' : 'justify-start'}`}
                             >
                               <time
-                                dateTime={message.timestamp.toISOString()}
+                                dateTime={message.sentAt.toISOString()}
                                 className="text-xs text-gray-400 dark:text-gray-500"
                               >
-                                {formatTime(message.timestamp)}
+                                {formatTime(message.sentAt)}
                               </time>
                               {isMyMessage && (
                                 <span
@@ -510,7 +567,7 @@ const Chat: React.FC = () => {
             className="max-w-4xl mx-auto"
             onSubmit={e => {
               e.preventDefault();
-              handleSendMessage();
+              void handleSendMessage();
             }}
             aria-label="메시지 입력"
           >

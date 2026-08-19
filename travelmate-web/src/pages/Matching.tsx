@@ -13,6 +13,7 @@ import {
   useSendMatchRequest,
   useRespondToMatchRequest,
   useCancelMatchRequest,
+  useCompleteMatchRequest,
   useReceivedMatchRequests,
   useSentMatchRequests,
   useMatchHistory,
@@ -40,6 +41,7 @@ const Matching: React.FC = () => {
   const sendRequest = useSendMatchRequest();
   const respondRequest = useRespondToMatchRequest();
   const cancelRequest = useCancelMatchRequest();
+  const completeRequest = useCompleteMatchRequest();
 
   useEffect(() => {
     if (!loadingRecs && recommendations && recommendations.length > 0) {
@@ -65,6 +67,10 @@ const Matching: React.FC = () => {
     cancelRequest.mutate(requestId);
   };
 
+  const handleComplete = (requestId: number) => {
+    completeRequest.mutate(requestId);
+  };
+
   const pendingBadge = pendingCount?.count ? pendingCount.count : 0;
 
   const tabs: { id: TabType; label: string; badge?: number }[] = [
@@ -72,6 +78,28 @@ const Matching: React.FC = () => {
     { id: 'requests', label: '요청 관리', badge: pendingBadge },
     { id: 'history', label: '히스토리' },
   ];
+
+  const getHistoryStatus = (status?: string) => {
+    switch (status) {
+      case 'COMPLETED':
+        return {
+          label: '완료',
+          className:
+            'bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-white/70 border-gray-200 dark:border-white/15',
+        };
+      case 'ACCEPTED':
+      case 'MATCHED':
+      default:
+        return {
+          label: '진행 중',
+          className:
+            'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-500/30',
+        };
+    }
+  };
+
+  const canCompleteMatch = (status?: string) =>
+    status == null || status === 'ACCEPTED' || status === 'MATCHED';
 
   return (
     <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] relative overflow-x-hidden">
@@ -253,6 +281,18 @@ const Matching: React.FC = () => {
                       key={item.matchRequestId}
                       className="bg-white/80 dark:bg-white/[0.08] backdrop-blur-xl border border-gray-200/50 dark:border-white/[0.12] rounded-2xl p-5"
                     >
+                      {(() => {
+                        const statusInfo = getHistoryStatus(item.status);
+                        return (
+                          <div className="mb-3 flex justify-end">
+                            <span
+                              className={`inline-flex items-center rounded-lg border px-2.5 py-1 text-xs font-bold ${statusInfo.className}`}
+                            >
+                              {statusInfo.label}
+                            </span>
+                          </div>
+                        );
+                      })()}
                       <div className="flex justify-between items-center mb-2.5">
                         <div className="flex items-center gap-3">
                           <div>
@@ -287,6 +327,18 @@ const Matching: React.FC = () => {
                         매칭일: {new Date(item.matchedAt).toLocaleDateString('ko-KR')}
                       </div>
                       <MatchScoreBreakdown breakdown={item.scoreBreakdown} />
+                      {canCompleteMatch(item.status) && (
+                        <div className="mt-4 flex justify-end">
+                          <button
+                            type="button"
+                            disabled={completeRequest.isPending}
+                            onClick={() => handleComplete(item.matchRequestId)}
+                            className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            동행 완료
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

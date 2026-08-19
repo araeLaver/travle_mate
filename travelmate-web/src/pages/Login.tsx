@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useGoogleLogin } from '@react-oauth/google';
 import { authService } from '../services/authService';
+import { createOAuthState } from '../services/oauthState';
 import { useKakaoSDK } from '../hooks/useKakaoSDK';
 import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
@@ -180,9 +181,14 @@ const Login: React.FC = () => {
       return;
     }
     setOauthLoading('naver');
-    const state = 'naver';
-    const naverAuthUrl = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${NAVER_CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&state=${state}`;
-    window.location.href = naverAuthUrl;
+    try {
+      const state = createOAuthState('naver');
+      const naverAuthUrl = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${NAVER_CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&state=${encodeURIComponent(state)}`;
+      window.location.href = naverAuthUrl;
+    } catch {
+      setOauthLoading(null);
+      setError('네이버 로그인을 시작할 수 없습니다. 브라우저 저장소 설정을 확인해주세요.');
+    }
   }, []);
 
   const fadeInUp = {

@@ -34,6 +34,7 @@ const Profile: React.FC = () => {
   const currentUser = authService.getUser();
   const viewedUserId = userId ? parseInt(userId) : currentUser?.id;
   const isOwnProfile = !userId || (currentUser !== null && parseInt(userId) === currentUser.id);
+  const canAddTravelHistory = isOwnProfile && profileService.isMockMode();
 
   const { data: followStats, refetch: refetchFollowStats } = useFollowStats(viewedUserId || 0);
   const { data: followStatus } = useFollowStatus(
@@ -47,18 +48,18 @@ const Profile: React.FC = () => {
     try {
       const userProfile = await profileService.getProfile(userId);
       if (!userProfile) {
-        const tempProfile = profileService.createTempProfile('여행러');
-        setProfile(tempProfile);
+        setProfile(null);
       } else {
         setProfile(userProfile);
       }
-    } catch {
-      const tempProfile = profileService.createTempProfile('여행러');
-      setProfile(tempProfile);
+    } catch (error) {
+      logError('Profile.loadProfile', error);
+      toast.error(getErrorMessage(error));
+      setProfile(null);
     } finally {
       setIsLoading(false);
     }
-  }, [userId]);
+  }, [toast, userId]);
 
   useEffect(() => {
     loadProfile();
@@ -137,6 +138,10 @@ const Profile: React.FC = () => {
   };
 
   const addTravelHistory = () => {
+    if (!profileService.isMockMode()) {
+      return;
+    }
+
     const destination = window.prompt('목적지를 입력하세요:');
     if (!destination) return;
 
@@ -589,7 +594,7 @@ const Profile: React.FC = () => {
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                   ✈️ 여행 기록
                 </h3>
-                {isOwnProfile && (
+                {canAddTravelHistory && (
                   <button
                     onClick={addTravelHistory}
                     className="px-4 py-2 bg-gradient-to-r from-violet-600 to-pink-600 text-white rounded-xl font-medium text-sm hover:shadow-lg transition-all"

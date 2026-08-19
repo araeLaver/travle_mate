@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import Chat from './Chat';
 
@@ -38,53 +38,69 @@ jest.mock('framer-motion', () => {
   };
 });
 
-jest.mock('../services/chatService', () => ({
-  chatService: {
-    getChatRooms: jest.fn(),
+jest.mock('../services/authService', () => ({
+  authService: {
+    getUser: jest.fn(() => ({ id: 1 })),
+  },
+}));
+
+jest.mock('../services/apiClient', () => ({
+  apiClient: {
+    uploadFile: jest.fn(),
+  },
+}));
+
+jest.mock('../services/chatRestService', () => ({
+  chatRestService: {
+    getChatRoom: jest.fn(),
     getMessages: jest.fn(),
     sendMessage: jest.fn(),
-    markMessagesAsRead: jest.fn(),
-    addMessageListener: jest.fn(),
-    removeMessageListener: jest.fn(),
-    getCurrentUserId: jest.fn().mockReturnValue('user-1'),
+    markAsRead: jest.fn(),
   },
-  ChatMessage: {},
-  ChatRoom: {},
 }));
 
 const mockMessages = [
   {
     id: 'msg-1',
-    roomId: 'room-1',
-    senderId: 'user-1',
+    chatRoomId: 'room-1',
+    senderId: '1',
     senderName: '나',
     content: '안녕하세요!',
-    timestamp: new Date('2025-01-15T10:00:00'),
-    type: 'text' as const,
+    sentAt: new Date('2025-01-15T10:00:00'),
+    messageType: 'TEXT' as const,
     isRead: true,
+    isDeleted: false,
   },
   {
     id: 'msg-2',
-    roomId: 'room-1',
-    senderId: 'user-2',
+    chatRoomId: 'room-1',
+    senderId: '2',
     senderName: '김철수',
     content: '반갑습니다!',
-    timestamp: new Date('2025-01-15T10:05:00'),
-    type: 'text' as const,
+    sentAt: new Date('2025-01-15T10:05:00'),
+    messageType: 'TEXT' as const,
     isRead: false,
+    isDeleted: false,
   },
 ];
 
 const mockRoom = {
   id: 'room-1',
   name: '제주도 여행 채팅방',
+  roomType: 'GROUP' as const,
   participants: [
-    { id: 'user-1', name: '나', isOnline: true, lastSeen: new Date() },
-    { id: 'user-2', name: '김철수', isOnline: true, lastSeen: new Date() },
+    { id: 'participant-1', userId: '1', userName: '나', isOnline: true, lastSeen: new Date() },
+    {
+      id: 'participant-2',
+      userId: '2',
+      userName: '김철수',
+      isOnline: true,
+      lastSeen: new Date(),
+    },
   ],
   unreadCount: 1,
   createdAt: new Date(),
-  type: 'group' as const,
+  isActive: true,
 };
 
 const mockToast = { success: jest.fn(), error: jest.fn(), info: jest.fn(), warning: jest.fn() };
@@ -106,7 +122,7 @@ jest.mock('../components/ThemeToggle', () => () => (
 ));
 
 // eslint-disable-next-line import/first
-import { chatService } from '../services/chatService';
+import { chatRestService } from '../services/chatRestService';
 
 const renderChat = (roomId = 'room-1') =>
   render(
@@ -120,75 +136,96 @@ const renderChat = (roomId = 'room-1') =>
 describe('Chat', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    (chatService.getChatRooms as jest.Mock).mockReturnValue([mockRoom]);
-    (chatService.getMessages as jest.Mock).mockReturnValue(mockMessages);
+    (chatRestService.getChatRoom as jest.Mock).mockResolvedValue(mockRoom);
+    (chatRestService.getMessages as jest.Mock).mockResolvedValue(mockMessages);
+    (chatRestService.sendMessage as jest.Mock).mockResolvedValue({
+      id: 'msg-3',
+      chatRoomId: 'room-1',
+      senderId: '1',
+      senderName: '나',
+      content: '새 메시지',
+      sentAt: new Date('2025-01-15T10:10:00'),
+      messageType: 'TEXT',
+      isRead: false,
+      isDeleted: false,
+    });
+    (chatRestService.markAsRead as jest.Mock).mockResolvedValue(undefined);
     // Mock scrollIntoView
     Element.prototype.scrollIntoView = jest.fn();
   });
 
-  test('renders chat room name', () => {
+  test('renders chat room name', async () => {
     renderChat();
-    expect(screen.getByText('제주도 여행 채팅방')).toBeInTheDocument();
+    expect(await screen.findByText('제주도 여행 채팅방')).toBeInTheDocument();
   });
 
-  test('renders messages', () => {
+  test('renders messages', async () => {
     renderChat();
-    expect(screen.getByText('안녕하세요!')).toBeInTheDocument();
+    expect(await screen.findByText('안녕하세요!')).toBeInTheDocument();
     expect(screen.getByText('반갑습니다!')).toBeInTheDocument();
   });
 
-  test('renders participant count', () => {
+  test('renders participant count', async () => {
     renderChat();
-    expect(screen.getByText('2명 참여')).toBeInTheDocument();
+    expect(await screen.findByText('2명 참여')).toBeInTheDocument();
   });
 
-  test('renders message input area', () => {
+  test('renders message input area', async () => {
     renderChat();
-    expect(screen.getByPlaceholderText('메시지를 입력하세요...')).toBeInTheDocument();
+    expect(await screen.findByPlaceholderText('메시지를 입력하세요...')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '메시지 보내기' })).toBeInTheDocument();
   });
 
-  test('sends message on submit', () => {
+  test('sends message on submit', async () => {
     renderChat();
 
-    const input = screen.getByPlaceholderText('메시지를 입력하세요...');
+    const input = await screen.findByPlaceholderText('메시지를 입력하세요...');
     fireEvent.change(input, { target: { value: '새 메시지' } });
 
     fireEvent.click(screen.getByRole('button', { name: '메시지 보내기' }));
 
-    expect(chatService.sendMessage).toHaveBeenCalledWith('room-1', '새 메시지');
+    await waitFor(() => {
+      expect(chatRestService.sendMessage).toHaveBeenCalledWith('room-1', {
+        content: '새 메시지',
+        messageType: 'TEXT',
+      });
+    });
   });
 
-  test('does not send empty message', () => {
+  test('does not send empty message', async () => {
     renderChat();
 
-    fireEvent.click(screen.getByRole('button', { name: '메시지 보내기' }));
+    fireEvent.click(await screen.findByRole('button', { name: '메시지 보내기' }));
 
-    expect(chatService.sendMessage).not.toHaveBeenCalled();
+    expect(chatRestService.sendMessage).not.toHaveBeenCalled();
   });
 
-  test('shows empty state when no messages', () => {
-    (chatService.getMessages as jest.Mock).mockReturnValue([]);
+  test('shows empty state when no messages', async () => {
+    (chatRestService.getMessages as jest.Mock).mockResolvedValue([]);
     renderChat();
 
-    expect(screen.getByText('아직 메시지가 없습니다')).toBeInTheDocument();
+    expect(await screen.findByText('아직 메시지가 없습니다')).toBeInTheDocument();
   });
 
-  test('navigates to dashboard when room not found', () => {
-    (chatService.getChatRooms as jest.Mock).mockReturnValue([]);
+  test('navigates to dashboard when room not found', async () => {
+    (chatRestService.getChatRoom as jest.Mock).mockResolvedValue(null);
     renderChat('nonexistent');
 
-    expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
+    });
   });
 
-  test('marks messages as read on mount', () => {
+  test('marks messages as read on mount', async () => {
     renderChat();
-    expect(chatService.markMessagesAsRead).toHaveBeenCalledWith('room-1');
+    await waitFor(() => {
+      expect(chatRestService.markAsRead).toHaveBeenCalledWith('room-1');
+    });
   });
 
-  test('renders action buttons (image, location, emoticon)', () => {
+  test('renders action buttons (image, location, emoticon)', async () => {
     renderChat();
-    expect(screen.getByRole('button', { name: '이미지 전송' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: '이미지 전송' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '위치 공유' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '이모티콘 선택' })).toBeInTheDocument();
   });

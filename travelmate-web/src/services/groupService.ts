@@ -1,4 +1,5 @@
 import { apiClient, ApiError } from './apiClient';
+import { authService } from './authService';
 import { TravelGroupApiResponse, GroupMemberApiResponse } from '../types';
 import { logger } from '../lib/utils';
 
@@ -37,6 +38,14 @@ export interface GroupMember {
   travelStyle?: string;
 }
 
+export type TravelGroupPurpose =
+  | 'LEISURE'
+  | 'BUSINESS'
+  | 'EDUCATION'
+  | 'MEDICAL'
+  | 'FAMILY'
+  | 'OTHER';
+
 export interface CreateGroupRequest {
   name: string;
   description: string;
@@ -44,6 +53,7 @@ export interface CreateGroupRequest {
   startDate: Date;
   endDate: Date;
   maxMembers: number;
+  purpose?: TravelGroupPurpose;
   tags: string[];
   coverImage?: string;
   budget?: {
@@ -55,36 +65,38 @@ export interface CreateGroupRequest {
   requirements: string[];
 }
 
+const toDateOnly = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+const getApiErrorStatus = (error: unknown): number | undefined => {
+  if (error && typeof error === 'object' && 'status' in error) {
+    const status = Number((error as ApiError).status);
+    return Number.isFinite(status) ? status : undefined;
+  }
+  return undefined;
+};
+
+const getSortableDateTime = (date: Date): number => {
+  const time = date.getTime();
+  return Number.isNaN(time) ? Number.MAX_SAFE_INTEGER : time;
+};
+
 class GroupService {
   private useMock: boolean = false; // Mock 데이터 사용 여부 (개발/테스트용)
   private groups: Map<string, TravelGroup> = new Map();
-  private currentUserId: string;
-  private mockInitialized: boolean = false;
+  private mockUserId: string;
 
   constructor() {
-    this.currentUserId = localStorage.getItem('tempUserId') || this.generateUserId();
-    localStorage.setItem('tempUserId', this.currentUserId);
+    this.mockUserId = localStorage.getItem('tempUserId') || this.generateUserId();
+    localStorage.setItem('tempUserId', this.mockUserId);
 
     // Mock 모드일 때만 초기 데이터 로드
     if (this.useMock) {
       this.initializeMockData();
     }
-  }
-
-  // Mock 데이터 초기화 확인 (fallback용)
-  private ensureMockData(): void {
-    if (!this.mockInitialized) {
-      this.initializeMockData();
-      this.mockInitialized = true;
-    }
-  }
-
-  // Mock 데이터 가져오기 (fallback용)
-  private getMockGroups(): TravelGroup[] {
-    this.ensureMockData();
-    return Array.from(this.groups.values()).sort(
-      (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
-    );
   }
 
   private generateUserId(): string {
@@ -93,6 +105,9 @@ class GroupService {
 
   // Mock 모드 설정 (테스트용)
   setMockMode(useMock: boolean): void {
+    if (useMock && process.env.NODE_ENV === 'production') {
+      throw new Error('Group mock mode cannot be enabled in production');
+    }
     this.useMock = useMock;
     if (useMock) {
       this.initializeMockData();
@@ -594,9 +609,8 @@ class GroupService {
       const response = await apiClient.get<TravelGroupApiResponse[]>('/groups');
       return response.map(group => this.mapToTravelGroup(group));
     } catch (error) {
-      logger.error('Failed to fetch groups, using mock data:', error);
-      // API 실패 시 (비회원 등) mock 데이터 반환
-      return this.getMockGroups();
+      logger.error('Failed to fetch groups:', error);
+      throw error;
     }
   }
 
@@ -611,7 +625,10 @@ class GroupService {
       return this.mapToTravelGroup(response);
     } catch (error) {
       logger.error('Failed to fetch group:', error);
-      return null;
+      if (getApiErrorStatus(error) === 404) {
+        return null;
+      }
+      throw error;
     }
   }
 
@@ -699,14 +716,14 @@ class GroupService {
         currentMembers: 1,
         members: [
           {
-            id: this.currentUserId,
+            id: this.getCurrentUserId(),
             name: '나',
             joinedAt: new Date(),
             role: 'leader',
             status: 'active',
           },
         ],
-        createdBy: this.currentUserId,
+        createdBy: this.getCurrentUserId(),
         createdAt: new Date(),
         status: 'recruiting',
       };
@@ -720,9 +737,10 @@ class GroupService {
         title: request.name,
         description: request.description,
         destination: request.destination,
-        startDate: request.startDate.toISOString(),
-        endDate: request.endDate.toISOString(),
+        startDate: toDateOnly(request.startDate),
+        endDate: toDateOnly(request.endDate),
         maxMembers: request.maxMembers,
+        purpose: request.purpose || 'LEISURE',
         travelStyle: request.travelStyle,
         requirements: request.requirements.join(','),
         budgetRange: request.budget ? `${request.budget.min}-${request.budget.max}` : undefined,
@@ -746,14 +764,15 @@ class GroupService {
       }
 
       // 이미 가입된 멤버인지 확인
-      const alreadyJoined = group.members.some(member => member.id === this.currentUserId);
+      const currentUserId = this.getCurrentUserId();
+      const alreadyJoined = group.members.some(member => member.id === currentUserId);
       if (alreadyJoined) {
         throw new Error('이미 가입된 그룹입니다.');
       }
 
       // 새 멤버 추가
       group.members.push({
-        id: this.currentUserId,
+        id: currentUserId,
         name: '나',
         joinedAt: new Date(),
         role: 'member',
@@ -789,7 +808,8 @@ class GroupService {
       const group = this.groups.get(groupId);
       if (!group) return false;
 
-      const memberIndex = group.members.findIndex(member => member.id === this.currentUserId);
+      const currentUserId = this.getCurrentUserId();
+      const memberIndex = group.members.findIndex(member => member.id === currentUserId);
       if (memberIndex === -1) {
         throw new Error('가입되지 않은 그룹입니다.');
       }
@@ -828,7 +848,7 @@ class GroupService {
   async getMyGroups(): Promise<TravelGroup[]> {
     if (this.useMock) {
       return Array.from(this.groups.values())
-        .filter(group => group.members.some(member => member.id === this.currentUserId))
+        .filter(group => group.members.some(member => member.id === this.getCurrentUserId()))
         .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
     }
 
@@ -837,42 +857,55 @@ class GroupService {
       return response.map(group => this.mapToTravelGroup(group));
     } catch (error) {
       logger.error('Failed to fetch my groups:', error);
-      // 비회원이면 빈 배열 반환
-      return [];
+      const status = getApiErrorStatus(error);
+      if (status === 401 || status === 403) {
+        return [];
+      }
+      throw error;
     }
   }
 
   // 추천 그룹 (간단한 알고리즘)
   async getRecommendedGroups(): Promise<TravelGroup[]> {
     if (this.useMock) {
-      return Array.from(this.groups.values())
-        .filter(
+      const currentUserId = this.getCurrentUserId();
+      return this.sortRecommendedGroups(
+        Array.from(this.groups.values()).filter(
           group =>
             group.status === 'recruiting' &&
-            !group.members.some(member => member.id === this.currentUserId)
+            !group.members.some(member => member.id === currentUserId)
         )
-        .sort(() => Math.random() - 0.5) // 랜덤 정렬
-        .slice(0, 6);
+      ).slice(0, 6);
     }
 
     try {
-      // 추천 API 엔드포인트가 구현되어 있다면 사용
-      // 없다면 전체 그룹 중에서 랜덤 선택
+      const currentUserId = this.getCurrentUserId();
       const response = await apiClient.get<TravelGroupApiResponse[]>('/groups?status=recruiting');
-      return response
-        .map(group => this.mapToTravelGroup(group))
-        .filter(group => !group.members.some(member => member.id === this.currentUserId))
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 6);
+      return this.sortRecommendedGroups(
+        response
+          .map(group => this.mapToTravelGroup(group))
+          .filter(group => !group.members.some(member => member.id === currentUserId))
+      ).slice(0, 6);
     } catch (error) {
-      logger.error('Failed to fetch recommended groups, using mock data:', error);
-      // API 실패 시 mock 데이터에서 추천
-      this.ensureMockData();
-      return Array.from(this.groups.values())
-        .filter(group => group.status === 'recruiting')
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 6);
+      logger.error('Failed to fetch recommended groups:', error);
+      throw error;
     }
+  }
+
+  private sortRecommendedGroups(groups: TravelGroup[]): TravelGroup[] {
+    return [...groups].sort((a, b) => {
+      const startDateDiff = getSortableDateTime(a.startDate) - getSortableDateTime(b.startDate);
+      if (startDateDiff !== 0) return startDateDiff;
+
+      const aOpenSlots = Math.max(0, a.maxMembers - a.currentMembers);
+      const bOpenSlots = Math.max(0, b.maxMembers - b.currentMembers);
+      if (aOpenSlots !== bOpenSlots) return aOpenSlots - bOpenSlots;
+
+      const createdAtDiff = getSortableDateTime(b.createdAt) - getSortableDateTime(a.createdAt);
+      if (createdAtDiff !== 0) return createdAtDiff;
+
+      return a.id.localeCompare(b.id, undefined, { numeric: true });
+    });
   }
 
   // 백엔드 응답을 TravelGroup으로 변환
@@ -885,7 +918,7 @@ class GroupService {
       startDate: new Date(data.startDate),
       endDate: new Date(data.endDate),
       maxMembers: data.maxMembers || 10,
-      currentMembers: data.currentMembers || 0,
+      currentMembers: data.currentMembers ?? data.currentMemberCount ?? 0,
       members: (data.members || []).map((m: GroupMemberApiResponse) => ({
         id: m.userId?.toString() || m.id?.toString() || '',
         name: m.nickname || m.name || '',
@@ -940,7 +973,8 @@ class GroupService {
   }
 
   getCurrentUserId(): string {
-    return this.currentUserId;
+    const userId = authService.getUser()?.id;
+    return userId === undefined || userId === null ? this.mockUserId : userId.toString();
   }
 }
 

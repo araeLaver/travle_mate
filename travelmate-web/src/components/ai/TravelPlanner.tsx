@@ -12,12 +12,20 @@ import {
   Activity,
   TRAVEL_STYLES,
   BUDGET_RANGES,
+  isItineraryRequestValidationError,
 } from '../../services/aiRecommendationService';
 
 interface TravelPlannerProps {
   className?: string;
   onItineraryGenerated?: (itinerary: ItineraryResponse) => void;
 }
+
+const formatDateInput = (date: Date = new Date()): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 const TravelPlanner: React.FC<TravelPlannerProps> = ({ className = '', onItineraryGenerated }) => {
   const [step, setStep] = useState<'form' | 'loading' | 'result'>('form');
@@ -53,7 +61,10 @@ const TravelPlanner: React.FC<TravelPlannerProps> = ({ className = '', onItinera
   // Handle form input change
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => ({
+      ...prev,
+      [name]: name === 'groupSize' ? Number(value) : value,
+    }));
   };
 
   // Handle interest toggle
@@ -82,7 +93,11 @@ const TravelPlanner: React.FC<TravelPlannerProps> = ({ className = '', onItinera
       setStep('result');
       onItineraryGenerated?.(result);
     } catch (err) {
-      setError('일정 생성 중 오류가 발생했습니다. 다시 시도해주세요.');
+      setError(
+        isItineraryRequestValidationError(err)
+          ? err.message
+          : '일정 생성 중 오류가 발생했습니다. 다시 시도해주세요.'
+      );
       setStep('form');
     }
   };
@@ -123,7 +138,7 @@ const TravelPlanner: React.FC<TravelPlannerProps> = ({ className = '', onItinera
             name="startDate"
             value={formData.startDate}
             onChange={handleInputChange}
-            min={new Date().toISOString().split('T')[0]}
+            min={formatDateInput()}
             className="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
@@ -136,7 +151,7 @@ const TravelPlanner: React.FC<TravelPlannerProps> = ({ className = '', onItinera
             name="endDate"
             value={formData.endDate}
             onChange={handleInputChange}
-            min={formData.startDate || new Date().toISOString().split('T')[0]}
+            min={formData.startDate || formatDateInput()}
             className="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>

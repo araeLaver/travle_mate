@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
+import { authService } from '../services/authService';
+import { API_BASE_URL } from '../services/apiConfig';
 
 interface NetworkStatus {
   isOnline: boolean;
@@ -54,11 +56,12 @@ export function useNetworkStatus(): NetworkStatus {
 
   useEffect(() => {
     const handleOnline = () => {
-      setIsOnline(true);
-      // 오프라인에서 온라인으로 복구됨을 표시
-      if (!navigator.onLine) {
-        setWasOffline(true);
-      }
+      setIsOnline(wasOnline => {
+        if (!wasOnline) {
+          setWasOffline(true);
+        }
+        return true;
+      });
     };
 
     const handleOffline = () => {
@@ -146,6 +149,70 @@ interface PendingRequest {
   timestamp: number;
 }
 
+const URL_SCHEME_PATTERN = /^[a-z][a-z\d+\-.]*:/i;
+
+const trimTrailingSlash = (value: string): string =>
+  value.endsWith('/') ? value.slice(0, -1) : value;
+
+const shouldSendApiCredentials = (url: string): boolean => {
+  if (!URL_SCHEME_PATTERN.test(url)) {
+    return true;
+  }
+
+  try {
+    const requestUrl = new URL(url, window.location.origin);
+    const apiUrl = new URL(API_BASE_URL, window.location.origin);
+    const apiPath = trimTrailingSlash(apiUrl.pathname);
+
+    return (
+      requestUrl.origin === apiUrl.origin &&
+      (requestUrl.pathname === apiPath || requestUrl.pathname.startsWith(`${apiPath}/`))
+    );
+  } catch {
+    return false;
+  }
+};
+
+const replayQueuedRequest = async (request: PendingRequest): Promise<void> => {
+  const sendApiCredentials = shouldSendApiCredentials(request.url);
+  const buildHeaders = async (): Promise<HeadersInit> => {
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+
+    if (sendApiCredentials) {
+      const token = await authService.getValidToken();
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+    }
+
+    return headers;
+  };
+
+  const buildRequestInit = async (): Promise<RequestInit> => ({
+    method: request.method,
+    headers: await buildHeaders(),
+    credentials: sendApiCredentials ? 'include' : 'same-origin',
+    body: request.body,
+  });
+
+  let response = await fetch(request.url, await buildRequestInit());
+
+  if (sendApiCredentials && response.status === 401) {
+    try {
+      await authService.refreshAccessToken();
+      response = await fetch(request.url, await buildRequestInit());
+    } catch {
+      // Keep the request queued below so the next online pass can retry it.
+    }
+  }
+
+  if (!response.ok) {
+    throw new Error(`Queued request failed with status ${response.status}`);
+  }
+};
+
 export function useOfflineQueue() {
   const [queue, setQueue, clearQueue] = useOfflineStorage<PendingRequest[]>('tm_offline_queue', []);
   const { isOnline } = useNetworkStatus();
@@ -174,13 +241,7 @@ export function useOfflineQueue() {
 
     for (const request of queue) {
       try {
-        await fetch(request.url, {
-          method: request.method,
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: request.body,
-        });
+        await replayQueuedRequest(request);
         removeFromQueue(request.id);
       } catch (error) {
         // eslint-disable-next-line no-console

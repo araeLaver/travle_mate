@@ -5,6 +5,8 @@
  * Can be integrated with Sentry, LogRocket, or custom backend logging.
  */
 
+import { API_BASE_URL } from '../services/apiConfig';
+
 // Environment check
 const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = process.env.NODE_ENV === 'production';
@@ -16,7 +18,7 @@ const MONITORING_CONFIG = {
   batchSize: 10,
   flushInterval: 30000, // 30 seconds
   maxQueueSize: 100,
-  apiEndpoint: process.env.REACT_APP_API_URL + '/monitoring/logs',
+  apiEndpoint: `${API_BASE_URL}/monitoring/logs`,
 };
 
 // Types
@@ -50,13 +52,62 @@ interface ErrorReport {
   context?: Record<string, unknown>;
 }
 
+const getSessionStorage = (): Storage | null => {
+  try {
+    if (typeof window === 'undefined') {
+      return null;
+    }
+
+    return window.sessionStorage;
+  } catch {
+    return null;
+  }
+};
+
+const getSessionItem = (key: string): string | null => {
+  try {
+    return getSessionStorage()?.getItem(key) ?? null;
+  } catch {
+    return null;
+  }
+};
+
+const setSessionItem = (key: string, value: string): void => {
+  try {
+    getSessionStorage()?.setItem(key, value);
+  } catch {
+    // Monitoring must never break the app when storage is unavailable.
+  }
+};
+
+const removeSessionItem = (key: string): void => {
+  try {
+    getSessionStorage()?.removeItem(key);
+  } catch {
+    // Monitoring must never break the app when storage is unavailable.
+  }
+};
+
+const getSessionJson = <T>(key: string, fallback: T): T => {
+  const value = getSessionItem(key);
+  if (!value) {
+    return fallback;
+  }
+
+  try {
+    return JSON.parse(value) as T;
+  } catch {
+    return fallback;
+  }
+};
+
 // Session ID generation
 const generateSessionId = (): string => {
-  const stored = sessionStorage.getItem('tm_session_id');
+  const stored = getSessionItem('tm_session_id');
   if (stored) return stored;
 
   const newId = `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
-  sessionStorage.setItem('tm_session_id', newId);
+  setSessionItem('tm_session_id', newId);
   return newId;
 };
 
@@ -208,10 +259,10 @@ export const errorTracker = {
     }
 
     // Store recent errors for debugging
-    const recentErrors = JSON.parse(sessionStorage.getItem('tm_recent_errors') || '[]');
+    const recentErrors = getSessionJson<ErrorReport[]>('tm_recent_errors', []);
     recentErrors.push(report);
     if (recentErrors.length > 10) recentErrors.shift();
-    sessionStorage.setItem('tm_recent_errors', JSON.stringify(recentErrors));
+    setSessionItem('tm_recent_errors', JSON.stringify(recentErrors));
   },
 
   /**
@@ -233,14 +284,14 @@ export const errorTracker = {
     });
 
     // Store for debugging
-    sessionStorage.setItem('tm_last_react_error', JSON.stringify(report));
+    setSessionItem('tm_last_react_error', JSON.stringify(report));
   },
 
   /**
    * Get recent errors for debugging
    */
   getRecentErrors: (): ErrorReport[] => {
-    return JSON.parse(sessionStorage.getItem('tm_recent_errors') || '[]');
+    return getSessionJson<ErrorReport[]>('tm_recent_errors', []);
   },
 };
 
@@ -271,10 +322,10 @@ export const performanceMonitor = {
     }
 
     // Store metrics
-    const metrics = JSON.parse(sessionStorage.getItem('tm_perf_metrics') || '[]');
+    const metrics = getSessionJson<PerformanceMetric[]>('tm_perf_metrics', []);
     metrics.push(metric);
     if (metrics.length > 50) metrics.shift();
-    sessionStorage.setItem('tm_perf_metrics', JSON.stringify(metrics));
+    setSessionItem('tm_perf_metrics', JSON.stringify(metrics));
   },
 
   /**
@@ -333,14 +384,14 @@ export const performanceMonitor = {
    * Get stored performance metrics
    */
   getMetrics: (): PerformanceMetric[] => {
-    return JSON.parse(sessionStorage.getItem('tm_perf_metrics') || '[]');
+    return getSessionJson<PerformanceMetric[]>('tm_perf_metrics', []);
   },
 
   /**
    * Clear stored metrics
    */
   clearMetrics: (): void => {
-    sessionStorage.removeItem('tm_perf_metrics');
+    removeSessionItem('tm_perf_metrics');
   },
 };
 

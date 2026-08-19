@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { locationService, TravelMate, Location } from '../services/locationService';
-import { chatService } from '../services/chatService';
+import { chatRestService } from '../services/chatRestService';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../components/Toast';
 import { getErrorMessage, logError } from '../utils/errorHandler';
@@ -104,9 +104,24 @@ const Dashboard: React.FC = () => {
     threshold: 60,
   });
 
-  const startChat = (mate: TravelMate) => {
-    const room = chatService.createChatRoom(mate.name, mate.id);
-    navigate(`/chat/${room.id}`);
+  const startChat = async (mate: TravelMate) => {
+    const participantId = Number(mate.id);
+    if (!Number.isFinite(participantId)) {
+      toast.error('실제 사용자 정보가 있는 메이트와만 채팅을 시작할 수 있습니다.');
+      return;
+    }
+
+    try {
+      const room = await chatRestService.createChatRoom({
+        roomName: mate.name,
+        roomType: 'PRIVATE',
+        participantIds: [mate.id],
+      });
+      navigate(`/chat/${room.id}`);
+    } catch (error) {
+      logError('Dashboard.startChat', error);
+      toast.error(getErrorMessage(error));
+    }
   };
 
   const sendGreeting = (mate: TravelMate) => {
@@ -118,35 +133,19 @@ const Dashboard: React.FC = () => {
   };
 
   const setManualLocation = async () => {
-    const gwangjuLocation = {
-      latitude: 37.4138,
-      longitude: 127.2557,
-      address: '경기도 광주시 (수동 설정)',
-    };
-
     try {
-      const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
-      const response = await fetch(
-        `${API_BASE_URL}/location/address?lat=${gwangjuLocation.latitude}&lng=${gwangjuLocation.longitude}`
-      );
+      const gwangjuLocation = await locationService.setManualLocation({
+        latitude: 37.4138,
+        longitude: 127.2557,
+        address: '경기도 광주시 (수동 설정)',
+      });
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data && data.documents && data.documents.length > 0) {
-          const doc = data.documents[0];
-          if (doc.road_address && doc.road_address.address_name) {
-            gwangjuLocation.address = doc.road_address.address_name;
-          } else if (doc.address && doc.address.address_name) {
-            gwangjuLocation.address = doc.address.address_name;
-          }
-        }
-      }
-    } catch {
-      // 주소 조회 실패시 기본 주소 사용
+      setCurrentLocation(gwangjuLocation);
+      setIsLocationEnabled(true);
+    } catch (error) {
+      logError('Dashboard.setManualLocation', error);
+      toast.error(getErrorMessage(error));
     }
-
-    setCurrentLocation(gwangjuLocation);
-    setIsLocationEnabled(true);
   };
 
   const getTimeGreeting = () => {
@@ -577,7 +576,7 @@ const Dashboard: React.FC = () => {
                   <div className="flex gap-3">
                     <button
                       className="flex-1 py-3 bg-gradient-to-r from-violet-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-violet-500/30 transition-all duration-300 flex items-center justify-center gap-2"
-                      onClick={() => startChat(user)}
+                      onClick={() => void startChat(user)}
                       aria-label={`${user.name}님과 채팅 시작`}
                     >
                       💬 채팅 시작

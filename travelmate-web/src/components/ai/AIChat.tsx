@@ -8,6 +8,7 @@ import {
   aiRecommendationService,
   ChatResponse,
   PlaceRecommendation,
+  isChatRequestValidationError,
 } from '../../services/aiRecommendationService';
 
 interface Message {
@@ -89,7 +90,9 @@ const AIChat: React.FC<AIChatProps> = ({ className = '', initialContext, onPlace
       const errorMessage: Message = {
         id: `error-${Date.now()}`,
         type: 'ai',
-        content: '죄송합니다. 응답을 생성하는 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.',
+        content: isChatRequestValidationError(error)
+          ? error.message
+          : '죄송합니다. 응답을 생성하는 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.',
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, errorMessage]);

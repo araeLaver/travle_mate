@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { chatService, ChatRoom } from '../services/chatService';
+import { authService } from '../services/authService';
+import { chatRestService, ChatRoom } from '../services/chatRestService';
 import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
 import SEOHead from '../components/SEOHead';
@@ -27,6 +28,24 @@ const ChatList: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
+  const getCurrentUserId = () => authService.getUser()?.id?.toString() || '';
+  const getParticipantUserId = (participant: ChatRoom['participants'][number]) =>
+    participant.userId || participant.id;
+  const isDirectRoom = (room: ChatRoom) => room.roomType === 'PRIVATE';
+
+  const loadChatRooms = useCallback(async () => {
+    try {
+      const rooms = await chatRestService.getChatRooms();
+      setChatRooms(rooms);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to load chat rooms:', error);
+      setChatRooms([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     loadChatRooms();
 
@@ -35,18 +54,7 @@ const ChatList: React.FC = () => {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, []);
-
-  const loadChatRooms = () => {
-    try {
-      const rooms = chatService.getChatRooms();
-      setChatRooms(rooms);
-    } catch (error) {
-      // Failed to load chat rooms
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [loadChatRooms]);
 
   const filteredRooms = chatRooms.filter(
     room =>
@@ -74,7 +82,8 @@ const ChatList: React.FC = () => {
   };
 
   const getOnlineParticipants = (room: ChatRoom) => {
-    return room.participants.filter(p => p.id !== chatService.getCurrentUserId() && p.isOnline)
+    const currentUserId = getCurrentUserId();
+    return room.participants.filter(p => getParticipantUserId(p) !== currentUserId && p.isOnline)
       .length;
   };
 
@@ -246,10 +255,12 @@ const ChatList: React.FC = () => {
                 animate="animate"
               >
                 {filteredRooms.map(room => {
+                  const currentUserId = getCurrentUserId();
                   const otherParticipant = room.participants.find(
-                    p => p.id !== chatService.getCurrentUserId()
+                    p => getParticipantUserId(p) !== currentUserId
                   );
-                  const isOnline = room.type === 'direct' && otherParticipant?.isOnline;
+                  const isDirect = isDirectRoom(room);
+                  const isOnline = isDirect && otherParticipant?.isOnline;
                   const unreadText =
                     room.unreadCount > 0
                       ? `, 읽지 않은 메시지 ${room.unreadCount > 99 ? '99개 이상' : room.unreadCount + '개'}`
@@ -264,12 +275,12 @@ const ChatList: React.FC = () => {
                       onKeyDown={e => handleRoomKeyDown(e, room.id)}
                       tabIndex={0}
                       role="button"
-                      aria-label={`${room.name} 채팅방${room.type === 'direct' ? (isOnline ? ', 온라인' : ', 오프라인') : `, 참여자 ${room.participants.length}명`}${unreadText}`}
+                      aria-label={`${room.name} 채팅방${isDirect ? (isOnline ? ', 온라인' : ', 오프라인') : `, 참여자 ${room.participants.length}명`}${unreadText}`}
                     >
                       <div className="flex items-center gap-4">
                         {/* Avatar */}
                         <div className="relative flex-shrink-0" aria-hidden="true">
-                          {room.type === 'direct' ? (
+                          {isDirect ? (
                             <div className="w-14 h-14 rounded-full bg-gradient-to-r from-violet-500 to-pink-500 flex items-center justify-center text-white text-xl font-bold overflow-hidden">
                               {otherParticipant?.profileImage ? (
                                 <img
@@ -286,7 +297,7 @@ const ChatList: React.FC = () => {
                               <span className="text-xl">👥</span>
                             </div>
                           )}
-                          {room.type === 'direct' && (
+                          {isDirect && (
                             <span
                               className={`absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-white dark:border-gray-900 ${
                                 isOnline ? 'bg-green-500' : 'bg-gray-400'
@@ -302,7 +313,7 @@ const ChatList: React.FC = () => {
                               <h3 className="font-bold text-gray-800 dark:text-white truncate">
                                 {room.name}
                               </h3>
-                              {room.type === 'group' && (
+                              {!isDirect && (
                                 <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
                                   <span>👥</span>
                                   {getTotalParticipants(room)}명
@@ -313,7 +324,7 @@ const ChatList: React.FC = () => {
                                   )}
                                 </span>
                               )}
-                              {room.type === 'direct' && (
+                              {isDirect && (
                                 <span
                                   className={`text-xs px-2 py-0.5 rounded-full ${
                                     isOnline
@@ -329,9 +340,9 @@ const ChatList: React.FC = () => {
                               {room.lastMessage && (
                                 <time
                                   className="text-xs text-gray-400 dark:text-gray-500"
-                                  dateTime={room.lastMessage.timestamp.toISOString()}
+                                  dateTime={room.lastMessage.sentAt.toISOString()}
                                 >
-                                  {formatTime(room.lastMessage.timestamp)}
+                                  {formatTime(room.lastMessage.sentAt)}
                                 </time>
                               )}
                               {room.unreadCount > 0 && (
@@ -352,19 +363,19 @@ const ChatList: React.FC = () => {
                             {room.lastMessage ? (
                               <>
                                 <span className="font-medium">
-                                  {room.lastMessage.senderId === chatService.getCurrentUserId()
+                                  {room.lastMessage.senderId === currentUserId
                                     ? '나'
                                     : room.lastMessage.senderName}
                                   :
                                 </span>{' '}
                                 <span>
-                                  {room.lastMessage.type === 'text' ? (
+                                  {room.lastMessage.messageType === 'TEXT' ? (
                                     room.lastMessage.content
-                                  ) : room.lastMessage.type === 'image' ? (
+                                  ) : room.lastMessage.messageType === 'IMAGE' ? (
                                     <span className="inline-flex items-center gap-1">
                                       📷 이미지
                                     </span>
-                                  ) : room.lastMessage.type === 'location' ? (
+                                  ) : room.lastMessage.messageType === 'LOCATION' ? (
                                     <span className="inline-flex items-center gap-1">📍 위치</span>
                                   ) : (
                                     <span className="inline-flex items-center gap-1">

@@ -1,6 +1,7 @@
 import { Client, IMessage, StompSubscription, IFrame } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { authService } from './authService';
+import { getWebSocketUrl } from './apiConfig';
 import { WebSocketError, WebSocketErrorCallback } from '../types';
 
 // 개발 환경에서만 로그 출력
@@ -52,7 +53,7 @@ class WebSocketService {
 
   private initializeClient(): void {
     // STOMP over SockJS 설정
-    const wsUrl = process.env.REACT_APP_WS_URL || `${window.location.origin}/api/ws`;
+    const wsUrl = getWebSocketUrl();
     this.client = new Client({
       webSocketFactory: () => {
         return new SockJS(wsUrl) as WebSocket;
@@ -63,15 +64,18 @@ class WebSocketService {
       reconnectDelay: this.reconnectDelay,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
-      connectHeaders: this.getConnectHeaders(),
+      connectHeaders: {},
+      beforeConnect: async () => {
+        await this.refreshConnectHeaders();
+      },
       onConnect: () => {
         logger.log('WebSocket Connected');
         this.reconnectAttempts = 0;
-        this.onConnectCallbacks.forEach(cb => cb());
+        [...this.onConnectCallbacks].forEach(cb => cb());
       },
       onDisconnect: () => {
         logger.log('WebSocket Disconnected');
-        this.onDisconnectCallbacks.forEach(cb => cb());
+        [...this.onDisconnectCallbacks].forEach(cb => cb());
       },
       onStompError: (frame: IFrame) => {
         logger.error('STOMP Error:', frame);
@@ -80,7 +84,7 @@ class WebSocketService {
           code: frame.command,
           timestamp: new Date(),
         };
-        this.onErrorCallbacks.forEach(cb => cb(error));
+        [...this.onErrorCallbacks].forEach(cb => cb(error));
       },
       onWebSocketError: (event: Event) => {
         logger.error('WebSocket Error:', event);
@@ -88,14 +92,28 @@ class WebSocketService {
           message: 'WebSocket connection error',
           timestamp: new Date(),
         };
-        this.onErrorCallbacks.forEach(cb => cb(error));
+        [...this.onErrorCallbacks].forEach(cb => cb(error));
       },
     });
   }
 
-  private getConnectHeaders(): { [key: string]: string } {
-    const token = authService.getToken();
+  private async getConnectHeaders(): Promise<{ [key: string]: string }> {
+    const token = await authService.getValidToken();
     return token ? { Authorization: `Bearer ${token}` } : {};
+  }
+
+  private async refreshConnectHeaders(): Promise<void> {
+    if (this.client) {
+      this.client.connectHeaders = await this.getConnectHeaders();
+    }
+  }
+
+  private removeConnectCallback(callback: ConnectCallback): void {
+    this.onConnectCallbacks = this.onConnectCallbacks.filter(cb => cb !== callback);
+  }
+
+  private removeErrorCallback(callback: ErrorCallback): void {
+    this.onErrorCallbacks = this.onErrorCallbacks.filter(cb => cb !== callback);
   }
 
   // WebSocket 연결
@@ -105,43 +123,40 @@ class WebSocketService {
         this.initializeClient();
       }
 
-      if (this.client!.active) {
+      if (this.client!.connected) {
         resolve();
         return;
       }
 
-      if (this.isConnecting) {
-        // 이미 연결 중이면 연결 완료를 기다림
-        const waitForConnection = () => {
-          if (this.client?.active) {
-            resolve();
-          } else {
-            setTimeout(waitForConnection, 100);
-          }
-        };
-        waitForConnection();
-        return;
-      }
-
-      this.isConnecting = true;
-
       const onConnectHandler = () => {
         this.isConnecting = false;
+        this.removeConnectCallback(onConnectHandler);
+        this.removeErrorCallback(onErrorHandler);
         resolve();
       };
 
       const onErrorHandler = (error: WebSocketError) => {
         this.isConnecting = false;
+        this.removeConnectCallback(onConnectHandler);
+        this.removeErrorCallback(onErrorHandler);
         reject(error);
       };
 
       this.onConnect(onConnectHandler);
       this.onError(onErrorHandler);
 
+      if (this.isConnecting || this.client!.active) {
+        return;
+      }
+
+      this.isConnecting = true;
+
       try {
         this.client!.activate();
       } catch (error) {
         this.isConnecting = false;
+        this.removeConnectCallback(onConnectHandler);
+        this.removeErrorCallback(onErrorHandler);
         reject(error);
       }
     });
@@ -158,6 +173,10 @@ class WebSocketService {
 
   // 채팅방 구독
   subscribeToRoom(roomId: string, onMessage: MessageCallback): () => void {
+    if (!this.client?.connected) {
+      throw new Error('WebSocket is not connected');
+    }
+
     const destination = `/topic/chat/${roomId}`;
 
     // 이미 구독 중이면 새로 구독하지 않음
@@ -198,7 +217,7 @@ class WebSocketService {
 
   // 메시지 전송
   sendMessage(message: ChatMessage): void {
-    if (!this.client?.active) {
+    if (!this.client?.connected) {
       throw new Error('WebSocket is not connected');
     }
 
@@ -210,35 +229,35 @@ class WebSocketService {
 
   // 채팅방 입장
   joinRoom(roomId: string, userId: string): void {
-    if (!this.client?.active) {
+    if (!this.client?.connected) {
       throw new Error('WebSocket is not connected');
     }
 
     this.client.publish({
       destination: '/app/chat.join',
-      body: JSON.stringify({ roomId, userId }),
+      body: JSON.stringify({ chatRoomId: roomId, userId }),
     });
   }
 
   // 채팅방 퇴장
   leaveRoom(roomId: string, userId: string): void {
-    if (!this.client?.active) {
+    if (!this.client?.connected) {
       throw new Error('WebSocket is not connected');
     }
 
     this.client.publish({
       destination: '/app/chat.leave',
-      body: JSON.stringify({ roomId, userId }),
+      body: JSON.stringify({ chatRoomId: roomId, userId }),
     });
   }
 
   // 타이핑 상태 전송
   sendTypingStatus(roomId: string, userId: string, isTyping: boolean): void {
-    if (!this.client?.active) return;
+    if (!this.client?.connected) return;
 
     this.client.publish({
       destination: '/app/chat.typing',
-      body: JSON.stringify({ roomId, userId, isTyping }),
+      body: JSON.stringify({ chatRoomId: roomId, userId, isTyping }),
     });
   }
 
@@ -257,7 +276,7 @@ class WebSocketService {
 
   // 연결 상태 확인
   isConnected(): boolean {
-    return this.client?.active || false;
+    return this.client?.connected || false;
   }
 
   // 일반 구독 (외부에서 client 직접 접근 대신 사용)
@@ -265,7 +284,7 @@ class WebSocketService {
     destination: string,
     callback: (message: IMessage) => void
   ): StompSubscription | undefined {
-    if (!this.client?.active) {
+    if (!this.client?.connected) {
       logger.warn('WebSocket is not connected');
       return undefined;
     }

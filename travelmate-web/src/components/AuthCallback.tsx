@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from './Toast';
 import { authService } from '../services/authService';
+import { consumeOAuthState, isOAuthCodeProvider } from '../services/oauthState';
 
 const LoadingIcon = () => (
   <svg
@@ -22,10 +23,21 @@ const AuthCallback: React.FC = () => {
   const location = useLocation();
   const toast = useToast();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const handledRef = useRef(false);
 
   useEffect(() => {
     const handleAuthCallback = async () => {
+      if (handledRef.current) {
+        return;
+      }
+      handledRef.current = true;
+
       const redirectUri = `${window.location.origin}/auth/callback`;
+      const rejectInvalidCallback = (message: string) => {
+        setErrorMessage(message);
+        toast.error(message);
+        navigate('/login');
+      };
 
       // 1) Hash fragment 파싱 (implicit flow: #access_token=xxx&state=provider)
       const hash = location.hash.substring(1);
@@ -33,15 +45,16 @@ const AuthCallback: React.FC = () => {
         const hashParams = new URLSearchParams(hash);
         const accessToken = hashParams.get('access_token');
         const state = hashParams.get('state');
+        const provider = consumeOAuthState(state);
 
-        if (accessToken && state) {
+        if (accessToken && provider) {
           try {
             await authService.oauthLogin({
-              provider: state as 'google' | 'kakao' | 'naver',
+              provider,
               accessToken,
             });
             toast.success(
-              `${state.charAt(0).toUpperCase() + state.slice(1)} 로그인 성공! 환영합니다!`
+              `${provider.charAt(0).toUpperCase() + provider.slice(1)} 로그인 성공! 환영합니다!`
             );
             navigate('/dashboard');
           } catch (err) {
@@ -52,6 +65,9 @@ const AuthCallback: React.FC = () => {
           }
           return;
         }
+
+        rejectInvalidCallback('OAuth 요청 상태를 확인할 수 없습니다. 다시 로그인해주세요.');
+        return;
       }
 
       // 2) Query parameter 파싱 (authorization code flow: ?code=xxx&state=provider)
@@ -59,7 +75,7 @@ const AuthCallback: React.FC = () => {
       const code = urlParams.get('code');
       const state = urlParams.get('state');
       const error = urlParams.get('error');
-      const provider = urlParams.get('provider') || state;
+      const provider = consumeOAuthState(state);
 
       if (error) {
         toast.error(`로그인 중 오류가 발생했습니다: ${error}`);
@@ -67,11 +83,21 @@ const AuthCallback: React.FC = () => {
         return;
       }
 
-      if (code && provider) {
+      if (code) {
+        if (!provider) {
+          rejectInvalidCallback('OAuth 요청 상태를 확인할 수 없습니다. 다시 로그인해주세요.');
+          return;
+        }
+
+        if (!isOAuthCodeProvider(provider)) {
+          rejectInvalidCallback('지원하지 않는 OAuth 코드 로그인 제공자입니다.');
+          return;
+        }
+
         try {
           // 백엔드에서 코드 → 토큰 교환 + 로그인 처리
           await authService.oauthCodeLogin({
-            provider: provider as 'naver' | 'kakao',
+            provider,
             code,
             redirectUri,
           });

@@ -8,6 +8,7 @@ import {
   aiRecommendationService,
   PlaceRecommendation,
   PlaceRecommendationRequest,
+  isPlaceRecommendationRequestValidationError,
 } from '../../services/aiRecommendationService';
 
 interface PlaceRecommendationsProps {
@@ -74,6 +75,8 @@ const PlaceRecommendations: React.FC<PlaceRecommendationsProps> = ({
     } catch (err) {
       if (err instanceof GeolocationPositionError) {
         setError('위치 권한을 허용해주세요.');
+      } else if (isPlaceRecommendationRequestValidationError(err)) {
+        setError(err.message);
       } else {
         setError('추천을 불러오는 중 오류가 발생했습니다.');
       }

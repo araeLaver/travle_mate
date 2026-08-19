@@ -1,13 +1,26 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { groupService, CreateGroupRequest } from '../services/groupService';
+import { groupService } from '../services/groupService';
+import type { CreateGroupRequest } from '../services/groupService';
 import { useToast } from '../components/Toast';
 import { getErrorMessage, logError } from '../utils/errorHandler';
 import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
 import { trackEvent } from '../utils/analytics';
 import PageBackground from '../components/PageBackground';
+import {
+  GROUP_DESCRIPTION_MAX_LENGTH,
+  GROUP_DESTINATION_MAX_LENGTH,
+  GROUP_NAME_MAX_LENGTH,
+  MAX_MEMBERS_OPTIONS,
+  PURPOSE_OPTIONS,
+  createDefaultGroupForm,
+  formatDateInput,
+  getCreateGroupValidationMessage,
+  getEndDateMinimum,
+  parseDateInput,
+} from './createGroupForm';
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -25,22 +38,7 @@ const CreateGroup: React.FC = () => {
     startDate: false,
     endDate: false,
   });
-  const [formData, setFormData] = useState<CreateGroupRequest>({
-    name: '',
-    description: '',
-    destination: '',
-    startDate: new Date(),
-    endDate: new Date(),
-    maxMembers: 4,
-    tags: [],
-    travelStyle: 'CULTURE',
-    requirements: [],
-    budget: {
-      min: 100000,
-      max: 300000,
-      currency: 'KRW',
-    },
-  });
+  const [formData, setFormData] = useState<CreateGroupRequest>(() => createDefaultGroupForm());
 
   const [newTag, setNewTag] = useState('');
   const [newRequirement, setNewRequirement] = useState('');
@@ -48,12 +46,21 @@ const CreateGroup: React.FC = () => {
   const validation = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    const startDate = new Date(formData.startDate);
+    startDate.setHours(0, 0, 0, 0);
+    const endDate = new Date(formData.endDate);
+    endDate.setHours(0, 0, 0, 0);
+    const hasValidDates =
+      !Number.isNaN(formData.startDate.getTime()) && !Number.isNaN(formData.endDate.getTime());
 
     return {
-      name: formData.name.trim().length >= 2 && formData.name.trim().length <= 50,
-      destination: formData.destination.trim().length >= 2,
-      startDate: formData.startDate >= today,
-      endDate: formData.endDate > formData.startDate,
+      name:
+        formData.name.trim().length >= 2 && formData.name.trim().length <= GROUP_NAME_MAX_LENGTH,
+      destination:
+        formData.destination.trim().length >= 2 &&
+        formData.destination.trim().length <= GROUP_DESTINATION_MAX_LENGTH,
+      startDate: hasValidDates && startDate >= today,
+      endDate: hasValidDates && endDate > today && endDate >= startDate,
       budget: !formData.budget || formData.budget.min <= formData.budget.max,
     };
   }, [formData]);
@@ -150,30 +157,16 @@ const CreateGroup: React.FC = () => {
       endDate: true,
     });
 
-    if (!validation.name) {
-      toast.warning('그룹명은 2~50자로 입력해주세요.');
-      return;
-    }
-
-    if (!validation.destination) {
-      toast.warning('목적지는 2자 이상 입력해주세요.');
-      return;
-    }
-
-    if (!validation.endDate) {
-      toast.warning('종료일은 시작일보다 늦어야 합니다.');
-      return;
-    }
-
-    if (!validation.budget) {
-      toast.warning('최대 예산이 최소 예산보다 크거나 같아야 합니다.');
+    const validationMessage = getCreateGroupValidationMessage(formData);
+    if (validationMessage) {
+      toast.warning(validationMessage);
       return;
     }
 
     setIsLoading(true);
 
     try {
-      groupService.createGroup({
+      await groupService.createGroup({
         ...formData,
         description: formData.description || '함께 여행할 메이트를 찾습니다!',
       });
@@ -187,14 +180,6 @@ const CreateGroup: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const formatDate = (date: Date) => {
-    return date.toISOString().split('T')[0];
-  };
-
-  const parseDate = (dateString: string) => {
-    return new Date(dateString);
   };
 
   return (
@@ -271,12 +256,12 @@ const CreateGroup: React.FC = () => {
                         ? 'ring-2 ring-red-500 focus:ring-red-500'
                         : 'focus:ring-violet-500/50'
                     }`}
-                    maxLength={50}
+                    maxLength={GROUP_NAME_MAX_LENGTH}
                     required
                   />
                   {touched.name && !validation.name && (
                     <p className="mt-1 text-sm text-red-500" role="alert">
-                      그룹명은 2~50자로 입력해주세요
+                      그룹명은 2~{GROUP_NAME_MAX_LENGTH}자로 입력해주세요
                     </p>
                   )}
                 </div>
@@ -300,11 +285,12 @@ const CreateGroup: React.FC = () => {
                         ? 'ring-2 ring-red-500 focus:ring-red-500'
                         : 'focus:ring-violet-500/50'
                     }`}
+                    maxLength={GROUP_DESTINATION_MAX_LENGTH}
                     required
                   />
                   {touched.destination && !validation.destination && (
                     <p className="mt-1 text-sm text-red-500" role="alert">
-                      목적지는 2자 이상 입력해주세요
+                      목적지는 2~{GROUP_DESTINATION_MAX_LENGTH}자로 입력해주세요
                     </p>
                   )}
                 </div>
@@ -323,7 +309,7 @@ const CreateGroup: React.FC = () => {
                     placeholder="어떤 여행을 계획하고 있는지 자세히 설명해주세요..."
                     className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-violet-500/50 transition-all resize-none"
                     rows={4}
-                    maxLength={500}
+                    maxLength={GROUP_DESCRIPTION_MAX_LENGTH}
                   />
                 </div>
               </div>
@@ -346,10 +332,10 @@ const CreateGroup: React.FC = () => {
                   <input
                     type="date"
                     id="startDate"
-                    value={formatDate(formData.startDate)}
-                    onChange={e => handleInputChange('startDate', parseDate(e.target.value))}
+                    value={formatDateInput(formData.startDate)}
+                    onChange={e => handleInputChange('startDate', parseDateInput(e.target.value))}
                     className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white focus:ring-2 focus:ring-violet-500/50 transition-all"
-                    min={formatDate(new Date())}
+                    min={formatDateInput(new Date())}
                     required
                   />
                 </div>
@@ -364,10 +350,10 @@ const CreateGroup: React.FC = () => {
                   <input
                     type="date"
                     id="endDate"
-                    value={formatDate(formData.endDate)}
-                    onChange={e => handleInputChange('endDate', parseDate(e.target.value))}
+                    value={formatDateInput(formData.endDate)}
+                    onChange={e => handleInputChange('endDate', parseDateInput(e.target.value))}
                     className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white focus:ring-2 focus:ring-violet-500/50 transition-all"
-                    min={formatDate(formData.startDate)}
+                    min={formatDateInput(getEndDateMinimum(formData.startDate))}
                     required
                   />
                 </div>
@@ -380,7 +366,7 @@ const CreateGroup: React.FC = () => {
                 <span>👥</span> 그룹 설정
               </h2>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label
                     htmlFor="maxMembers"
@@ -394,9 +380,30 @@ const CreateGroup: React.FC = () => {
                     onChange={e => handleInputChange('maxMembers', parseInt(e.target.value))}
                     className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white focus:ring-2 focus:ring-violet-500/50 transition-all"
                   >
-                    {[2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
+                    {MAX_MEMBERS_OPTIONS.map(num => (
                       <option key={num} value={num}>
                         {num}명
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="purpose"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
+                    여행 목적
+                  </label>
+                  <select
+                    id="purpose"
+                    value={formData.purpose || 'LEISURE'}
+                    onChange={e => handleInputChange('purpose', e.target.value)}
+                    className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white focus:ring-2 focus:ring-violet-500/50 transition-all"
+                  >
+                    {PURPOSE_OPTIONS.map(option => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
                       </option>
                     ))}
                   </select>
