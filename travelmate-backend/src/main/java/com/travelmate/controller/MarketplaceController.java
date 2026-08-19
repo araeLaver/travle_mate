@@ -1,5 +1,6 @@
 package com.travelmate.controller;
 
+import com.travelmate.security.AuthenticatedUserId;
 import com.travelmate.dto.NftDto;
 import com.travelmate.entity.nft.Rarity;
 import com.travelmate.service.nft.MarketplaceService;
@@ -65,7 +66,7 @@ public class MarketplaceController {
     public ResponseEntity<NftDto.MarketplaceListingResponse> createListing(
             @AuthenticationPrincipal String userId,
             @Valid @RequestBody NftDto.CreateListingRequest request) {
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         NftDto.MarketplaceListingResponse listing = marketplaceService.createListing(userIdLong, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(listing);
     }
@@ -77,7 +78,7 @@ public class MarketplaceController {
     public ResponseEntity<NftDto.BuyNftResponse> buyNft(
             @AuthenticationPrincipal String userId,
             @PathVariable Long listingId) {
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         NftDto.BuyNftResponse response = marketplaceService.buyNft(userIdLong, listingId);
         return ResponseEntity.ok(response);
     }
@@ -89,7 +90,7 @@ public class MarketplaceController {
     public ResponseEntity<Void> cancelListing(
             @AuthenticationPrincipal String userId,
             @PathVariable Long listingId) {
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         marketplaceService.cancelListing(userIdLong, listingId);
         return ResponseEntity.noContent().build();
     }
@@ -101,7 +102,7 @@ public class MarketplaceController {
     public ResponseEntity<Page<NftDto.MarketplaceListingResponse>> getMyListings(
             @AuthenticationPrincipal String userId,
             @PageableDefault(size = 20, sort = "listedAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         Page<NftDto.MarketplaceListingResponse> listings = marketplaceService.getMyListings(userIdLong, pageable);
         return ResponseEntity.ok(listings);
     }
@@ -113,7 +114,7 @@ public class MarketplaceController {
     public ResponseEntity<Page<NftDto.MarketplaceListingResponse>> getMyPurchases(
             @AuthenticationPrincipal String userId,
             @PageableDefault(size = 20, sort = "soldAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         Page<NftDto.MarketplaceListingResponse> purchases = marketplaceService.getMyPurchases(userIdLong, pageable);
         return ResponseEntity.ok(purchases);
     }

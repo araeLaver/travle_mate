@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.*;
  *   <li>PENDING → REJECTED 허용</li>
  *   <li>PENDING → CANCELLED 허용</li>
  *   <li>ACCEPTED → CANCELLED 허용</li>
+ *   <li>ACCEPTED → COMPLETED 허용</li>
  *   <li>REJECTED, CANCELLED, EXPIRED(종료상태) → 모든 전이 거부</li>
  *   <li>ACCEPTED → ACCEPTED / REJECTED / PENDING 등 허용되지 않는 전이 거부</li>
  *   <li>isAllowed() 헬퍼 메서드 검증</li>
@@ -70,6 +71,20 @@ class MatchingStateGuardTest {
         void acceptedToCancelled() {
             assertThatNoException()
                     .isThrownBy(() -> guard.validate(MatchStatus.ACCEPTED, MatchStatus.CANCELLED, REQUEST_ID));
+        }
+
+        @Test
+        @DisplayName("ACCEPTED → COMPLETED 허용")
+        void acceptedToCompleted() {
+            assertThatNoException()
+                    .isThrownBy(() -> guard.validate(MatchStatus.ACCEPTED, MatchStatus.COMPLETED, REQUEST_ID));
+        }
+
+        @Test
+        @DisplayName("MATCHED → COMPLETED 허용")
+        void matchedToCompleted() {
+            assertThatNoException()
+                    .isThrownBy(() -> guard.validate(MatchStatus.MATCHED, MatchStatus.COMPLETED, REQUEST_ID));
         }
     }
 
@@ -128,7 +143,7 @@ class MatchingStateGuardTest {
     }
 
     @Nested
-    @DisplayName("거부 전이 — 종료 상태(REJECTED, CANCELLED, EXPIRED)에서 모든 전이 거부")
+    @DisplayName("거부 전이 — 종료 상태(REJECTED, CANCELLED, EXPIRED, COMPLETED)에서 모든 전이 거부")
     class RejectedTransitionsFromTerminalStates {
 
         @ParameterizedTest(name = "REJECTED → {0} 거부")
@@ -157,6 +172,15 @@ class MatchingStateGuardTest {
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining("없음(종료 상태)");
         }
+
+        @ParameterizedTest(name = "COMPLETED → {0} 거부")
+        @EnumSource(MatchStatus.class)
+        @DisplayName("COMPLETED 는 종료 상태 — 모든 전이 거부")
+        void completedToAny(MatchStatus target) {
+            assertThatThrownBy(() -> guard.validate(MatchStatus.COMPLETED, target, REQUEST_ID))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("없음(종료 상태)");
+        }
     }
 
     // =========================================================================
@@ -174,6 +198,8 @@ class MatchingStateGuardTest {
             assertThat(guard.isAllowed(MatchStatus.PENDING, MatchStatus.REJECTED)).isTrue();
             assertThat(guard.isAllowed(MatchStatus.PENDING, MatchStatus.CANCELLED)).isTrue();
             assertThat(guard.isAllowed(MatchStatus.ACCEPTED, MatchStatus.CANCELLED)).isTrue();
+            assertThat(guard.isAllowed(MatchStatus.ACCEPTED, MatchStatus.COMPLETED)).isTrue();
+            assertThat(guard.isAllowed(MatchStatus.MATCHED, MatchStatus.COMPLETED)).isTrue();
         }
 
         @Test
@@ -184,6 +210,7 @@ class MatchingStateGuardTest {
             assertThat(guard.isAllowed(MatchStatus.EXPIRED, MatchStatus.ACCEPTED)).isFalse();
             assertThat(guard.isAllowed(MatchStatus.ACCEPTED, MatchStatus.REJECTED)).isFalse();
             assertThat(guard.isAllowed(MatchStatus.PENDING, MatchStatus.PENDING)).isFalse();
+            assertThat(guard.isAllowed(MatchStatus.COMPLETED, MatchStatus.ACCEPTED)).isFalse();
         }
     }
 

@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -52,6 +53,14 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> {
                 // 공개 엔드포인트
                 auth
+                    .requestMatchers(HttpMethod.GET,
+                        "/groups/my-groups",
+                        "/itineraries/my",
+                        "/itineraries/collaborating",
+                        "/itineraries/liked",
+                        "/itineraries/invites/pending",
+                        "/itineraries/*/collaborators"
+                    ).authenticated()
                     .requestMatchers("/", "/index.html", "/api", "/api/").permitAll()
                     .requestMatchers("/health", "/health/**").permitAll() // Health Check
                     .requestMatchers("/actuator/health", "/actuator/health/**").permitAll() // Health only
@@ -63,7 +72,19 @@ public class SecurityConfig {
                     .requestMatchers("/location/**").permitAll() // 위치 서비스 공개
                     .requestMatchers("/uploads/**").permitAll()
                     .requestMatchers("/ws/**").permitAll() // WebSocket
-                    .requestMatchers("/error").permitAll();
+                    .requestMatchers("/error").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/groups", "/groups/*", "/groups/*/members").permitAll()
+                    .requestMatchers(HttpMethod.GET,
+                        "/itineraries/*",
+                        "/itineraries/share/*",
+                        "/itineraries/public",
+                        "/itineraries/popular",
+                        "/itineraries/search",
+                        "/itineraries/*/like",
+                        "/itineraries/*/comments",
+                        "/itineraries/*/comments/count"
+                    ).permitAll()
+                    .requestMatchers(HttpMethod.GET, "/reviews/user/*", "/reviews/match/*").permitAll();
 
                 if (!isProd) {
                     // 개발 환경에서만 허용

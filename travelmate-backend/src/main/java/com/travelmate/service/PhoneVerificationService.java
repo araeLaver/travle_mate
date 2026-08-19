@@ -3,6 +3,7 @@ package com.travelmate.service;
 import com.travelmate.entity.User;
 import com.travelmate.exception.BusinessException;
 import com.travelmate.repository.UserRepository;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,12 +32,22 @@ public class PhoneVerificationService {
     @Value("${sms.max-attempts:5}")
     private int maxAttempts;
 
+    @Value("${spring.profiles.active:}")
+    private String activeProfiles;
+
     private static final SecureRandom RANDOM = new SecureRandom();
 
     // 인메모리 인증 코드 저장 (프로덕션에서는 Redis 권장)
     private final Map<String, VerificationEntry> verificationStore = new ConcurrentHashMap<>();
 
     private record VerificationEntry(String code, String phoneNumber, LocalDateTime expiresAt, int attempts) {}
+
+    @PostConstruct
+    void validateProductionConfiguration() {
+        if (isProdProfile() && (smsProvider == null || smsProvider.isBlank() || "mock".equalsIgnoreCase(smsProvider))) {
+            throw new IllegalStateException("Production sms.provider must be configured with a real SMS provider");
+        }
+    }
 
     /**
      * 인증 코드 발송
@@ -50,7 +61,11 @@ public class PhoneVerificationService {
         String key = "verify:" + userId;
         VerificationEntry existing = verificationStore.get(key);
         if (existing != null && existing.expiresAt().minusMinutes(expirationMinutes - 1).isAfter(LocalDateTime.now())) {
-            throw new BusinessException("인증 코드를 이미 발송했습니다. 1분 후 다시 시도해주세요.", HttpStatus.TOO_MANY_REQUESTS);
+            throw new BusinessException(
+                    "인증 코드를 이미 발송했습니다. 1분 후 다시 시도해주세요.",
+                    HttpStatus.TOO_MANY_REQUESTS,
+                    "VERIFICATION_CODE_RATE_LIMITED"
+            );
         }
 
         // 6자리 인증 코드 생성
@@ -79,25 +94,41 @@ public class PhoneVerificationService {
         VerificationEntry entry = verificationStore.get(key);
 
         if (entry == null) {
-            throw new BusinessException("인증 코드가 발송되지 않았습니다. 먼저 인증 코드를 요청해주세요.", HttpStatus.BAD_REQUEST);
+            throw new BusinessException(
+                    "인증 코드가 발송되지 않았습니다. 먼저 인증 코드를 요청해주세요.",
+                    HttpStatus.BAD_REQUEST,
+                    "VERIFICATION_CODE_NOT_REQUESTED"
+            );
         }
 
         // 만료 확인
         if (entry.expiresAt().isBefore(LocalDateTime.now())) {
             verificationStore.remove(key);
-            throw new BusinessException("인증 코드가 만료되었습니다. 다시 요청해주세요.", HttpStatus.BAD_REQUEST);
+            throw new BusinessException(
+                    "인증 코드가 만료되었습니다. 다시 요청해주세요.",
+                    HttpStatus.BAD_REQUEST,
+                    "VERIFICATION_CODE_EXPIRED"
+            );
         }
 
         // 시도 횟수 확인
         if (entry.attempts() >= maxAttempts) {
             verificationStore.remove(key);
-            throw new BusinessException("인증 시도 횟수를 초과했습니다. 새 코드를 요청해주세요.", HttpStatus.TOO_MANY_REQUESTS);
+            throw new BusinessException(
+                    "인증 시도 횟수를 초과했습니다. 새 코드를 요청해주세요.",
+                    HttpStatus.TOO_MANY_REQUESTS,
+                    "VERIFICATION_ATTEMPTS_EXCEEDED"
+            );
         }
 
         // 전화번호 일치 확인
         String normalized = normalizePhoneNumber(phoneNumber);
         if (!entry.phoneNumber().equals(normalized)) {
-            throw new BusinessException("발송된 전화번호와 일치하지 않습니다.", HttpStatus.BAD_REQUEST);
+            throw new BusinessException(
+                    "발송된 전화번호와 일치하지 않습니다.",
+                    HttpStatus.BAD_REQUEST,
+                    "PHONE_NUMBER_MISMATCH"
+            );
         }
 
         // 코드 검증
@@ -105,14 +136,18 @@ public class PhoneVerificationService {
             // 시도 횟수 증가
             verificationStore.put(key, new VerificationEntry(entry.code(), entry.phoneNumber(), entry.expiresAt(), entry.attempts() + 1));
             int remaining = maxAttempts - entry.attempts() - 1;
-            throw new BusinessException("인증 코드가 일치하지 않습니다. (남은 시도: " + remaining + "회)", HttpStatus.BAD_REQUEST);
+            throw new BusinessException(
+                    "인증 코드가 일치하지 않습니다. (남은 시도: " + remaining + "회)",
+                    HttpStatus.BAD_REQUEST,
+                    "INVALID_VERIFICATION_CODE"
+            );
         }
 
         // 인증 성공 → 사용자 정보 업데이트
         verificationStore.remove(key);
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException("사용자를 찾을 수 없습니다.", HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         user.setPhoneNumber(normalized);
         user.setPhoneVerified(true);
@@ -135,11 +170,20 @@ public class PhoneVerificationService {
                 log.info("[Mock SMS] To: {}, Message: {}", phoneNumber, message);
                 break;
             default:
+                if (isProdProfile()) {
+                    throw new IllegalStateException("SMS provider '" + smsProvider + "' is not implemented");
+                }
                 // 실제 프로바이더 연동 시 여기에 구현
                 // Twilio, NHN Cloud, Naver SMS, NICE 등
                 log.warn("SMS 프로바이더 '{}' 미구현, Mock 발송", smsProvider);
                 break;
         }
+    }
+
+    private boolean isProdProfile() {
+        return java.util.Arrays.stream(activeProfiles.split(","))
+                .map(String::trim)
+                .anyMatch("prod"::equalsIgnoreCase);
     }
 
     private String normalizePhoneNumber(String phone) {
@@ -151,7 +195,11 @@ public class PhoneVerificationService {
         }
         // 010 시작 검증
         if (!cleaned.matches("^01[0-9]\\d{7,8}$")) {
-            throw new BusinessException("올바른 휴대폰 번호 형식이 아닙니다.", HttpStatus.BAD_REQUEST);
+            throw new BusinessException(
+                    "올바른 휴대폰 번호 형식이 아닙니다.",
+                    HttpStatus.BAD_REQUEST,
+                    "INVALID_PHONE_NUMBER"
+            );
         }
         return cleaned;
     }

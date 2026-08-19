@@ -1,10 +1,13 @@
 package com.travelmate.service;
 
 import com.travelmate.dto.AdminDto;
+import com.travelmate.entity.RecommendationFeedback;
 import com.travelmate.entity.User;
 import com.travelmate.entity.nft.CollectibleLocation;
 import com.travelmate.entity.nft.LocationCategory;
 import com.travelmate.entity.nft.Rarity;
+import com.travelmate.exception.BusinessException;
+import com.travelmate.repository.RecommendationFeedbackRepository;
 import com.travelmate.repository.UserRepository;
 import com.travelmate.repository.nft.CollectibleLocationRepository;
 import com.travelmate.repository.nft.UserNftCollectionRepository;
@@ -35,6 +38,7 @@ public class AdminService {
     private final UserNftCollectionRepository collectionRepository;
     private final TravelGroupRepository groupRepository;
     private final LocationReviewRepository reviewRepository;
+    private final RecommendationFeedbackRepository recommendationFeedbackRepository;
 
     /**
      * Get dashboard statistics
@@ -141,7 +145,7 @@ public class AdminService {
     @Transactional(readOnly = true)
     public AdminDto.UserDetailResponse getUserDetail(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         int nftCount = collectionRepository.countByUserId(userId);
         int mintedNftCount = collectionRepository.countMintedByUserId(userId);
@@ -167,7 +171,7 @@ public class AdminService {
     @Transactional
     public AdminDto.UserManagement updateUser(Long userId, AdminDto.UpdateUserRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         if (request.getRole() != null) {
             user.setRole(User.Role.valueOf(request.getRole()));
@@ -221,6 +225,81 @@ public class AdminService {
     }
 
     /**
+     * Get recommendation feedback for quality monitoring.
+     */
+    @Transactional(readOnly = true)
+    public Page<AdminDto.RecommendationFeedbackResponse> getRecommendationFeedback(
+            Long userId, Integer rating, String feedbackType, String targetType, Pageable pageable) {
+
+        validateRatingFilter(rating);
+
+        return recommendationFeedbackRepository
+                .findForAdmin(userId, rating, normalizeFilter(feedbackType), normalizeFilter(targetType), pageable)
+                .map(this::toRecommendationFeedbackResponse);
+    }
+
+    /**
+     * Get aggregate recommendation feedback health metrics.
+     */
+    @Transactional(readOnly = true)
+    public AdminDto.RecommendationFeedbackStats getRecommendationFeedbackStats() {
+        Map<Integer, Long> ratingDistribution = new LinkedHashMap<>();
+        for (int rating = 1; rating <= 5; rating++) {
+            ratingDistribution.put(rating, recommendationFeedbackRepository.countByRating(rating));
+        }
+
+        return AdminDto.RecommendationFeedbackStats.builder()
+                .totalFeedback(recommendationFeedbackRepository.count())
+                .averageRating(Optional.ofNullable(recommendationFeedbackRepository.getAverageRating()).orElse(0.0))
+                .lowRatingCount(recommendationFeedbackRepository.countByRatingLessThanEqual(2))
+                .feedbackLast7Days(recommendationFeedbackRepository.countByCreatedAtAfter(LocalDateTime.now().minusDays(7)))
+                .ratingDistribution(ratingDistribution)
+                .feedbackTypeDistribution(toCountMap(recommendationFeedbackRepository.countByFeedbackType()))
+                .targetTypeDistribution(toCountMap(recommendationFeedbackRepository.countByTargetType()))
+                .build();
+    }
+
+    private AdminDto.RecommendationFeedbackResponse toRecommendationFeedbackResponse(
+            RecommendationFeedback feedback) {
+        User user = feedback.getUser();
+
+        return AdminDto.RecommendationFeedbackResponse.builder()
+                .id(feedback.getId())
+                .userId(user.getId())
+                .userNickname(user.getNickname())
+                .rating(feedback.getRating())
+                .comment(feedback.getComment())
+                .feedbackType(feedback.getFeedbackType())
+                .targetType(feedback.getTargetType())
+                .targetId(feedback.getTargetId())
+                .metadata(feedback.getMetadata())
+                .createdAt(feedback.getCreatedAt())
+                .build();
+    }
+
+    private void validateRatingFilter(Integer rating) {
+        if (rating != null && (rating < 1 || rating > 5)) {
+            throw new IllegalArgumentException("rating은 1부터 5 사이여야 합니다.");
+        }
+    }
+
+    private String normalizeFilter(String value) {
+        if (value == null) {
+            return null;
+        }
+        String normalized = value.trim();
+        return normalized.isEmpty() ? null : normalized;
+    }
+
+    private Map<String, Long> toCountMap(List<Object[]> rows) {
+        Map<String, Long> counts = new LinkedHashMap<>();
+        for (Object[] row : rows) {
+            counts.put(String.valueOf(row[0]), ((Number) row[1]).longValue());
+        }
+        return counts;
+    }
+
+    /**
      * Create new location
      */
     @Transactional
@@ -252,7 +331,7 @@ public class AdminService {
     @Transactional
     public AdminDto.LocationManagement updateLocation(Long locationId, AdminDto.UpdateLocationRequest request) {
         CollectibleLocation location = locationRepository.findById(locationId)
-                .orElseThrow(() -> new IllegalArgumentException("장소를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.notFound("장소를 찾을 수 없습니다."));
 
         if (request.getName() != null) {
             location.setName(request.getName());
@@ -285,7 +364,7 @@ public class AdminService {
     @Transactional
     public void deleteLocation(Long locationId) {
         CollectibleLocation location = locationRepository.findById(locationId)
-                .orElseThrow(() -> new IllegalArgumentException("장소를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.notFound("장소를 찾을 수 없습니다."));
 
         location.setIsActive(false);
         locationRepository.save(location);

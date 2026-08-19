@@ -32,20 +32,20 @@ public class ReportService {
     public Report createReport(Long reporterId, Long reportedUserId, ReportType reportType,
                                String reason, String description) {
         User reporter = userRepository.findById(reporterId)
-            .orElseThrow(() -> new BusinessException("신고자를 찾을 수 없습니다."));
+            .orElseThrow(() -> BusinessException.userNotFound(reporterId));
 
         User reportedUser = userRepository.findById(reportedUserId)
-            .orElseThrow(() -> new BusinessException("신고 대상자를 찾을 수 없습니다."));
+            .orElseThrow(() -> BusinessException.userNotFound(reportedUserId));
 
         if (reporterId.equals(reportedUserId)) {
-            throw new BusinessException("자기 자신을 신고할 수 없습니다.");
+            throw BusinessException.badRequest("자기 자신을 신고할 수 없습니다.");
         }
 
         // 동일 사용자에 대한 중복 신고 방지 (24시간 이내)
         LocalDateTime cooldownTime = LocalDateTime.now().minusHours(REPORT_COOLDOWN_HOURS);
         if (reportRepository.existsByReporterIdAndReportedUserIdAndCreatedAtAfter(
             reporterId, reportedUserId, cooldownTime)) {
-            throw new BusinessException("동일한 사용자에 대해 24시간 이내에 다시 신고할 수 없습니다.");
+            throw BusinessException.conflict("동일한 사용자에 대해 24시간 이내에 다시 신고할 수 없습니다.");
         }
 
         Report report = new Report();
@@ -121,10 +121,10 @@ public class ReportService {
 
     public Report processReport(Long reportId, Long adminId, ReportStatus newStatus, String adminNote) {
         Report report = reportRepository.findById(reportId)
-            .orElseThrow(() -> new BusinessException("신고를 찾을 수 없습니다."));
+            .orElseThrow(() -> BusinessException.notFound("신고를 찾을 수 없습니다."));
 
         User admin = userRepository.findById(adminId)
-            .orElseThrow(() -> new BusinessException("관리자를 찾을 수 없습니다."));
+            .orElseThrow(() -> BusinessException.userNotFound(adminId));
 
         report.setStatus(newStatus);
         report.setAdminNote(adminNote);

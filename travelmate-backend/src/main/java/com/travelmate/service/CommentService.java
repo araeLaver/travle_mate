@@ -40,10 +40,10 @@ public class CommentService {
     @Transactional
     public CommentDto.Response createComment(Long userId, Long postId, CommentDto.CreateRequest request) {
         User author = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new BusinessException("게시글을 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.notFound("게시글을 찾을 수 없습니다."));
 
         Comment comment = new Comment();
         comment.setContent(request.getContent());
@@ -55,11 +55,11 @@ public class CommentService {
         // 답글인 경우 부모 댓글 설정
         if (request.getParentCommentId() != null) {
             Comment parentComment = commentRepository.findByIdAndNotDeleted(request.getParentCommentId())
-                    .orElseThrow(() -> new BusinessException("부모 댓글을 찾을 수 없습니다."));
+                    .orElseThrow(() -> BusinessException.notFound("부모 댓글을 찾을 수 없습니다."));
 
             // 동일 게시글의 댓글인지 확인
             if (!parentComment.getPost().getId().equals(postId)) {
-                throw new BusinessException("잘못된 부모 댓글입니다.");
+                throw BusinessException.badRequest("잘못된 부모 댓글입니다.");
             }
 
             comment.setParentComment(parentComment);
@@ -94,11 +94,11 @@ public class CommentService {
     @Transactional
     public CommentDto.Response updateComment(Long userId, Long commentId, CommentDto.UpdateRequest request) {
         Comment comment = commentRepository.findByIdAndNotDeleted(commentId)
-                .orElseThrow(() -> new BusinessException("댓글을 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.notFound("댓글을 찾을 수 없습니다."));
 
         // 권한 확인
         if (!comment.getAuthor().getId().equals(userId)) {
-            throw new BusinessException("댓글을 수정할 권한이 없습니다.");
+            throw BusinessException.forbidden("댓글을 수정할 권한이 없습니다.");
         }
 
         comment.setContent(request.getContent());
@@ -113,12 +113,12 @@ public class CommentService {
     @Transactional
     public void deleteComment(Long userId, Long commentId) {
         Comment comment = commentRepository.findByIdAndNotDeleted(commentId)
-                .orElseThrow(() -> new BusinessException("댓글을 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.notFound("댓글을 찾을 수 없습니다."));
 
         // 권한 확인 (작성자 또는 게시글 작성자)
         if (!comment.getAuthor().getId().equals(userId) &&
             !comment.getPost().getAuthor().getId().equals(userId)) {
-            throw new BusinessException("댓글을 삭제할 권한이 없습니다.");
+            throw BusinessException.forbidden("댓글을 삭제할 권한이 없습니다.");
         }
 
         comment.setIsDeleted(true);
@@ -135,7 +135,7 @@ public class CommentService {
     public CommentDto.CommentListResponse getCommentsByPostId(Long postId, Long userId, Pageable pageable) {
         // 게시글 존재 확인
         if (!postRepository.existsById(postId)) {
-            throw new BusinessException("게시글을 찾을 수 없습니다.");
+            throw BusinessException.notFound("게시글을 찾을 수 없습니다.");
         }
 
         // 최상위 댓글 조회
@@ -164,14 +164,14 @@ public class CommentService {
     @Transactional
     public CommentDto.LikeResponse likeComment(Long userId, Long commentId) {
         Comment comment = commentRepository.findByIdAndNotDeleted(commentId)
-                .orElseThrow(() -> new BusinessException("댓글을 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.notFound("댓글을 찾을 수 없습니다."));
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         // 이미 좋아요 했는지 확인
         if (commentLikeRepository.existsByCommentIdAndUserId(commentId, userId)) {
-            throw new BusinessException("이미 좋아요한 댓글입니다.");
+            throw BusinessException.conflict("이미 좋아요한 댓글입니다.");
         }
 
         // 좋아요 생성
@@ -201,11 +201,11 @@ public class CommentService {
     @Transactional
     public CommentDto.LikeResponse unlikeComment(Long userId, Long commentId) {
         Comment comment = commentRepository.findByIdAndNotDeleted(commentId)
-                .orElseThrow(() -> new BusinessException("댓글을 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.notFound("댓글을 찾을 수 없습니다."));
 
         // 좋아요 확인
         if (!commentLikeRepository.existsByCommentIdAndUserId(commentId, userId)) {
-            throw new BusinessException("좋아요하지 않은 댓글입니다.");
+            throw BusinessException.notFound("좋아요하지 않은 댓글입니다.");
         }
 
         // 좋아요 삭제
@@ -227,7 +227,7 @@ public class CommentService {
     @Transactional(readOnly = true)
     public List<CommentDto.Response> getReplies(Long commentId, Long userId) {
         Comment parentComment = commentRepository.findByIdAndNotDeleted(commentId)
-                .orElseThrow(() -> new BusinessException("댓글을 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.notFound("댓글을 찾을 수 없습니다."));
 
         List<Comment> replies = commentRepository.findRepliesByParentId(commentId);
 

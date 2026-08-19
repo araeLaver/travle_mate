@@ -163,6 +163,8 @@ app:
     enabled: true  # 개발환경에서는 Redis 활성화
 
   oauth:
+    google:
+      client-ids: ${GOOGLE_CLIENT_IDS:}
     naver:
       client-id: ${NAVER_CLIENT_ID:}
       client-secret: ${NAVER_CLIENT_SECRET:}
@@ -420,6 +422,8 @@ app:
     enabled: false  # Koyeb 무료 플랜에서 Redis 미사용
 
   oauth:
+    google:
+      client-ids: ${GOOGLE_CLIENT_IDS:}
     naver:
       client-id: ${NAVER_CLIENT_ID:}
       client-secret: ${NAVER_CLIENT_SECRET:}

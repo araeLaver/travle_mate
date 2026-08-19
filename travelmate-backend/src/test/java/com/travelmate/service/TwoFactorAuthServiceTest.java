@@ -2,8 +2,10 @@ package com.travelmate.service;
 
 import com.travelmate.entity.TwoFactorAuth;
 import com.travelmate.entity.User;
+import com.travelmate.exception.BusinessException;
 import com.travelmate.exception.UserException;
 import com.travelmate.repository.TwoFactorAuthRepository;
+import jakarta.persistence.Column;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -14,6 +16,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -128,6 +131,24 @@ class TwoFactorAuthServiceTest {
                 assertThat(code).containsOnlyDigits();
             }
         }
+
+        @Test
+        @DisplayName("생성된 secret key는 DB 컬럼 길이를 초과하지 않는다")
+        void initializeTwoFactorAuth_SecretKeyFitsColumnLength() throws Exception {
+            // Given
+            when(twoFactorAuthRepository.findByUser(testUser)).thenReturn(Optional.empty());
+            when(twoFactorAuthRepository.save(any(TwoFactorAuth.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            // When
+            TwoFactorAuth result = twoFactorAuthService.initializeTwoFactorAuth(
+                    testUser, TwoFactorAuth.TwoFactorMethod.TOTP);
+
+            // Then
+            Field secretKeyField = TwoFactorAuth.class.getDeclaredField("secretKey");
+            int columnLength = secretKeyField.getAnnotation(Column.class).length();
+            assertThat(result.getSecretKey()).hasSizeLessThanOrEqualTo(columnLength);
+            assertThat(columnLength).isGreaterThanOrEqualTo(64);
+        }
     }
 
     @Nested
@@ -154,8 +175,9 @@ class TwoFactorAuthServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> twoFactorAuthService.enableTwoFactorAuth(testUser, "123456"))
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessageContaining("이미 활성화");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("이미 활성화")
+                    .satisfies(ex -> assertBusinessException(ex, 409, "CONFLICT"));
         }
 
         @Test
@@ -394,5 +416,11 @@ class TwoFactorAuthServiceTest {
             assertThatThrownBy(() -> twoFactorAuthService.regenerateBackupCodes(testUser))
                     .isInstanceOf(UserException.InvalidTokenException.class);
         }
+    }
+
+    private void assertBusinessException(Throwable throwable, int status, String errorCode) {
+        BusinessException exception = (BusinessException) throwable;
+        assertThat(exception.getStatus().value()).isEqualTo(status);
+        assertThat(exception.getErrorCodeStr()).isEqualTo(errorCode);
     }
 }

@@ -32,18 +32,18 @@ public class UserBlockService {
     @Transactional
     public UserBlockDto.Response blockUser(Long blockerId, UserBlockDto.BlockRequest request) {
         if (blockerId.equals(request.getUserId())) {
-            throw new BusinessException("자기 자신을 차단할 수 없습니다.");
+            throw BusinessException.badRequest("자기 자신을 차단할 수 없습니다.");
         }
 
         User blocker = userRepository.findById(blockerId)
-                .orElseThrow(() -> new BusinessException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.userNotFound(blockerId));
 
         User blocked = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new BusinessException("차단할 사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.userNotFound(request.getUserId()));
 
         // 이미 차단 여부 확인
         if (userBlockRepository.existsByBlockerIdAndBlockedId(blockerId, request.getUserId())) {
-            throw new BusinessException("이미 차단한 사용자입니다.");
+            throw BusinessException.conflict("이미 차단한 사용자입니다.");
         }
 
         // 차단 생성
@@ -69,7 +69,7 @@ public class UserBlockService {
     @Transactional
     public void unblockUser(Long blockerId, Long blockedId) {
         if (!userBlockRepository.existsByBlockerIdAndBlockedId(blockerId, blockedId)) {
-            throw new BusinessException("차단하지 않은 사용자입니다.");
+            throw BusinessException.notFound("차단하지 않은 사용자입니다.");
         }
 
         userBlockRepository.deleteByBlockerIdAndBlockedId(blockerId, blockedId);
@@ -82,7 +82,7 @@ public class UserBlockService {
     @Transactional
     public UserBlockDto.ToggleResponse toggleBlock(Long blockerId, Long targetUserId) {
         if (blockerId.equals(targetUserId)) {
-            throw new BusinessException("자기 자신을 차단할 수 없습니다.");
+            throw BusinessException.badRequest("자기 자신을 차단할 수 없습니다.");
         }
 
         boolean isBlocked = userBlockRepository.existsByBlockerIdAndBlockedId(blockerId, targetUserId);
@@ -97,9 +97,9 @@ public class UserBlockService {
         } else {
             // 차단
             User blocker = userRepository.findById(blockerId)
-                    .orElseThrow(() -> new BusinessException("사용자를 찾을 수 없습니다."));
+                    .orElseThrow(() -> BusinessException.userNotFound(blockerId));
             User blocked = userRepository.findById(targetUserId)
-                    .orElseThrow(() -> new BusinessException("차단할 사용자를 찾을 수 없습니다."));
+                    .orElseThrow(() -> BusinessException.userNotFound(targetUserId));
 
             UserBlock block = UserBlock.builder()
                     .blocker(blocker)

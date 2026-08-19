@@ -32,7 +32,7 @@ public class EmergencyContactService {
                                         String phoneNumber, String email) {
         long count = emergencyContactRepository.countByUserId(userId);
         if (count >= MAX_CONTACTS) {
-            throw new BusinessException("긴급 연락처는 최대 " + MAX_CONTACTS + "개까지 등록할 수 있습니다.");
+            throw BusinessException.badRequest("긴급 연락처는 최대 " + MAX_CONTACTS + "개까지 등록할 수 있습니다.");
         }
 
         User user = userRepository.findById(userId)

@@ -203,7 +203,12 @@ class ActivityServiceTest {
             assertThatThrownBy(() -> activityService.recordActivitySync(
                     999L, Activity.ActivityType.USER_JOINED, null, null, null))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessage("사용자를 찾을 수 없습니다.");
+                    .hasMessageContaining("사용자를 찾을 수 없습니다")
+                    .satisfies(ex -> {
+                        BusinessException exception = (BusinessException) ex;
+                        assertThat(exception.getStatus().value()).isEqualTo(404);
+                        assertThat(exception.getErrorCodeStr()).isEqualTo("USER_NOT_FOUND");
+                    });
         }
     }
 

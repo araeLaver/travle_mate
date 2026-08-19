@@ -3,6 +3,7 @@ package com.travelmate.service.nft;
 import com.travelmate.config.BlockchainConfig;
 import com.travelmate.dto.WalletDto;
 import com.travelmate.entity.User;
+import com.travelmate.exception.BusinessException;
 import com.travelmate.repository.UserRepository;
 import com.travelmate.repository.nft.UserNftCollectionRepository;
 import jakarta.annotation.PostConstruct;
@@ -107,7 +108,7 @@ public class WalletService {
 
         // 사용자 지갑 정보 업데이트
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         user.setPolygonWalletAddress(request.getWalletAddress());
         user.setIsWalletVerified(true);
@@ -133,7 +134,7 @@ public class WalletService {
     @Transactional(readOnly = true)
     public WalletDto.WalletStatusResponse getWalletStatus(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         if (user.getPolygonWalletAddress() == null) {
             return WalletDto.WalletStatusResponse.builder()
@@ -158,7 +159,7 @@ public class WalletService {
     @Transactional
     public WalletDto.DisconnectResponse disconnectWallet(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         user.setPolygonWalletAddress(null);
         user.setIsWalletVerified(false);

@@ -2,6 +2,7 @@ package com.travelmate.service;
 
 import com.travelmate.dto.UserDto;
 import com.travelmate.entity.User;
+import com.travelmate.exception.BusinessException;
 import com.travelmate.repository.UserRepository;
 import com.travelmate.util.TravelStyleMatcher;
 import lombok.RequiredArgsConstructor;
@@ -70,7 +71,7 @@ public class LocationService {
     
     public List<UserDto.Response> getSmartRecommendations(Long userId, Double latitude, Double longitude) {
         User currentUser = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+            .orElseThrow(() -> BusinessException.userNotFound(userId));
         
         // 1차: 위치 기반 필터링 (5km 반경)
         List<User> nearbyUsers = userRepository.findNearbyUsers(userId, latitude, longitude, 5.0);
@@ -90,7 +91,7 @@ public class LocationService {
     
     public void updateLocationWithContext(Long userId, Double latitude, Double longitude, String context) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+            .orElseThrow(() -> BusinessException.userNotFound(userId));
         
         user.setCurrentLatitude(latitude);
         user.setCurrentLongitude(longitude);

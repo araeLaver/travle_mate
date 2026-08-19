@@ -1,10 +1,13 @@
 package com.travelmate.service;
 
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -19,6 +22,9 @@ public class InMemoryTokenStorageService implements TokenStorageServiceInterface
 
     private final Map<String, TokenEntry> tokenStore = new ConcurrentHashMap<>();
 
+    @Value("${spring.profiles.active:}")
+    private String activeProfiles;
+
     private static final String EMAIL_VERIFICATION_PREFIX = "email:verification:";
     private static final String PASSWORD_RESET_PREFIX = "password:reset:";
     private static final String REFRESH_TOKEN_PREFIX = "refresh:token:";
@@ -26,6 +32,15 @@ public class InMemoryTokenStorageService implements TokenStorageServiceInterface
     private record TokenEntry(String value, Instant expiresAt) {
         boolean isExpired() {
             return Instant.now().isAfter(expiresAt);
+        }
+    }
+
+    @PostConstruct
+    void validateProductionConfiguration() {
+        if (Arrays.stream(activeProfiles.split(","))
+                .map(String::trim)
+                .anyMatch("prod"::equalsIgnoreCase)) {
+            throw new IllegalStateException("Production must use Redis token storage; set app.redis.enabled=true");
         }
     }
 

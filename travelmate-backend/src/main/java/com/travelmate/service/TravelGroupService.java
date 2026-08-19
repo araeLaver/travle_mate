@@ -9,6 +9,7 @@ import com.travelmate.exception.TravelGroupException;
 import com.travelmate.repository.GroupMemberRepository;
 import com.travelmate.repository.TravelGroupRepository;
 import com.travelmate.repository.UserRepository;
+import com.travelmate.security.AuthenticatedUserId;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -39,13 +40,18 @@ public class TravelGroupService {
         group.setDestination(request.getDestination());
         group.setStartDate(request.getStartDate());
         group.setEndDate(request.getEndDate());
-        group.setPurpose(request.getPurpose());
+        group.setPurpose(request.getPurpose() != null ? request.getPurpose() : TravelGroup.Purpose.LEISURE);
         group.setCreator(creator);
         group.setMaxMembers(request.getMaxMembers());
         group.setMeetingLatitude(request.getMeetingLatitude());
         group.setMeetingLongitude(request.getMeetingLongitude());
         group.setMeetingAddress(request.getMeetingAddress());
         group.setScheduledTime(request.getScheduledTime());
+        group.setTravelStyle(request.getTravelStyle());
+        group.setBudgetRange(request.getBudgetRange());
+        group.setRequirements(request.getRequirements());
+        group.setGroupImageUrl(request.getGroupImageUrl());
+        group.setCurrentMembers(1);
         group.setStatus(TravelGroup.Status.RECRUITING);
         
         TravelGroup savedGroup = travelGroupRepository.save(group);
@@ -86,10 +92,18 @@ public class TravelGroupService {
         response.setId(basicDto.getId());
         response.setTitle(basicDto.getTitle());
         response.setDescription(basicDto.getDescription());
+        response.setDestination(basicDto.getDestination());
+        response.setStartDate(basicDto.getStartDate());
+        response.setEndDate(basicDto.getEndDate());
         response.setPurpose(basicDto.getPurpose());
         response.setCreator(basicDto.getCreator());
         response.setMaxMembers(basicDto.getMaxMembers());
+        response.setCurrentMembers(basicDto.getCurrentMembers());
         response.setCurrentMemberCount(basicDto.getCurrentMemberCount());
+        response.setTravelStyle(basicDto.getTravelStyle());
+        response.setBudgetRange(basicDto.getBudgetRange());
+        response.setRequirements(basicDto.getRequirements());
+        response.setGroupImageUrl(basicDto.getGroupImageUrl());
         response.setMeetingLatitude(basicDto.getMeetingLatitude());
         response.setMeetingLongitude(basicDto.getMeetingLongitude());
         response.setMeetingAddress(basicDto.getMeetingAddress());
@@ -147,6 +161,9 @@ public class TravelGroupService {
         member.setRole(GroupMember.Role.MEMBER);
         member.setStatus(GroupMember.Status.ACCEPTED);
         groupMemberRepository.save(member);
+
+        group.setCurrentMembers((int) currentMembers + 1);
+        travelGroupRepository.save(group);
         
         // 그룹 생성자에게 알림
         notificationService.sendNotification(
@@ -166,6 +183,12 @@ public class TravelGroupService {
         }
         
         groupMemberRepository.delete(member);
+
+        TravelGroup group = member.getTravelGroup();
+        if (group != null && group.getCurrentMembers() != null && group.getCurrentMembers() > 0) {
+            group.setCurrentMembers(group.getCurrentMembers() - 1);
+            travelGroupRepository.save(group);
+        }
         
         log.info("그룹 탈퇴: Group {} - User {}", groupId, userId);
     }
@@ -210,17 +233,26 @@ public class TravelGroupService {
         dto.setId(group.getId());
         dto.setTitle(group.getTitle());
         dto.setDescription(group.getDescription());
+        dto.setDestination(group.getDestination());
+        dto.setStartDate(group.getStartDate());
+        dto.setEndDate(group.getEndDate());
         dto.setPurpose(group.getPurpose());
         dto.setCreator(convertUserToDto(group.getCreator()));
         dto.setMaxMembers(group.getMaxMembers());
         
         // 현재 멤버 수 계산
-        long memberCount = group.getMembers() != null ? 
+        long memberCount = group.getMembers() != null ?
             group.getMembers().stream()
                 .filter(m -> m.getStatus() == GroupMember.Status.ACCEPTED)
-                .count() : 0;
+                .count()
+            : (group.getCurrentMembers() != null ? group.getCurrentMembers() : 0);
+        dto.setCurrentMembers((int) memberCount);
         dto.setCurrentMemberCount((int) memberCount);
         
+        dto.setTravelStyle(group.getTravelStyle());
+        dto.setBudgetRange(group.getBudgetRange());
+        dto.setRequirements(group.getRequirements());
+        dto.setGroupImageUrl(group.getGroupImageUrl());
         dto.setMeetingLatitude(group.getMeetingLatitude());
         dto.setMeetingLongitude(group.getMeetingLongitude());
         dto.setMeetingAddress(group.getMeetingAddress());
@@ -256,7 +288,7 @@ public class TravelGroupService {
             org.springframework.security.core.Authentication auth = 
                 org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
             if (auth != null && auth.getName() != null) {
-                return Long.parseLong(auth.getName());
+                return AuthenticatedUserId.parse(auth);
             }
         } catch (Exception e) {
             log.warn("현재 사용자 ID 추출 실패", e);

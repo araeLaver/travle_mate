@@ -4,9 +4,11 @@ import com.travelmate.config.BlockchainConfig;
 import com.travelmate.entity.nft.MintStatus;
 import com.travelmate.entity.nft.UserNftCollection;
 import com.travelmate.repository.nft.UserNftCollectionRepository;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,8 +48,24 @@ public class PolygonBlockchainService {
     private final BlockchainConfig blockchainConfig;
     private final UserNftCollectionRepository nftCollectionRepository;
 
+    @Value("${spring.profiles.active:}")
+    private String activeProfiles;
+
     private static final BigInteger GAS_LIMIT = BigInteger.valueOf(300000);
     private static final BigInteger GAS_PRICE = BigInteger.valueOf(30_000_000_000L); // 30 Gwei
+
+    @PostConstruct
+    void validateProductionConfiguration() {
+        if (isProdProfile() && !blockchainConfig.isBlockchainEnabled()) {
+            throw new IllegalStateException("Production NFT minting must enable blockchain.enabled=true");
+        }
+    }
+
+    private boolean isProdProfile() {
+        return Arrays.stream(activeProfiles.split(","))
+                .map(String::trim)
+                .anyMatch("prod"::equalsIgnoreCase);
+    }
 
     /**
      * 개인키를 안전하게 로드하여 Credentials 생성

@@ -1,5 +1,6 @@
 package com.travelmate.controller;
 
+import com.travelmate.security.AuthenticatedUserId;
 import com.travelmate.dto.MatchingDto;
 import com.travelmate.dto.MatchingDto.*;
 import com.travelmate.service.CompanionMatchingService;
@@ -15,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/matching")
+@RequestMapping("/matching")
 @RequiredArgsConstructor
 public class MatchingController {
 
@@ -26,7 +27,7 @@ public class MatchingController {
             @AuthenticationPrincipal String userId,
             @RequestParam(defaultValue = "20") int limit) {
         List<MatchRecommendation> recommendations = matchingService
-                .getMatchRecommendations(Long.parseLong(userId), limit);
+                .getMatchRecommendations(AuthenticatedUserId.parse(userId), limit);
         return ResponseEntity.ok(recommendations);
     }
 
@@ -35,7 +36,7 @@ public class MatchingController {
             @AuthenticationPrincipal String userId,
             @Valid @RequestBody SendMatchRequest request) {
         MatchRequestResponse response = matchingService
-                .sendMatchRequest(Long.parseLong(userId), request);
+                .sendMatchRequest(AuthenticatedUserId.parse(userId), request);
         return ResponseEntity.ok(response);
     }
 
@@ -45,7 +46,7 @@ public class MatchingController {
             @PathVariable Long id,
             @Valid @RequestBody RespondMatchRequest request) {
         MatchRequestResponse response = matchingService
-                .respondToMatchRequest(Long.parseLong(userId), id, request.getAccept());
+                .respondToMatchRequest(AuthenticatedUserId.parse(userId), id, request.getAccept());
         return ResponseEntity.ok(response);
     }
 
@@ -54,7 +55,7 @@ public class MatchingController {
             @AuthenticationPrincipal String userId,
             @PathVariable Long id) {
         MatchRequestResponse response = matchingService
-                .respondToMatchRequest(Long.parseLong(userId), id, true);
+                .respondToMatchRequest(AuthenticatedUserId.parse(userId), id, true);
         return ResponseEntity.ok(response);
     }
 
@@ -63,7 +64,7 @@ public class MatchingController {
             @AuthenticationPrincipal String userId,
             @PathVariable Long id) {
         MatchRequestResponse response = matchingService
-                .respondToMatchRequest(Long.parseLong(userId), id, false);
+                .respondToMatchRequest(AuthenticatedUserId.parse(userId), id, false);
         return ResponseEntity.ok(response);
     }
 
@@ -71,8 +72,17 @@ public class MatchingController {
     public ResponseEntity<Void> cancelRequest(
             @AuthenticationPrincipal String userId,
             @PathVariable Long id) {
-        matchingService.cancelMatchRequest(Long.parseLong(userId), id);
+        matchingService.cancelMatchRequest(AuthenticatedUserId.parse(userId), id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/requests/{id}/complete")
+    public ResponseEntity<MatchRequestResponse> completeRequest(
+            @AuthenticationPrincipal String userId,
+            @PathVariable Long id) {
+        MatchRequestResponse response = matchingService
+                .completeMatchRequest(AuthenticatedUserId.parse(userId), id);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/requests/received")
@@ -81,7 +91,7 @@ public class MatchingController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         Page<MatchRequestResponse> requests = matchingService
-                .getReceivedRequests(Long.parseLong(userId), PageRequest.of(page, size));
+                .getReceivedRequests(AuthenticatedUserId.parse(userId), PageRequest.of(page, size));
         return ResponseEntity.ok(requests);
     }
 
@@ -91,7 +101,7 @@ public class MatchingController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         Page<MatchRequestResponse> requests = matchingService
-                .getSentRequests(Long.parseLong(userId), PageRequest.of(page, size));
+                .getSentRequests(AuthenticatedUserId.parse(userId), PageRequest.of(page, size));
         return ResponseEntity.ok(requests);
     }
 
@@ -99,14 +109,14 @@ public class MatchingController {
     public ResponseEntity<List<MatchHistoryResponse>> getMatchHistory(
             @AuthenticationPrincipal String userId) {
         List<MatchHistoryResponse> history = matchingService
-                .getMatchHistory(Long.parseLong(userId));
+                .getMatchHistory(AuthenticatedUserId.parse(userId));
         return ResponseEntity.ok(history);
     }
 
     @GetMapping("/requests/pending/count")
     public ResponseEntity<Map<String, Long>> getPendingCount(
             @AuthenticationPrincipal String userId) {
-        long count = matchingService.getPendingRequestCount(Long.parseLong(userId));
+        long count = matchingService.getPendingRequestCount(AuthenticatedUserId.parse(userId));
         return ResponseEntity.ok(Map.of("count", count));
     }
 }

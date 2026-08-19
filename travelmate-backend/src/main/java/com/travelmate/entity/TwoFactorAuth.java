@@ -28,7 +28,7 @@ public class TwoFactorAuth {
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
     
-    @Column(name = "secret_key", nullable = false, length = 32)
+    @Column(name = "secret_key", nullable = false, length = 64)
     private String secretKey;
     
     @Enumerated(EnumType.STRING)

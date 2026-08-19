@@ -3,7 +3,6 @@ package com.travelmate.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.travelmate.dto.CommentDto;
 import com.travelmate.security.JwtAuthenticationFilter;
-import com.travelmate.security.UserPrincipal;
 import com.travelmate.service.CommentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -54,25 +53,15 @@ class CommentControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private UserPrincipal userPrincipal;
     private CommentDto.Response commentResponse;
     private CommentDto.AuthorInfo authorInfo;
 
     @BeforeEach
     void setUp() {
-        // UserPrincipal 설정
-        userPrincipal = new UserPrincipal(
-                1L,
-                "test@test.com",
-                "password",
-                Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
-        );
-
-        // SecurityContext 설정
         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                userPrincipal,
+                "1",
                 null,
-                userPrincipal.getAuthorities()
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
         );
         SecurityContextHolder.getContext().setAuthentication(auth);
 

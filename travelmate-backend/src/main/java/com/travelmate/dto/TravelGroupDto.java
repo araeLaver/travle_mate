@@ -1,6 +1,7 @@
 package com.travelmate.dto;
 
 import com.travelmate.entity.TravelGroup;
+import com.travelmate.entity.User;
 import lombok.Data;
 import jakarta.validation.constraints.*;
 import org.hibernate.validator.constraints.Length;
@@ -25,26 +26,23 @@ public class TravelGroupDto {
         private String destination;
 
         @NotNull(message = "여행 시작일은 필수입니다")
-        @Future(message = "여행 시작일은 현재 날짜 이후여야 합니다")
+        @FutureOrPresent(message = "여행 시작일은 현재 날짜 이후여야 합니다")
         private LocalDate startDate;
 
         @NotNull(message = "여행 종료일은 필수입니다")
         @Future(message = "여행 종료일은 현재 날짜 이후여야 합니다")
         private LocalDate endDate;
 
-        @NotNull(message = "여행 목적은 필수입니다")
         private TravelGroup.Purpose purpose;
 
         @Min(value = 2, message = "최소 인원은 2명입니다")
         @Max(value = 20, message = "최대 인원은 20명입니다")
         private Integer maxMembers = 4;
 
-        @NotNull(message = "만남 장소 위도는 필수입니다")
         @DecimalMin(value = "-90.0", message = "위도는 -90 이상이어야 합니다")
         @DecimalMax(value = "90.0", message = "위도는 90 이하여야 합니다")
         private Double meetingLatitude;
 
-        @NotNull(message = "만남 장소 경도는 필수입니다")
         @DecimalMin(value = "-180.0", message = "경도는 -180 이상이어야 합니다")
         @DecimalMax(value = "180.0", message = "경도는 180 이하여야 합니다")
         private Double meetingLongitude;
@@ -54,6 +52,17 @@ public class TravelGroupDto {
 
         @Future(message = "만남 시간은 현재 시간 이후여야 합니다")
         private LocalDateTime scheduledTime;
+
+        private User.TravelStyle travelStyle;
+
+        @Length(max = 50, message = "예산 범위는 50자 이하로 입력해주세요")
+        private String budgetRange;
+
+        @Length(max = 1000, message = "참가 조건은 1000자 이하로 입력해주세요")
+        private String requirements;
+
+        @Length(max = 500, message = "그룹 이미지는 500자 이하로 입력해주세요")
+        private String groupImageUrl;
     }
     
     @Data
@@ -61,10 +70,18 @@ public class TravelGroupDto {
         private Long id;
         private String title;
         private String description;
+        private String destination;
+        private LocalDate startDate;
+        private LocalDate endDate;
         private TravelGroup.Purpose purpose;
         private UserDto.Response creator;
         private Integer maxMembers;
+        private Integer currentMembers;
         private Integer currentMemberCount;
+        private User.TravelStyle travelStyle;
+        private String budgetRange;
+        private String requirements;
+        private String groupImageUrl;
         private Double meetingLatitude;
         private Double meetingLongitude;
         private String meetingAddress;

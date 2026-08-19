@@ -1,9 +1,8 @@
 package com.travelmate.controller;
 
+import com.travelmate.security.AuthenticatedUserId;
 import com.travelmate.dto.ActivityDto;
 import com.travelmate.entity.Activity;
-import com.travelmate.security.CurrentUser;
-import com.travelmate.security.UserPrincipal;
 import com.travelmate.service.ActivityService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -13,6 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -27,13 +27,13 @@ public class ActivityController {
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "내 타임라인 조회", description = "팔로잉 사용자들과 본인의 활동을 시간순으로 조회합니다.")
     public ResponseEntity<ActivityDto.TimelineResponse> getMyTimeline(
-            @CurrentUser UserPrincipal userPrincipal,
+            @AuthenticationPrincipal String userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
 
         Pageable pageable = PageRequest.of(page, size);
         ActivityDto.TimelineResponse response = activityService.getMyTimeline(
-                userPrincipal.getId(), pageable);
+                parseUserId(userId), pageable);
 
         return ResponseEntity.ok(response);
     }
@@ -53,12 +53,12 @@ public class ActivityController {
     @GetMapping("/users/{userId}")
     @Operation(summary = "사용자 활동 조회", description = "특정 사용자의 활동 목록을 조회합니다.")
     public ResponseEntity<ActivityDto.FeedResponse> getUserActivities(
-            @CurrentUser @Parameter(hidden = true) UserPrincipal userPrincipal,
+            @AuthenticationPrincipal @Parameter(hidden = true) String principalUserId,
             @PathVariable Long userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
 
-        Long viewerId = userPrincipal != null ? userPrincipal.getId() : null;
+        Long viewerId = principalUserId != null ? parseUserId(principalUserId) : null;
         Pageable pageable = PageRequest.of(page, size);
         ActivityDto.FeedResponse response = activityService.getUserActivities(
                 userId, viewerId, pageable);
@@ -86,5 +86,9 @@ public class ActivityController {
         ActivityDto.FeedResponse response = activityService.getActivitiesByType(type, pageable);
 
         return ResponseEntity.ok(response);
+    }
+
+    private Long parseUserId(String userId) {
+        return AuthenticatedUserId.parse(userId);
     }
 }

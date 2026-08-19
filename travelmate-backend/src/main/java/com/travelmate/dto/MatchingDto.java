@@ -80,6 +80,7 @@ public class MatchingDto {
     public static class MatchHistoryResponse {
         private Long matchRequestId;
         private MatchUserSummary partner;
+        private MatchStatus status;
         private BigDecimal totalScore;
         private MatchScoreBreakdown scoreBreakdown;
         private LocalDateTime matchedAt;

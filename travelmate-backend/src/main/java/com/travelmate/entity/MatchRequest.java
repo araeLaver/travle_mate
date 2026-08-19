@@ -83,6 +83,6 @@ public class MatchRequest {
     }
 
     public enum MatchStatus {
-        PENDING, ACCEPTED, REJECTED, CANCELLED, EXPIRED, MATCHED
+        PENDING, ACCEPTED, REJECTED, CANCELLED, EXPIRED, MATCHED, COMPLETED
     }
 }

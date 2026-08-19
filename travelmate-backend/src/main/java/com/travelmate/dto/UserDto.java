@@ -9,6 +9,7 @@ import jakarta.validation.constraints.*;
 import org.hibernate.validator.constraints.Length;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class UserDto {
     
@@ -92,7 +93,6 @@ public class UserDto {
     
     @Data
     public static class LocationUpdateRequest {
-        @NotNull
         private Long userId;
         
         @NotNull
@@ -104,7 +104,6 @@ public class UserDto {
     
     @Data
     public static class ShakeRequest {
-        @NotNull
         private Long userId;
         
         @NotNull
@@ -129,6 +128,15 @@ public class UserDto {
         @Pattern(regexp = "^[가-힣a-zA-Z0-9_]+$", message = "닉네임은 한글, 영문, 숫자, 언더스코어만 사용 가능합니다")
         private String nickname;
 
+        @Length(max = 100, message = "이름은 100자를 초과할 수 없습니다")
+        private String fullName;
+
+        @Min(value = 0, message = "나이는 0 이상이어야 합니다")
+        @Max(value = 150, message = "나이는 150 이하여야 합니다")
+        private Integer age;
+
+        private User.Gender gender;
+
         @Length(max = 500, message = "자기소개는 500자를 초과할 수 없습니다")
         private String bio;
 
@@ -139,6 +147,12 @@ public class UserDto {
         private String phoneNumber;
 
         private User.TravelStyle travelStyle;
+
+        @Size(max = 30, message = "관심사는 최대 30개까지 설정할 수 있습니다")
+        private List<String> interests;
+
+        @Size(max = 20, message = "언어는 최대 20개까지 설정할 수 있습니다")
+        private List<String> languages;
     }
     
     @Data

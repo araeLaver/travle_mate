@@ -22,7 +22,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Collections;
@@ -71,23 +70,12 @@ class FollowControllerTest {
         currentUser.setNickname("테스트유저");
         currentUser.setPassword("password");
 
-        // UserDetails 객체 생성
-        org.springframework.security.core.userdetails.User userDetails =
-                new org.springframework.security.core.userdetails.User(
-                        "test@test.com",
-                        "password",
-                        Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
-                );
-
-        // SecurityContext 설정 - UserDetails 객체를 principal로 사용
         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                userDetails,
+                "1",
                 null,
-                userDetails.getAuthorities()
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
         );
         SecurityContextHolder.getContext().setAuthentication(auth);
-
-        when(userService.findByEmail("test@test.com")).thenReturn(currentUser);
     }
 
     @Nested

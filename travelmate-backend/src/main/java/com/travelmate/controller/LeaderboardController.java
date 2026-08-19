@@ -1,5 +1,6 @@
 package com.travelmate.controller;
 
+import com.travelmate.security.AuthenticatedUserId;
 import com.travelmate.dto.LeaderboardDto;
 import com.travelmate.service.LeaderboardService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -50,7 +51,7 @@ public class LeaderboardController {
     @GetMapping("/my-rank")
     @Operation(summary = "내 순위 조회", description = "현재 로그인한 사용자의 랭킹 정보를 조회합니다.")
     public ResponseEntity<LeaderboardDto.UserRankResponse> getMyRank(Authentication authentication) {
-        Long userId = Long.parseLong(authentication.getName());
+        Long userId = AuthenticatedUserId.parse(authentication);
         return ResponseEntity.ok(leaderboardService.getUserRank(userId));
     }
 
