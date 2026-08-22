@@ -101,12 +101,31 @@ const getSessionJson = <T>(key: string, fallback: T): T => {
   }
 };
 
+const generateRandomId = (): string => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+
+  const randomValues = new Uint32Array(4);
+  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    crypto.getRandomValues(randomValues);
+  } else {
+    randomValues[0] = Date.now();
+    randomValues[1] =
+      typeof performance !== 'undefined' ? Math.floor(performance.now()) : Date.now();
+    randomValues[2] = typeof navigator !== 'undefined' ? navigator.userAgent.length : 0;
+    randomValues[3] = typeof window !== 'undefined' ? window.location.href.length : 0;
+  }
+
+  return Array.from(randomValues, value => value.toString(36)).join('');
+};
+
 // Session ID generation
 const generateSessionId = (): string => {
   const stored = getSessionItem('tm_session_id');
   if (stored) return stored;
 
-  const newId = `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+  const newId = `${Date.now()}-${generateRandomId()}`;
   setSessionItem('tm_session_id', newId);
   return newId;
 };

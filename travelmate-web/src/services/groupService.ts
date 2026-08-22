@@ -84,6 +84,20 @@ const getSortableDateTime = (date: Date): number => {
   return Number.isNaN(time) ? Number.MAX_SAFE_INTEGER : time;
 };
 
+const generateRandomId = (prefix: string): string => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `${prefix}_${crypto.randomUUID()}`;
+  }
+
+  const randomValues = new Uint32Array(3);
+  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    crypto.getRandomValues(randomValues);
+    return `${prefix}_${Array.from(randomValues, value => value.toString(36)).join('')}`;
+  }
+
+  return `${prefix}_${Date.now().toString(36)}`;
+};
+
 class GroupService {
   private useMock: boolean = false; // Mock 데이터 사용 여부 (개발/테스트용)
   private groups: Map<string, TravelGroup> = new Map();
@@ -100,7 +114,7 @@ class GroupService {
   }
 
   private generateUserId(): string {
-    return 'user_' + Math.random().toString(36).substr(2, 9);
+    return generateRandomId('user');
   }
 
   // Mock 모드 설정 (테스트용)
@@ -711,7 +725,7 @@ class GroupService {
   async createGroup(request: CreateGroupRequest): Promise<TravelGroup> {
     if (this.useMock) {
       const newGroup: TravelGroup = {
-        id: 'group_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+        id: generateRandomId(`group_${Date.now()}`),
         ...request,
         currentMembers: 1,
         members: [

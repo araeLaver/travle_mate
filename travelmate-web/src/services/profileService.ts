@@ -114,6 +114,20 @@ const getApiErrorStatus = (error: unknown): number | undefined => {
 const DEFAULT_PROFILE_INTERESTS = ['사진촬영', '음식탐방', '역사문화', '자연관광'];
 const DEFAULT_PROFILE_LANGUAGES = ['한국어', '영어'];
 
+const generateRandomId = (prefix: string): string => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `${prefix}_${crypto.randomUUID()}`;
+  }
+
+  const randomValues = new Uint32Array(3);
+  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    crypto.getRandomValues(randomValues);
+    return `${prefix}_${Array.from(randomValues, value => value.toString(36)).join('')}`;
+  }
+
+  return `${prefix}_${Date.now().toString(36)}`;
+};
+
 class ProfileService {
   private useMock: boolean = false; // Mock 데이터 사용 여부
   private profile: UserProfile | null = null;
@@ -144,7 +158,7 @@ class ProfileService {
   }
 
   private generateUserId(): string {
-    return 'user_' + Math.random().toString(36).substr(2, 9);
+    return generateRandomId('user');
   }
 
   private loadProfile(): void {

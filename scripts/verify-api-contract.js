@@ -599,15 +599,32 @@ function extractCallArguments(source, callIndex) {
 
 function extractRequiredFields(classBody) {
   const requiredFields = new Set();
-  const fieldPattern =
-    /((?:\s*@[A-Za-z][\w.]*\s*(?:\([^)]*\))?\s*)*)\s*private\s+(?:final\s+)?[\w.<>, ?]+\s+(\w+)\s*(?:=[^;]*)?;/g;
+  let annotations = [];
 
-  for (const match of classBody.matchAll(fieldPattern)) {
-    const annotations = match[1] || '';
-    const fieldName = match[2];
+  for (const rawLine of classBody.split(/\r?\n/)) {
+    let line = rawLine.trim();
+    if (!line) continue;
+
+    while (line.startsWith('@')) {
+      const annotationMatch = line.match(/^@[A-Za-z][\w.]*(?:\([^)]*\))?\s*/);
+      if (!annotationMatch) break;
+      annotations.push(annotationMatch[0]);
+      line = line.slice(annotationMatch[0].length).trimStart();
+    }
+
+    if (!line) continue;
+
+    const fieldMatch = line.match(/^private\s+(?:final\s+)?[\w.<>, ?]+\s+(\w+)\s*(?:=[^;]*)?;/);
+    if (!fieldMatch) {
+      annotations = [];
+      continue;
+    }
+
+    const fieldName = fieldMatch[1];
     if (/@(?:NotNull|NotBlank|NotEmpty)\b/.test(annotations)) {
       requiredFields.add(fieldName);
     }
+    annotations = [];
   }
 
   return requiredFields;
