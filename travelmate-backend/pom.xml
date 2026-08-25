@@ -224,9 +224,14 @@
                         </path>
                     </annotationProcessorPaths>
                     <testExcludes>
-                        <testExclude>**/CompatibilityScoreServiceTest.java</testExclude>
+                        <!--
+                          아래 테스트는 아직 출시되지 않은 매칭 설계를 전제로 작성되어 현재 구현과 불일치한다.
+                          해당 기능/설계 반영 시 제외를 해제할 것.
+                          - CompanionMatchingServiceTest: 48시간 재요청 쿨다운(findRecentClosedRequestBetween/
+                            existsActiveRequestBetween), expiresAt 24시간, CompatibilityScoreService 위임을 전제.
+                          CompatibilityScoreServiceTest / MatchRequestStateMachineTest 는 현재 구현 기준으로 복구되어 활성화됨.
+                        -->
                         <testExclude>**/CompanionMatchingServiceTest.java</testExclude>
-                        <testExclude>**/MatchRequestStateMachineTest.java</testExclude>
                     </testExcludes>
                 </configuration>
             </plugin>
