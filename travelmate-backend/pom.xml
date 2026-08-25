@@ -231,6 +231,18 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!--
+                      ByteBuddy 미지원 JVM(예: Java 25)에서 Mockito 클래스 모킹을 허용한다.
+                      @{argLine} 로 JaCoCo 가 설정한 에이전트 argLine 을 보존한다.
+                      지원 JVM 에서는 이 플래그가 무해하다.
+                    -->
+                    <argLine>@{argLine} -Dnet.bytebuddy.experimental=true</argLine>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
