@@ -22,6 +22,7 @@ const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '';
 const Home = lazy(() => import('./pages/Home'));
 const About = lazy(() => import('./pages/About'));
 const Legal = lazy(() => import('./pages/Legal'));
+const NotFound = lazy(() => import('./pages/NotFound'));
 const Portfolio = lazy(() => import('./pages/Portfolio'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
@@ -336,6 +337,9 @@ function App() {
                         </Layout>
                       }
                     />
+
+                    {/* 정의되지 않은 모든 경로 → 404 */}
+                    <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>
               </Router>

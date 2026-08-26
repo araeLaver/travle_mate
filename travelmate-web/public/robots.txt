@@ -1,0 +1,8 @@
+# Fryndo
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /settings
+Disallow: /wallet
+Disallow: /payment
+Disallow: /auth/callback
