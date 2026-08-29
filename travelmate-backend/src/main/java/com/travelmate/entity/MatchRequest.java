@@ -82,6 +82,17 @@ public class MatchRequest {
         }
     }
 
+    public boolean isAwaitingResponse() {
+        return status == MatchStatus.PENDING
+                && (expiresAt == null || expiresAt.isAfter(LocalDateTime.now()));
+    }
+
+    public boolean isExpiredAndPending() {
+        return status == MatchStatus.PENDING
+                && expiresAt != null
+                && expiresAt.isBefore(LocalDateTime.now());
+    }
+
     public enum MatchStatus {
         PENDING, ACCEPTED, REJECTED, CANCELLED, EXPIRED, MATCHED, COMPLETED
     }
