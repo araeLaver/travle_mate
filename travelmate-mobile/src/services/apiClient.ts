@@ -34,7 +34,7 @@ const developmentApiUrl =
     : 'http://localhost:8080/api';
 
 const API_BASE_URL = normalizeApiBaseUrl(
-  configuredApiUrl || (__DEV__ ? developmentApiUrl : 'https://api.travelmate.app')
+  configuredApiUrl || (__DEV__ ? developmentApiUrl : 'https://api.fryndo.com')
 );
 const MOBILE_CLIENT_HEADERS = {
   'X-Client-Type': 'mobile',

@@ -1,6 +1,6 @@
 /**
  * Deep Link Service
- * Handles URL scheme (travelmate://) and universal links (https://travelmate.app)
+ * Handles URL scheme (fryndo://) and universal links (https://fryndo.com)
  */
 
 import { Linking } from 'react-native';
@@ -31,7 +31,7 @@ const parsePositiveIntegerSegment = (value: string | undefined): number | null =
 
 export function parseDeepLink(url: string): DeepLinkRoute | null {
   try {
-    const parsed = new URL(url.replace('travelmate://', 'https://travelmate.app/'));
+    const parsed = new URL(url.replace('fryndo://', 'https://fryndo.com/'));
     const path = parsed.pathname.replace(/^\//, '').replace(/\/$/, '');
     const segments = path.split('/');
 
@@ -123,7 +123,7 @@ export async function initDeepLinks() {
 
 /** Linking config for React Navigation */
 export const linkingConfig = {
-  prefixes: ['travelmate://', 'https://travelmate.app'],
+  prefixes: ['fryndo://', 'https://fryndo.com'],
   config: {
     screens: {
       Main: {

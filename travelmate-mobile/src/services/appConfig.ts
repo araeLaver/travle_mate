@@ -1,6 +1,6 @@
 import Constants from 'expo-constants';
 
-const DEFAULT_WEB_URL = 'https://travelmate.app';
+const DEFAULT_WEB_URL = 'https://fryndo.com';
 const EXPO_PUBLIC_WEB_URL_ENV_KEY = 'EXPO_PUBLIC_WEB_URL';
 
 const getNonEmptyString = (value: unknown): string | undefined =>

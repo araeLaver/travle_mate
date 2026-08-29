@@ -3,7 +3,7 @@ import { afterAll, beforeEach, describe, expect, it, jest } from '@jest/globals'
 const mockConstants = {
   expoConfig: {
     extra: {
-      webUrl: 'https://travelmate.app',
+      webUrl: 'https://fryndo.com',
     },
   },
 };
@@ -25,7 +25,7 @@ describe('mobile appConfig', () => {
   beforeEach(() => {
     delete process.env.WEB_URL;
     delete process.env.EXPO_PUBLIC_WEB_URL;
-    mockConstants.expoConfig.extra.webUrl = 'https://travelmate.app';
+    mockConstants.expoConfig.extra.webUrl = 'https://fryndo.com';
   });
 
   afterAll(() => {
@@ -43,11 +43,11 @@ describe('mobile appConfig', () => {
   });
 
   it('builds app web URLs from app config extra without duplicate slashes', () => {
-    mockConstants.expoConfig.extra.webUrl = 'https://travelmate.app/';
+    mockConstants.expoConfig.extra.webUrl = 'https://fryndo.com/';
     const { buildWebUrl } = loadConfig();
 
-    expect(buildWebUrl('/privacy')).toBe('https://travelmate.app/privacy');
-    expect(buildWebUrl('terms')).toBe('https://travelmate.app/terms');
+    expect(buildWebUrl('/privacy')).toBe('https://fryndo.com/privacy');
+    expect(buildWebUrl('terms')).toBe('https://fryndo.com/terms');
   });
 
   it('prefers EXPO_PUBLIC_WEB_URL over legacy WEB_URL and app config extra', () => {
@@ -65,6 +65,6 @@ describe('mobile appConfig', () => {
     mockConstants.expoConfig.extra.webUrl = '   ';
     const { buildWebUrl } = loadConfig();
 
-    expect(buildWebUrl('/terms')).toBe('https://travelmate.app/terms');
+    expect(buildWebUrl('/terms')).toBe('https://fryndo.com/terms');
   });
 });

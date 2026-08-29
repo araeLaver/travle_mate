@@ -10,11 +10,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Product IDs - these should match App Store Connect / Google Play Console
 export const PRODUCT_IDS = {
-  PREMIUM_MONTHLY: 'travelmate.premium.monthly',
-  PREMIUM_YEARLY: 'travelmate.premium.yearly',
-  POINTS_SMALL: 'travelmate.points.small',
-  POINTS_MEDIUM: 'travelmate.points.medium',
-  POINTS_LARGE: 'travelmate.points.large',
+  PREMIUM_MONTHLY: 'fryndo.premium.monthly',
+  PREMIUM_YEARLY: 'fryndo.premium.yearly',
+  POINTS_SMALL: 'fryndo.points.small',
+  POINTS_MEDIUM: 'fryndo.points.medium',
+  POINTS_LARGE: 'fryndo.points.large',
 } as const;
 
 export type ProductId = (typeof PRODUCT_IDS)[keyof typeof PRODUCT_IDS];

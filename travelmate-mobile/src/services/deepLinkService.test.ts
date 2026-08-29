@@ -15,33 +15,33 @@ jest.mock('react-native', () => ({
 
 describe('deepLinkService parsing', () => {
   it('parses supported custom scheme and universal links', () => {
-    expect(parseDeepLink('travelmate://location/42')).toEqual({
+    expect(parseDeepLink('fryndo://location/42')).toEqual({
       screen: 'LocationDetail',
       params: { locationId: 42 },
     });
-    expect(parseDeepLink('https://travelmate.app/user/77')).toEqual({
+    expect(parseDeepLink('https://fryndo.com/user/77')).toEqual({
       screen: 'UserProfile',
       params: { userId: 77 },
     });
-    expect(parseDeepLink('travelmate://chat/9?name=서울%20채팅')).toEqual({
+    expect(parseDeepLink('fryndo://chat/9?name=서울%20채팅')).toEqual({
       screen: 'ChatRoom',
       params: { groupId: 9, groupName: '서울 채팅' },
     });
   });
 
   it('parses review links with match and target user ids', () => {
-    expect(parseDeepLink('https://travelmate.app/review/15/88')).toEqual({
+    expect(parseDeepLink('https://fryndo.com/review/15/88')).toEqual({
       screen: 'Review',
       params: { matchId: 15, targetUserId: 88 },
     });
   });
 
   it('rejects partial, missing, zero, and negative numeric ids', () => {
-    expect(parseDeepLink('travelmate://location/42abc')).toBeNull();
-    expect(parseDeepLink('travelmate://location/0')).toBeNull();
-    expect(parseDeepLink('travelmate://chat/-9')).toBeNull();
-    expect(parseDeepLink('https://travelmate.app/review/15')).toBeNull();
-    expect(parseDeepLink('https://travelmate.app/user/1.5')).toBeNull();
+    expect(parseDeepLink('fryndo://location/42abc')).toBeNull();
+    expect(parseDeepLink('fryndo://location/0')).toBeNull();
+    expect(parseDeepLink('fryndo://chat/-9')).toBeNull();
+    expect(parseDeepLink('https://fryndo.com/review/15')).toBeNull();
+    expect(parseDeepLink('https://fryndo.com/user/1.5')).toBeNull();
   });
 
   it('keeps React Navigation review parsing strict for malformed ids', () => {
@@ -65,7 +65,7 @@ describe('deepLinkService parsing', () => {
       navigate,
     } as any);
 
-    expect(handleDeepLinkUrl('travelmate://chat/9?name=서울%20채팅')).toBe(true);
+    expect(handleDeepLinkUrl('fryndo://chat/9?name=서울%20채팅')).toBe(true);
     expect(navigate).toHaveBeenCalledWith('ChatRoom', {
       groupId: 9,
       groupName: '서울 채팅',
@@ -77,7 +77,7 @@ describe('deepLinkService parsing', () => {
       navigate,
     } as any);
 
-    expect(handleDeepLinkUrl('travelmate://chat/9')).toBe(false);
+    expect(handleDeepLinkUrl('fryndo://chat/9')).toBe(false);
     expect(navigate).not.toHaveBeenCalled();
   });
 
@@ -89,7 +89,7 @@ describe('deepLinkService parsing', () => {
     } as any);
 
     expect(handleDeepLinkUrl(null)).toBe(false);
-    expect(handleDeepLinkUrl('travelmate://location/42abc')).toBe(false);
+    expect(handleDeepLinkUrl('fryndo://location/42abc')).toBe(false);
     expect(navigate).not.toHaveBeenCalled();
   });
 });

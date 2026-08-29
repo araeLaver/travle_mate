@@ -1,16 +1,16 @@
 {
   "expo": {
     "name": "Fryndo",
-    "slug": "travelmate",
+    "slug": "fryndo",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "scheme": "travelmate",
+    "scheme": "fryndo",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#3B82F6"
+      "backgroundColor": "#F7F2E8"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -24,11 +24,11 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.travelmate.app",
+      "bundleIdentifier": "com.fryndo.app",
       "buildNumber": "1",
       "usesAppleSignIn": true,
       "associatedDomains": [
-        "applinks:travelmate.app"
+        "applinks:fryndo.com"
       ],
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Fryndo는 주변 NFT 수집 장소를 찾기 위해 위치 정보가 필요합니다.",
@@ -51,9 +51,9 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#3B82F6"
+        "backgroundColor": "#F7F2E8"
       },
-      "package": "com.travelmate.app",
+      "package": "com.fryndo.app",
       "versionCode": 1,
       "permissions": [
         "ACCESS_COARSE_LOCATION",
@@ -78,7 +78,7 @@
           "data": [
             {
               "scheme": "https",
-              "host": "travelmate.app",
+              "host": "fryndo.com",
               "pathPrefix": "/share"
             }
           ],
@@ -107,7 +107,7 @@
         "expo-notifications",
         {
           "icon": "./assets/notification-icon.png",
-          "color": "#3B82F6",
+          "color": "#F97316",
           "sounds": [
             "./assets/sounds/chat.wav"
           ]
@@ -136,8 +136,8 @@
       [
         "@sentry/react-native/expo",
         {
-          "organization": "travelmate",
-          "project": "travelmate-mobile"
+          "organization": "fryndo",
+          "project": "fryndo-mobile"
         }
       ]
     ],
@@ -145,8 +145,8 @@
       "eas": {
         "projectId": "your-project-id"
       },
-      "apiUrl": "https://api.travelmate.app",
-      "webUrl": "https://travelmate.app",
+      "apiUrl": "https://api.fryndo.com",
+      "webUrl": "https://fryndo.com",
       "googleIosClientId": "YOUR_GOOGLE_IOS_CLIENT_ID",
       "googleAndroidClientId": "YOUR_GOOGLE_ANDROID_CLIENT_ID",
       "googleWebClientId": "YOUR_GOOGLE_WEB_CLIENT_ID",
@@ -158,13 +158,13 @@
         {
           "file": "@sentry/react-native/expo",
           "config": {
-            "organization": "travelmate",
-            "project": "travelmate-mobile"
+            "organization": "fryndo",
+            "project": "fryndo-mobile"
           }
         }
       ]
     },
-    "owner": "travelmate-team",
+    "owner": "fryndo-team",
     "privacy": "public",
     "platforms": [
       "ios",

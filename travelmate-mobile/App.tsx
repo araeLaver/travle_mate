@@ -1,5 +1,5 @@
 /**
- * TravelMate Mobile App
+ * Fryndo Mobile App
  * React Native App Entry Point
  */
 
@@ -12,6 +12,9 @@ import { NotificationProvider } from './src/contexts/NotificationContext';
 import { OfflineProvider } from './src/contexts/OfflineContext';
 import AppNavigator from './src/navigation/AppNavigator';
 import OfflineBanner from './src/components/OfflineBanner';
+import { initSentry } from './src/lib/sentry';
+
+initSentry();
 
 export default function App() {
   return (

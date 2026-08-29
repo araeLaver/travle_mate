@@ -16,7 +16,7 @@
       "env": {
         "APP_ENV": "development",
         "EXPO_PUBLIC_API_URL": "http://localhost:8080/api",
-        "EXPO_PUBLIC_WEB_URL": "https://travelmate.app",
+        "EXPO_PUBLIC_WEB_URL": "https://fryndo.com",
         "API_URL": "http://localhost:8080/api"
       }
     },
@@ -30,9 +30,9 @@
       },
       "env": {
         "APP_ENV": "preview",
-        "EXPO_PUBLIC_API_URL": "https://staging-api.travelmate.app/api",
-        "EXPO_PUBLIC_WEB_URL": "https://travelmate.app",
-        "API_URL": "https://staging-api.travelmate.app/api"
+        "EXPO_PUBLIC_API_URL": "https://staging-api.fryndo.com/api",
+        "EXPO_PUBLIC_WEB_URL": "https://fryndo.com",
+        "API_URL": "https://staging-api.fryndo.com/api"
       }
     },
     "production": {
@@ -46,9 +46,9 @@
       },
       "env": {
         "APP_ENV": "production",
-        "EXPO_PUBLIC_API_URL": "https://api.travelmate.app/api",
-        "EXPO_PUBLIC_WEB_URL": "https://travelmate.app",
-        "API_URL": "https://api.travelmate.app/api"
+        "EXPO_PUBLIC_API_URL": "https://api.fryndo.com/api",
+        "EXPO_PUBLIC_WEB_URL": "https://fryndo.com",
+        "API_URL": "https://api.fryndo.com/api"
       }
     }
   },
