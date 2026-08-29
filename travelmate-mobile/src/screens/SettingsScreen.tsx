@@ -26,6 +26,10 @@ import {
   BiometricType,
 } from '../services/biometricService';
 import { buildWebUrl } from '../services/appConfig';
+import { palette, fonts, type, spacing, radii } from '../theme';
+import Icon from '../components/icons/Icon';
+
+const TOGGLE_TRACK = { false: palette.outline, true: palette.primary };
 
 type SettingsScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -124,57 +128,68 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>알림</Text>
 
-        <View style={styles.settingItem}>
-          <View style={styles.settingInfo}>
-            <Text style={styles.settingTitle}>푸시 알림</Text>
-            <Text style={styles.settingDescription}>
-              앱 알림을 받습니다
-            </Text>
+        <View style={styles.card}>
+          <View style={styles.settingItem}>
+            <View style={styles.rowIcon}>
+              <Icon name="bell" size={22} color={palette.ink} />
+            </View>
+            <View style={styles.settingInfo}>
+              <Text style={styles.settingTitle}>푸시 알림</Text>
+              <Text style={styles.settingDescription}>
+                앱 알림을 받습니다
+              </Text>
+            </View>
+            <Switch
+              value={pushNotifications}
+              onValueChange={(value) =>
+                handleToggle('pushNotifications', value, setPushNotifications)
+              }
+              trackColor={TOGGLE_TRACK}
+              thumbColor={palette.white}
+            />
           </View>
-          <Switch
-            value={pushNotifications}
-            onValueChange={(value) =>
-              handleToggle('pushNotifications', value, setPushNotifications)
-            }
-            trackColor={{ false: '#D1D5DB', true: '#93C5FD' }}
-            thumbColor={pushNotifications ? '#3B82F6' : '#f4f3f4'}
-          />
-        </View>
 
-        <View style={styles.settingItem}>
-          <View style={styles.settingInfo}>
-            <Text style={styles.settingTitle}>주변 장소 알림</Text>
-            <Text style={styles.settingDescription}>
-              수집 가능한 장소가 근처에 있을 때 알림
-            </Text>
+          <View style={[styles.settingItem, styles.rowDivider]}>
+            <View style={styles.rowIcon}>
+              <Icon name="pin" size={22} color={palette.ink} />
+            </View>
+            <View style={styles.settingInfo}>
+              <Text style={styles.settingTitle}>주변 장소 알림</Text>
+              <Text style={styles.settingDescription}>
+                수집 가능한 장소가 근처에 있을 때 알림
+              </Text>
+            </View>
+            <Switch
+              value={nearbyAlerts}
+              onValueChange={(value) =>
+                handleToggle('nearbyAlerts', value, setNearbyAlerts)
+              }
+              trackColor={TOGGLE_TRACK}
+              thumbColor={palette.white}
+              disabled={!pushNotifications}
+            />
           </View>
-          <Switch
-            value={nearbyAlerts}
-            onValueChange={(value) =>
-              handleToggle('nearbyAlerts', value, setNearbyAlerts)
-            }
-            trackColor={{ false: '#D1D5DB', true: '#93C5FD' }}
-            thumbColor={nearbyAlerts ? '#3B82F6' : '#f4f3f4'}
-            disabled={!pushNotifications}
-          />
-        </View>
 
-        <View style={styles.settingItem}>
-          <View style={styles.settingInfo}>
-            <Text style={styles.settingTitle}>수집 완료 알림</Text>
-            <Text style={styles.settingDescription}>
-              NFT 수집 완료 시 알림
-            </Text>
+          <View style={[styles.settingItem, styles.rowDivider]}>
+            <View style={styles.rowIcon}>
+              <Icon name="stamp" size={22} color={palette.ink} />
+            </View>
+            <View style={styles.settingInfo}>
+              <Text style={styles.settingTitle}>수집 완료 알림</Text>
+              <Text style={styles.settingDescription}>
+                NFT 수집 완료 시 알림
+              </Text>
+            </View>
+            <Switch
+              value={collectAlerts}
+              onValueChange={(value) =>
+                handleToggle('collectAlerts', value, setCollectAlerts)
+              }
+              trackColor={TOGGLE_TRACK}
+              thumbColor={palette.white}
+              disabled={!pushNotifications}
+            />
           </View>
-          <Switch
-            value={collectAlerts}
-            onValueChange={(value) =>
-              handleToggle('collectAlerts', value, setCollectAlerts)
-            }
-            trackColor={{ false: '#D1D5DB', true: '#93C5FD' }}
-            thumbColor={collectAlerts ? '#3B82F6' : '#f4f3f4'}
-            disabled={!pushNotifications}
-          />
         </View>
       </View>
 
@@ -182,19 +197,24 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
       {biometricAvailable && (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>보안</Text>
-          <View style={styles.settingItem}>
-            <View style={styles.settingInfo}>
-              <Text style={styles.settingTitle}>{getBiometricLabel(biometricType)}</Text>
-              <Text style={styles.settingDescription}>
-                앱 잠금 해제 시 생체 인증을 사용합니다
-              </Text>
+          <View style={styles.card}>
+            <View style={styles.settingItem}>
+              <View style={styles.rowIcon}>
+                <Icon name="lock" size={22} color={palette.ink} />
+              </View>
+              <View style={styles.settingInfo}>
+                <Text style={styles.settingTitle}>{getBiometricLabel(biometricType)}</Text>
+                <Text style={styles.settingDescription}>
+                  앱 잠금 해제 시 생체 인증을 사용합니다
+                </Text>
+              </View>
+              <Switch
+                value={biometricOn}
+                onValueChange={handleBiometricToggle}
+                trackColor={TOGGLE_TRACK}
+                thumbColor={palette.white}
+              />
             </View>
-            <Switch
-              value={biometricOn}
-              onValueChange={handleBiometricToggle}
-              trackColor={{ false: '#D1D5DB', true: '#93C5FD' }}
-              thumbColor={biometricOn ? '#3B82F6' : '#f4f3f4'}
-            />
           </View>
         </View>
       )}
@@ -203,80 +223,109 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>위치</Text>
 
-        <View style={styles.settingItem}>
-          <View style={styles.settingInfo}>
-            <Text style={styles.settingTitle}>위치 서비스</Text>
-            <Text style={styles.settingDescription}>
-              백그라운드 위치 추적 활성화
-            </Text>
+        <View style={styles.card}>
+          <View style={styles.settingItem}>
+            <View style={styles.rowIcon}>
+              <Icon name="nav" size={22} color={palette.ink} />
+            </View>
+            <View style={styles.settingInfo}>
+              <Text style={styles.settingTitle}>위치 서비스</Text>
+              <Text style={styles.settingDescription}>
+                백그라운드 위치 추적 활성화
+              </Text>
+            </View>
+            <Switch
+              value={locationServices}
+              onValueChange={(value) =>
+                handleToggle('locationServices', value, setLocationServices)
+              }
+              trackColor={TOGGLE_TRACK}
+              thumbColor={palette.white}
+            />
           </View>
-          <Switch
-            value={locationServices}
-            onValueChange={(value) =>
-              handleToggle('locationServices', value, setLocationServices)
-            }
-            trackColor={{ false: '#D1D5DB', true: '#93C5FD' }}
-            thumbColor={locationServices ? '#3B82F6' : '#f4f3f4'}
-          />
-        </View>
 
-        <TouchableOpacity
-          style={styles.settingButton}
-          onPress={handleOpenSystemSettings}
-        >
-          <Text style={styles.settingButtonText}>시스템 위치 설정</Text>
-          <Text style={styles.settingButtonArrow}>›</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.settingButton, styles.rowDivider]}
+            onPress={handleOpenSystemSettings}
+          >
+            <View style={styles.rowIcon}>
+              <Icon name="gear" size={22} color={palette.ink} />
+            </View>
+            <Text style={styles.settingButtonText}>시스템 위치 설정</Text>
+            <Icon name="right" size={18} color={palette.disabled} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Data Section */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>데이터</Text>
 
-        <TouchableOpacity style={styles.settingButton} onPress={handleClearCache}>
-          <Text style={styles.settingButtonText}>캐시 삭제</Text>
-          <Text style={styles.settingButtonArrow}>›</Text>
-        </TouchableOpacity>
+        <View style={styles.card}>
+          <TouchableOpacity style={styles.settingButton} onPress={handleClearCache}>
+            <View style={styles.rowIcon}>
+              <Icon name="image" size={22} color={palette.ink} />
+            </View>
+            <Text style={styles.settingButtonText}>캐시 삭제</Text>
+            <Icon name="right" size={18} color={palette.disabled} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Support Section */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>지원</Text>
 
-        <TouchableOpacity
-          style={styles.settingButton}
-          onPress={handleContactSupport}
-        >
-          <Text style={styles.settingButtonText}>문의하기</Text>
-          <Text style={styles.settingButtonArrow}>›</Text>
-        </TouchableOpacity>
+        <View style={styles.card}>
+          <TouchableOpacity
+            style={styles.settingButton}
+            onPress={handleContactSupport}
+          >
+            <View style={styles.rowIcon}>
+              <Icon name="chat" size={22} color={palette.ink} />
+            </View>
+            <Text style={styles.settingButtonText}>문의하기</Text>
+            <Icon name="right" size={18} color={palette.disabled} />
+          </TouchableOpacity>
 
-        <TouchableOpacity style={styles.settingButton} onPress={handleOpenTerms}>
-          <Text style={styles.settingButtonText}>이용약관</Text>
-          <Text style={styles.settingButtonArrow}>›</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.settingButton, styles.rowDivider]}
+            onPress={handleOpenTerms}
+          >
+            <View style={styles.rowIcon}>
+              <Icon name="cal" size={22} color={palette.ink} />
+            </View>
+            <Text style={styles.settingButtonText}>이용약관</Text>
+            <Icon name="right" size={18} color={palette.disabled} />
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.settingButton}
-          onPress={handleOpenPrivacyPolicy}
-        >
-          <Text style={styles.settingButtonText}>개인정보처리방침</Text>
-          <Text style={styles.settingButtonArrow}>›</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.settingButton, styles.rowDivider]}
+            onPress={handleOpenPrivacyPolicy}
+          >
+            <View style={styles.rowIcon}>
+              <Icon name="lock" size={22} color={palette.ink} />
+            </View>
+            <Text style={styles.settingButtonText}>개인정보처리방침</Text>
+            <Icon name="right" size={18} color={palette.disabled} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* App Info Section */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>앱 정보</Text>
 
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>버전</Text>
-          <Text style={styles.infoValue}>1.0.0</Text>
-        </View>
+        <View style={styles.card}>
+          <View style={styles.infoItem}>
+            <Text style={styles.infoLabel}>버전</Text>
+            <Text style={styles.infoValue}>1.0.0</Text>
+          </View>
 
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>빌드</Text>
-          <Text style={styles.infoValue}>100</Text>
+          <View style={[styles.infoItem, styles.rowDivider]}>
+            <Text style={styles.infoLabel}>빌드</Text>
+            <Text style={styles.infoValue}>100</Text>
+          </View>
         </View>
       </View>
 
@@ -288,75 +337,83 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: palette.surface,
   },
   section: {
-    marginTop: 24,
-    paddingHorizontal: 24,
+    marginTop: spacing.xxl,
+    paddingHorizontal: spacing.screenH,
   },
   sectionTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#6B7280',
-    marginBottom: 12,
+    fontFamily: fonts.extrabold,
+    fontSize: 12,
+    letterSpacing: 0.6,
+    color: palette.textMuted,
+    marginBottom: spacing.sm,
+    marginLeft: spacing.xs,
     textTransform: 'uppercase',
+  },
+  card: {
+    backgroundColor: palette.background,
+    borderRadius: radii.cardLarge,
+    overflow: 'hidden',
+  },
+  rowDivider: {
+    borderTopWidth: 1,
+    borderTopColor: palette.divider,
+  },
+  rowIcon: {
+    width: 22,
+    marginRight: spacing.md,
+    alignItems: 'center',
   },
   settingItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 8,
+    paddingVertical: 14,
+    paddingHorizontal: spacing.lg,
   },
   settingInfo: {
     flex: 1,
-    marginRight: 16,
+    marginRight: spacing.lg,
   },
   settingTitle: {
-    fontSize: 16,
-    color: '#111827',
-    fontWeight: '500',
+    fontFamily: fonts.semibold,
+    fontSize: 14,
+    color: palette.ink,
   },
   settingDescription: {
-    fontSize: 13,
-    color: '#6B7280',
+    ...type.caption,
+    color: palette.textMuted,
     marginTop: 2,
   },
   settingButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 8,
+    paddingVertical: 16,
+    paddingHorizontal: spacing.lg,
   },
   settingButtonText: {
-    fontSize: 16,
-    color: '#111827',
-  },
-  settingButtonArrow: {
-    fontSize: 20,
-    color: '#9CA3AF',
+    flex: 1,
+    fontFamily: fonts.semibold,
+    fontSize: 14,
+    color: palette.ink,
   },
   infoItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 8,
+    paddingVertical: 16,
+    paddingHorizontal: spacing.lg,
   },
   infoLabel: {
-    fontSize: 16,
-    color: '#111827',
+    fontFamily: fonts.semibold,
+    fontSize: 14,
+    color: palette.ink,
   },
   infoValue: {
-    fontSize: 16,
-    color: '#6B7280',
+    ...type.caption,
+    color: palette.textMuted,
   },
   bottomPadding: {
     height: 48,

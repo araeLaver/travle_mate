@@ -20,6 +20,8 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { nftService, CollectibleLocation } from '../services/nftService';
 import * as Location from 'expo-location';
+import { palette, fonts, type, spacing, radii, rarityColor } from '../theme';
+import Icon from '../components/icons/Icon';
 
 type LocationDetailScreenRouteProp = RouteProp<RootStackParamList, 'LocationDetail'>;
 type LocationDetailScreenNavigationProp = NativeStackNavigationProp<
@@ -143,13 +145,13 @@ const LocationDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   if (isLoading || !location) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#3B82F6" />
+        <ActivityIndicator size="large" color={palette.primary} />
         <Text style={styles.loadingText}>장소 정보를 불러오는 중...</Text>
       </View>
     );
   }
 
-  const rarityColor = nftService.getRarityColor(location.rarity);
+  const badgeColor = rarityColor(location.rarity);
   const isWithinRange =
     distance !== null && distance * 1000 <= location.collectRadius;
 
@@ -164,52 +166,58 @@ const LocationDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         </View>
       )}
 
-      {/* Content */}
+      {/* Content sheet overlapping hero */}
       <View style={styles.content}>
         {/* Title Section */}
         <View style={styles.titleSection}>
-          <Text style={styles.title}>{location.name}</Text>
-          <View style={[styles.rarityBadge, { backgroundColor: rarityColor }]}>
+          <View style={[styles.rarityBadge, { backgroundColor: badgeColor }]}>
             <Text style={styles.rarityText}>
               {nftService.getRarityLabel(location.rarity)}
             </Text>
           </View>
+          <Text style={styles.title}>{location.name}</Text>
         </View>
 
         {/* Location Info */}
         <View style={styles.locationInfo}>
-          <Text style={styles.locationText}>
-            📍 {location.region}, {location.country}
-          </Text>
-          <Text style={styles.categoryText}>🏷️ {location.category}</Text>
+          <View style={styles.metaItem}>
+            <Icon name="pin" size={14} color={palette.textTertiary} />
+            <Text style={styles.locationText}>
+              {location.region}, {location.country}
+            </Text>
+          </View>
+          <View style={styles.metaItem}>
+            <Icon name="grid" size={14} color={palette.textTertiary} />
+            <Text style={styles.categoryText}>{location.category}</Text>
+          </View>
         </View>
 
         {/* Description */}
         <Text style={styles.description}>{location.description}</Text>
 
-        {/* Details Card */}
-        <View style={styles.detailsCard}>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>수집 반경</Text>
-            <Text style={styles.detailValue}>{location.collectRadius}m</Text>
+        {/* Stat tiles */}
+        <View style={styles.statsRow}>
+          <View style={styles.statTile}>
+            <Text style={styles.statValue}>{location.collectRadius}m</Text>
+            <Text style={styles.statLabel}>수집 반경</Text>
           </View>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>보상 포인트</Text>
-            <Text style={styles.detailValue}>+{location.pointReward}</Text>
+          <View style={styles.statTile}>
+            <Text style={styles.statValue}>+{location.pointReward}</Text>
+            <Text style={styles.statLabel}>보상 포인트</Text>
           </View>
           {distance !== null && (
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>현재 거리</Text>
+            <View style={styles.statTile}>
               <Text
                 style={[
-                  styles.detailValue,
-                  isWithinRange && styles.detailValueSuccess,
+                  styles.statValue,
+                  isWithinRange && styles.statValueSuccess,
                 ]}
               >
                 {distance < 1
                   ? `${Math.round(distance * 1000)}m`
                   : `${distance.toFixed(1)}km`}
               </Text>
+              <Text style={styles.statLabel}>현재 거리</Text>
             </View>
           )}
         </View>
@@ -220,10 +228,12 @@ const LocationDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             style={styles.secondaryButton}
             onPress={handleOpenMaps}
           >
+            <Icon name="nav" size={16} color={palette.ink} />
             <Text style={styles.secondaryButtonText}>지도에서 보기</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.secondaryButton} onPress={handleShare}>
+            <Icon name="share" size={16} color={palette.ink} />
             <Text style={styles.secondaryButtonText}>공유하기</Text>
           </TouchableOpacity>
         </View>
@@ -231,8 +241,9 @@ const LocationDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         {/* Collect Section */}
         {isCollected ? (
           <View style={styles.collectedBanner}>
+            <Icon name="check" size={18} color={palette.primary} />
             <Text style={styles.collectedBannerText}>
-              ✅ 이미 수집한 장소입니다
+              이미 수집한 장소입니다
             </Text>
           </View>
         ) : !userLocation ? (
@@ -258,9 +269,9 @@ const LocationDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             disabled={isCollecting}
           >
             {isCollecting ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color={palette.white} />
             ) : (
-              <Text style={styles.collectButtonText}>NFT 수집하기</Text>
+              <Text style={styles.collectButtonText}>방문 인증하고 수집</Text>
             )}
           </TouchableOpacity>
         )}
@@ -272,153 +283,170 @@ const LocationDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: palette.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: palette.background,
   },
   loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: '#6B7280',
+    marginTop: spacing.lg,
+    ...type.body,
+    color: palette.textTertiary,
   },
   heroImage: {
     width: '100%',
-    height: 250,
+    height: 320,
   },
   heroImagePlaceholder: {
-    backgroundColor: '#E5E7EB',
+    backgroundColor: palette.surfaceAlt,
     justifyContent: 'center',
     alignItems: 'center',
   },
   placeholderText: {
     fontSize: 64,
-    color: '#9CA3AF',
+    fontFamily: fonts.display,
+    color: palette.textMuted,
   },
   content: {
-    padding: 24,
+    backgroundColor: palette.background,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    marginTop: -28,
+    paddingTop: spacing.xxl,
+    paddingHorizontal: spacing.screenH,
+    paddingBottom: spacing.xxl,
   },
   titleSection: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#111827',
-    flex: 1,
-    marginRight: 12,
+    marginBottom: spacing.md,
   },
   rarityBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
+    alignSelf: 'flex-start',
+    height: 24,
+    justifyContent: 'center',
+    paddingHorizontal: 10,
+    borderRadius: radii.badge,
+    marginBottom: spacing.sm,
   },
   rarityText: {
-    fontSize: 14,
-    color: '#fff',
-    fontWeight: '600',
+    ...type.badge,
+    color: palette.white,
+  },
+  title: {
+    fontSize: 23,
+    fontFamily: fonts.extrabold,
+    letterSpacing: -0.46,
+    color: palette.ink,
   },
   locationInfo: {
     flexDirection: 'row',
-    gap: 16,
-    marginBottom: 16,
+    gap: spacing.lg,
+    marginBottom: spacing.lg,
+  },
+  metaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
   },
   locationText: {
-    fontSize: 14,
-    color: '#6B7280',
+    ...type.bodySmall,
+    color: palette.textTertiary,
   },
   categoryText: {
-    fontSize: 14,
-    color: '#6B7280',
+    ...type.bodySmall,
+    color: palette.textTertiary,
   },
   description: {
-    fontSize: 16,
-    color: '#374151',
-    lineHeight: 24,
-    marginBottom: 24,
+    fontSize: 14,
+    fontFamily: fonts.medium,
+    color: palette.textSecondary,
+    lineHeight: 22,
+    marginBottom: spacing.xxl,
   },
-  detailsCard: {
-    backgroundColor: '#F9FAFB',
-    borderRadius: 12,
-    padding: 16,
-    gap: 12,
-    marginBottom: 24,
-  },
-  detailRow: {
+  statsRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    gap: spacing.sm,
+    marginBottom: spacing.xxl,
   },
-  detailLabel: {
-    fontSize: 14,
-    color: '#6B7280',
+  statTile: {
+    flex: 1,
+    backgroundColor: palette.surface,
+    borderRadius: radii.iconButton,
+    padding: 11,
+    alignItems: 'center',
+    gap: 3,
   },
-  detailValue: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#111827',
+  statValue: {
+    fontSize: 15,
+    fontFamily: fonts.extrabold,
+    color: palette.ink,
   },
-  detailValueSuccess: {
-    color: '#059669',
+  statValueSuccess: {
+    color: palette.primary,
+  },
+  statLabel: {
+    fontSize: 10,
+    fontFamily: fonts.bold,
+    color: palette.textMuted,
   },
   actionButtons: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 16,
+    gap: spacing.md,
+    marginBottom: spacing.lg,
   },
   secondaryButton: {
     flex: 1,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 12,
-    paddingVertical: 14,
+    flexDirection: 'row',
+    height: 50,
+    backgroundColor: palette.surfaceAlt,
+    borderRadius: radii.button,
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 7,
   },
   secondaryButtonText: {
     fontSize: 14,
-    fontWeight: '500',
-    color: '#374151',
+    fontFamily: fonts.bold,
+    color: palette.ink,
   },
   collectButton: {
-    backgroundColor: '#3B82F6',
-    borderRadius: 12,
-    paddingVertical: 16,
+    height: 54,
+    backgroundColor: palette.primary,
+    borderRadius: radii.button,
+    justifyContent: 'center',
     alignItems: 'center',
   },
   collectButtonDisabled: {
     opacity: 0.7,
   },
   collectButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
+    ...type.button,
+    color: palette.white,
   },
   collectedBanner: {
-    backgroundColor: '#D1FAE5',
-    borderRadius: 12,
-    paddingVertical: 16,
+    flexDirection: 'row',
+    backgroundColor: palette.primarySoft,
+    borderRadius: radii.button,
+    paddingVertical: spacing.lg,
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
   },
   collectedBannerText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#059669',
+    ...type.cardTitle,
+    color: palette.primary,
   },
   warningBanner: {
-    backgroundColor: '#FEF3C7',
-    borderRadius: 12,
-    paddingVertical: 16,
+    backgroundColor: palette.warningBg,
+    borderRadius: radii.button,
+    paddingVertical: spacing.lg,
     alignItems: 'center',
   },
   warningText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#D97706',
+    ...type.bodySmall,
+    color: palette.warningText,
     textAlign: 'center',
     lineHeight: 20,
   },

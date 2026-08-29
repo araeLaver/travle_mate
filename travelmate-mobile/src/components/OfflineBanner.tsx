@@ -13,6 +13,8 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useOffline } from '../contexts/OfflineContext';
+import { palette, fonts, spacing, radii } from '../theme';
+import Icon, { IconName } from './icons/Icon';
 
 interface Props {
   showPendingCount?: boolean;
@@ -47,11 +49,15 @@ const OfflineBanner: React.FC<Props> = ({ showPendingCount = true, onSyncPress }
   };
 
   // Determine banner content based on state
-  const getBannerContent = () => {
+  const getBannerContent = (): {
+    icon: IconName;
+    message: string;
+    subMessage: string;
+    showSync: boolean;
+  } | null => {
     if (!isOnline) {
       return {
-        backgroundColor: '#EF4444',
-        icon: '📡',
+        icon: 'globe',
         message: '오프라인 모드',
         subMessage: '인터넷 연결이 없습니다',
         showSync: false,
@@ -60,8 +66,7 @@ const OfflineBanner: React.FC<Props> = ({ showPendingCount = true, onSyncPress }
 
     if (pendingActionsCount > 0) {
       return {
-        backgroundColor: '#F59E0B',
-        icon: '🔄',
+        icon: 'spark',
         message: `동기화 대기 중 (${pendingActionsCount}개)`,
         subMessage: '탭하여 동기화',
         showSync: true,
@@ -76,14 +81,12 @@ const OfflineBanner: React.FC<Props> = ({ showPendingCount = true, onSyncPress }
 
   return (
     <Animated.View
-      style={[
-        styles.container,
-        { backgroundColor: content.backgroundColor },
-        { transform: [{ translateY: slideAnim }] },
-      ]}
+      style={[styles.container, { transform: [{ translateY: slideAnim }] }]}
     >
       <View style={styles.contentWrapper}>
-        <Text style={styles.icon}>{content.icon}</Text>
+        <View style={styles.icon}>
+          <Icon name={content.icon} size={18} color={palette.rarityLegendary} />
+        </View>
         <View style={styles.textContainer}>
           <Text style={styles.message}>{content.message}</Text>
           <Text style={styles.subMessage}>{content.subMessage}</Text>
@@ -96,7 +99,7 @@ const OfflineBanner: React.FC<Props> = ({ showPendingCount = true, onSyncPress }
             disabled={isSyncing}
           >
             {isSyncing ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
+              <ActivityIndicator size="small" color={palette.primaryDark} />
             ) : (
               <Text style={styles.syncButtonText}>동기화</Text>
             )}
@@ -114,41 +117,41 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: 1000,
+    backgroundColor: palette.ink,
     paddingTop: 44, // Safe area top
-    paddingBottom: 8,
-    paddingHorizontal: 16,
+    paddingBottom: spacing.sm,
+    paddingHorizontal: spacing.lg,
   },
   contentWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   icon: {
-    fontSize: 20,
-    marginRight: 8,
+    marginRight: spacing.sm,
   },
   textContainer: {
     flex: 1,
   },
   message: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
+    color: palette.white,
+    fontFamily: fonts.bold,
+    fontSize: 13,
   },
   subMessage: {
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: 12,
+    color: palette.darkTextSecondary,
+    fontFamily: fonts.semibold,
+    fontSize: 11,
     marginTop: 2,
   },
   syncButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    paddingHorizontal: 12,
+    paddingHorizontal: spacing.md,
     paddingVertical: 6,
-    borderRadius: 16,
+    borderRadius: radii.chip,
   },
   syncButtonText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '600',
+    color: palette.primaryDark,
+    fontFamily: fonts.bold,
+    fontSize: 13,
   },
 });
 

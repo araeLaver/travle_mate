@@ -17,6 +17,8 @@ import {
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { apiClient } from '../services/apiClient';
+import { palette, fonts, type, spacing, radii } from '../theme';
+import Icon from '../components/icons/Icon';
 
 type UserSearchScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -60,6 +62,7 @@ const UserSearchScreen: React.FC<Props> = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [searchMode, setSearchMode] = useState(false);
+  const [searchFocused, setSearchFocused] = useState(false);
 
   const loadRecommendations = useCallback(async () => {
     try {
@@ -141,7 +144,11 @@ const UserSearchScreen: React.FC<Props> = ({ navigation }) => {
       <View style={styles.userInfo}>
         <View style={styles.nameRow}>
           <Text style={styles.nickname}>{item.nickname}</Text>
-          {item.isVerified && <Text style={styles.verifiedBadge}>V</Text>}
+          {item.isVerified && (
+            <View style={styles.verifiedBadge}>
+              <Icon name="check" size={10} color={palette.white} strokeWidth={3} />
+            </View>
+          )}
         </View>
         {item.bio && (
           <Text style={styles.bio} numberOfLines={1}>
@@ -178,13 +185,16 @@ const UserSearchScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.searchBar}>
+      <View style={[styles.searchBar, searchFocused && styles.searchBarFocused]}>
+        <Icon name="search" size={18} color={palette.textMuted} />
         <TextInput
           style={styles.searchInput}
           placeholder="닉네임 또는 여행지로 검색"
-          placeholderTextColor="#9CA3AF"
+          placeholderTextColor={palette.placeholder}
           value={query}
           onChangeText={handleSearch}
+          onFocus={() => setSearchFocused(true)}
+          onBlur={() => setSearchFocused(false)}
           returnKeyType="search"
           autoCorrect={false}
         />
@@ -193,7 +203,7 @@ const UserSearchScreen: React.FC<Props> = ({ navigation }) => {
             style={styles.clearButton}
             onPress={() => handleSearch('')}
           >
-            <Text style={styles.clearButtonText}>X</Text>
+            <Icon name="close" size={16} color={palette.textMuted} />
           </TouchableOpacity>
         )}
       </View>
@@ -203,7 +213,7 @@ const UserSearchScreen: React.FC<Props> = ({ navigation }) => {
       )}
 
       {loading ? (
-        <ActivityIndicator size="large" color="#3B82F6" style={styles.loader} />
+        <ActivityIndicator size="large" color={palette.primary} style={styles.loader} />
       ) : (
         <FlatList
           data={displayData}
@@ -225,140 +235,141 @@ const UserSearchScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: palette.background,
   },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    margin: 16,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
+    margin: spacing.screenH,
+    height: 46,
+    backgroundColor: palette.surface,
+    borderRadius: radii.input,
+    paddingHorizontal: spacing.lg,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
+    gap: spacing.sm,
+  },
+  searchBarFocused: {
+    borderColor: palette.primary,
+    backgroundColor: palette.background,
   },
   searchInput: {
     flex: 1,
-    height: 44,
-    fontSize: 16,
-    color: '#111827',
+    height: 46,
+    fontFamily: fonts.medium,
+    fontSize: 15,
+    color: palette.ink,
   },
   clearButton: {
-    padding: 8,
-  },
-  clearButtonText: {
-    fontSize: 14,
-    color: '#9CA3AF',
-    fontWeight: '600',
+    padding: spacing.sm,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginHorizontal: 16,
-    marginBottom: 12,
+    ...type.heading,
+    color: palette.ink,
+    marginHorizontal: spacing.screenH,
+    marginBottom: spacing.md,
   },
   listContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 24,
+    paddingHorizontal: spacing.screenH,
+    paddingBottom: spacing.xxl,
   },
   userCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 8,
+    backgroundColor: palette.background,
+    borderWidth: 1,
+    borderColor: palette.hairline,
+    padding: spacing.lg,
+    borderRadius: radii.card,
+    marginBottom: spacing.sm,
   },
   avatar: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+    width: 48,
+    height: 48,
+    borderRadius: radii.iconButton,
   },
   avatarPlaceholder: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: '#3B82F6',
+    width: 48,
+    height: 48,
+    borderRadius: radii.iconButton,
+    backgroundColor: palette.primarySoft,
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatarInitial: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontFamily: fonts.extrabold,
+    fontSize: 18,
+    color: palette.primary,
   },
   userInfo: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: spacing.md,
   },
   nameRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   nickname: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
+    fontFamily: fonts.bold,
+    fontSize: 14,
+    color: palette.ink,
   },
   verifiedBadge: {
-    fontSize: 11,
-    fontWeight: 'bold',
-    color: '#fff',
-    backgroundColor: '#3B82F6',
+    width: 16,
+    height: 16,
     borderRadius: 8,
-    overflow: 'hidden',
-    paddingHorizontal: 5,
-    paddingVertical: 1,
+    backgroundColor: palette.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginLeft: 6,
   },
   bio: {
-    fontSize: 13,
-    color: '#6B7280',
+    ...type.caption,
+    color: palette.textSecondary,
     marginTop: 2,
   },
   statsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 6,
-    gap: 8,
+    gap: spacing.sm,
   },
   tag: {
-    backgroundColor: '#EFF6FF',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 10,
+    backgroundColor: palette.surface,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 3,
+    borderRadius: radii.chip,
   },
   tagText: {
-    fontSize: 11,
-    color: '#3B82F6',
-    fontWeight: '500',
+    ...type.meta,
+    color: palette.textSecondary,
   },
   statText: {
-    fontSize: 12,
-    color: '#9CA3AF',
+    ...type.meta,
+    color: palette.textMuted,
   },
   scoreContainer: {
     alignItems: 'center',
-    marginLeft: 8,
+    marginLeft: spacing.sm,
   },
   scoreValue: {
+    fontFamily: fonts.extrabold,
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#3B82F6',
+    color: palette.primary,
   },
   scoreLabel: {
+    fontFamily: fonts.bold,
     fontSize: 10,
-    color: '#9CA3AF',
+    color: palette.textMuted,
     marginTop: 2,
   },
   loader: {
     marginTop: 40,
   },
   emptyText: {
+    ...type.bodySmall,
     textAlign: 'center',
-    color: '#9CA3AF',
-    fontSize: 14,
+    color: palette.textMuted,
     marginTop: 40,
   },
 });

@@ -21,6 +21,8 @@ import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { RootStackParamList, MainTabParamList } from '../navigation/AppNavigator';
 import { nftService, NftCollection } from '../services/nftService';
 import { ListSkeleton } from '../components/SkeletonLoader';
+import { palette, fonts, type, spacing, radii, rarityColor } from '../theme';
+import Icon from '../components/icons/Icon';
 
 type CollectionScreenNavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<MainTabParamList, 'Collection'>,
@@ -32,7 +34,33 @@ interface Props {
 }
 
 const { width } = Dimensions.get('window');
-const CARD_WIDTH = (width - 48 - 12) / 2;
+const CARD_WIDTH = (width - spacing.screenH * 2 - spacing.md) / 2;
+
+/** Rarity → stat-number tint (common uses ink per spec; UNCOMMON has no design equivalent). */
+const rarityStatColor = (rarity: string): string => {
+  switch (rarity) {
+    case 'COMMON':
+      return palette.ink;
+    case 'UNCOMMON':
+      return '#10B981';
+    default:
+      return rarityColor(rarity);
+  }
+};
+
+/** Mint status → chip colors (민팅됨 = primarySoft/primary per spec). */
+const mintStatusChip = (status: string): { backgroundColor: string; color: string } => {
+  switch (status) {
+    case 'MINTED':
+      return { backgroundColor: palette.primarySoft, color: palette.primary };
+    case 'MINTING':
+      return { backgroundColor: palette.warningBg, color: palette.warningText };
+    case 'FAILED':
+      return { backgroundColor: palette.errorBg, color: palette.error };
+    default:
+      return { backgroundColor: palette.surfaceAlt, color: palette.textMuted };
+  }
+};
 
 const CollectionScreen: React.FC<Props> = ({ navigation }) => {
   const [collections, setCollections] = useState<NftCollection[]>([]);
@@ -86,21 +114,28 @@ const CollectionScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const renderItem = ({ item }: { item: NftCollection }) => {
-    const rarityColor = nftService.getRarityColor(item.rarity);
-    const mintStatusColor = getMintStatusColor(item.mintStatus);
+    const itemRarityColor = rarityColor(item.rarity);
+    const mintChip = mintStatusChip(item.mintStatus);
 
     return (
       <TouchableOpacity
-        style={styles.card}
+        style={[styles.card, { borderColor: itemRarityColor }]}
         onPress={() => handleItemPress(item)}
       >
-        {item.imageUrl ? (
-          <Image source={{ uri: item.imageUrl }} style={styles.cardImage} />
-        ) : (
-          <View style={[styles.cardImage, styles.cardImagePlaceholder]}>
-            <Text style={styles.placeholderText}>{item.locationName[0]}</Text>
+        <View style={styles.cardImageWrap}>
+          {item.imageUrl ? (
+            <Image source={{ uri: item.imageUrl }} style={styles.cardImage} />
+          ) : (
+            <View style={[styles.cardImage, styles.cardImagePlaceholder]}>
+              <Text style={styles.placeholderText}>{item.locationName[0]}</Text>
+            </View>
+          )}
+          <View style={[styles.rarityBadge, { backgroundColor: itemRarityColor }]}>
+            <Text style={styles.rarityBadgeText}>
+              {nftService.getRarityLabel(item.rarity)}
+            </Text>
           </View>
-        )}
+        </View>
 
         <View style={styles.cardContent}>
           <Text style={styles.cardTitle} numberOfLines={1}>
@@ -108,13 +143,8 @@ const CollectionScreen: React.FC<Props> = ({ navigation }) => {
           </Text>
 
           <View style={styles.badgeRow}>
-            <View style={[styles.badge, { backgroundColor: rarityColor }]}>
-              <Text style={styles.badgeText}>
-                {nftService.getRarityLabel(item.rarity)}
-              </Text>
-            </View>
-            <View style={[styles.badge, { backgroundColor: mintStatusColor }]}>
-              <Text style={styles.badgeText}>
+            <View style={[styles.mintBadge, { backgroundColor: mintChip.backgroundColor }]}>
+              <Text style={[styles.mintBadgeText, { color: mintChip.color }]}>
                 {nftService.getMintStatusLabel(item.mintStatus)}
               </Text>
             </View>
@@ -126,16 +156,6 @@ const CollectionScreen: React.FC<Props> = ({ navigation }) => {
         </View>
       </TouchableOpacity>
     );
-  };
-
-  const getMintStatusColor = (status: string): string => {
-    const colors: Record<string, string> = {
-      NOT_MINTED: '#6B7280',
-      MINTING: '#F59E0B',
-      MINTED: '#10B981',
-      FAILED: '#EF4444',
-    };
-    return colors[status] || '#6B7280';
   };
 
   const renderHeader = () => (
@@ -150,14 +170,11 @@ const CollectionScreen: React.FC<Props> = ({ navigation }) => {
         {['COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY'].map((rarity) => {
           const count = collections.filter((c) => c.rarity === rarity).length;
           return (
-            <View key={rarity} style={styles.statItem}>
-              <View
-                style={[
-                  styles.statDot,
-                  { backgroundColor: nftService.getRarityColor(rarity) },
-                ]}
-              />
-              <Text style={styles.statCount}>{count}</Text>
+            <View key={rarity} style={styles.statTile}>
+              <Text style={[styles.statCount, { color: rarityStatColor(rarity) }]}>
+                {count}
+              </Text>
+              <Text style={styles.statLabel}>{nftService.getRarityLabel(rarity)}</Text>
             </View>
           );
         })}
@@ -167,7 +184,9 @@ const CollectionScreen: React.FC<Props> = ({ navigation }) => {
 
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
-      <Text style={styles.emptyEmoji}>🗺️</Text>
+      <View style={styles.emptyIconWrap}>
+        <Icon name="pin" size={30} color={palette.textMuted} />
+      </View>
       <Text style={styles.emptyTitle}>아직 수집한 NFT가 없어요</Text>
       <Text style={styles.emptySubtitle}>
         지도에서 주변 장소를 찾아{'\n'}NFT를 수집해보세요!
@@ -185,7 +204,7 @@ const CollectionScreen: React.FC<Props> = ({ navigation }) => {
     if (!isLoadingMore) return null;
     return (
       <View style={styles.footer}>
-        <ActivityIndicator size="small" color="#3B82F6" />
+        <ActivityIndicator size="small" color={palette.primary} />
       </View>
     );
   };
@@ -223,148 +242,164 @@ const CollectionScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: palette.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F9FAFB',
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: '#6B7280',
+    backgroundColor: palette.background,
   },
   listContent: {
-    paddingHorizontal: 24,
-    paddingBottom: 24,
+    paddingHorizontal: spacing.screenH,
+    paddingBottom: spacing.xxl,
   },
   header: {
     paddingTop: 60,
-    paddingBottom: 24,
+    paddingBottom: spacing.xxl,
   },
   headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#111827',
+    ...type.title,
+    color: palette.ink,
   },
   headerSubtitle: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginTop: 4,
+    ...type.caption,
+    color: palette.textMuted,
+    marginTop: spacing.xs,
   },
   statsContainer: {
     flexDirection: 'row',
-    marginTop: 16,
-    gap: 16,
+    marginTop: spacing.lg,
+    gap: spacing.sm,
   },
-  statItem: {
-    flexDirection: 'row',
+  statTile: {
+    flex: 1,
+    backgroundColor: palette.surface,
+    borderRadius: radii.input,
+    paddingVertical: spacing.md,
     alignItems: 'center',
-    gap: 4,
-  },
-  statDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
   },
   statCount: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
+    ...type.statNumber,
+  },
+  statLabel: {
+    ...type.tabLabel,
+    color: palette.textMuted,
+    marginTop: spacing.xs,
   },
   row: {
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   card: {
     width: CARD_WIDTH,
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    backgroundColor: palette.background,
+    borderRadius: radii.card,
+    borderWidth: 2,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+  },
+  cardImageWrap: {
+    position: 'relative',
   },
   cardImage: {
     width: '100%',
-    height: CARD_WIDTH,
+    height: 120,
   },
   cardImagePlaceholder: {
-    backgroundColor: '#E5E7EB',
+    backgroundColor: palette.surfaceAlt,
     justifyContent: 'center',
     alignItems: 'center',
   },
   placeholderText: {
-    fontSize: 32,
-    color: '#9CA3AF',
+    ...type.statNumber,
+    fontSize: 28,
+    lineHeight: 34,
+    color: palette.textMuted,
+  },
+  rarityBadge: {
+    position: 'absolute',
+    top: spacing.sm,
+    left: spacing.sm,
+    height: 22,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.sm,
+    borderRadius: radii.badge,
+  },
+  rarityBadgeText: {
+    ...type.badge,
+    color: palette.white,
   },
   cardContent: {
-    padding: 12,
+    padding: spacing.md,
   },
   cardTitle: {
+    fontFamily: fonts.bold,
     fontSize: 14,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 8,
+    lineHeight: 19,
+    color: palette.ink,
+    marginBottom: spacing.sm,
   },
   badgeRow: {
     flexDirection: 'row',
-    gap: 4,
-    marginBottom: 8,
+    gap: spacing.xs,
+    marginBottom: spacing.sm,
     flexWrap: 'wrap',
   },
-  badge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
+  mintBadge: {
+    height: 22,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.sm,
+    borderRadius: radii.badge,
   },
-  badgeText: {
-    fontSize: 10,
-    color: '#fff',
-    fontWeight: '500',
+  mintBadgeText: {
+    ...type.badge,
   },
   dateText: {
-    fontSize: 11,
-    color: '#9CA3AF',
+    ...type.meta,
+    color: palette.textMuted,
   },
   emptyContainer: {
     alignItems: 'center',
+    borderRadius: radii.card,
+    borderWidth: 1.5,
+    borderColor: palette.dashed,
+    borderStyle: 'dashed',
     paddingVertical: 48,
+    paddingHorizontal: spacing.xxl,
   },
-  emptyEmoji: {
-    fontSize: 48,
-    marginBottom: 16,
+  emptyIconWrap: {
+    width: 64,
+    height: 64,
+    borderRadius: radii.hero,
+    backgroundColor: palette.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: spacing.lg,
   },
   emptyTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 8,
+    ...type.heading,
+    color: palette.ink,
+    marginBottom: spacing.sm,
   },
   emptySubtitle: {
-    fontSize: 14,
-    color: '#6B7280',
+    ...type.bodySmall,
+    color: palette.textTertiary,
     textAlign: 'center',
-    lineHeight: 20,
-    marginBottom: 24,
+    marginBottom: spacing.xxl,
   },
   emptyButton: {
-    backgroundColor: '#3B82F6',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
+    backgroundColor: palette.primary,
+    height: 50,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.xxl,
+    borderRadius: radii.button,
   },
   emptyButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
+    ...type.button,
+    color: palette.white,
   },
   footer: {
-    paddingVertical: 16,
+    paddingVertical: spacing.lg,
     alignItems: 'center',
   },
 });

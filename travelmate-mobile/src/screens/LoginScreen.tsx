@@ -20,6 +20,7 @@ import { AuthStackParamList } from '../navigation/AppNavigator';
 import { useAuth } from '../contexts/AuthContext';
 import { socialAuthService } from '../services/socialAuthService';
 import GoogleAuthButton from '../components/GoogleAuthButton';
+import { palette, fonts, type, spacing, radii } from '../theme';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -117,13 +118,13 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
               onPress={handleAppleLogin}
               disabled={anyLoading}
             >
-              <Text style={[styles.socialIcon, styles.appleIcon]}>{'\uF8FF'}</Text>
+              <Text style={[styles.socialIcon, styles.appleIcon]}>{''}</Text>
               <Text style={[styles.socialButtonText, styles.appleButtonText]}>Apple로 계속하기</Text>
             </TouchableOpacity>
           )}
 
           {isSocialLoading && (
-            <ActivityIndicator style={styles.socialLoading} color="#3B82F6" />
+            <ActivityIndicator style={styles.socialLoading} color={palette.primary} />
           )}
         </View>
 
@@ -139,7 +140,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
           <TextInput
             style={styles.input}
             placeholder="이메일"
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={palette.placeholder}
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
@@ -150,7 +151,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
           <TextInput
             style={styles.input}
             placeholder="비밀번호"
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={palette.placeholder}
             value={password}
             onChangeText={setPassword}
             secureTextEntry
@@ -162,7 +163,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
             disabled={anyLoading}
           >
             {isLoading ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color={palette.white} />
             ) : (
               <Text style={styles.buttonText}>로그인</Text>
             )}
@@ -184,125 +185,122 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: palette.background,
   },
   content: {
     flex: 1,
     justifyContent: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.screenH,
   },
   logoContainer: {
     alignItems: 'center',
     marginBottom: 36,
   },
   logo: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: '#3B82F6',
+    ...type.display,
+    color: palette.ink,
   },
   tagline: {
-    fontSize: 16,
-    color: '#6B7280',
-    marginTop: 8,
+    ...type.bodySmall,
+    color: palette.textTertiary,
+    marginTop: spacing.sm,
   },
   socialContainer: {
-    gap: 12,
-    marginBottom: 24,
+    gap: spacing.md,
+    marginBottom: spacing.xxl,
   },
   socialButton: {
-    height: 50,
-    borderRadius: 12,
+    height: 54,
+    borderRadius: radii.button,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
   },
   googleButton: {
-    backgroundColor: '#fff',
+    backgroundColor: palette.white,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: palette.outline,
   },
   appleButton: {
-    backgroundColor: '#000',
+    backgroundColor: palette.ink,
   },
   socialIcon: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#4285F4',
+    fontFamily: fonts.bold,
+    color: '#4285F4', // Google brand blue (kept per brand guidelines)
   },
   appleIcon: {
-    color: '#fff',
+    color: palette.white,
     fontSize: 20,
   },
   socialButtonText: {
     fontSize: 15,
-    fontWeight: '600',
-    color: '#374151',
+    fontFamily: fonts.bold,
+    color: palette.ink,
   },
   appleButtonText: {
-    color: '#fff',
+    color: palette.white,
   },
   socialLoading: {
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: spacing.xxl,
   },
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: palette.hairline,
   },
   dividerText: {
-    paddingHorizontal: 16,
-    fontSize: 13,
-    color: '#9CA3AF',
+    paddingHorizontal: spacing.lg,
+    ...type.caption,
+    color: palette.placeholder,
   },
   form: {
-    gap: 16,
+    gap: spacing.md,
   },
   input: {
-    height: 50,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    fontSize: 16,
-    backgroundColor: '#F9FAFB',
-    color: '#111827',
+    height: 52,
+    borderRadius: radii.input,
+    paddingHorizontal: spacing.lg,
+    fontSize: 15,
+    fontFamily: fonts.medium,
+    backgroundColor: palette.surface,
+    color: palette.ink,
   },
   button: {
-    height: 50,
-    backgroundColor: '#3B82F6',
-    borderRadius: 12,
+    height: 54,
+    backgroundColor: palette.primary,
+    borderRadius: radii.button,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
   buttonDisabled: {
     opacity: 0.7,
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    ...type.button,
+    color: palette.white,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 24,
-    gap: 8,
+    marginTop: spacing.xxl,
+    gap: spacing.sm,
   },
   footerText: {
-    color: '#6B7280',
-    fontSize: 14,
+    ...type.bodySmall,
+    color: palette.textTertiary,
   },
   linkText: {
-    color: '#3B82F6',
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 13,
+    fontFamily: fonts.bold,
+    color: palette.primary,
   },
 });
 

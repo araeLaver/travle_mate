@@ -4,6 +4,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, Animated, ViewStyle } from 'react-native';
+import { palette, spacing, radii } from '../theme';
 
 interface SkeletonProps {
   width?: number | string;
@@ -46,7 +47,7 @@ const SkeletonBlock: React.FC<SkeletonProps> = ({
           width: width as any,
           height,
           borderRadius,
-          backgroundColor: '#E5E7EB',
+          backgroundColor: palette.surfaceAlt,
           opacity,
         },
         style,
@@ -157,89 +158,89 @@ export default SkeletonBlock;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: palette.background,
   },
   mt6: {
     marginTop: 6,
   },
   mt12: {
-    marginTop: 12,
+    marginTop: spacing.md,
   },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 8,
+    backgroundColor: palette.surface,
+    padding: spacing.lg,
+    borderRadius: radii.card,
+    marginBottom: spacing.sm,
   },
   cardContent: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: spacing.md,
   },
   locationCard: {
     width: 200,
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    backgroundColor: palette.surface,
+    borderRadius: radii.card,
     overflow: 'hidden',
-    marginRight: 12,
+    marginRight: spacing.md,
   },
   locationContent: {
-    padding: 12,
+    padding: spacing.md,
   },
   gridCard: {
     flex: 1,
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    backgroundColor: palette.surface,
+    borderRadius: radii.card,
     overflow: 'hidden',
-    margin: 4,
+    margin: spacing.xs,
   },
   gridContent: {
-    padding: 8,
+    padding: spacing.sm,
   },
   profile: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 24,
+    padding: spacing.xxl,
   },
   profileInfo: {
-    marginLeft: 16,
+    marginLeft: spacing.lg,
     flex: 1,
   },
   statsRow: {
     flexDirection: 'row',
-    paddingHorizontal: 24,
-    gap: 12,
-    marginTop: 16,
+    paddingHorizontal: spacing.xxl,
+    gap: spacing.md,
+    marginTop: spacing.lg,
   },
   statItem: {
     flex: 1,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: palette.surface,
+    borderRadius: radii.input,
+    padding: spacing.lg,
     alignItems: 'center',
   },
   homeHeader: {
-    padding: 24,
+    padding: spacing.xxl,
     paddingTop: 60,
   },
   section: {
-    marginTop: 24,
-    paddingHorizontal: 24,
+    marginTop: spacing.xxl,
+    paddingHorizontal: spacing.xxl,
   },
   quickRow: {
     flexDirection: 'row',
-    gap: 12,
-    marginTop: 12,
+    gap: spacing.md,
+    marginTop: spacing.md,
   },
   quickItem: {
     flex: 1,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: palette.surface,
+    borderRadius: radii.card,
+    padding: spacing.lg,
     alignItems: 'center',
   },
   listContainer: {
-    padding: 16,
+    padding: spacing.lg,
   },
 });

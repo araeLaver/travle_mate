@@ -13,13 +13,14 @@ import {
   RefreshControl,
   TextInput,
   Image,
-  ActivityIndicator,
   Alert,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { chatService, TravelGroup } from '../services/chatService';
 import { ListSkeleton } from '../components/SkeletonLoader';
+import Icon from '../components/icons/Icon';
+import { palette, fonts, type, spacing, radii } from '../theme';
 
 type GroupsScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Groups'>;
 
@@ -171,15 +172,23 @@ const GroupsScreen: React.FC<Props> = ({ navigation }) => {
             )}
           </View>
         </View>
+
+        <View style={styles.chevron}>
+          <Icon name="right" size={18} color={palette.disabled} />
+        </View>
       </TouchableOpacity>
     );
   };
 
   const renderEmptyList = () => (
     <View style={styles.emptyContainer}>
-      <Text style={styles.emptyIcon}>
-        {activeTab === 'my' ? '👥' : '🔍'}
-      </Text>
+      <View style={styles.emptyIconTile}>
+        <Icon
+          name={activeTab === 'my' ? 'users' : 'search'}
+          size={28}
+          color={palette.textMuted}
+        />
+      </View>
       <Text style={styles.emptyText}>
         {activeTab === 'my'
           ? '참여 중인 그룹이 없습니다'
@@ -207,7 +216,8 @@ const GroupsScreen: React.FC<Props> = ({ navigation }) => {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>그룹 채팅</Text>
         <TouchableOpacity onPress={handleCreateGroup} style={styles.addButton}>
-          <Text style={styles.addButtonText}>+</Text>
+          <Icon name="plus" size={16} color={palette.white} />
+          <Text style={styles.addButtonText}>만들기</Text>
         </TouchableOpacity>
       </View>
 
@@ -234,13 +244,16 @@ const GroupsScreen: React.FC<Props> = ({ navigation }) => {
       {/* Search (for public tab) */}
       {activeTab === 'public' && (
         <View style={styles.searchContainer}>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="그룹 검색..."
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            placeholderTextColor="#9CA3AF"
-          />
+          <View style={styles.searchField}>
+            <Icon name="search" size={18} color={palette.textMuted} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="그룹 검색..."
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              placeholderTextColor={palette.placeholder}
+            />
+          </View>
         </View>
       )}
 
@@ -263,91 +276,99 @@ const GroupsScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: palette.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: palette.background,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: spacing.screenH,
     paddingTop: 60,
-    paddingBottom: 16,
-    backgroundColor: '#FFFFFF',
+    paddingBottom: spacing.lg,
+    backgroundColor: palette.background,
   },
   headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#111827',
+    ...type.title,
+    color: palette.ink,
   },
   addButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#3B82F6',
-    justifyContent: 'center',
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 6,
+    height: 40,
+    paddingHorizontal: spacing.lg,
+    borderRadius: radii.iconButton,
+    backgroundColor: palette.ink,
+    justifyContent: 'center',
   },
   addButtonText: {
-    fontSize: 24,
-    color: '#FFFFFF',
-    fontWeight: '600',
+    ...type.bodySmall,
+    fontFamily: fonts.bold,
+    color: palette.white,
   },
   tabs: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    paddingHorizontal: 20,
+    backgroundColor: palette.background,
+    paddingHorizontal: spacing.screenH,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: palette.hairline,
   },
   tab: {
     flex: 1,
-    paddingVertical: 12,
+    paddingVertical: spacing.md,
     alignItems: 'center',
   },
   activeTab: {
     borderBottomWidth: 2,
-    borderBottomColor: '#3B82F6',
+    borderBottomColor: palette.ink,
   },
   tabText: {
-    fontSize: 16,
-    color: '#6B7280',
-    fontWeight: '500',
+    ...type.body,
+    fontFamily: fonts.bold,
+    color: palette.textMuted,
   },
   activeTabText: {
-    color: '#3B82F6',
+    color: palette.ink,
   },
   searchContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    backgroundColor: '#FFFFFF',
+    paddingHorizontal: spacing.screenH,
+    paddingVertical: spacing.md,
+    backgroundColor: palette.background,
+  },
+  searchField: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    height: 46,
+    backgroundColor: palette.surface,
+    borderRadius: radii.input,
+    paddingHorizontal: spacing.lg,
   },
   searchInput: {
-    backgroundColor: '#F3F4F6',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    color: '#111827',
+    flex: 1,
+    ...type.body,
+    paddingVertical: 0,
+    color: palette.ink,
   },
   listContainer: {
-    padding: 16,
+    paddingHorizontal: spacing.screenH,
+    paddingVertical: spacing.lg,
   },
   groupItem: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    alignItems: 'center',
+    backgroundColor: palette.white,
+    borderRadius: radii.card,
+    borderWidth: 1,
+    borderColor: palette.hairline,
+    padding: spacing.lg,
+    marginBottom: spacing.md,
   },
   groupImageContainer: {
     position: 'relative',
@@ -355,24 +376,24 @@ const styles = StyleSheet.create({
   groupImage: {
     width: 56,
     height: 56,
-    borderRadius: 28,
+    borderRadius: radii.input,
   },
   groupImagePlaceholder: {
-    backgroundColor: '#E0E7FF',
+    backgroundColor: palette.primarySoft,
     justifyContent: 'center',
     alignItems: 'center',
   },
   groupImageText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#4F46E5',
+    fontFamily: fonts.extrabold,
+    fontSize: 22,
+    color: palette.primary,
   },
   badge: {
     position: 'absolute',
     top: -4,
     right: -4,
-    backgroundColor: '#EF4444',
-    borderRadius: 10,
+    backgroundColor: palette.primary,
+    borderRadius: radii.chip,
     minWidth: 20,
     height: 20,
     justifyContent: 'center',
@@ -380,62 +401,67 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
   },
   badgeText: {
-    color: '#FFFFFF',
-    fontSize: 11,
-    fontWeight: 'bold',
+    ...type.badge,
+    color: palette.white,
   },
   groupInfo: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: spacing.md,
     justifyContent: 'center',
   },
   groupHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   groupName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
+    fontFamily: fonts.bold,
+    fontSize: 14,
+    lineHeight: 19,
+    color: palette.ink,
     flex: 1,
   },
   lastMessageTime: {
-    fontSize: 12,
-    color: '#9CA3AF',
-    marginLeft: 8,
+    ...type.meta,
+    color: palette.textMuted,
+    marginLeft: spacing.sm,
   },
   lastMessage: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginBottom: 4,
+    ...type.bodySmall,
+    fontFamily: fonts.medium,
+    color: palette.textTertiary,
+    marginBottom: spacing.xs,
   },
   groupDescription: {
-    fontSize: 14,
-    color: '#9CA3AF',
-    marginBottom: 4,
+    ...type.bodySmall,
+    fontFamily: fonts.medium,
+    color: palette.textMuted,
+    marginBottom: spacing.xs,
   },
   groupMeta: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
   memberCount: {
-    fontSize: 12,
-    color: '#9CA3AF',
+    ...type.meta,
+    color: palette.textMuted,
   },
   privateBadge: {
-    backgroundColor: '#FEF3C7',
-    paddingHorizontal: 8,
+    backgroundColor: palette.warningBg,
+    paddingHorizontal: spacing.sm,
     paddingVertical: 2,
-    borderRadius: 4,
-    marginLeft: 8,
+    borderRadius: radii.badge,
+    marginLeft: spacing.sm,
   },
   privateBadgeText: {
-    fontSize: 10,
-    color: '#D97706',
-    fontWeight: '600',
+    ...type.badge,
+    letterSpacing: 0,
+    color: palette.warningText,
+  },
+  chevron: {
+    marginLeft: spacing.sm,
   },
   emptyContainer: {
     flex: 1,
@@ -443,25 +469,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 60,
   },
-  emptyIcon: {
-    fontSize: 48,
-    marginBottom: 16,
+  emptyIconTile: {
+    width: 64,
+    height: 64,
+    borderRadius: radii.cardLarge,
+    backgroundColor: palette.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: spacing.lg,
   },
   emptyText: {
-    fontSize: 16,
-    color: '#6B7280',
-    marginBottom: 20,
+    ...type.body,
+    color: palette.textTertiary,
+    marginBottom: spacing.xl,
   },
   createButton: {
-    backgroundColor: '#3B82F6',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 12,
+    backgroundColor: palette.primary,
+    height: 50,
+    paddingHorizontal: spacing.xxl,
+    borderRadius: radii.button,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   createButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
+    ...type.button,
+    color: palette.white,
   },
 });
 

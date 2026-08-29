@@ -25,6 +25,8 @@ import {
   TravelReviewRatingKey,
   TravelReviewRatings,
 } from '../services/travelReviewPayload';
+import { palette, fonts, type, spacing, radii } from '../theme';
+import Icon from '../components/icons/Icon';
 
 type ReviewScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -110,14 +112,11 @@ const ReviewScreen: React.FC<Props> = ({ navigation, route }) => {
             onPress={() => handleRating(key, star)}
             style={styles.starButton}
           >
-            <Text
-              style={[
-                styles.star,
-                star <= currentRating && styles.starFilled,
-              ]}
-            >
-              {star <= currentRating ? '\u2605' : '\u2606'}
-            </Text>
+            <Icon
+              name="star-f"
+              size={34}
+              color={star <= currentRating ? palette.rarityLegendary : palette.dashed}
+            />
           </TouchableOpacity>
         ))}
       </View>
@@ -165,7 +164,7 @@ const ReviewScreen: React.FC<Props> = ({ navigation, route }) => {
           <TextInput
             style={styles.commentInput}
             placeholder="함께한 여행에 대한 소감을 남겨주세요"
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={palette.placeholder}
             value={comment}
             onChangeText={setComment}
             multiline
@@ -198,120 +197,112 @@ const ReviewScreen: React.FC<Props> = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: palette.background,
   },
   scrollView: {
     flex: 1,
   },
   header: {
-    padding: 24,
-    paddingBottom: 16,
+    paddingHorizontal: spacing.screenH,
+    paddingTop: spacing.xxl,
+    paddingBottom: spacing.lg,
   },
   title: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#111827',
+    fontFamily: fonts.extrabold,
+    letterSpacing: -0.4,
+    lineHeight: 27,
+    color: palette.ink,
   },
   subtitle: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginTop: 4,
+    ...type.bodySmall,
+    color: palette.textTertiary,
+    marginTop: spacing.xs,
   },
   criterionCard: {
-    backgroundColor: '#fff',
-    marginHorizontal: 16,
-    marginBottom: 8,
-    padding: 16,
-    borderRadius: 12,
+    backgroundColor: palette.surface,
+    marginHorizontal: spacing.screenH,
+    marginBottom: spacing.sm,
+    padding: spacing.lg,
+    borderRadius: radii.card,
   },
   criterionHeader: {
     marginBottom: 10,
   },
   criterionLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
+    ...type.cardTitle,
+    color: palette.ink,
   },
   criterionDesc: {
-    fontSize: 13,
-    color: '#6B7280',
+    ...type.caption,
+    color: palette.textMuted,
     marginTop: 2,
   },
   starRow: {
     flexDirection: 'row',
-    gap: 4,
+    gap: spacing.xs,
   },
   starButton: {
-    padding: 4,
-  },
-  star: {
-    fontSize: 28,
-    color: '#D1D5DB',
-  },
-  starFilled: {
-    color: '#F59E0B',
+    padding: spacing.xs,
   },
   overallCard: {
-    backgroundColor: '#EFF6FF',
-    marginHorizontal: 16,
-    marginTop: 8,
-    padding: 16,
-    borderRadius: 12,
+    backgroundColor: palette.primarySoft,
+    marginHorizontal: spacing.screenH,
+    marginTop: spacing.sm,
+    padding: spacing.lg,
+    borderRadius: radii.card,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   overallLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1E40AF',
+    ...type.cardTitle,
+    color: palette.primary,
   },
   overallValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1E40AF',
+    ...type.statNumber,
+    color: palette.primary,
   },
   commentSection: {
-    marginHorizontal: 16,
-    marginTop: 16,
+    marginHorizontal: spacing.screenH,
+    marginTop: spacing.lg,
   },
   commentLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 8,
+    fontSize: 13,
+    fontFamily: fonts.bold,
+    color: palette.textSecondary,
+    marginBottom: spacing.sm,
   },
   commentInput: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    backgroundColor: palette.surface,
+    borderRadius: radii.input,
     padding: 14,
     fontSize: 15,
-    color: '#111827',
-    minHeight: 100,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
+    fontFamily: fonts.medium,
+    color: palette.ink,
+    minHeight: 120,
   },
   charCount: {
-    fontSize: 12,
-    color: '#9CA3AF',
+    ...type.meta,
+    color: palette.placeholder,
     textAlign: 'right',
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
   submitButton: {
-    backgroundColor: '#3B82F6',
-    marginHorizontal: 16,
-    marginTop: 24,
-    paddingVertical: 16,
-    borderRadius: 12,
+    height: 54,
+    backgroundColor: palette.primary,
+    marginHorizontal: spacing.screenH,
+    marginTop: spacing.xxl,
+    borderRadius: radii.button,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   submitButtonDisabled: {
     opacity: 0.6,
   },
   submitButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
+    ...type.button,
+    color: palette.white,
   },
   bottomPadding: {
     height: 48,

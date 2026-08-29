@@ -30,6 +30,7 @@ import {
   toCreateGroupRequest,
 } from './createGroupForm';
 import type { Purpose } from './createGroupForm';
+import { palette, fonts, type, spacing, radii } from '../theme';
 
 type CreateGroupScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'CreateGroup'>;
 
@@ -46,6 +47,7 @@ const CreateGroupScreen: React.FC<Props> = ({ navigation }) => {
   const [purpose, setPurpose] = useState<Purpose>('LEISURE');
   const [maxMembers, setMaxMembers] = useState(4);
   const [isLoading, setIsLoading] = useState(false);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const validateForm = (): boolean => {
     const message = getCreateGroupValidationMessage({
@@ -109,11 +111,13 @@ const CreateGroupScreen: React.FC<Props> = ({ navigation }) => {
         <View style={styles.section}>
           <Text style={styles.label}>그룹 이름 *</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, focusedField === 'name' && styles.inputFocused]}
             value={name}
             onChangeText={setName}
+            onFocus={() => setFocusedField('name')}
+            onBlur={() => setFocusedField(null)}
             placeholder="그룹 이름을 입력하세요"
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={palette.placeholder}
             maxLength={GROUP_NAME_MAX_LENGTH}
           />
           <Text style={styles.charCount}>{name.length}/{GROUP_NAME_MAX_LENGTH}</Text>
@@ -123,11 +127,17 @@ const CreateGroupScreen: React.FC<Props> = ({ navigation }) => {
         <View style={styles.section}>
           <Text style={styles.label}>설명</Text>
           <TextInput
-            style={[styles.input, styles.textArea]}
+            style={[
+              styles.input,
+              styles.textArea,
+              focusedField === 'description' && styles.inputFocused,
+            ]}
             value={description}
             onChangeText={setDescription}
+            onFocus={() => setFocusedField('description')}
+            onBlur={() => setFocusedField(null)}
             placeholder="그룹에 대한 설명을 입력하세요"
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={palette.placeholder}
             multiline
             numberOfLines={4}
             maxLength={GROUP_DESCRIPTION_MAX_LENGTH}
@@ -141,11 +151,13 @@ const CreateGroupScreen: React.FC<Props> = ({ navigation }) => {
         <View style={styles.section}>
           <Text style={styles.label}>목적지 *</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, focusedField === 'destination' && styles.inputFocused]}
             value={destination}
             onChangeText={setDestination}
+            onFocus={() => setFocusedField('destination')}
+            onBlur={() => setFocusedField(null)}
             placeholder="예: 제주도, 도쿄, 파리"
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={palette.placeholder}
             maxLength={GROUP_DESTINATION_MAX_LENGTH}
           />
           <Text style={styles.charCount}>
@@ -159,11 +171,13 @@ const CreateGroupScreen: React.FC<Props> = ({ navigation }) => {
             <View style={styles.dateField}>
               <Text style={styles.fieldHint}>시작일</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, focusedField === 'startDate' && styles.inputFocused]}
                 value={startDate}
                 onChangeText={setStartDate}
+                onFocus={() => setFocusedField('startDate')}
+                onBlur={() => setFocusedField(null)}
                 placeholder="YYYY-MM-DD"
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor={palette.placeholder}
                 keyboardType="numbers-and-punctuation"
                 maxLength={10}
               />
@@ -171,11 +185,13 @@ const CreateGroupScreen: React.FC<Props> = ({ navigation }) => {
             <View style={styles.dateField}>
               <Text style={styles.fieldHint}>종료일</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, focusedField === 'endDate' && styles.inputFocused]}
                 value={endDate}
                 onChangeText={setEndDate}
+                onFocus={() => setFocusedField('endDate')}
+                onBlur={() => setFocusedField(null)}
                 placeholder="YYYY-MM-DD"
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor={palette.placeholder}
                 keyboardType="numbers-and-punctuation"
                 maxLength={10}
               />
@@ -243,7 +259,7 @@ const CreateGroupScreen: React.FC<Props> = ({ navigation }) => {
           disabled={isLoading}
         >
           {isLoading ? (
-            <ActivityIndicator color="#FFFFFF" />
+            <ActivityIndicator color={palette.white} />
           ) : (
             <Text style={styles.createButtonText}>그룹 만들기</Text>
           )}
@@ -256,42 +272,47 @@ const CreateGroupScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: palette.background,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: 20,
+    padding: spacing.screenH,
   },
   section: {
-    marginBottom: 24,
+    marginBottom: spacing.xxl,
   },
   label: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 8,
+    ...type.bodySmall,
+    fontFamily: fonts.bold,
+    color: palette.ink,
+    marginBottom: spacing.sm,
   },
   input: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    paddingHorizontal: 16,
+    backgroundColor: palette.surface,
+    borderRadius: radii.input,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
+    paddingHorizontal: spacing.lg,
     paddingVertical: 14,
-    fontSize: 16,
-    color: '#111827',
+    fontFamily: fonts.medium,
+    fontSize: 15,
+    color: palette.ink,
+  },
+  inputFocused: {
+    borderColor: palette.primary,
+    backgroundColor: palette.background,
   },
   textArea: {
     height: 100,
     paddingTop: 14,
   },
   charCount: {
-    fontSize: 12,
-    color: '#9CA3AF',
+    ...type.caption,
+    color: palette.placeholder,
     textAlign: 'right',
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
   dateRow: {
     flexDirection: 'row',
@@ -301,56 +322,52 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   fieldHint: {
-    fontSize: 13,
-    color: '#6B7280',
+    ...type.caption,
+    color: palette.textTertiary,
     marginBottom: 6,
   },
   optionsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: spacing.sm,
   },
   optionButton: {
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.lg,
     paddingVertical: 10,
-    borderRadius: 20,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderRadius: radii.chip,
+    backgroundColor: palette.surface,
   },
   optionButtonActive: {
-    backgroundColor: '#3B82F6',
-    borderColor: '#3B82F6',
+    backgroundColor: palette.ink,
   },
   optionButtonText: {
-    fontSize: 14,
-    color: '#374151',
-    fontWeight: '500',
+    fontFamily: fonts.bold,
+    fontSize: 13,
+    color: palette.textSecondary,
   },
   optionButtonTextActive: {
-    color: '#FFFFFF',
+    color: palette.white,
   },
   footer: {
-    padding: 20,
-    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
-    backgroundColor: '#FFFFFF',
+    padding: spacing.screenH,
+    paddingBottom: Platform.OS === 'ios' ? 34 : spacing.screenH,
+    backgroundColor: palette.background,
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
+    borderTopColor: palette.hairline,
   },
   createButton: {
-    backgroundColor: '#3B82F6',
-    borderRadius: 12,
-    paddingVertical: 16,
+    backgroundColor: palette.primary,
+    borderRadius: radii.button,
+    height: 50,
     alignItems: 'center',
     justifyContent: 'center',
   },
   createButtonDisabled: {
-    backgroundColor: '#93C5FD',
+    opacity: 0.5,
   },
   createButtonText: {
-    color: '#FFFFFF',
-    fontSize: 17,
-    fontWeight: '600',
+    ...type.button,
+    color: palette.white,
   },
 });
 

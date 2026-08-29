@@ -1,5 +1,5 @@
 /**
- * App Navigator for TravelMate Mobile
+ * App Navigator for Fryndo Mobile
  */
 
 import React from 'react';
@@ -9,6 +9,8 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, Text, StyleSheet } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
 import { linkingConfig, setNavigationRef } from '../services/deepLinkService';
+import Icon, { IconName } from '../components/icons/Icon';
+import { palette, fonts } from '../theme';
 
 // Screens
 import LoginScreen from '../screens/LoginScreen';
@@ -66,24 +68,24 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-// Tab Bar Icons
-const TabIcon = ({ name, focused }: { name: string; focused: boolean }) => {
-  const icons: Record<string, string> = {
-    Home: '🏠',
-    Map: '🗺️',
-    Groups: '💬',
-    Collection: '🎨',
-    Profile: '👤',
-  };
-
-  return (
-    <View style={styles.tabIconContainer}>
-      <Text style={[styles.tabIcon, focused && styles.tabIconFocused]}>
-        {icons[name] || '📱'}
-      </Text>
-    </View>
-  );
+// Tab Bar Icons — design system 1d (플랫 5탭)
+const TAB_ICONS: Record<string, IconName> = {
+  Home: 'home',
+  Map: 'pin',
+  Groups: 'chat',
+  Collection: 'grid',
+  Profile: 'user',
 };
+
+const TabIcon = ({ name, focused }: { name: string; focused: boolean }) => (
+  <View style={styles.tabIconContainer}>
+    <Icon
+      name={TAB_ICONS[name] || 'compass'}
+      size={24}
+      color={focused ? palette.primary : palette.placeholder}
+    />
+  </View>
+);
 
 // Auth Navigator
 const AuthNavigator = () => {
@@ -101,19 +103,19 @@ const MainTabNavigator = () => {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: '#3B82F6',
-        tabBarInactiveTintColor: '#9CA3AF',
+        tabBarActiveTintColor: palette.primary,
+        tabBarInactiveTintColor: palette.placeholder,
         tabBarStyle: {
           paddingBottom: 8,
-          paddingTop: 8,
-          height: 60,
-          backgroundColor: '#FFFFFF',
+          paddingTop: 9,
+          height: 62,
+          backgroundColor: palette.background,
           borderTopWidth: 1,
-          borderTopColor: '#E5E7EB',
+          borderTopColor: palette.hairline,
         },
         tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '500',
+          fontSize: 10,
+          fontFamily: fonts.bold,
         },
         tabBarIcon: ({ focused }) => <TabIcon name={route.name} focused={focused} />,
       })}
@@ -129,19 +131,19 @@ const MainTabNavigator = () => {
         options={{ tabBarLabel: '지도' }}
       />
       <Tab.Screen
-        name="Groups"
-        component={GroupsScreen}
-        options={{ tabBarLabel: '채팅' }}
-      />
-      <Tab.Screen
         name="Collection"
         component={CollectionScreen}
         options={{ tabBarLabel: '컬렉션' }}
       />
       <Tab.Screen
+        name="Groups"
+        component={GroupsScreen}
+        options={{ tabBarLabel: '채팅' }}
+      />
+      <Tab.Screen
         name="Profile"
         component={ProfileScreen}
-        options={{ tabBarLabel: '프로필' }}
+        options={{ tabBarLabel: '나' }}
       />
     </Tab.Navigator>
   );
@@ -177,7 +179,7 @@ const AppNavigator = () => {
                 headerShown: true,
                 headerTitle: '장소 상세',
                 headerBackTitle: '뒤로',
-                headerTintColor: '#3B82F6',
+                headerTintColor: palette.ink,
               }}
             />
             <Stack.Screen
@@ -187,7 +189,7 @@ const AppNavigator = () => {
                 headerShown: true,
                 headerTitle: '설정',
                 headerBackTitle: '뒤로',
-                headerTintColor: '#3B82F6',
+                headerTintColor: palette.ink,
               }}
             />
             <Stack.Screen
@@ -196,7 +198,7 @@ const AppNavigator = () => {
               options={{
                 headerShown: true,
                 headerBackTitle: '뒤로',
-                headerTintColor: '#3B82F6',
+                headerTintColor: palette.ink,
               }}
             />
             <Stack.Screen
@@ -206,7 +208,7 @@ const AppNavigator = () => {
                 headerShown: true,
                 headerTitle: '새 그룹 만들기',
                 headerBackTitle: '뒤로',
-                headerTintColor: '#3B82F6',
+                headerTintColor: palette.ink,
               }}
             />
             <Stack.Screen
@@ -216,7 +218,7 @@ const AppNavigator = () => {
                 headerShown: true,
                 headerTitle: '알림',
                 headerBackTitle: '뒤로',
-                headerTintColor: '#3B82F6',
+                headerTintColor: palette.ink,
               }}
             />
             <Stack.Screen
@@ -226,7 +228,7 @@ const AppNavigator = () => {
                 headerShown: true,
                 headerTitle: '프리미엄',
                 headerBackTitle: '뒤로',
-                headerTintColor: '#3B82F6',
+                headerTintColor: palette.ink,
               }}
             />
             <Stack.Screen
@@ -236,7 +238,7 @@ const AppNavigator = () => {
                 headerShown: true,
                 headerTitle: '동행자 찾기',
                 headerBackTitle: '뒤로',
-                headerTintColor: '#3B82F6',
+                headerTintColor: palette.ink,
               }}
             />
             <Stack.Screen
@@ -246,7 +248,7 @@ const AppNavigator = () => {
                 headerShown: true,
                 headerTitle: '프로필',
                 headerBackTitle: '뒤로',
-                headerTintColor: '#3B82F6',
+                headerTintColor: palette.ink,
               }}
             />
             <Stack.Screen
@@ -256,7 +258,7 @@ const AppNavigator = () => {
                 headerShown: true,
                 headerTitle: '리뷰 작성',
                 headerBackTitle: '뒤로',
-                headerTintColor: '#3B82F6',
+                headerTintColor: palette.ink,
               }}
             />
             <Stack.Screen
@@ -266,7 +268,7 @@ const AppNavigator = () => {
                 headerShown: true,
                 headerTitle: '매칭 관리',
                 headerBackTitle: '뒤로',
-                headerTintColor: '#3B82F6',
+                headerTintColor: palette.ink,
               }}
             />
           </>
@@ -283,23 +285,17 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#3B82F6',
+    backgroundColor: palette.primary,
   },
   loadingText: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
+    fontSize: 30,
+    fontFamily: fonts.extrabold,
+    color: palette.white,
+    letterSpacing: -0.9,
   },
   tabIconContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  tabIcon: {
-    fontSize: 22,
-    opacity: 0.6,
-  },
-  tabIconFocused: {
-    opacity: 1,
   },
 });
 

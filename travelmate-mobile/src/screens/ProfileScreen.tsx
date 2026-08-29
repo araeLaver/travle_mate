@@ -21,6 +21,8 @@ import { RootStackParamList, MainTabParamList } from '../navigation/AppNavigator
 import { useAuth } from '../contexts/AuthContext';
 import { takePhoto, pickImage, showImageSourcePicker } from '../services/cameraService';
 import apiClient from '../services/apiClient';
+import Icon, { IconName } from '../components/icons/Icon';
+import { palette, fonts, type, spacing, radii } from '../theme';
 
 type ProfileScreenNavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<MainTabParamList, 'Profile'>,
@@ -30,6 +32,26 @@ type ProfileScreenNavigationProp = CompositeNavigationProp<
 interface Props {
   navigation: ProfileScreenNavigationProp;
 }
+
+interface MenuRowProps {
+  icon: IconName;
+  label: string;
+  subtext?: string;
+  onPress?: () => void;
+}
+
+const MenuRow: React.FC<MenuRowProps> = ({ icon, label, subtext, onPress }) => (
+  <TouchableOpacity style={styles.menuItem} onPress={onPress}>
+    <View style={styles.menuIconTile}>
+      <Icon name={icon} size={20} color={palette.textSecondary} />
+    </View>
+    <View style={styles.menuContent}>
+      <Text style={styles.menuText}>{label}</Text>
+      {subtext ? <Text style={styles.menuSubtext}>{subtext}</Text> : null}
+    </View>
+    <Icon name="right" size={18} color={palette.disabled} />
+  </TouchableOpacity>
+);
 
 const ProfileScreen: React.FC<Props> = ({ navigation }) => {
   const { user, logout, refreshUser } = useAuth();
@@ -142,9 +164,9 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
             )}
             <View style={styles.cameraButton}>
               {uploadingPhoto ? (
-                <ActivityIndicator size="small" color="#fff" />
+                <ActivityIndicator size="small" color={palette.white} />
               ) : (
-                <Text style={styles.cameraIcon}>📷</Text>
+                <Icon name="camera" size={14} color={palette.white} />
               )}
             </View>
           </TouchableOpacity>
@@ -181,96 +203,53 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
       <View style={styles.menuSection}>
         <Text style={styles.menuTitle}>내 활동</Text>
 
-        <TouchableOpacity
-          style={styles.menuItem}
+        <MenuRow
+          icon="crown"
+          label="내 컬렉션"
+          subtext={`${user.totalNftsCollected}개의 NFT`}
           onPress={() => navigation.navigate('Collection' as any)}
-        >
-          <Text style={styles.menuIcon}>🏆</Text>
-          <View style={styles.menuContent}>
-            <Text style={styles.menuText}>내 컬렉션</Text>
-            <Text style={styles.menuSubtext}>{user.totalNftsCollected}개의 NFT</Text>
-          </View>
-          <Text style={styles.menuArrow}>›</Text>
-        </TouchableOpacity>
+        />
 
-        <TouchableOpacity
-          style={styles.menuItem}
+        <MenuRow
+          icon="wallet"
+          label="포인트 내역"
+          subtext={`${user.totalPoints.toLocaleString()} P`}
           onPress={() => {/* 포인트 내역 페이지 */}}
-        >
-          <Text style={styles.menuIcon}>💰</Text>
-          <View style={styles.menuContent}>
-            <Text style={styles.menuText}>포인트 내역</Text>
-            <Text style={styles.menuSubtext}>{user.totalPoints.toLocaleString()} P</Text>
-          </View>
-          <Text style={styles.menuArrow}>›</Text>
-        </TouchableOpacity>
+        />
       </View>
 
       {/* Settings Section */}
       <View style={styles.menuSection}>
         <Text style={styles.menuTitle}>설정</Text>
 
-        <TouchableOpacity
-          style={styles.menuItem}
+        <MenuRow
+          icon="gear"
+          label="앱 설정"
           onPress={() => navigation.navigate('Settings')}
-        >
-          <Text style={styles.menuIcon}>⚙️</Text>
-          <View style={styles.menuContent}>
-            <Text style={styles.menuText}>앱 설정</Text>
-          </View>
-          <Text style={styles.menuArrow}>›</Text>
-        </TouchableOpacity>
+        />
 
-        <TouchableOpacity
-          style={styles.menuItem}
+        <MenuRow
+          icon="user"
+          label="프로필 편집"
           onPress={() => {/* 프로필 편집 페이지 */}}
-        >
-          <Text style={styles.menuIcon}>✏️</Text>
-          <View style={styles.menuContent}>
-            <Text style={styles.menuText}>프로필 편집</Text>
-          </View>
-          <Text style={styles.menuArrow}>›</Text>
-        </TouchableOpacity>
+        />
 
-        <TouchableOpacity
-          style={styles.menuItem}
+        <MenuRow
+          icon="bell"
+          label="알림 설정"
           onPress={() => {/* 알림 설정 */}}
-        >
-          <Text style={styles.menuIcon}>🔔</Text>
-          <View style={styles.menuContent}>
-            <Text style={styles.menuText}>알림 설정</Text>
-          </View>
-          <Text style={styles.menuArrow}>›</Text>
-        </TouchableOpacity>
+        />
       </View>
 
       {/* Support Section */}
       <View style={styles.menuSection}>
         <Text style={styles.menuTitle}>지원</Text>
 
-        <TouchableOpacity style={styles.menuItem}>
-          <Text style={styles.menuIcon}>❓</Text>
-          <View style={styles.menuContent}>
-            <Text style={styles.menuText}>도움말</Text>
-          </View>
-          <Text style={styles.menuArrow}>›</Text>
-        </TouchableOpacity>
+        <MenuRow icon="chat" label="도움말" />
 
-        <TouchableOpacity style={styles.menuItem}>
-          <Text style={styles.menuIcon}>📝</Text>
-          <View style={styles.menuContent}>
-            <Text style={styles.menuText}>이용약관</Text>
-          </View>
-          <Text style={styles.menuArrow}>›</Text>
-        </TouchableOpacity>
+        <MenuRow icon="stamp" label="이용약관" />
 
-        <TouchableOpacity style={styles.menuItem}>
-          <Text style={styles.menuIcon}>🔒</Text>
-          <View style={styles.menuContent}>
-            <Text style={styles.menuText}>개인정보처리방침</Text>
-          </View>
-          <Text style={styles.menuArrow}>›</Text>
-        </TouchableOpacity>
+        <MenuRow icon="lock" label="개인정보처리방침" />
       </View>
 
       {/* Logout Button */}
@@ -290,48 +269,48 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: palette.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F9FAFB',
+    backgroundColor: palette.background,
   },
   loadingText: {
-    fontSize: 16,
-    color: '#6B7280',
+    ...type.body,
+    color: palette.textTertiary,
   },
   header: {
-    backgroundColor: '#fff',
+    backgroundColor: palette.background,
     paddingTop: 60,
-    paddingBottom: 24,
-    paddingHorizontal: 24,
+    paddingBottom: spacing.xxl,
+    paddingHorizontal: spacing.screenH,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: palette.hairline,
   },
   profileSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: spacing.xxl,
   },
   profileImage: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: 78,
+    height: 78,
+    borderRadius: 39,
   },
   profileImagePlaceholder: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: '#3B82F6',
+    width: 78,
+    height: 78,
+    borderRadius: 39,
+    backgroundColor: palette.primarySoft,
     justifyContent: 'center',
     alignItems: 'center',
   },
   profileInitial: {
+    fontFamily: fonts.extrabold,
     fontSize: 28,
-    fontWeight: 'bold',
-    color: '#fff',
+    color: palette.primary,
   },
   cameraButton: {
     position: 'absolute',
@@ -340,117 +319,126 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#3B82F6',
+    backgroundColor: palette.primary,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#fff',
-  },
-  cameraIcon: {
-    fontSize: 14,
+    borderColor: palette.white,
   },
   profileInfo: {
-    marginLeft: 16,
+    marginLeft: spacing.lg,
     flex: 1,
   },
   nickname: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#111827',
+    fontFamily: fonts.extrabold,
+    fontSize: 21,
+    lineHeight: 27,
+    color: palette.ink,
   },
   email: {
-    fontSize: 14,
-    color: '#6B7280',
+    ...type.bodySmall,
+    color: palette.textTertiary,
     marginTop: 2,
   },
   bio: {
-    fontSize: 13,
-    color: '#374151',
-    marginTop: 4,
+    ...type.bodySmall,
+    fontFamily: fonts.medium,
+    color: palette.textSecondary,
+    marginTop: spacing.xs,
   },
   statsRow: {
     flexDirection: 'row',
-    backgroundColor: '#F9FAFB',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: palette.surface,
+    borderRadius: radii.input,
+    padding: spacing.lg,
   },
   statItem: {
     flex: 1,
     alignItems: 'center',
   },
   statValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#111827',
+    ...type.statNumber,
+    color: palette.ink,
   },
   statLabel: {
-    fontSize: 12,
-    color: '#6B7280',
-    marginTop: 4,
+    fontFamily: fonts.bold,
+    fontSize: 11,
+    lineHeight: 15,
+    color: palette.textMuted,
+    marginTop: spacing.xs,
   },
   statDivider: {
     width: 1,
-    backgroundColor: '#E5E7EB',
-    marginHorizontal: 8,
+    backgroundColor: palette.outline,
+    marginHorizontal: spacing.sm,
   },
   menuSection: {
-    marginTop: 24,
-    paddingHorizontal: 24,
+    marginTop: spacing.xxl,
+    paddingHorizontal: spacing.screenH,
   },
   menuTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#6B7280',
-    marginBottom: 12,
+    fontFamily: fonts.extrabold,
+    fontSize: 12,
+    lineHeight: 16,
+    color: palette.textMuted,
+    marginBottom: spacing.md,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 8,
+    backgroundColor: palette.white,
+    borderWidth: 1,
+    borderColor: palette.hairline,
+    padding: spacing.md,
+    borderRadius: radii.card,
+    marginBottom: spacing.sm,
   },
-  menuIcon: {
-    fontSize: 20,
-    marginRight: 12,
+  menuIconTile: {
+    width: 40,
+    height: 40,
+    borderRadius: radii.iconButton,
+    backgroundColor: palette.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: spacing.md,
   },
   menuContent: {
     flex: 1,
   },
   menuText: {
-    fontSize: 16,
-    color: '#111827',
+    fontFamily: fonts.semibold,
+    fontSize: 14,
+    lineHeight: 19,
+    color: palette.ink,
   },
   menuSubtext: {
-    fontSize: 12,
-    color: '#6B7280',
+    ...type.caption,
+    color: palette.textMuted,
     marginTop: 2,
-  },
-  menuArrow: {
-    fontSize: 20,
-    color: '#9CA3AF',
   },
   logoutSection: {
     marginTop: 32,
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.screenH,
     alignItems: 'center',
   },
   logoutButton: {
-    backgroundColor: '#FEE2E2',
-    paddingVertical: 14,
+    backgroundColor: palette.errorBg,
+    height: 46,
     paddingHorizontal: 32,
-    borderRadius: 12,
+    borderRadius: radii.input,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   logoutText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#DC2626',
+    ...type.button,
+    color: palette.error,
   },
   versionText: {
-    fontSize: 12,
-    color: '#9CA3AF',
-    marginTop: 16,
+    fontFamily: fonts.semibold,
+    fontSize: 11,
+    lineHeight: 15,
+    color: palette.placeholder,
+    marginTop: spacing.lg,
   },
   bottomPadding: {
     height: 48,
