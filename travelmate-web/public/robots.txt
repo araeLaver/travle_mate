@@ -6,3 +6,5 @@ Disallow: /settings
 Disallow: /wallet
 Disallow: /payment
 Disallow: /auth/callback
+
+Sitemap: https://fryndo.com/sitemap.xml

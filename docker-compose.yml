@@ -60,6 +60,8 @@ services:
         - REACT_APP_KAKAO_APP_KEY=${REACT_APP_KAKAO_APP_KEY:-}
         - REACT_APP_NAVER_CLIENT_ID=${REACT_APP_NAVER_CLIENT_ID:-}
         - REACT_APP_KAKAO_MAP_API_KEY=${REACT_APP_KAKAO_MAP_API_KEY:-}
+        - REACT_APP_ADSENSE_CLIENT=${REACT_APP_ADSENSE_CLIENT:-}
+        - REACT_APP_SENTRY_DSN=${REACT_APP_SENTRY_DSN:-}
     container_name: travelmate-frontend
     restart: unless-stopped
     ports:
