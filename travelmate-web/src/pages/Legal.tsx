@@ -26,52 +26,45 @@ const sections = [
 ];
 
 const Legal: React.FC = () => (
-  <main className="min-h-screen bg-[#F7F2E8] px-4 py-10 text-[#14213D] md:px-8">
+  <main className="min-h-screen bg-sand-100 px-4 py-10 text-ink md:px-8">
     <div className="mx-auto max-w-4xl">
       <Link to="/" className="mb-10 inline-flex items-center gap-3">
         <Logo variant="gradient" size="md" />
-        <span className="font-display text-2xl font-black tracking-[-0.04em]">Fryndo</span>
+        <span className="text-2xl font-extrabold tracking-tight text-ink">Fryndo</span>
       </Link>
 
-      <section className="rounded-[2.5rem] border border-[#E5DCC8] bg-[#FFFDF7] p-8 shadow-[0_24px_80px_rgba(20,33,61,0.1)] md:p-12">
-        <p className="text-sm font-black uppercase tracking-[0.32em] text-[#F97316]">
+      <section className="rounded-[20px] bg-white p-8 shadow-[0_10px_30px_rgba(16,16,20,0.1)] md:p-12">
+        <p className="text-sm font-extrabold uppercase tracking-[0.32em] text-primary-500">
           Legal Notice
         </p>
-        <h1 className="mt-4 font-display text-5xl font-black leading-none tracking-[-0.06em] md:text-6xl">
+        <h1 className="mt-4 font-display text-4xl font-black leading-[1.05] tracking-tight text-ink md:text-5xl">
           이용약관 및 개인정보 안내
         </h1>
-        <p className="mt-6 text-lg font-medium leading-8 text-[#52606D]">
+        <p className="mt-6 text-lg leading-8 text-[#4A4A55]">
           시행일: 2026년 7월 4일. 이 문서는 공개 베타 출시를 위한 기본 안내이며, 정식 약관은 서비스
           운영 범위 확정에 따라 보강될 수 있습니다.
         </p>
 
         <div className="mt-10 space-y-5">
           {sections.map(section => (
-            <article
-              key={section.title}
-              className="rounded-[1.5rem] border border-[#E5DCC8] bg-[#F7F2E8]/65 p-6"
-            >
-              <h2 className="font-display text-2xl font-black tracking-[-0.04em]">
-                {section.title}
-              </h2>
-              <p className="mt-3 text-base font-medium leading-8 text-[#52606D]">{section.body}</p>
+            <article key={section.title} className="rounded-2xl bg-sand-100 p-6">
+              <h2 className="text-xl font-extrabold tracking-tight text-ink">{section.title}</h2>
+              <p className="mt-3 text-base leading-8 text-[#4A4A55]">{section.body}</p>
             </article>
           ))}
         </div>
 
-        <div className="mt-10 flex flex-col gap-3 rounded-[1.5rem] bg-[#14213D] p-6 text-white md:flex-row md:items-center md:justify-between">
+        <div className="mt-10 flex flex-col gap-3 rounded-2xl bg-ink p-6 text-white md:flex-row md:items-center md:justify-between">
           <div>
-            <h2 className="font-display text-2xl font-black tracking-[-0.04em]">
-              문의 및 삭제 요청
-            </h2>
-            <p className="mt-2 text-sm font-medium leading-6 text-white/70">
+            <h2 className="font-display text-2xl font-black tracking-tight">문의 및 삭제 요청</h2>
+            <p className="mt-2 text-sm leading-6 text-[#A0A0AC]">
               계정, 프로필, 매칭 정보 삭제 요청은 운영자에게 직접 전달하거나 서비스 내 문의 채널이
               열리는 즉시 해당 채널을 통해 접수합니다.
             </p>
           </div>
           <Link
             to="/"
-            className="inline-flex justify-center rounded-full bg-white px-5 py-3 font-black text-[#14213D]"
+            className="inline-flex h-12 items-center justify-center rounded-[15px] bg-white px-5 font-extrabold text-ink transition hover:bg-sand-100"
           >
             홈으로
           </Link>

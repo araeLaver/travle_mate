@@ -10,7 +10,6 @@ import FollowerList from '../components/social/FollowerList';
 import PhoneVerification from '../components/PhoneVerification';
 import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
-import PageBackground from '../components/PageBackground';
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -175,10 +174,10 @@ const Profile: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] flex items-center justify-center">
+      <div className="min-h-screen bg-sand-100 dark:bg-[#0a0a0b] flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 rounded-full border-4 border-violet-200 dark:border-violet-800 border-t-violet-600 animate-spin mb-4 mx-auto" />
-          <p className="text-gray-500 dark:text-gray-400">프로필을 불러오는 중...</p>
+          <div className="w-16 h-16 rounded-full border-4 border-primary-100 dark:border-primary-900 border-t-primary-500 animate-spin mb-4 mx-auto" />
+          <p className="text-[#74747F] dark:text-gray-400">프로필을 불러오는 중...</p>
         </div>
       </div>
     );
@@ -186,14 +185,14 @@ const Profile: React.FC = () => {
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] flex items-center justify-center">
+      <div className="min-h-screen bg-sand-100 dark:bg-[#0a0a0b] flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+          <h2 className="text-xl font-extrabold tracking-tight text-ink dark:text-white mb-4">
             프로필을 불러올 수 없습니다
           </h2>
           <button
             onClick={loadProfile}
-            className="px-6 py-3 bg-gradient-to-r from-violet-600 to-pink-600 text-white rounded-xl font-semibold"
+            className="px-6 py-3 bg-primary-500 hover:bg-primary-700 text-white rounded-xl font-bold transition-colors"
           >
             다시 시도
           </button>
@@ -203,21 +202,19 @@ const Profile: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] relative overflow-hidden">
-      <PageBackground />
-
+    <div className="min-h-screen bg-sand-100 dark:bg-[#0a0a0b] relative overflow-hidden">
       {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 px-4 py-3">
-        <div className="max-w-4xl mx-auto bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-2xl px-6 py-3 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
+      <nav className="fixed top-0 w-full z-50 bg-white dark:bg-gray-900 border-b border-[#F2F1ED] dark:border-gray-800">
+        <div className="max-w-4xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <button onClick={() => navigate('/')} className="flex items-center gap-2">
               <Logo size="md" />
-              <span className="font-bold text-gray-900 dark:text-white">Fryndo</span>
+              <span className="font-extrabold tracking-tight text-ink dark:text-white">Fryndo</span>
             </button>
             <div className="flex items-center gap-3">
               <button
                 onClick={() => navigate('/dashboard')}
-                className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                className="px-4 py-2 text-sm font-semibold text-[#4A4A55] dark:text-gray-400 hover:text-ink dark:hover:text-white transition-colors"
               >
                 대시보드
               </button>
@@ -231,13 +228,13 @@ const Profile: React.FC = () => {
       <main className="relative z-10 max-w-4xl mx-auto px-4 pt-24 pb-12">
         {/* Profile Header */}
         <motion.div
-          className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl border border-gray-200/50 dark:border-gray-800/50 shadow-xl overflow-hidden mb-8"
+          className="bg-white dark:bg-gray-900 rounded-[18px] shadow-[0_10px_30px_rgba(16,16,20,0.06)] dark:border dark:border-gray-800 overflow-hidden mb-8"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
           {/* Cover */}
-          <div className="h-32 bg-gradient-to-r from-violet-500 via-purple-500 to-pink-500 relative">
+          <div className="h-40 bg-ink bg-[linear-gradient(135deg,#2A1BC7_0%,#4A3AFF_60%,#101014_140%)] relative">
             {profile.coverImage && (
               <img src={profile.coverImage} alt="" className="w-full h-full object-cover" />
             )}
@@ -247,7 +244,7 @@ const Profile: React.FC = () => {
           <div className="px-6 pb-6">
             <div className="flex flex-col md:flex-row md:items-end gap-4 -mt-12">
               {/* Avatar */}
-              <div className="w-24 h-24 rounded-full border-4 border-white dark:border-gray-900 bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center text-white text-3xl font-bold shadow-xl overflow-hidden">
+              <div className="w-[104px] h-[104px] rounded-full border-[5px] border-white dark:border-gray-900 bg-primary-500 flex items-center justify-center text-white text-3xl font-extrabold shadow-[0_10px_30px_rgba(16,16,20,0.1)] overflow-hidden">
                 {profile.profileImage ? (
                   <img
                     src={profile.profileImage}
@@ -262,19 +259,19 @@ const Profile: React.FC = () => {
               {/* Info */}
               <div className="flex-1">
                 <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  <h1 className="text-[26px] font-extrabold tracking-tight text-ink dark:text-white">
                     {profile.name}
                   </h1>
                   {profile.age && (
-                    <span className="text-gray-500 dark:text-gray-400">{profile.age}세</span>
+                    <span className="text-[#74747F] dark:text-gray-400">{profile.age}세</span>
                   )}
                 </div>
                 {profile.location && (
-                  <p className="text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+                  <p className="text-[#74747F] dark:text-gray-400 flex items-center gap-1 mt-1">
                     📍 {profile.location.city}, {profile.location.country}
                   </p>
                 )}
-                <p className="text-gray-600 dark:text-gray-300 mt-2">{profile.bio}</p>
+                <p className="text-[#4A4A55] dark:text-gray-300 mt-2">{profile.bio}</p>
               </div>
 
               {/* Actions */}
@@ -283,7 +280,7 @@ const Profile: React.FC = () => {
                   !isEditing ? (
                     <button
                       onClick={handleEditStart}
-                      className="edit-btn px-5 py-2.5 bg-gradient-to-r from-violet-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all flex items-center gap-2"
+                      className="edit-btn px-5 py-2.5 bg-primary-500 hover:bg-primary-700 text-white rounded-xl font-bold transition-all flex items-center gap-2"
                     >
                       ✏️ 편집
                     </button>
@@ -292,14 +289,14 @@ const Profile: React.FC = () => {
                       <button
                         onClick={handleEditSave}
                         disabled={isSaving}
-                        className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50"
+                        className="px-5 py-2.5 bg-success hover:bg-[#357A50] text-white rounded-xl font-bold transition-all disabled:opacity-50"
                       >
                         {isSaving ? '저장중...' : '💾 저장'}
                       </button>
                       <button
                         onClick={handleEditCancel}
                         disabled={isSaving}
-                        className="px-5 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl font-semibold border border-gray-200 dark:border-gray-700"
+                        className="px-5 py-2.5 bg-sand-200 hover:bg-sand-300 dark:bg-gray-800 text-ink dark:text-gray-300 rounded-xl font-bold transition-colors dark:border dark:border-gray-700"
                       >
                         취소
                       </button>
@@ -309,10 +306,10 @@ const Profile: React.FC = () => {
                   <button
                     onClick={handleFollowToggle}
                     disabled={isFollowLoading}
-                    className={`px-5 py-2.5 rounded-xl font-semibold transition-all flex items-center gap-2 ${
+                    className={`px-5 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 ${
                       followStatus?.isFollowing
-                        ? 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700'
-                        : 'bg-gradient-to-r from-violet-600 to-pink-600 text-white hover:shadow-lg'
+                        ? 'bg-sand-200 hover:bg-sand-300 dark:bg-gray-800 text-ink dark:text-gray-300 dark:border dark:border-gray-700'
+                        : 'bg-primary-500 hover:bg-primary-700 text-white'
                     }`}
                   >
                     {followStatus?.isFollowing ? '✓ 팔로잉' : '➕ 팔로우'}
@@ -331,39 +328,45 @@ const Profile: React.FC = () => {
         >
           <button
             onClick={() => setShowFollowerList('followers')}
-            className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-4 border border-gray-200/50 dark:border-gray-800/50 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 text-center"
+            className="bg-white dark:bg-gray-900 rounded-[18px] p-5 shadow-[0_10px_30px_rgba(16,16,20,0.06)] dark:border dark:border-gray-800 hover:-translate-y-1 transition-all text-center"
           >
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">
+            <div className="font-display text-[28px] leading-tight text-ink dark:text-white">
               {followStats?.followerCount || 0}
             </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">팔로워</div>
+            <div className="text-xs font-bold text-[#8A8A95] dark:text-gray-400 mt-1">팔로워</div>
           </button>
           <button
             onClick={() => setShowFollowerList('following')}
-            className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-4 border border-gray-200/50 dark:border-gray-800/50 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 text-center"
+            className="bg-white dark:bg-gray-900 rounded-[18px] p-5 shadow-[0_10px_30px_rgba(16,16,20,0.06)] dark:border dark:border-gray-800 hover:-translate-y-1 transition-all text-center"
           >
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">
+            <div className="font-display text-[28px] leading-tight text-ink dark:text-white">
               {followStats?.followingCount || 0}
             </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">팔로잉</div>
+            <div className="text-xs font-bold text-[#8A8A95] dark:text-gray-400 mt-1">팔로잉</div>
           </button>
-          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-4 border border-gray-200/50 dark:border-gray-800/50 shadow-lg text-center">
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">
+          <div className="bg-white dark:bg-gray-900 rounded-[18px] p-5 shadow-[0_10px_30px_rgba(16,16,20,0.06)] dark:border dark:border-gray-800 text-center">
+            <div className="font-display text-[28px] leading-tight text-ink dark:text-white">
               {profile.stats.totalTrips}
             </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">여행 횟수</div>
+            <div className="text-xs font-bold text-[#8A8A95] dark:text-gray-400 mt-1">
+              여행 횟수
+            </div>
           </div>
-          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-4 border border-gray-200/50 dark:border-gray-800/50 shadow-lg text-center">
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">
+          <div className="bg-white dark:bg-gray-900 rounded-[18px] p-5 shadow-[0_10px_30px_rgba(16,16,20,0.06)] dark:border dark:border-gray-800 text-center">
+            <div className="font-display text-[28px] leading-tight text-ink dark:text-white">
               {profile.stats.totalCountries}
             </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">방문 국가</div>
+            <div className="text-xs font-bold text-[#8A8A95] dark:text-gray-400 mt-1">
+              방문 국가
+            </div>
           </div>
-          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-4 border border-gray-200/50 dark:border-gray-800/50 shadow-lg text-center col-span-2 md:col-span-1">
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">
+          <div className="bg-white dark:bg-gray-900 rounded-[18px] p-5 shadow-[0_10px_30px_rgba(16,16,20,0.06)] dark:border dark:border-gray-800 text-center col-span-2 md:col-span-1">
+            <div className="font-display text-[28px] leading-tight text-ink dark:text-white">
               {profile.stats.averageRating.toFixed(1)}
             </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">평균 평점</div>
+            <div className="text-xs font-bold text-[#8A8A95] dark:text-gray-400 mt-1">
+              평균 평점
+            </div>
           </div>
         </motion.div>
 
@@ -377,10 +380,10 @@ const Profile: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-5 py-2.5 rounded-xl font-medium transition-all flex items-center gap-2 ${
+              className={`px-5 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 ${
                 activeTab === tab.id
-                  ? 'bg-gradient-to-r from-violet-600 to-pink-600 text-white shadow-lg shadow-violet-500/30'
-                  : 'bg-white/80 dark:bg-gray-900/80 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200/50 dark:border-gray-800/50'
+                  ? 'bg-ink text-white'
+                  : 'bg-white dark:bg-gray-900 text-[#4A4A55] dark:text-gray-400 hover:bg-sand-200 dark:hover:bg-gray-800 dark:border dark:border-gray-800'
               }`}
             >
               <span>{tab.icon}</span>
@@ -391,7 +394,7 @@ const Profile: React.FC = () => {
 
         {/* Tab Content */}
         <motion.div
-          className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl p-6 border border-gray-200/50 dark:border-gray-800/50 shadow-xl"
+          className="bg-white dark:bg-gray-900 rounded-[18px] p-6 shadow-[0_10px_30px_rgba(16,16,20,0.06)] dark:border dark:border-gray-800"
           {...fadeInUp}
           transition={{ delay: 0.3 }}
         >
@@ -400,20 +403,20 @@ const Profile: React.FC = () => {
               {isEditing ? (
                 <div className="space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-xs font-extrabold text-[#8A8A95] tracking-wider mb-2">
                       이름
                     </label>
                     <input
                       type="text"
                       value={editForm.name || ''}
                       onChange={e => handleInputChange('name', e.target.value)}
-                      className="w-full px-4 py-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      className="w-full px-4 py-3 bg-sand-100 dark:bg-gray-800 border-[1.5px] border-transparent dark:border-gray-700 rounded-[13px] text-ink dark:text-white focus:outline-none focus:bg-white dark:focus:bg-gray-900 focus:border-primary-500 transition-all"
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-xs font-extrabold text-[#8A8A95] tracking-wider mb-2">
                         나이
                       </label>
                       <input
@@ -422,13 +425,13 @@ const Profile: React.FC = () => {
                         onChange={e =>
                           handleInputChange('age', parseInt(e.target.value) || undefined)
                         }
-                        className="w-full px-4 py-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+                        className="w-full px-4 py-3 bg-sand-100 dark:bg-gray-800 border-[1.5px] border-transparent dark:border-gray-700 rounded-[13px] text-ink dark:text-white focus:outline-none focus:bg-white dark:focus:bg-gray-900 focus:border-primary-500 transition-all"
                         min="18"
                         max="99"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <label className="block text-xs font-extrabold text-[#8A8A95] tracking-wider mb-2">
                         성별
                       </label>
                       <select
@@ -436,7 +439,7 @@ const Profile: React.FC = () => {
                         onChange={e =>
                           handleInputChange('gender', e.target.value as 'male' | 'female' | 'other')
                         }
-                        className="w-full px-4 py-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+                        className="w-full px-4 py-3 bg-sand-100 dark:bg-gray-800 border-[1.5px] border-transparent dark:border-gray-700 rounded-[13px] text-ink dark:text-white focus:outline-none focus:bg-white dark:focus:bg-gray-900 focus:border-primary-500 transition-all"
                       >
                         <option value="">선택 안함</option>
                         <option value="male">남성</option>
@@ -447,26 +450,26 @@ const Profile: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-xs font-extrabold text-[#8A8A95] tracking-wider mb-2">
                       자기소개
                     </label>
                     <textarea
                       value={editForm.bio || ''}
                       onChange={e => handleInputChange('bio', e.target.value)}
-                      className="w-full px-4 py-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500 resize-none"
+                      className="w-full px-4 py-3 bg-sand-100 dark:bg-gray-800 border-[1.5px] border-transparent dark:border-gray-700 rounded-[13px] text-ink dark:text-white focus:outline-none focus:bg-white dark:focus:bg-gray-900 focus:border-primary-500 transition-all resize-none"
                       rows={4}
                       placeholder="자신에 대해 소개해주세요..."
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <label className="block text-xs font-extrabold text-[#8A8A95] tracking-wider mb-2">
                       여행 스타일
                     </label>
                     <select
                       value={editForm.travelStyle || ''}
                       onChange={e => handleInputChange('travelStyle', e.target.value)}
-                      className="w-full px-4 py-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+                      className="w-full px-4 py-3 bg-sand-100 dark:bg-gray-800 border-[1.5px] border-transparent dark:border-gray-700 rounded-[13px] text-ink dark:text-white focus:outline-none focus:bg-white dark:focus:bg-gray-900 focus:border-primary-500 transition-all"
                     >
                       {profileService.getAvailableTravelStyles().map(style => (
                         <option key={style.value} value={style.value}>
@@ -477,7 +480,7 @@ const Profile: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                    <label className="block text-xs font-extrabold text-[#8A8A95] tracking-wider mb-3">
                       관심사
                     </label>
                     <div className="flex flex-wrap gap-2">
@@ -486,10 +489,10 @@ const Profile: React.FC = () => {
                           key={interest}
                           type="button"
                           onClick={() => handleInterestToggle(interest)}
-                          className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                          className={`px-4 py-2 rounded-[10px] text-sm font-bold transition-all ${
                             (editForm.interests || []).includes(interest)
-                              ? 'bg-gradient-to-r from-violet-600 to-pink-600 text-white'
-                              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700'
+                              ? 'bg-ink text-white'
+                              : 'bg-sand-200 dark:bg-gray-800 text-[#4A4A55] dark:text-gray-400 hover:bg-sand-300 dark:border dark:border-gray-700'
                           }`}
                         >
                           {interest}
@@ -499,7 +502,7 @@ const Profile: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                    <label className="block text-xs font-extrabold text-[#8A8A95] tracking-wider mb-3">
                       언어
                     </label>
                     <div className="flex flex-wrap gap-2">
@@ -508,10 +511,10 @@ const Profile: React.FC = () => {
                           key={language}
                           type="button"
                           onClick={() => handleLanguageToggle(language)}
-                          className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                          className={`px-4 py-2 rounded-[10px] text-sm font-bold transition-all ${
                             (editForm.languages || []).includes(language)
-                              ? 'bg-gradient-to-r from-violet-600 to-pink-600 text-white'
-                              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700'
+                              ? 'bg-ink text-white'
+                              : 'bg-sand-200 dark:bg-gray-800 text-[#4A4A55] dark:text-gray-400 hover:bg-sand-300 dark:border dark:border-gray-700'
                           }`}
                         >
                           {language}
@@ -523,23 +526,23 @@ const Profile: React.FC = () => {
               ) : (
                 <div className="space-y-6">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                    <h3 className="text-lg font-extrabold tracking-tight text-ink dark:text-white mb-3 flex items-center gap-2">
                       🎯 여행 스타일
                     </h3>
-                    <span className="px-4 py-2 bg-gradient-to-r from-violet-600 to-pink-600 text-white rounded-full font-medium">
+                    <span className="px-4 py-2 bg-ink text-white rounded-[10px] font-bold">
                       {profileService.getTravelStyleLabel(profile.travelStyle)}
                     </span>
                   </div>
 
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                    <h3 className="text-lg font-extrabold tracking-tight text-ink dark:text-white mb-3 flex items-center gap-2">
                       ✨ 관심사
                     </h3>
                     <div className="flex flex-wrap gap-2">
                       {profile.interests.map((interest, idx) => (
                         <span
                           key={idx}
-                          className="px-3 py-1.5 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-full text-sm font-medium"
+                          className="px-3 py-1.5 bg-primary-100 dark:bg-primary-900/40 text-primary-500 dark:text-primary-300 rounded-[10px] text-sm font-bold"
                         >
                           #{interest}
                         </span>
@@ -548,14 +551,14 @@ const Profile: React.FC = () => {
                   </div>
 
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                    <h3 className="text-lg font-extrabold tracking-tight text-ink dark:text-white mb-3 flex items-center gap-2">
                       💬 구사 언어
                     </h3>
                     <div className="flex flex-wrap gap-2">
                       {profile.languages.map((language, idx) => (
                         <span
                           key={idx}
-                          className="px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full text-sm font-medium"
+                          className="px-3 py-1.5 bg-primary-100 dark:bg-primary-900/40 text-primary-500 dark:text-primary-300 rounded-[10px] text-sm font-bold"
                         >
                           {language}
                         </span>
@@ -566,17 +569,17 @@ const Profile: React.FC = () => {
                   {/* 본인 인증 상태 */}
                   {isOwnProfile && (
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+                      <h3 className="text-lg font-extrabold tracking-tight text-ink dark:text-white mb-3 flex items-center gap-2">
                         🔒 본인 인증
                       </h3>
                       {profile.phoneVerified ? (
-                        <span className="inline-flex items-center gap-1.5 px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-sm font-medium">
+                        <span className="inline-flex items-center gap-1.5 px-4 py-2 bg-success/10 dark:bg-green-900/30 text-success dark:text-green-400 rounded-[10px] text-sm font-bold">
                           <span>&#10003;</span> 인증 완료
                         </span>
                       ) : (
                         <button
                           onClick={() => setShowPhoneVerification(true)}
-                          className="px-4 py-2 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-xl text-sm font-medium hover:opacity-90 transition-opacity"
+                          className="px-4 py-2 bg-primary-500 hover:bg-primary-700 text-white rounded-xl text-sm font-bold transition-colors"
                         >
                           휴대폰 본인 인증하기
                         </button>
@@ -591,13 +594,13 @@ const Profile: React.FC = () => {
           {activeTab === 'travel' && (
             <div>
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                <h3 className="text-lg font-extrabold tracking-tight text-ink dark:text-white flex items-center gap-2">
                   ✈️ 여행 기록
                 </h3>
                 {canAddTravelHistory && (
                   <button
                     onClick={addTravelHistory}
-                    className="px-4 py-2 bg-gradient-to-r from-violet-600 to-pink-600 text-white rounded-xl font-medium text-sm hover:shadow-lg transition-all"
+                    className="px-4 py-2 bg-primary-500 hover:bg-primary-700 text-white rounded-xl font-bold text-sm transition-all"
                   >
                     + 여행 추가
                   </button>
@@ -606,10 +609,10 @@ const Profile: React.FC = () => {
 
               {profile.travelHistory.length === 0 ? (
                 <div className="text-center py-12">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-violet-400/20 to-pink-400/20 dark:from-violet-500/30 dark:to-pink-500/30 flex items-center justify-center text-3xl">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center text-3xl">
                     🌍
                   </div>
-                  <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                  <h4 className="text-lg font-extrabold tracking-tight text-ink dark:text-white mb-2">
                     아직 여행 기록이 없습니다
                   </h4>
                   <p className="text-gray-500 dark:text-gray-400">첫 번째 여행을 추가해보세요!</p>
@@ -619,9 +622,9 @@ const Profile: React.FC = () => {
                   {profile.travelHistory.map(travel => (
                     <div
                       key={travel.id}
-                      className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-200/50 dark:border-gray-700/50"
+                      className="p-4 bg-sand-50 dark:bg-gray-800/50 rounded-2xl border border-[#EFEEEA] dark:border-gray-700/50"
                     >
-                      <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2 mb-2">
+                      <h4 className="font-extrabold tracking-tight text-ink dark:text-white flex items-center gap-2 mb-2">
                         📍 {travel.destination}
                       </h4>
                       <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
@@ -632,7 +635,7 @@ const Profile: React.FC = () => {
                         {travel.tags.map((tag, idx) => (
                           <span
                             key={idx}
-                            className="px-2 py-1 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-full text-xs font-medium"
+                            className="px-2 py-1 bg-primary-100 dark:bg-primary-900/40 text-primary-500 dark:text-primary-300 rounded-[8px] text-xs font-bold"
                           >
                             #{tag}
                           </span>
@@ -647,8 +650,8 @@ const Profile: React.FC = () => {
 
           {activeTab === 'preferences' && (
             <div className="space-y-6">
-              <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl">
-                <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2 mb-2">
+              <div className="p-4 bg-sand-50 dark:bg-gray-800/50 rounded-2xl border border-[#EFEEEA] dark:border-transparent">
+                <h4 className="font-extrabold tracking-tight text-ink dark:text-white flex items-center gap-2 mb-2">
                   💰 예산 선호도
                 </h4>
                 <p className="text-gray-600 dark:text-gray-300">
@@ -657,15 +660,15 @@ const Profile: React.FC = () => {
                 </p>
               </div>
 
-              <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl">
-                <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2 mb-3">
+              <div className="p-4 bg-sand-50 dark:bg-gray-800/50 rounded-2xl border border-[#EFEEEA] dark:border-transparent">
+                <h4 className="font-extrabold tracking-tight text-ink dark:text-white flex items-center gap-2 mb-3">
                   🏨 숙박 선호도
                 </h4>
                 <div className="flex flex-wrap gap-2">
                   {profile.preferences.accommodationType.map((type, idx) => (
                     <span
                       key={idx}
-                      className="px-3 py-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full text-sm font-medium"
+                      className="px-3 py-1.5 bg-success/10 dark:bg-emerald-900/30 text-success dark:text-emerald-400 rounded-[10px] text-sm font-bold"
                     >
                       {type}
                     </span>
@@ -673,15 +676,15 @@ const Profile: React.FC = () => {
                 </div>
               </div>
 
-              <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl">
-                <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2 mb-3">
+              <div className="p-4 bg-sand-50 dark:bg-gray-800/50 rounded-2xl border border-[#EFEEEA] dark:border-transparent">
+                <h4 className="font-extrabold tracking-tight text-ink dark:text-white flex items-center gap-2 mb-3">
                   🚗 교통 선호도
                 </h4>
                 <div className="flex flex-wrap gap-2">
                   {profile.preferences.transportPreference.map((transport, idx) => (
                     <span
                       key={idx}
-                      className="px-3 py-1.5 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full text-sm font-medium"
+                      className="px-3 py-1.5 bg-primary-100 dark:bg-primary-900/40 text-primary-500 dark:text-primary-300 rounded-[10px] text-sm font-bold"
                     >
                       {transport}
                     </span>
@@ -689,8 +692,8 @@ const Profile: React.FC = () => {
                 </div>
               </div>
 
-              <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl">
-                <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2 mb-2">
+              <div className="p-4 bg-sand-50 dark:bg-gray-800/50 rounded-2xl border border-[#EFEEEA] dark:border-transparent">
+                <h4 className="font-extrabold tracking-tight text-ink dark:text-white flex items-center gap-2 mb-2">
                   👥 그룹 크기
                 </h4>
                 <p className="text-gray-600 dark:text-gray-300">
@@ -698,18 +701,18 @@ const Profile: React.FC = () => {
                 </p>
               </div>
 
-              <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl">
-                <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2 mb-2">
+              <div className="p-4 bg-sand-50 dark:bg-gray-800/50 rounded-2xl border border-[#EFEEEA] dark:border-transparent">
+                <h4 className="font-extrabold tracking-tight text-ink dark:text-white flex items-center gap-2 mb-2">
                   ⚡ 여행 스타일
                 </h4>
                 <p className="text-gray-600 dark:text-gray-300">
                   여행 페이스:{' '}
-                  <span className="font-medium text-violet-600 dark:text-violet-400">
+                  <span className="font-bold text-primary-500 dark:text-primary-300">
                     {profile.preferences.travelPace}
                   </span>
                   {' | '}
                   활동 레벨:{' '}
-                  <span className="font-medium text-violet-600 dark:text-violet-400">
+                  <span className="font-bold text-primary-500 dark:text-primary-300">
                     {profile.preferences.activityLevel}
                   </span>
                 </p>

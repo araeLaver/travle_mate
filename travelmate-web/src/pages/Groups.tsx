@@ -57,10 +57,10 @@ const Groups: React.FC = () => {
   };
 
   const statusColors: Record<string, string> = {
-    recruiting: 'bg-emerald-500',
-    full: 'bg-amber-500',
-    active: 'bg-blue-500',
-    completed: 'bg-gray-500',
+    recruiting: 'bg-primary-500',
+    full: 'bg-rarity-legendary',
+    active: 'bg-success',
+    completed: 'bg-rarity-common',
   };
 
   useEffect(() => {
@@ -190,7 +190,7 @@ const Groups: React.FC = () => {
   ] as const;
 
   return (
-    <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] relative overflow-hidden">
+    <div className="min-h-screen bg-sand-100 dark:bg-[#0a0a0b] relative overflow-hidden">
       <SEOHead
         title="여행 그룹 - 함께하는 여행"
         description="Fryndo 여행 그룹에서 마음이 맞는 여행 메이트를 찾아보세요. 목적지별, 여행 스타일별 그룹을 검색하고 새로운 여행 동반자와 특별한 추억을 만드세요."
@@ -200,11 +200,11 @@ const Groups: React.FC = () => {
 
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 px-4 py-3">
-        <div className="max-w-6xl mx-auto bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-2xl px-6 py-3 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
+        <div className="max-w-6xl mx-auto bg-white/90 dark:bg-gray-900/70 backdrop-blur-xl rounded-2xl px-6 py-3 border border-sand-300 dark:border-gray-800/50 shadow-[0_10px_30px_rgba(16,16,20,0.06)]">
           <div className="flex items-center justify-between">
             <button onClick={() => navigate('/')} className="flex items-center gap-2">
               <Logo size="md" />
-              <span className="font-bold text-gray-900 dark:text-white">Fryndo</span>
+              <span className="font-extrabold tracking-tight text-ink dark:text-white">Fryndo</span>
             </button>
             <div className="flex items-center gap-3">
               <button
@@ -228,17 +228,15 @@ const Groups: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            <span className="bg-gradient-to-r from-violet-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-              Travel Groups
-            </span>
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
+            <span className="font-display text-ink dark:text-white">Travel Groups</span>
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-8">
+          <p className="text-[#4A4A55] dark:text-gray-400 mb-8">
             함께할 여행 메이트를 찾고 멋진 추억을 만들어보세요!
           </p>
           <motion.button
             onClick={() => navigate('/groups/create')}
-            className="px-8 py-4 bg-gradient-to-r from-violet-600 to-pink-600 text-white rounded-full font-semibold text-lg shadow-lg shadow-violet-500/30 hover:shadow-xl hover:shadow-violet-500/40 transition-all duration-300 hover:-translate-y-1 flex items-center gap-2 mx-auto"
+            className="px-8 py-4 bg-primary-500 hover:bg-primary-700 text-white rounded-[15px] font-bold text-lg shadow-[0_8px_22px_rgba(74,58,255,0.3)] transition-all duration-300 hover:-translate-y-1 flex items-center gap-2 mx-auto"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
@@ -258,10 +256,10 @@ const Groups: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => setSelectedTab(tab.id)}
-              className={`px-6 py-3 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 ${
+              className={`px-6 py-3 rounded-xl font-bold transition-all duration-300 flex items-center gap-2 ${
                 selectedTab === tab.id
-                  ? 'bg-gradient-to-r from-violet-600 to-pink-600 text-white shadow-lg shadow-violet-500/30'
-                  : 'bg-white/80 dark:bg-gray-900/80 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200/50 dark:border-gray-800/50'
+                  ? 'bg-ink text-white'
+                  : 'bg-white dark:bg-gray-900/80 text-[#4A4A55] dark:text-gray-400 hover:bg-sand-200 dark:hover:bg-gray-800'
               }`}
               role="tab"
               aria-selected={selectedTab === tab.id}
@@ -274,7 +272,7 @@ const Groups: React.FC = () => {
 
         {/* Search and Filters */}
         <motion.div
-          className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-800/50 shadow-lg mb-8"
+          className="bg-white dark:bg-gray-900/80 rounded-[18px] p-6 shadow-[0_10px_30px_rgba(16,16,20,0.06)] mb-8"
           {...fadeInUp}
           transition={{ delay: 0.2 }}
         >
@@ -287,7 +285,7 @@ const Groups: React.FC = () => {
                 placeholder="그룹명, 목적지, 태그로 검색..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all"
+                className="w-full pl-12 pr-4 py-3 bg-sand-100 dark:bg-gray-800 border border-transparent rounded-[13px] text-ink dark:text-white placeholder-[#9A9AA4] focus:outline-none focus:bg-white focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all"
               />
             </div>
 
@@ -296,7 +294,7 @@ const Groups: React.FC = () => {
               <select
                 value={filters.destination}
                 onChange={e => setFilters({ ...filters, destination: e.target.value })}
-                className="px-4 py-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+                className="px-4 py-3 bg-sand-100 dark:bg-gray-800 border border-transparent rounded-[13px] text-ink dark:text-white focus:outline-none focus:bg-white focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
               >
                 <option value="">전체 지역</option>
                 <option value="서울">서울</option>
@@ -311,7 +309,7 @@ const Groups: React.FC = () => {
               <select
                 value={filters.travelStyle}
                 onChange={e => setFilters({ ...filters, travelStyle: e.target.value })}
-                className="px-4 py-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+                className="px-4 py-3 bg-sand-100 dark:bg-gray-800 border border-transparent rounded-[13px] text-ink dark:text-white focus:outline-none focus:bg-white focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
               >
                 {travelStyles.map(style => (
                   <option key={style.value} value={style.value}>
@@ -323,7 +321,7 @@ const Groups: React.FC = () => {
               <select
                 value={filters.status}
                 onChange={e => setFilters({ ...filters, status: e.target.value })}
-                className="px-4 py-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+                className="px-4 py-3 bg-sand-100 dark:bg-gray-800 border border-transparent rounded-[13px] text-ink dark:text-white focus:outline-none focus:bg-white focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
               >
                 <option value="">전체 상태</option>
                 <option value="recruiting">모집중</option>
@@ -337,15 +335,15 @@ const Groups: React.FC = () => {
         {/* Groups List */}
         {isLoading ? (
           <motion.div className="flex flex-col items-center justify-center py-20" {...fadeInUp}>
-            <div className="w-16 h-16 rounded-full border-4 border-violet-200 dark:border-violet-800 border-t-violet-600 animate-spin mb-4" />
+            <div className="w-16 h-16 rounded-full border-4 border-primary-100 dark:border-primary-900 border-t-primary-500 animate-spin mb-4" />
             <p className="text-gray-500 dark:text-gray-400">여행 그룹을 불러오는 중...</p>
           </motion.div>
         ) : filteredGroups.length === 0 ? (
           <motion.div
-            className="text-center py-20 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-800/50 shadow-lg"
+            className="text-center py-20 bg-white dark:bg-gray-900/80 rounded-[18px] shadow-[0_10px_30px_rgba(16,16,20,0.06)]"
             {...fadeInUp}
           >
-            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-violet-400/20 to-pink-400/20 dark:from-violet-500/30 dark:to-pink-500/30 flex items-center justify-center text-4xl">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center text-4xl">
               🗺️
             </div>
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
@@ -364,7 +362,7 @@ const Groups: React.FC = () => {
             {filteredGroups.map(group => (
               <motion.article
                 key={group.id}
-                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-800/50 shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
+                className="bg-white dark:bg-gray-900/80 rounded-[18px] shadow-[0_10px_30px_rgba(16,16,20,0.06)] overflow-hidden hover:shadow-[0_10px_30px_rgba(16,16,20,0.1)] transition-all duration-300 hover:-translate-y-2"
                 variants={fadeInUp}
                 role="listitem"
                 whileHover={{ scale: 1.02 }}
@@ -379,7 +377,7 @@ const Groups: React.FC = () => {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                     <span
-                      className={`absolute top-3 right-3 px-3 py-1 ${statusColors[group.status]} text-white text-xs font-semibold rounded-full`}
+                      className={`absolute top-3 right-3 px-3 py-1 ${statusColors[group.status]} text-white text-xs font-extrabold rounded-lg`}
                     >
                       {statusLabels[group.status]}
                     </span>
@@ -389,7 +387,7 @@ const Groups: React.FC = () => {
                 <div className="p-5">
                   {/* Header */}
                   <div className="flex items-start justify-between mb-3">
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-1">
+                    <h3 className="text-lg font-extrabold tracking-tight text-ink dark:text-white line-clamp-1">
                       {group.name}
                     </h3>
                     <span className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
@@ -416,7 +414,7 @@ const Groups: React.FC = () => {
                     {group.tags.slice(0, 3).map((tag, idx) => (
                       <span
                         key={idx}
-                        className="px-2 py-1 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 text-xs font-medium rounded-full"
+                        className="px-2 py-1 bg-sand-200 dark:bg-gray-800 text-[#4A4A55] dark:text-gray-300 text-xs font-bold rounded-lg"
                       >
                         #{tag}
                       </span>
@@ -425,9 +423,9 @@ const Groups: React.FC = () => {
 
                   {/* Leader */}
                   <div className="flex items-center gap-2 mb-4 text-sm">
-                    <span className="text-amber-500">👑</span>
-                    <span className="text-gray-600 dark:text-gray-400">리더:</span>
-                    <span className="font-medium text-gray-900 dark:text-white">
+                    <span className="text-rarity-legendary">👑</span>
+                    <span className="text-[#74747F] dark:text-gray-400">리더:</span>
+                    <span className="font-bold text-ink dark:text-white">
                       {group.members.find(m => m.role === 'leader')?.name || '알 수 없음'}
                     </span>
                   </div>
@@ -438,7 +436,7 @@ const Groups: React.FC = () => {
                       <>
                         <button
                           onClick={() => navigate(`/groups/${group.id}`)}
-                          className="flex-1 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl font-medium border border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
+                          className="flex-1 py-2.5 bg-sand-200 dark:bg-gray-800 text-ink dark:text-gray-300 rounded-xl font-bold hover:bg-sand-400 dark:hover:bg-gray-700 transition-all"
                         >
                           그룹 보기
                         </button>
@@ -447,7 +445,7 @@ const Groups: React.FC = () => {
                           <button
                             onClick={() => handleLeaveGroup(group.id)}
                             disabled={actionLoading === `leave-${group.id}`}
-                            className="px-4 py-2.5 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-xl font-medium hover:bg-red-200 dark:hover:bg-red-900/50 transition-all disabled:opacity-50"
+                            className="px-4 py-2.5 bg-white dark:bg-red-900/30 border border-[#F0D6D3] text-danger dark:text-red-400 rounded-xl font-bold hover:bg-[#FDF4F3] dark:hover:bg-red-900/50 transition-all disabled:opacity-50"
                           >
                             {actionLoading === `leave-${group.id}` ? '...' : '탈퇴'}
                           </button>
@@ -457,7 +455,7 @@ const Groups: React.FC = () => {
                       <>
                         <button
                           onClick={() => navigate(`/groups/${group.id}`)}
-                          className="flex-1 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl font-medium border border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
+                          className="flex-1 py-2.5 bg-sand-200 dark:bg-gray-800 text-ink dark:text-gray-300 rounded-xl font-bold hover:bg-sand-400 dark:hover:bg-gray-700 transition-all"
                         >
                           상세보기
                         </button>
@@ -465,7 +463,7 @@ const Groups: React.FC = () => {
                           <button
                             onClick={() => handleJoinGroup(group.id)}
                             disabled={actionLoading === `join-${group.id}`}
-                            className="flex-1 py-2.5 bg-gradient-to-r from-violet-600 to-pink-600 text-white rounded-xl font-medium hover:shadow-lg hover:shadow-violet-500/30 transition-all disabled:opacity-50"
+                            className="flex-1 py-2.5 bg-primary-500 hover:bg-primary-700 text-white rounded-xl font-bold shadow-[0_8px_22px_rgba(74,58,255,0.3)] transition-all disabled:opacity-50"
                           >
                             {actionLoading === `join-${group.id}` ? '가입중...' : '가입하기'}
                           </button>

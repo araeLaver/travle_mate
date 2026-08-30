@@ -7,6 +7,10 @@ interface LogoProps {
   onClick?: () => void;
 }
 
+/**
+ * Fryndo compass mark — design system option 1b (선택).
+ * Rounded tile + ink circle + indigo compass needle.
+ */
 const Logo: React.FC<LogoProps> = ({
   className = '',
   variant = 'default',
@@ -21,22 +25,19 @@ const Logo: React.FC<LogoProps> = ({
 
   const palette = {
     default: {
-      ink: '#14213D',
-      route: '#F97316',
-      mint: '#2DD4BF',
-      sand: '#F7F2E8',
+      tile: '#F0EFEB',
+      ring: '#101014',
+      needle: '#4A3AFF',
     },
     white: {
-      ink: '#FFFFFF',
-      route: '#FFFFFF',
-      mint: '#FFFFFF',
-      sand: 'rgba(255,255,255,0.18)',
+      tile: 'rgba(255,255,255,0.92)',
+      ring: '#101014',
+      needle: '#4A3AFF',
     },
     gradient: {
-      ink: 'url(#fryndo-ink)',
-      route: '#F97316',
-      mint: '#2DD4BF',
-      sand: '#FFFDF7',
+      tile: '#F0EFEB',
+      ring: 'url(#fryndo-ink)',
+      needle: '#4A3AFF',
     },
   };
 
@@ -45,7 +46,7 @@ const Logo: React.FC<LogoProps> = ({
   return (
     <svg
       className={`${sizeClasses[size]} ${className} ${onClick ? 'cursor-pointer' : ''}`}
-      viewBox="0 0 160 160"
+      viewBox="0 0 40 40"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       onClick={onClick}
@@ -56,35 +57,20 @@ const Logo: React.FC<LogoProps> = ({
         <defs>
           <linearGradient
             id="fryndo-ink"
-            x1="24"
-            y1="20"
-            x2="138"
-            y2="138"
+            x1="8"
+            y1="8"
+            x2="32"
+            y2="32"
             gradientUnits="userSpaceOnUse"
           >
-            <stop stopColor="#14213D" />
-            <stop offset="0.52" stopColor="#0F766E" />
-            <stop offset="1" stopColor="#F97316" />
+            <stop stopColor="#101014" />
+            <stop offset="1" stopColor="#4A3AFF" />
           </linearGradient>
         </defs>
       )}
-      <rect x="14" y="14" width="132" height="132" rx="42" fill={colors.sand} />
-      <path
-        d="M42 92C42 66.5949 62.5949 46 88 46H120V68H88C74.7452 68 64 78.7452 64 92V122H42V92Z"
-        fill={colors.ink}
-      />
-      <path
-        d="M76 98C76 83.6406 87.6406 72 102 72H121V94H102C99.7909 94 98 95.7909 98 98V122H76V98Z"
-        fill={colors.route}
-      />
-      <circle cx="48" cy="48" r="12" fill={colors.mint} />
-      <path
-        d="M47 48C68.5 60 82.5 71.5 93 91"
-        stroke={colors.mint}
-        strokeWidth="8"
-        strokeLinecap="round"
-        strokeDasharray="1 15"
-      />
+      <rect width="40" height="40" rx="11" fill={colors.tile} />
+      <circle cx="20" cy="20" r="11.3" fill="none" stroke={colors.ring} strokeWidth="1.8" />
+      <path d="m25 15-3 8-8 3 3-8Z" fill={colors.needle} />
     </svg>
   );
 };

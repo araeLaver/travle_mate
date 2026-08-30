@@ -2,195 +2,61 @@ import React, { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import NotificationCenter from '../components/NotificationCenter';
 import { authService } from '../services/authService';
+import Logo from '../components/Logo';
+import Icon, { IconName } from '../components/icons/Icon';
 import './Layout.css';
-
-// SVG Icons
-const SearchIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="11" cy="11" r="8" />
-    <line x1="21" y1="21" x2="16.65" y2="16.65" />
-  </svg>
-);
-
-const MessageIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-  </svg>
-);
-
-const MapIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
-    <line x1="8" y1="2" x2="8" y2="18" />
-    <line x1="16" y1="6" x2="16" y2="22" />
-  </svg>
-);
-
-const UserIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-    <circle cx="12" cy="7" r="4" />
-  </svg>
-);
-
-const HomeIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-    <polyline points="9 22 9 12 15 12 15 22" />
-  </svg>
-);
-
-const GlobeIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="12" cy="12" r="10" />
-    <line x1="2" y1="12" x2="22" y2="12" />
-    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-  </svg>
-);
-
-const InfoIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="12" cy="12" r="10" />
-    <line x1="12" y1="16" x2="12" y2="12" />
-    <line x1="12" y1="8" x2="12.01" y2="8" />
-  </svg>
-);
-
-const NftIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M12 2l7 4v12l-7 4-7-4V6l7-4z" />
-    <path d="M12 22V10" />
-    <path d="M5 6l7 4 7-4" />
-    <path d="M5 18l7-4 7 4" />
-  </svg>
-);
-
-const StoreIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M3 9l1.5-5h15L21 9" />
-    <path d="M4 9h16v11H4z" />
-    <path d="M9 20v-6h6v6" />
-    <path d="M3 9c0 1.1.9 2 2 2s2-.9 2-2" />
-    <path d="M7 9c0 1.1.9 2 2 2s2-.9 2-2" />
-    <path d="M11 9c0 1.1.9 2 2 2s2-.9 2-2" />
-    <path d="M15 9c0 1.1.9 2 2 2s2-.9 2-2" />
-  </svg>
-);
-
-const PointsIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="12" cy="12" r="9" />
-    <path d="M9 8h4.5a2.5 2.5 0 0 1 0 5H10" />
-    <path d="M10 13v3" />
-    <path d="M9 16h6" />
-  </svg>
-);
-
-const WalletIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2" />
-    <path d="M16 12h5v5h-5a2.5 2.5 0 0 1 0-5z" />
-    <circle cx="18" cy="14.5" r=".5" />
-  </svg>
-);
 
 interface LayoutProps {
   children: ReactNode;
 }
 
+interface NavItem {
+  path: string;
+  label: string;
+  icon: IconName;
+}
+
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
 
-  const navItems = [
-    { path: '/dashboard', label: '여행 메이트 찾기', icon: <SearchIcon /> },
-    { path: '/itineraries', label: '여행 일정', icon: <MapIcon /> },
-    { path: '/chat', label: '채팅', icon: <MessageIcon /> },
-    { path: '/groups', label: '여행 그룹', icon: <MapIcon /> },
-    { path: '/nft/map', label: 'NFT 지도', icon: <MapIcon /> },
-    { path: '/nft/collection', label: '내 NFT', icon: <NftIcon /> },
-    { path: '/marketplace', label: 'NFT 마켓', icon: <StoreIcon /> },
-    { path: '/points/shop', label: '포인트 샵', icon: <PointsIcon /> },
-    { path: '/wallet', label: '지갑 연결', icon: <WalletIcon /> },
-    { path: '/profile', label: '내 프로필', icon: <UserIcon /> },
-    { path: '/', label: '홈으로', icon: <HomeIcon /> },
+  // 메인 메뉴 (디자인 순서: 대시보드 → 수집 지도 → 내 컬렉션 → 그룹 → 채팅 → 마켓플레이스)
+  const mainNavItems: NavItem[] = [
+    { path: '/dashboard', label: '대시보드', icon: 'grid' },
+    { path: '/nft/map', label: '수집 지도', icon: 'pin' },
+    { path: '/nft/collection', label: '내 컬렉션', icon: 'stamp' },
+    { path: '/itineraries', label: '여행 일정', icon: 'cal' },
+    { path: '/groups', label: '그룹', icon: 'users' },
+    { path: '/chat', label: '채팅', icon: 'chat' },
+    { path: '/marketplace', label: '마켓플레이스', icon: 'tag' },
+    { path: '/points/shop', label: '포인트 샵', icon: 'spark' },
   ];
+
+  // 보조 메뉴 (디바이더 아래: 지갑 → 설정 성격의 항목)
+  const secondaryNavItems: NavItem[] = [
+    { path: '/wallet', label: '지갑', icon: 'wallet' },
+    { path: '/profile', label: '내 프로필', icon: 'user' },
+    { path: '/', label: '홈으로', icon: 'home' },
+  ];
+
+  const renderNavItem = (item: NavItem) => {
+    const isActive =
+      item.path === '/'
+        ? location.pathname === item.path
+        : location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
+    return (
+      <Link
+        key={item.path}
+        to={item.path}
+        className={`nav-item ${isActive ? 'active' : ''}`}
+        aria-current={isActive ? 'page' : undefined}
+      >
+        <span className="nav-icon" aria-hidden="true">
+          <Icon name={item.icon} size={20} color="currentColor" />
+        </span>
+        <span className="nav-label">{item.label}</span>
+      </Link>
+    );
+  };
 
   return (
     <div className="layout">
@@ -204,7 +70,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="header-content">
           <Link to="/dashboard" className="logo" aria-label="Fryndo 홈으로 이동">
             <span className="logo-icon" aria-hidden="true">
-              <GlobeIcon />
+              <Logo size="sm" />
             </span>
             Fryndo
           </Link>
@@ -213,18 +79,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <div className="user-actions" data-testid="user-menu">
                 <NotificationCenter />
                 <Link to="/settings/notifications" className="settings-link" aria-label="알림 설정">
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="settings-icon"
-                  >
-                    <circle cx="12" cy="12" r="3" />
-                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-                  </svg>
+                  <span className="settings-icon" aria-hidden="true">
+                    <Icon name="gear" size={20} color="currentColor" />
+                  </span>
                 </Link>
               </div>
             ) : (
@@ -233,7 +90,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   로그인
                 </Link>
                 <Link to="/register" className="auth-btn register" aria-label="회원가입">
-                  회원가입
+                  무료로 시작
                 </Link>
               </div>
             )}
@@ -245,40 +102,38 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         {/* 사이드바 */}
         <aside className="sidebar" aria-label="주요 네비게이션">
           <nav className="nav" aria-label="메인 메뉴">
-            {navItems.map(item => {
-              const isActive =
-                item.path === '/'
-                  ? location.pathname === item.path
-                  : location.pathname === item.path ||
-                    location.pathname.startsWith(`${item.path}/`);
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`nav-item ${isActive ? 'active' : ''}`}
-                  aria-current={isActive ? 'page' : undefined}
-                >
-                  <span className="nav-icon" aria-hidden="true">
-                    {item.icon}
-                  </span>
-                  <span className="nav-label">{item.label}</span>
-                </Link>
-              );
-            })}
+            {mainNavItems.map(renderNavItem)}
+            <div className="nav-divider" role="separator" aria-hidden="true" />
+            {secondaryNavItems.map(renderNavItem)}
           </nav>
 
           <div className="sidebar-footer">
-            <div className="guest-notice" role="complementary" aria-label="회원가입 안내">
-              <div className="notice-icon" aria-hidden="true">
-                <InfoIcon />
+            {authService.isAuthenticated() ? (
+              <div className="promo-card" role="complementary" aria-label="Fryndo Plus 안내">
+                <div className="promo-icon" aria-hidden="true">
+                  <Icon name="crown" size={20} color="#E0952A" />
+                </div>
+                <div className="promo-text">
+                  <p className="promo-title">Fryndo Plus</p>
+                  <p className="promo-desc">희귀 스탬프 알림과 무제한 매칭을 이용해보세요</p>
+                  <Link to="/payment" className="promo-cta">
+                    7일 무료 체험
+                  </Link>
+                </div>
               </div>
-              <div className="notice-text">
-                <p>더 많은 기능을 원한다면</p>
-                <Link to="/register" className="register-link">
-                  회원가입하기
-                </Link>
+            ) : (
+              <div className="guest-notice" role="complementary" aria-label="회원가입 안내">
+                <div className="notice-icon" aria-hidden="true">
+                  <Icon name="spark" size={20} color="#4A3AFF" />
+                </div>
+                <div className="notice-text">
+                  <p>더 많은 기능을 원한다면</p>
+                  <Link to="/register" className="register-link">
+                    회원가입하기
+                  </Link>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </aside>
 

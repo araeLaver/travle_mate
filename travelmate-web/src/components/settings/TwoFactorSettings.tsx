@@ -119,20 +119,24 @@ const TwoFactorSettings: React.FC<TwoFactorSettingsProps> = ({ className = '' })
 
   if (loading && step === 'status') {
     return (
-      <div className={`bg-white dark:bg-gray-800 rounded-lg shadow p-6 ${className}`}>
+      <div
+        className={`bg-white dark:bg-gray-800 rounded-[18px] shadow-[0_10px_30px_rgba(16,16,20,0.06)] p-6 ${className}`}
+      >
         <div className="flex items-center justify-center h-32">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-600" />
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-500" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-lg shadow p-6 ${className}`}>
+    <div
+      className={`bg-white dark:bg-gray-800 rounded-[18px] shadow-[0_10px_30px_rgba(16,16,20,0.06)] p-6 ${className}`}
+    >
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
+        <div className="p-2 bg-primary-100 dark:bg-primary-900/40 rounded-[11px]">
           <svg
-            className="w-6 h-6 text-indigo-600 dark:text-indigo-400"
+            className="w-6 h-6 text-primary-500 dark:text-primary-300"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -146,13 +150,15 @@ const TwoFactorSettings: React.FC<TwoFactorSettingsProps> = ({ className = '' })
           </svg>
         </div>
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">2단계 인증 (2FA)</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">계정 보안을 강화하세요</p>
+          <h2 className="text-lg font-extrabold tracking-tight text-ink dark:text-white">
+            2단계 인증 (2FA)
+          </h2>
+          <p className="text-sm text-[#74747F] dark:text-gray-400">계정 보안을 강화하세요</p>
         </div>
       </div>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg">
+        <div className="mb-4 p-3 bg-[#FBF0EF] border border-[#F0D6D3] dark:border-transparent dark:bg-red-900/30 text-danger dark:text-red-400 rounded-[13px]">
           {error}
         </div>
       )}
@@ -160,21 +166,19 @@ const TwoFactorSettings: React.FC<TwoFactorSettingsProps> = ({ className = '' })
       {/* Status View */}
       {step === 'status' && (
         <div>
-          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg mb-4">
+          <div className="flex items-center justify-between p-4 bg-sand-100 dark:bg-gray-700/50 rounded-[13px] mb-4">
             <div className="flex items-center gap-3">
-              <div
-                className={`w-3 h-3 rounded-full ${isEnabled ? 'bg-green-500' : 'bg-gray-400'}`}
-              />
-              <span className="font-medium text-gray-900 dark:text-white">
+              <div className={`w-3 h-3 rounded-full ${isEnabled ? 'bg-success' : 'bg-sand-500'}`} />
+              <span className="font-bold text-ink dark:text-white">
                 {isEnabled ? '활성화됨' : '비활성화됨'}
               </span>
             </div>
             {isEnabled && (
-              <span className="text-sm text-green-600 dark:text-green-400">보호 중</span>
+              <span className="text-sm font-bold text-success dark:text-green-400">보호 중</span>
             )}
           </div>
 
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+          <p className="text-sm text-[#4A4A55] dark:text-gray-400 mb-6">
             2단계 인증을 사용하면 로그인 시 비밀번호 외에 인증 앱에서 생성된 코드를 입력해야 합니다.
             계정이 해킹되는 것을 방지하는 강력한 보안 기능입니다.
           </p>
@@ -183,7 +187,7 @@ const TwoFactorSettings: React.FC<TwoFactorSettingsProps> = ({ className = '' })
             <div className="space-y-3">
               <button
                 onClick={() => setStep('disable')}
-                className="w-full py-2 px-4 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 dark:border-red-600 dark:text-red-400 dark:hover:bg-red-900/20 transition-colors"
+                className="w-full py-2 px-4 border-[1.5px] border-[#F0D6D3] text-danger font-bold rounded-xl hover:bg-[#FBF0EF] dark:border-red-600 dark:text-red-400 dark:hover:bg-red-900/20 transition-colors"
               >
                 2FA 비활성화
               </button>
@@ -193,7 +197,7 @@ const TwoFactorSettings: React.FC<TwoFactorSettingsProps> = ({ className = '' })
                   setBackupCodes(response.backupCodes);
                   setStep('backup');
                 }}
-                className="w-full py-2 px-4 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"
+                className="w-full py-2 px-4 border-[1.5px] border-sand-400 text-ink font-bold rounded-xl hover:bg-sand-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"
               >
                 백업 코드 보기
               </button>
@@ -202,7 +206,7 @@ const TwoFactorSettings: React.FC<TwoFactorSettingsProps> = ({ className = '' })
             <button
               onClick={handleSetup}
               disabled={loading}
-              className="w-full py-2 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+              className="w-full py-2 px-4 bg-primary-500 text-white font-bold rounded-xl hover:bg-primary-700 disabled:opacity-50 transition-colors"
             >
               {loading ? '설정 중...' : '2FA 설정하기'}
             </button>
@@ -214,7 +218,7 @@ const TwoFactorSettings: React.FC<TwoFactorSettingsProps> = ({ className = '' })
       {step === 'setup' && setupData && (
         <div>
           <div className="text-center mb-6">
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            <p className="text-sm text-[#4A4A55] dark:text-gray-400 mb-4">
               Google Authenticator 또는 다른 인증 앱으로 QR 코드를 스캔하세요.
             </p>
             <div className="inline-block p-4 bg-white rounded-lg shadow">
@@ -227,17 +231,17 @@ const TwoFactorSettings: React.FC<TwoFactorSettingsProps> = ({ className = '' })
           </div>
 
           <div className="mb-6">
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+            <p className="text-sm text-[#4A4A55] dark:text-gray-400 mb-2">
               QR 코드를 스캔할 수 없는 경우 수동으로 입력하세요:
             </p>
-            <div className="p-3 bg-gray-100 dark:bg-gray-700 rounded-lg break-all text-xs font-mono">
+            <div className="p-3 bg-sand-100 dark:bg-gray-700 rounded-[13px] break-all text-xs font-mono">
               {setupData.secretKey}
             </div>
           </div>
 
           <button
             onClick={() => setStep('verify')}
-            className="w-full py-2 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            className="w-full py-2 px-4 bg-primary-500 text-white font-bold rounded-xl hover:bg-primary-700 transition-colors"
           >
             다음: 코드 확인
           </button>
@@ -247,7 +251,7 @@ const TwoFactorSettings: React.FC<TwoFactorSettingsProps> = ({ className = '' })
       {/* Verify View */}
       {step === 'verify' && (
         <div>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          <p className="text-sm text-[#4A4A55] dark:text-gray-400 mb-4">
             인증 앱에 표시된 6자리 코드를 입력하세요.
           </p>
 
@@ -256,7 +260,7 @@ const TwoFactorSettings: React.FC<TwoFactorSettingsProps> = ({ className = '' })
             value={verificationCode}
             onChange={e => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
             placeholder="000000"
-            className="w-full text-center text-2xl tracking-widest font-mono py-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4"
+            className="w-full text-center text-2xl tracking-widest font-mono py-3 bg-sand-100 border-[1.5px] border-transparent rounded-[13px] dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:bg-white dark:focus:bg-gray-800 focus:border-primary-500 transition-all mb-4"
             maxLength={6}
           />
 
@@ -264,13 +268,13 @@ const TwoFactorSettings: React.FC<TwoFactorSettingsProps> = ({ className = '' })
             <button
               onClick={handleVerify}
               disabled={loading || verificationCode.length !== 6}
-              className="w-full py-2 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+              className="w-full py-2 px-4 bg-primary-500 text-white font-bold rounded-xl hover:bg-primary-700 disabled:opacity-50 transition-colors"
             >
               {loading ? '확인 중...' : '확인 및 활성화'}
             </button>
             <button
               onClick={() => setStep('setup')}
-              className="w-full py-2 px-4 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"
+              className="w-full py-2 px-4 border-[1.5px] border-sand-400 text-ink font-bold rounded-xl hover:bg-sand-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"
             >
               뒤로
             </button>
@@ -292,7 +296,7 @@ const TwoFactorSettings: React.FC<TwoFactorSettingsProps> = ({ className = '' })
             {backupCodes.map((code, idx) => (
               <div
                 key={idx}
-                className="p-2 bg-gray-100 dark:bg-gray-700 rounded text-center font-mono text-sm"
+                className="p-2 bg-sand-100 dark:bg-gray-700 rounded-[10px] text-center font-mono text-sm"
               >
                 {twoFactorAuthService.formatBackupCode(code)}
               </div>
@@ -302,7 +306,7 @@ const TwoFactorSettings: React.FC<TwoFactorSettingsProps> = ({ className = '' })
           <div className="space-y-3">
             <button
               onClick={copyBackupCodes}
-              className="w-full py-2 px-4 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-2"
+              className="w-full py-2 px-4 border-[1.5px] border-sand-400 text-ink font-bold rounded-xl hover:bg-sand-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
@@ -318,14 +322,14 @@ const TwoFactorSettings: React.FC<TwoFactorSettingsProps> = ({ className = '' })
               <button
                 onClick={handleRegenerateBackupCodes}
                 disabled={loading}
-                className="w-full py-2 px-4 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"
+                className="w-full py-2 px-4 border-[1.5px] border-sand-400 text-ink font-bold rounded-xl hover:bg-sand-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"
               >
                 {loading ? '생성 중...' : '새 백업 코드 생성'}
               </button>
             )}
             <button
               onClick={() => setStep('status')}
-              className="w-full py-2 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+              className="w-full py-2 px-4 bg-primary-500 text-white font-bold rounded-xl hover:bg-primary-700 transition-colors"
             >
               완료
             </button>
@@ -347,7 +351,7 @@ const TwoFactorSettings: React.FC<TwoFactorSettingsProps> = ({ className = '' })
             value={verificationCode}
             onChange={e => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
             placeholder="000000"
-            className="w-full text-center text-2xl tracking-widest font-mono py-3 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4"
+            className="w-full text-center text-2xl tracking-widest font-mono py-3 bg-sand-100 border-[1.5px] border-transparent rounded-[13px] dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:bg-white dark:focus:bg-gray-800 focus:border-primary-500 transition-all mb-4"
             maxLength={6}
           />
 
@@ -355,7 +359,7 @@ const TwoFactorSettings: React.FC<TwoFactorSettingsProps> = ({ className = '' })
             <button
               onClick={handleDisable}
               disabled={loading || verificationCode.length !== 6}
-              className="w-full py-2 px-4 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
+              className="w-full py-2 px-4 bg-danger text-white font-bold rounded-xl hover:bg-[#9C3A31] disabled:opacity-50 transition-colors"
             >
               {loading ? '비활성화 중...' : '2FA 비활성화'}
             </button>
@@ -364,7 +368,7 @@ const TwoFactorSettings: React.FC<TwoFactorSettingsProps> = ({ className = '' })
                 setVerificationCode('');
                 setStep('status');
               }}
-              className="w-full py-2 px-4 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"
+              className="w-full py-2 px-4 border-[1.5px] border-sand-400 text-ink font-bold rounded-xl hover:bg-sand-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors"
             >
               취소
             </button>

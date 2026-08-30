@@ -3,8 +3,8 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+/* Google Fonts — Fryndo design system */
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:wght@500;600&family=Noto+Sans+KR:wght@400;500;700&display=swap');
 
 /* Custom Base Styles */
 @layer base {
@@ -66,11 +66,11 @@
   }
 
   .btn-primary {
-    @apply bg-gradient-to-r from-primary-600 to-primary-700 text-white hover:from-primary-700 hover:to-primary-800 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0;
+    @apply bg-primary-500 text-white hover:bg-primary-700 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0;
   }
 
   .btn-secondary {
-    @apply bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 border-2 border-primary-200 dark:border-primary-800 hover:bg-primary-50 dark:hover:bg-gray-900 hover:border-primary-300 dark:hover:border-primary-700 hover:shadow-md;
+    @apply bg-sand-200 dark:bg-gray-800 text-ink dark:text-gray-100 hover:bg-sand-300 dark:hover:bg-gray-700 hover:shadow-md;
   }
 
   .btn-ghost {
@@ -171,21 +171,21 @@
     animation: gentle-float 6s ease-in-out infinite;
   }
 
-  /* Soft Gradient Backgrounds */
+  /* Soft Gradient Backgrounds — Fryndo photo-placeholder palette */
   .gradient-soft-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(150deg, #c7cee6 0%, #9aa6c9 100%);
   }
 
   .gradient-soft-warm {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    background: linear-gradient(150deg, #e3d3c2 0%, #c0a288 100%);
   }
 
   .gradient-soft-cool {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    background: linear-gradient(150deg, #bfd0ce 0%, #8fa6ae 100%);
   }
 
   .gradient-soft-nature {
-    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    background: linear-gradient(150deg, #d6dcc9 0%, #a3b392 100%);
   }
 
   .gradient-mesh {
@@ -239,12 +239,12 @@
 
   /* Gradient Text */
   .gradient-text {
-    @apply bg-gradient-to-r from-primary-600 via-purple-600 to-pink-600 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-primary-500 via-primary-400 to-rarity-epic bg-clip-text text-transparent;
   }
 
   /* Gradient Background */
   .gradient-bg {
-    @apply bg-gradient-to-br from-primary-600 via-purple-600 to-pink-600;
+    @apply bg-gradient-to-br from-primary-500 via-primary-400 to-rarity-epic;
   }
 }
 
@@ -350,18 +350,26 @@
 }
 
 :root {
-  --fryndo-ink: #14213d;
-  --fryndo-route: #f97316;
-  --fryndo-mint: #2dd4bf;
-  --fryndo-sand: #f7f2e8;
-  --fryndo-cloud: #fffdf7;
+  /* Fryndo design system tokens (claude.ai/design brief) */
+  --fryndo-ink: #101014;
+  --fryndo-primary: #4a3aff;
+  --fryndo-primary-soft: #ecebff;
+  --fryndo-sand: #f5f4f1;
+  --fryndo-sand-alt: #f0efeb;
+  --fryndo-cloud: #fafaf8;
+  --fryndo-hairline: #f2f1ed;
+  --fryndo-outline: #e1e0db;
+  --fryndo-legendary: #e0952a;
+  /* Legacy aliases (kept for gradual migration) */
+  --fryndo-route: #4a3aff;
+  --fryndo-mint: #2e7df6;
 }
 
 body {
-  font-family: 'IBM Plex Sans KR', ui-sans-serif, system-ui, sans-serif;
+  font-family: 'Manrope', 'Noto Sans KR', ui-sans-serif, system-ui, sans-serif;
   background: var(--fryndo-sand);
 }
 
 .font-display {
-  font-family: 'Space Grotesk', 'IBM Plex Sans KR', ui-sans-serif, system-ui, sans-serif;
+  font-family: 'Playfair Display', 'Noto Sans KR', serif;
 }

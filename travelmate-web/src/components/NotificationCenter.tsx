@@ -248,6 +248,23 @@ const NotificationCenter: React.FC = () => {
     return icons[type] || <MegaphoneIcon />;
   };
 
+  // 타입별 아이콘 타일 틴트 (디자인 시스템: #ECEBFF / #FDF3E4 / #F1EAFC)
+  const getNotificationTint = (type: string) => {
+    const tints: { [key: string]: string } = {
+      GROUP_INVITE: 'tint-purple',
+      GROUP_JOIN: 'tint-purple',
+      GROUP_LEAVE: 'tint-purple',
+      GROUP_UPDATE: 'tint-purple',
+      NEW_MESSAGE: 'tint-primary',
+      MENTION: 'tint-primary',
+      COMMENT: 'tint-primary',
+      LIKE: 'tint-gold',
+      REVIEW: 'tint-gold',
+      SYSTEM: 'tint-primary',
+    };
+    return tints[type] || 'tint-primary';
+  };
+
   const formatTimestamp = (dateValue: string | Date) => {
     const date = typeof dateValue === 'string' ? new Date(dateValue) : dateValue;
     const now = new Date();
@@ -346,7 +363,10 @@ const NotificationCenter: React.FC = () => {
                   }}
                   aria-label={`${notification.isRead ? '' : '읽지 않음: '}${notification.title} - ${notification.message}`}
                 >
-                  <div className="notification-icon" aria-hidden="true">
+                  <div
+                    className={`notification-icon ${getNotificationTint(notification.type)}`}
+                    aria-hidden="true"
+                  >
                     {getNotificationIcon(notification.type)}
                   </div>
 

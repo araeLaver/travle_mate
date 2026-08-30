@@ -18,10 +18,10 @@ const transactionTypeLabels: Record<
   PointTransactionType,
   { label: string; color: string; darkColor: string }
 > = {
-  EARN: { label: '획득', color: '#22c55e', darkColor: '#4ade80' },
-  SPEND: { label: '사용', color: '#ef4444', darkColor: '#f87171' },
-  TRANSFER_IN: { label: '수신', color: '#3b82f6', darkColor: '#60a5fa' },
-  TRANSFER_OUT: { label: '전송', color: '#f59e0b', darkColor: '#fbbf24' },
+  EARN: { label: '획득', color: '#3F8F5F', darkColor: '#3F8F5F' },
+  SPEND: { label: '사용', color: '#B4453B', darkColor: '#B4453B' },
+  TRANSFER_IN: { label: '수신', color: '#4A3AFF', darkColor: '#8E7BFF' },
+  TRANSFER_OUT: { label: '전송', color: '#E0952A', darkColor: '#E0952A' },
 };
 
 type TabType = 'leaderboard' | 'history' | 'transfer';
@@ -153,10 +153,10 @@ const Leaderboard: React.FC = () => {
 
   // 순위 뱃지 색상
   const getRankStyle = (rank: number) => {
-    if (rank === 1) return 'bg-gradient-to-r from-yellow-400 to-amber-500 text-white';
-    if (rank === 2) return 'bg-gradient-to-r from-gray-300 to-gray-400 text-gray-800';
-    if (rank === 3) return 'bg-gradient-to-r from-orange-400 to-amber-600 text-white';
-    return 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300';
+    if (rank === 1) return 'bg-ink text-rarity-legendary';
+    if (rank === 2) return 'bg-sand-400 text-ink';
+    if (rank === 3) return 'bg-rarity-legendary text-white';
+    return 'bg-sand-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300';
   };
 
   const tabs = [
@@ -166,7 +166,7 @@ const Leaderboard: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] relative overflow-hidden">
+    <div className="min-h-screen bg-sand-100 dark:bg-[#0a0a0b] relative overflow-hidden">
       <PageBackground />
 
       {/* Navigation */}
@@ -195,31 +195,31 @@ const Leaderboard: React.FC = () => {
         {balance && (
           <motion.div
             {...fadeInUp}
-            className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-2xl p-6 mb-6 text-white shadow-xl"
+            className="bg-ink rounded-2xl p-6 mb-6 text-white shadow-[0_10px_30px_rgba(16,16,20,0.1)]"
           >
             <div className="flex items-center gap-3 mb-4">
               <span className="text-4xl">💰</span>
               <div>
-                <span className="text-3xl font-bold">{balance.totalPoints.toLocaleString()}</span>
-                <span className="text-xl ml-1 opacity-90">P</span>
+                <span className="text-3xl font-bold font-display">
+                  {balance.totalPoints.toLocaleString()}
+                </span>
+                <span className="text-xl ml-1 text-[#A0A0AC]">P</span>
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-white/20">
+            <div className="grid grid-cols-3 gap-4 mt-4 pt-4 border-t border-white/10">
               <div>
-                <p className="text-sm opacity-80">총 획득</p>
-                <p className="font-semibold text-green-200">
-                  {balance.lifetimeEarned.toLocaleString()}P
-                </p>
+                <p className="text-sm text-[#A0A0AC]">총 획득</p>
+                <p className="font-bold text-white">{balance.lifetimeEarned.toLocaleString()}P</p>
               </div>
               <div>
-                <p className="text-sm opacity-80">총 사용</p>
-                <p className="font-semibold text-red-200">
+                <p className="text-sm text-[#A0A0AC]">총 사용</p>
+                <p className="font-bold text-[#A0A0AC]">
                   {balance.lifetimeSpent.toLocaleString()}P
                 </p>
               </div>
               <div>
-                <p className="text-sm opacity-80">현재 순위</p>
-                <p className="font-semibold text-yellow-200">#{balance.currentRank}</p>
+                <p className="text-sm text-[#A0A0AC]">현재 순위</p>
+                <p className="font-bold text-rarity-legendary">#{balance.currentRank}</p>
               </div>
             </div>
           </motion.div>
@@ -229,7 +229,7 @@ const Leaderboard: React.FC = () => {
         <motion.div
           {...fadeInUp}
           transition={{ delay: 0.1 }}
-          className="flex gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl mb-6"
+          className="flex gap-2 p-1 bg-sand-200 dark:bg-gray-800 rounded-xl mb-6"
         >
           {tabs.map(tab => (
             <button
@@ -258,7 +258,7 @@ const Leaderboard: React.FC = () => {
                   onClick={() => setShowSeason(false)}
                   className={`px-4 py-2 rounded-lg font-medium transition-all ${
                     !showSeason
-                      ? 'bg-gradient-to-r from-violet-600 to-pink-600 text-white'
+                      ? 'bg-ink text-white'
                       : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
                   }`}
                 >
@@ -268,7 +268,7 @@ const Leaderboard: React.FC = () => {
                   onClick={() => setShowSeason(true)}
                   className={`px-4 py-2 rounded-lg font-medium transition-all ${
                     showSeason
-                      ? 'bg-gradient-to-r from-violet-600 to-pink-600 text-white'
+                      ? 'bg-ink text-white'
                       : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'
                   }`}
                 >
@@ -278,7 +278,7 @@ const Leaderboard: React.FC = () => {
 
               {isLoading ? (
                 <div className="flex flex-col items-center justify-center py-16">
-                  <div className="w-12 h-12 border-4 border-violet-500 border-t-transparent rounded-full animate-spin" />
+                  <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin" />
                 </div>
               ) : (
                 <motion.div
@@ -291,8 +291,8 @@ const Leaderboard: React.FC = () => {
                     <motion.div
                       key={entry.userId}
                       variants={fadeInUp}
-                      className={`bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-xl p-4 border border-gray-200/50 dark:border-gray-700/50 flex items-center gap-4 ${
-                        entry.rank <= 3 ? 'ring-2 ring-yellow-400/50' : ''
+                      className={`bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-xl p-4 border border-transparent dark:border-gray-700/50 flex items-center gap-4 ${
+                        entry.rank <= 3 ? 'ring-2 ring-rarity-legendary/50' : ''
                       }`}
                     >
                       <div
@@ -302,7 +302,7 @@ const Leaderboard: React.FC = () => {
                       >
                         {entry.rank <= 3 ? '🏆' : entry.rank}
                       </div>
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-400 to-pink-400 flex items-center justify-center text-white font-bold overflow-hidden">
+                      <div className="w-12 h-12 rounded-full bg-primary-400 flex items-center justify-center text-white font-bold overflow-hidden">
                         {entry.profileImageUrl ? (
                           <img
                             src={entry.profileImageUrl}
@@ -321,7 +321,7 @@ const Leaderboard: React.FC = () => {
                           {entry.totalNftsCollected} NFTs
                         </p>
                       </div>
-                      <div className="flex items-center gap-2 text-yellow-600 dark:text-yellow-400">
+                      <div className="flex items-center gap-2 text-rarity-legendary">
                         <span className="text-lg">💰</span>
                         <span className="font-bold">{entry.totalPoints.toLocaleString()}</span>
                       </div>
@@ -337,7 +337,7 @@ const Leaderboard: React.FC = () => {
             <motion.div key="history" {...fadeInUp}>
               {isLoading ? (
                 <div className="flex flex-col items-center justify-center py-16">
-                  <div className="w-12 h-12 border-4 border-violet-500 border-t-transparent rounded-full animate-spin" />
+                  <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin" />
                 </div>
               ) : transactions.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -364,7 +364,7 @@ const Leaderboard: React.FC = () => {
                       <motion.div
                         key={tx.id}
                         variants={fadeInUp}
-                        className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-xl p-4 border border-gray-200/50 dark:border-gray-700/50 flex items-center gap-4"
+                        className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-xl p-4 border border-transparent dark:border-gray-700/50 flex items-center gap-4"
                       >
                         <div
                           className="w-12 h-12 rounded-full flex items-center justify-center text-2xl"
@@ -386,7 +386,7 @@ const Leaderboard: React.FC = () => {
                         </div>
                         <span
                           className={`font-bold text-lg ${
-                            isPositive ? 'text-green-500' : 'text-red-500'
+                            isPositive ? 'text-success' : 'text-danger'
                           }`}
                         >
                           {isPositive ? '+' : '-'}
@@ -405,7 +405,7 @@ const Leaderboard: React.FC = () => {
             <motion.div key="transfer" {...fadeInUp}>
               <form
                 onSubmit={handleTransfer}
-                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50"
+                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-transparent dark:border-gray-700/50"
               >
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -417,7 +417,7 @@ const Leaderboard: React.FC = () => {
                     onChange={e => setTransferReceiverId(e.target.value)}
                     placeholder="사용자 ID를 입력하세요"
                     required
-                    className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-violet-500/50 transition-all"
+                    className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary-500/50 transition-all"
                   />
                 </div>
 
@@ -433,7 +433,7 @@ const Leaderboard: React.FC = () => {
                       placeholder="0"
                       required
                       min="1"
-                      className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 pr-12 outline-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-violet-500/50 transition-all"
+                      className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 pr-12 outline-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary-500/50 transition-all"
                     />
                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 font-medium">
                       P
@@ -455,14 +455,14 @@ const Leaderboard: React.FC = () => {
                     value={transferMessage}
                     onChange={e => setTransferMessage(e.target.value)}
                     placeholder="전송 메시지를 입력하세요"
-                    className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-violet-500/50 transition-all"
+                    className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary-500/50 transition-all"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={isSending}
-                  className="w-full py-4 bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full py-4 bg-primary-500 hover:bg-primary-700 text-white font-bold rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {isSending ? (
                     <>

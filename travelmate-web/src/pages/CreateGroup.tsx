@@ -183,17 +183,17 @@ const CreateGroup: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] relative overflow-hidden">
+    <div className="min-h-screen bg-sand-100 dark:bg-[#0a0a0b] relative overflow-hidden">
       <PageBackground />
 
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 px-4 py-3">
-        <div className="max-w-4xl mx-auto bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-2xl px-6 py-3 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
+        <div className="max-w-4xl mx-auto bg-white/90 dark:bg-gray-900/70 backdrop-blur-xl rounded-2xl px-6 py-3 border border-sand-300 dark:border-gray-800/50 shadow-[0_10px_30px_rgba(16,16,20,0.06)]">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => navigate('/groups')}
-                className="p-2 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                className="p-2 rounded-xl bg-sand-100 dark:bg-gray-800 hover:bg-sand-200 dark:hover:bg-gray-700 transition-colors"
                 aria-label="그룹 목록으로 돌아가기"
               >
                 <span className="text-lg">←</span>
@@ -210,14 +210,16 @@ const CreateGroup: React.FC = () => {
         <div className="max-w-2xl mx-auto">
           {/* Header */}
           <motion.header className="text-center mb-8" {...fadeInUp}>
-            <div className="inline-flex items-center gap-3 px-4 py-2 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-full border border-gray-200/50 dark:border-gray-700/50 mb-4">
+            <div className="inline-flex items-center gap-3 px-4 py-2 bg-primary-100 dark:bg-gray-800/60 rounded-full mb-4">
               <span className="text-2xl">🗺️</span>
-              <span className="text-gray-600 dark:text-gray-300 font-medium">새 그룹</span>
+              <span className="text-primary-500 dark:text-gray-300 font-bold">새 그룹</span>
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white mb-2">
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-ink dark:text-white mb-2">
               새 여행 그룹 만들기
             </h1>
-            <p className="text-gray-500 dark:text-gray-400">함께할 여행 메이트들을 모집해보세요!</p>
+            <p className="text-[#74747F] dark:text-gray-400">
+              함께할 여행 메이트들을 모집해보세요!
+            </p>
           </motion.header>
 
           {/* Form */}
@@ -231,8 +233,8 @@ const CreateGroup: React.FC = () => {
             transition={{ delay: 0.1 }}
           >
             {/* Basic Info */}
-            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
-              <h2 className="text-lg font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-900/80 rounded-[18px] p-6 shadow-[0_10px_30px_rgba(16,16,20,0.06)]">
+              <h2 className="text-lg font-extrabold tracking-tight text-ink dark:text-white mb-4 flex items-center gap-2">
                 <span>✏️</span> 기본 정보
               </h2>
 
@@ -240,9 +242,9 @@ const CreateGroup: React.FC = () => {
                 <div>
                   <label
                     htmlFor="name"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    className="block text-xs font-extrabold tracking-wide text-[#8A8A95] dark:text-gray-300 mb-2"
                   >
-                    그룹명 <span className="text-pink-500">*</span>
+                    그룹명 <span className="text-primary-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -251,16 +253,16 @@ const CreateGroup: React.FC = () => {
                     onChange={e => handleInputChange('name', e.target.value)}
                     onBlur={() => handleBlur('name')}
                     placeholder="예: 🌸 봄 벚꽃 여행"
-                    className={`w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 transition-all ${
+                    className={`w-full bg-sand-100 dark:bg-gray-800 rounded-[13px] px-4 py-3 outline-none text-ink dark:text-white placeholder-[#9A9AA4] dark:placeholder-gray-500 focus:bg-white focus:ring-2 transition-all ${
                       touched.name && !validation.name
-                        ? 'ring-2 ring-red-500 focus:ring-red-500'
-                        : 'focus:ring-violet-500/50'
+                        ? 'ring-2 ring-danger focus:ring-danger'
+                        : 'focus:ring-primary-500'
                     }`}
                     maxLength={GROUP_NAME_MAX_LENGTH}
                     required
                   />
                   {touched.name && !validation.name && (
-                    <p className="mt-1 text-sm text-red-500" role="alert">
+                    <p className="mt-1 text-sm text-danger" role="alert">
                       그룹명은 2~{GROUP_NAME_MAX_LENGTH}자로 입력해주세요
                     </p>
                   )}
@@ -269,9 +271,9 @@ const CreateGroup: React.FC = () => {
                 <div>
                   <label
                     htmlFor="destination"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    className="block text-xs font-extrabold tracking-wide text-[#8A8A95] dark:text-gray-300 mb-2"
                   >
-                    목적지 <span className="text-pink-500">*</span>
+                    목적지 <span className="text-primary-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -280,16 +282,16 @@ const CreateGroup: React.FC = () => {
                     onChange={e => handleInputChange('destination', e.target.value)}
                     onBlur={() => handleBlur('destination')}
                     placeholder="예: 제주도, 부산, 경주"
-                    className={`w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 transition-all ${
+                    className={`w-full bg-sand-100 dark:bg-gray-800 rounded-[13px] px-4 py-3 outline-none text-ink dark:text-white placeholder-[#9A9AA4] dark:placeholder-gray-500 focus:bg-white focus:ring-2 transition-all ${
                       touched.destination && !validation.destination
-                        ? 'ring-2 ring-red-500 focus:ring-red-500'
-                        : 'focus:ring-violet-500/50'
+                        ? 'ring-2 ring-danger focus:ring-danger'
+                        : 'focus:ring-primary-500'
                     }`}
                     maxLength={GROUP_DESTINATION_MAX_LENGTH}
                     required
                   />
                   {touched.destination && !validation.destination && (
-                    <p className="mt-1 text-sm text-red-500" role="alert">
+                    <p className="mt-1 text-sm text-danger" role="alert">
                       목적지는 2~{GROUP_DESTINATION_MAX_LENGTH}자로 입력해주세요
                     </p>
                   )}
@@ -298,7 +300,7 @@ const CreateGroup: React.FC = () => {
                 <div>
                   <label
                     htmlFor="description"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    className="block text-xs font-extrabold tracking-wide text-[#8A8A95] dark:text-gray-300 mb-2"
                   >
                     그룹 설명
                   </label>
@@ -307,7 +309,7 @@ const CreateGroup: React.FC = () => {
                     value={formData.description}
                     onChange={e => handleInputChange('description', e.target.value)}
                     placeholder="어떤 여행을 계획하고 있는지 자세히 설명해주세요..."
-                    className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-violet-500/50 transition-all resize-none"
+                    className="w-full bg-sand-100 dark:bg-gray-800 rounded-[13px] px-4 py-3 outline-none text-ink dark:text-white placeholder-[#9A9AA4] dark:placeholder-gray-500 focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all resize-none"
                     rows={4}
                     maxLength={GROUP_DESCRIPTION_MAX_LENGTH}
                   />
@@ -316,8 +318,8 @@ const CreateGroup: React.FC = () => {
             </div>
 
             {/* Schedule */}
-            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
-              <h2 className="text-lg font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-900/80 rounded-[18px] p-6 shadow-[0_10px_30px_rgba(16,16,20,0.06)]">
+              <h2 className="text-lg font-extrabold tracking-tight text-ink dark:text-white mb-4 flex items-center gap-2">
                 <span>📅</span> 여행 일정
               </h2>
 
@@ -325,16 +327,16 @@ const CreateGroup: React.FC = () => {
                 <div>
                   <label
                     htmlFor="startDate"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    className="block text-xs font-extrabold tracking-wide text-[#8A8A95] dark:text-gray-300 mb-2"
                   >
-                    시작일 <span className="text-pink-500">*</span>
+                    시작일 <span className="text-primary-500">*</span>
                   </label>
                   <input
                     type="date"
                     id="startDate"
                     value={formatDateInput(formData.startDate)}
                     onChange={e => handleInputChange('startDate', parseDateInput(e.target.value))}
-                    className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white focus:ring-2 focus:ring-violet-500/50 transition-all"
+                    className="w-full bg-sand-100 dark:bg-gray-800 rounded-[13px] px-4 py-3 outline-none text-ink dark:text-white focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all"
                     min={formatDateInput(new Date())}
                     required
                   />
@@ -343,16 +345,16 @@ const CreateGroup: React.FC = () => {
                 <div>
                   <label
                     htmlFor="endDate"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    className="block text-xs font-extrabold tracking-wide text-[#8A8A95] dark:text-gray-300 mb-2"
                   >
-                    종료일 <span className="text-pink-500">*</span>
+                    종료일 <span className="text-primary-500">*</span>
                   </label>
                   <input
                     type="date"
                     id="endDate"
                     value={formatDateInput(formData.endDate)}
                     onChange={e => handleInputChange('endDate', parseDateInput(e.target.value))}
-                    className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white focus:ring-2 focus:ring-violet-500/50 transition-all"
+                    className="w-full bg-sand-100 dark:bg-gray-800 rounded-[13px] px-4 py-3 outline-none text-ink dark:text-white focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all"
                     min={formatDateInput(getEndDateMinimum(formData.startDate))}
                     required
                   />
@@ -361,8 +363,8 @@ const CreateGroup: React.FC = () => {
             </div>
 
             {/* Group Settings */}
-            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
-              <h2 className="text-lg font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-900/80 rounded-[18px] p-6 shadow-[0_10px_30px_rgba(16,16,20,0.06)]">
+              <h2 className="text-lg font-extrabold tracking-tight text-ink dark:text-white mb-4 flex items-center gap-2">
                 <span>👥</span> 그룹 설정
               </h2>
 
@@ -370,7 +372,7 @@ const CreateGroup: React.FC = () => {
                 <div>
                   <label
                     htmlFor="maxMembers"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    className="block text-xs font-extrabold tracking-wide text-[#8A8A95] dark:text-gray-300 mb-2"
                   >
                     최대 인원
                   </label>
@@ -378,7 +380,7 @@ const CreateGroup: React.FC = () => {
                     id="maxMembers"
                     value={formData.maxMembers}
                     onChange={e => handleInputChange('maxMembers', parseInt(e.target.value))}
-                    className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white focus:ring-2 focus:ring-violet-500/50 transition-all"
+                    className="w-full bg-sand-100 dark:bg-gray-800 rounded-[13px] px-4 py-3 outline-none text-ink dark:text-white focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all"
                   >
                     {MAX_MEMBERS_OPTIONS.map(num => (
                       <option key={num} value={num}>
@@ -391,7 +393,7 @@ const CreateGroup: React.FC = () => {
                 <div>
                   <label
                     htmlFor="purpose"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    className="block text-xs font-extrabold tracking-wide text-[#8A8A95] dark:text-gray-300 mb-2"
                   >
                     여행 목적
                   </label>
@@ -399,7 +401,7 @@ const CreateGroup: React.FC = () => {
                     id="purpose"
                     value={formData.purpose || 'LEISURE'}
                     onChange={e => handleInputChange('purpose', e.target.value)}
-                    className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white focus:ring-2 focus:ring-violet-500/50 transition-all"
+                    className="w-full bg-sand-100 dark:bg-gray-800 rounded-[13px] px-4 py-3 outline-none text-ink dark:text-white focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all"
                   >
                     {PURPOSE_OPTIONS.map(option => (
                       <option key={option.value} value={option.value}>
@@ -412,7 +414,7 @@ const CreateGroup: React.FC = () => {
                 <div>
                   <label
                     htmlFor="travelStyle"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    className="block text-xs font-extrabold tracking-wide text-[#8A8A95] dark:text-gray-300 mb-2"
                   >
                     여행 스타일
                   </label>
@@ -420,7 +422,7 @@ const CreateGroup: React.FC = () => {
                     id="travelStyle"
                     value={formData.travelStyle}
                     onChange={e => handleInputChange('travelStyle', e.target.value)}
-                    className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white focus:ring-2 focus:ring-violet-500/50 transition-all"
+                    className="w-full bg-sand-100 dark:bg-gray-800 rounded-[13px] px-4 py-3 outline-none text-ink dark:text-white focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all"
                   >
                     {travelStyles.map(style => (
                       <option key={style.value} value={style.value}>
@@ -433,8 +435,8 @@ const CreateGroup: React.FC = () => {
             </div>
 
             {/* Budget */}
-            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
-              <h2 className="text-lg font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-900/80 rounded-[18px] p-6 shadow-[0_10px_30px_rgba(16,16,20,0.06)]">
+              <h2 className="text-lg font-extrabold tracking-tight text-ink dark:text-white mb-4 flex items-center gap-2">
                 <span>💰</span> 예산
               </h2>
 
@@ -442,7 +444,7 @@ const CreateGroup: React.FC = () => {
                 <div>
                   <label
                     htmlFor="minBudget"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    className="block text-xs font-extrabold tracking-wide text-[#8A8A95] dark:text-gray-300 mb-2"
                   >
                     최소 예산 (원)
                   </label>
@@ -451,7 +453,7 @@ const CreateGroup: React.FC = () => {
                     id="minBudget"
                     value={formData.budget?.min || 0}
                     onChange={e => handleBudgetChange('min', parseInt(e.target.value) || 0)}
-                    className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white focus:ring-2 focus:ring-violet-500/50 transition-all"
+                    className="w-full bg-sand-100 dark:bg-gray-800 rounded-[13px] px-4 py-3 outline-none text-ink dark:text-white focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all"
                     min="0"
                     step="10000"
                   />
@@ -460,7 +462,7 @@ const CreateGroup: React.FC = () => {
                 <div>
                   <label
                     htmlFor="maxBudget"
-                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    className="block text-xs font-extrabold tracking-wide text-[#8A8A95] dark:text-gray-300 mb-2"
                   >
                     최대 예산 (원)
                   </label>
@@ -469,7 +471,7 @@ const CreateGroup: React.FC = () => {
                     id="maxBudget"
                     value={formData.budget?.max || 0}
                     onChange={e => handleBudgetChange('max', parseInt(e.target.value) || 0)}
-                    className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white focus:ring-2 focus:ring-violet-500/50 transition-all"
+                    className="w-full bg-sand-100 dark:bg-gray-800 rounded-[13px] px-4 py-3 outline-none text-ink dark:text-white focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all"
                     min="0"
                     step="10000"
                   />
@@ -478,8 +480,8 @@ const CreateGroup: React.FC = () => {
             </div>
 
             {/* Tags */}
-            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
-              <h2 className="text-lg font-bold text-gray-800 dark:text-white mb-2 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-900/80 rounded-[18px] p-6 shadow-[0_10px_30px_rgba(16,16,20,0.06)]">
+              <h2 className="text-lg font-extrabold tracking-tight text-ink dark:text-white mb-2 flex items-center gap-2">
                 <span>🏷️</span> 태그
               </h2>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
@@ -492,14 +494,14 @@ const CreateGroup: React.FC = () => {
                   value={newTag}
                   onChange={e => setNewTag(e.target.value)}
                   placeholder="태그 입력..."
-                  className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-violet-500/50 transition-all"
+                  className="flex-1 bg-sand-100 dark:bg-gray-800 rounded-[13px] px-4 py-3 outline-none text-ink dark:text-white placeholder-[#9A9AA4] dark:placeholder-gray-500 focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all"
                   maxLength={20}
                   onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addTag())}
                 />
                 <button
                   type="button"
                   onClick={addTag}
-                  className="px-4 py-3 bg-violet-600 text-white font-medium rounded-xl hover:bg-violet-700 transition-colors"
+                  className="px-4 py-3 bg-primary-500 text-white font-bold rounded-[13px] hover:bg-primary-700 transition-colors"
                 >
                   추가
                 </button>
@@ -513,10 +515,10 @@ const CreateGroup: React.FC = () => {
                       key={tag}
                       type="button"
                       onClick={() => addPopularTag(tag)}
-                      className={`px-3 py-1.5 rounded-full text-sm transition-all ${
+                      className={`px-3 py-1.5 rounded-[10px] text-sm font-bold transition-all ${
                         formData.tags.includes(tag)
-                          ? 'bg-violet-600 text-white'
-                          : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                          ? 'bg-primary-100 text-primary-500'
+                          : 'bg-sand-100 dark:bg-gray-800 text-[#4A4A55] dark:text-gray-300 hover:bg-sand-200 dark:hover:bg-gray-700'
                       }`}
                       disabled={formData.tags.includes(tag)}
                     >
@@ -531,7 +533,7 @@ const CreateGroup: React.FC = () => {
                   {formData.tags.map(tag => (
                     <span
                       key={tag}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-violet-500 to-pink-500 text-white rounded-full text-sm"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-ink text-white rounded-[10px] text-sm font-bold"
                     >
                       #{tag}
                       <button
@@ -549,8 +551,8 @@ const CreateGroup: React.FC = () => {
             </div>
 
             {/* Requirements */}
-            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
-              <h2 className="text-lg font-bold text-gray-800 dark:text-white mb-2 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-900/80 rounded-[18px] p-6 shadow-[0_10px_30px_rgba(16,16,20,0.06)]">
+              <h2 className="text-lg font-extrabold tracking-tight text-ink dark:text-white mb-2 flex items-center gap-2">
                 <span>📋</span> 참가 조건
               </h2>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
@@ -563,14 +565,14 @@ const CreateGroup: React.FC = () => {
                   value={newRequirement}
                   onChange={e => setNewRequirement(e.target.value)}
                   placeholder="예: 금연자, 새벽 일찍 출발 가능한 분"
-                  className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-violet-500/50 transition-all"
+                  className="flex-1 bg-sand-100 dark:bg-gray-800 rounded-[13px] px-4 py-3 outline-none text-ink dark:text-white placeholder-[#9A9AA4] dark:placeholder-gray-500 focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all"
                   maxLength={100}
                   onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addRequirement())}
                 />
                 <button
                   type="button"
                   onClick={addRequirement}
-                  className="px-4 py-3 bg-violet-600 text-white font-medium rounded-xl hover:bg-violet-700 transition-colors"
+                  className="px-4 py-3 bg-primary-500 text-white font-bold rounded-[13px] hover:bg-primary-700 transition-colors"
                 >
                   추가
                 </button>
@@ -581,13 +583,13 @@ const CreateGroup: React.FC = () => {
                   {formData.requirements.map((req, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-between p-3 bg-gray-100 dark:bg-gray-800 rounded-xl"
+                      className="flex items-center justify-between p-3 bg-sand-100 dark:bg-gray-800 rounded-[13px]"
                     >
-                      <span className="text-gray-700 dark:text-gray-300">• {req}</span>
+                      <span className="text-[#4A4A55] dark:text-gray-300">• {req}</span>
                       <button
                         type="button"
                         onClick={() => removeRequirement(req)}
-                        className="text-red-500 hover:text-red-600 p-1"
+                        className="text-danger hover:opacity-70 p-1"
                         aria-label={`${req} 조건 삭제`}
                       >
                         ×
@@ -603,14 +605,14 @@ const CreateGroup: React.FC = () => {
               <button
                 type="button"
                 onClick={() => navigate('/groups')}
-                className="flex-1 py-4 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                className="flex-1 py-4 bg-sand-200 dark:bg-gray-800 text-ink dark:text-gray-300 font-bold rounded-[15px] hover:bg-sand-400 dark:hover:bg-gray-700 transition-colors"
               >
                 취소
               </button>
               <button
                 type="submit"
                 disabled={isLoading}
-                className="flex-1 py-4 bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-violet-500/25 transition-all duration-300 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:transform-none flex items-center justify-center gap-2"
+                className="flex-1 py-4 bg-primary-500 hover:bg-primary-700 text-white font-bold rounded-[15px] shadow-[0_8px_22px_rgba(74,58,255,0.3)] transition-all duration-300 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:transform-none flex items-center justify-center gap-2"
               >
                 {isLoading ? (
                   '생성 중...'

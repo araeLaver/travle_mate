@@ -384,7 +384,7 @@ describe('MintingModal', () => {
     await renderMintingModal({ rarity: 'LEGENDARY' });
 
     const badge = screen.getByTestId('rarity-badge');
-    expect(badge).toHaveStyle('background-color: rgb(245, 158, 11)');
+    expect(badge).toHaveStyle('background-color: rgb(224, 149, 42)');
   });
 
   test('지갑 미연결 상태에서 민팅 시도 시 에러 메시지', async () => {

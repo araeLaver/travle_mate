@@ -1,5 +1,5 @@
 /* ===================================
-   NotificationCenter - Modern Glassmorphism Design
+   NotificationCenter - Fryndo Design System
    =================================== */
 
 .notification-center {
@@ -13,19 +13,17 @@
   justify-content: center;
   width: 42px;
   height: 42px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 12px;
+  background: #f5f4f1; /* sand-100 */
+  border: none;
+  border-radius: 13px;
   font-size: 20px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  color: rgba(255, 255, 255, 0.8);
+  transition: background 0.2s ease;
+  color: #101014; /* ink */
 }
 
 .notification-bell:hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  transform: translateY(-2px);
+  background: #f0efeb;
 }
 
 .bell-icon {
@@ -35,24 +33,25 @@
 }
 
 .bell-icon svg {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   stroke: currentColor;
 }
 
 .notification-badge {
   position: absolute;
-  top: 6px;
-  right: 6px;
-  background: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);
+  top: 5px;
+  right: 5px;
+  background: #4a3aff; /* primary-500 */
   color: white;
-  border-radius: 10px;
-  padding: 2px 6px;
-  font-size: 11px;
-  font-weight: 700;
-  min-width: 18px;
+  border-radius: 9px;
+  padding: 1px 5px;
+  font-size: 10px;
+  font-weight: 800;
+  min-width: 16px;
   text-align: center;
-  box-shadow: 0 2px 8px rgba(236, 72, 153, 0.5);
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 8px rgba(74, 58, 255, 0.3);
 }
 
 .notification-overlay {
@@ -71,22 +70,21 @@
   right: 0;
   width: 400px;
   max-height: 600px;
-  background: linear-gradient(135deg, rgba(30, 27, 75, 0.98) 0%, rgba(49, 46, 129, 0.98) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  background: #ffffff;
+  border-radius: 18px;
+  border: 1px solid #efeeea;
+  box-shadow: 0 10px 30px rgba(16, 16, 20, 0.1);
   z-index: 999;
   display: flex;
   flex-direction: column;
-  animation: dropdownIn 0.3s ease-out;
+  animation: dropdownIn 0.25s ease-out;
+  overflow: hidden;
 }
 
 @keyframes dropdownIn {
   from {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateY(-8px);
   }
   to {
     opacity: 1;
@@ -99,35 +97,36 @@
   justify-content: space-between;
   align-items: center;
   padding: 18px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid #f2f1ed;
 }
 
 .notification-header h3 {
   margin: 0;
-  font-size: 18px;
-  font-weight: 700;
-  color: white;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: #101014;
 }
 
 .mark-all-read-btn {
   background: none;
   border: none;
-  color: #a78bfa;
+  color: #4a3aff;
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 700;
   padding: 6px 12px;
-  border-radius: 8px;
-  transition: all 0.3s ease;
+  border-radius: 9px;
+  transition: all 0.2s ease;
 }
 
 .mark-all-read-btn:hover {
-  background: rgba(139, 92, 246, 0.2);
-  color: #c4b5fd;
+  background: #ecebff;
+  color: #2a1bc7;
 }
 
 .mark-all-read-btn:disabled {
-  color: rgba(255, 255, 255, 0.3);
+  color: #9a9aa4;
   cursor: not-allowed;
 }
 
@@ -142,16 +141,16 @@
 }
 
 .notification-list::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
+  background: transparent;
 }
 
 .notification-list::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+  background: #e1e0db;
   border-radius: 3px;
 }
 
 .notification-list::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: #dedcd8;
 }
 
 .loading {
@@ -160,15 +159,15 @@
   align-items: center;
   justify-content: center;
   padding: 40px 20px;
-  color: rgba(255, 255, 255, 0.7);
+  color: #74747f;
   gap: 12px;
 }
 
 .loading-spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid rgba(139, 92, 246, 0.2);
-  border-top-color: #8b5cf6;
+  border: 3px solid #ecebff;
+  border-top-color: #4a3aff;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -186,7 +185,7 @@
   justify-content: center;
   text-align: center;
   padding: 60px 20px;
-  color: rgba(255, 255, 255, 0.5);
+  color: #8a8a95;
 }
 
 .empty-icon {
@@ -195,37 +194,38 @@
   justify-content: center;
   width: 64px;
   height: 64px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
+  background: #f5f4f1;
+  border-radius: 18px;
   margin-bottom: 16px;
 }
 
 .empty-icon svg {
-  width: 32px;
-  height: 32px;
-  stroke: rgba(255, 255, 255, 0.3);
+  width: 30px;
+  height: 30px;
+  stroke: #9a9aa4;
 }
 
 .notification-item {
   display: flex;
   align-items: flex-start;
   padding: 16px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid #f8f7f5;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: background 0.2s ease;
 }
 
 .notification-item:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: #fafaf8;
 }
 
 .notification-item.unread {
-  background: linear-gradient(90deg, rgba(139, 92, 246, 0.15) 0%, transparent 100%);
-  border-left: 3px solid #8b5cf6;
+  background: #f8f7ff; /* primary-50 */
+  border-left: 3px solid #4a3aff;
+  padding-left: 17px;
 }
 
 .notification-item.unread:hover {
-  background: linear-gradient(90deg, rgba(139, 92, 246, 0.2) 0%, rgba(255, 255, 255, 0.05) 100%);
+  background: #ecebff;
 }
 
 .notification-icon {
@@ -236,14 +236,39 @@
   height: 40px;
   margin-right: 14px;
   flex-shrink: 0;
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(99, 102, 241, 0.3) 100%);
+  background: #ecebff;
   border-radius: 12px;
 }
 
 .notification-icon svg {
-  width: 20px;
-  height: 20px;
-  stroke: #c4b5fd;
+  width: 19px;
+  height: 19px;
+  stroke: #4a3aff;
+}
+
+/* Tinted icon tiles */
+.notification-icon.tint-primary {
+  background: #ecebff;
+}
+
+.notification-icon.tint-primary svg {
+  stroke: #4a3aff;
+}
+
+.notification-icon.tint-gold {
+  background: #fdf3e4;
+}
+
+.notification-icon.tint-gold svg {
+  stroke: #e0952a; /* rarity-legendary */
+}
+
+.notification-icon.tint-purple {
+  background: #f1eafc;
+}
+
+.notification-icon.tint-purple svg {
+  stroke: #8b45e8; /* rarity-epic */
 }
 
 .notification-content {
@@ -252,16 +277,16 @@
 }
 
 .notification-title {
-  font-weight: 600;
+  font-weight: 700;
   font-size: 14px;
-  margin-bottom: 4px;
-  color: white;
+  margin-bottom: 3px;
+  color: #101014;
 }
 
 .notification-message {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.6);
-  margin-bottom: 6px;
+  color: #74747f;
+  margin-bottom: 5px;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
@@ -272,7 +297,7 @@
 
 .notification-time {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.4);
+  color: #8a8a95;
 }
 
 .notification-delete {
@@ -281,7 +306,7 @@
   justify-content: center;
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.4);
+  color: #9a9aa4;
   cursor: pointer;
   padding: 6px;
   width: 28px;
@@ -289,8 +314,8 @@
   flex-shrink: 0;
   margin-left: 8px;
   opacity: 0;
-  transition: all 0.3s ease;
-  border-radius: 8px;
+  transition: all 0.2s ease;
+  border-radius: 9px;
 }
 
 .notification-delete svg {
@@ -304,8 +329,8 @@
 }
 
 .notification-delete:hover {
-  color: #f87171;
-  background: rgba(244, 63, 94, 0.2);
+  color: #b4453b; /* danger */
+  background: #f7e9e7;
 }
 
 .notification-pagination {
@@ -313,25 +338,24 @@
   justify-content: space-between;
   align-items: center;
   padding: 14px 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid #f2f1ed;
 }
 
 .notification-pagination button {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: #f0efeb; /* sand-200 */
+  border: none;
   padding: 8px 16px;
   border-radius: 10px;
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.8);
-  transition: all 0.3s ease;
+  font-size: 13px;
+  font-weight: 700;
+  color: #101014;
+  transition: all 0.2s ease;
 }
 
 .notification-pagination button:hover:not(:disabled) {
-  background: rgba(139, 92, 246, 0.3);
-  border-color: rgba(139, 92, 246, 0.5);
-  color: white;
+  background: #ecebff;
+  color: #4a3aff;
 }
 
 .notification-pagination button:disabled {
@@ -340,15 +364,15 @@
 }
 
 .notification-pagination span {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.6);
+  font-size: 13px;
+  color: #74747f;
 }
 
 /* 모바일 반응형 */
 @media (max-width: 768px) {
   .notification-dropdown {
     position: fixed;
-    top: 70px;
+    top: 78px;
     left: 10px;
     right: 10px;
     width: auto;
@@ -367,6 +391,10 @@
 
   .notification-item {
     padding: 14px 16px;
+  }
+
+  .notification-item.unread {
+    padding-left: 13px;
   }
 
   .notification-icon {

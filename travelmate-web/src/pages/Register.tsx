@@ -9,7 +9,6 @@ import { useToast } from '../components/Toast';
 import { getErrorMessage, logError } from '../utils/errorHandler';
 import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
-import PageBackground from '../components/PageBackground';
 import { trackEvent, trackSignUpComplete } from '../utils/analytics';
 
 const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '';
@@ -49,7 +48,7 @@ const GoogleSignupButtonInner: React.FC<{
       type="button"
       onClick={() => handleLogin()}
       disabled={disabled}
-      className="w-full flex items-center justify-center gap-3 py-3.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-750 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+      className="w-full h-14 flex items-center justify-center gap-3 bg-white dark:bg-gray-800 border-[1.5px] border-sand-400 dark:border-gray-700 rounded-[15px] text-ink dark:text-gray-200 font-bold hover:bg-sand-50 dark:hover:bg-gray-750 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
     >
       {loading ? (
         <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
@@ -91,6 +90,11 @@ const GoogleSignupButtonInner: React.FC<{
     </button>
   );
 };
+
+const inputBaseClass =
+  'w-full h-12 px-4 bg-sand-100 dark:bg-gray-800 border-[1.5px] rounded-[13px] text-ink dark:text-white placeholder-[#9A9AA4] focus:outline-none focus:bg-white dark:focus:bg-gray-900 focus:border-primary-500 transition-all';
+
+const labelClass = 'block text-xs font-extrabold text-[#8A8A95] tracking-wider mb-2';
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
@@ -195,9 +199,9 @@ const Register: React.FC = () => {
     if (/[0-9]/.test(password)) strength++;
     if (/[@$!%*?&]/.test(password)) strength++;
 
-    if (strength <= 1) return { level: 1, text: '약함', color: 'bg-red-500' };
-    if (strength <= 3) return { level: 2, text: '보통', color: 'bg-amber-500' };
-    return { level: 3, text: '강함', color: 'bg-green-500' };
+    if (strength <= 1) return { level: 1, text: '약함', color: 'bg-danger' };
+    if (strength <= 3) return { level: 2, text: '보통', color: 'bg-rarity-legendary' };
+    return { level: 3, text: '강함', color: 'bg-success' };
   }, [formData.password]);
 
   const handleBlur = (field: string) => {
@@ -349,9 +353,9 @@ const Register: React.FC = () => {
 
   const getCheckButtonStyle = (field: 'email' | 'username') => {
     const state = duplicateCheck[field];
-    if (state.checked && state.available) return 'bg-green-500 hover:bg-green-600';
-    if (state.checked && !state.available) return 'bg-red-500 hover:bg-red-600';
-    return 'bg-violet-500 hover:bg-violet-600';
+    if (state.checked && state.available) return 'bg-success hover:bg-[#357A50]';
+    if (state.checked && !state.available) return 'bg-danger hover:bg-[#9C3A31]';
+    return 'bg-primary-500 hover:bg-primary-700';
   };
 
   const getCheckButtonText = (field: 'email' | 'username') => {
@@ -361,516 +365,493 @@ const Register: React.FC = () => {
     return '중복확인';
   };
 
+  const validationBorder = (valid: boolean | undefined) => {
+    if (valid === undefined) return 'border-transparent dark:border-gray-700';
+    return valid ? 'border-success' : 'border-danger';
+  };
+
   return (
-    <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] flex items-center justify-center p-4 relative overflow-hidden">
-      <PageBackground variant="auth" />
+    <div className="min-h-screen flex bg-white dark:bg-[#0a0a0b]">
+      {/* Left photo panel */}
+      <div className="relative hidden lg:flex lg:w-[46%] flex-col justify-between p-12 overflow-hidden bg-ink bg-[linear-gradient(160deg,#2A1BC7_0%,#4A3AFF_55%,#101014_130%)]">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-40"
+          style={{
+            background:
+              'radial-gradient(at 80% 15%, rgba(142,123,255,0.5) 0px, transparent 45%), radial-gradient(at 15% 85%, rgba(16,16,20,0.6) 0px, transparent 55%)',
+          }}
+        />
+        <Link to="/" className="relative z-10 flex items-center gap-3 w-fit">
+          <Logo variant="white" size="md" />
+          <span className="text-xl font-extrabold text-white tracking-tight">Fryndo</span>
+        </Link>
 
-      {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50">
-        <div className="mx-4 mt-4">
-          <div className="max-w-6xl mx-auto bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-800/50 shadow-lg shadow-gray-200/20 dark:shadow-black/20">
-            <div className="flex items-center justify-between h-16 px-6">
-              <Link to="/" className="flex items-center gap-3 group">
-                <Logo
-                  variant="gradient"
-                  size="md"
-                  className="group-hover:scale-110 transition-transform duration-300"
-                />
-                <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
-                  Fryndo
-                </span>
-              </Link>
-              <div className="flex items-center gap-3">
-                <ThemeToggle />
-                <Link
-                  to="/login"
-                  className="px-5 py-2.5 text-sm font-semibold text-white bg-gray-900 dark:bg-white dark:text-gray-900 rounded-xl hover:bg-gray-800 dark:hover:bg-gray-100 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
-                >
-                  Login
-                </Link>
-              </div>
-            </div>
-          </div>
+        <div className="relative z-10">
+          <h2 className="font-display text-[44px] leading-[1.15] text-white">여행을 수집하다</h2>
         </div>
-      </nav>
 
-      {/* Register Card */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="relative z-10 w-full max-w-md mt-24 mb-8"
-      >
-        <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl border border-gray-200/50 dark:border-gray-800/50 shadow-2xl shadow-gray-200/50 dark:shadow-black/30 p-8 md:p-10">
-          <motion.div {...fadeInUp} className="text-center mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">
-              회원가입
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400">
-              여행 동반자와 함께할 모험을 시작하세요
-            </p>
-          </motion.div>
+        {/* Floating NFT card */}
+        <div className="relative z-10 self-end w-[260px] bg-white rounded-2xl border-2 border-rarity-legendary p-3 shadow-[0_10px_30px_rgba(16,16,20,0.3)]">
+          <div className="h-32 rounded-xl bg-[linear-gradient(135deg,#ECEBFF_0%,#F5F4F1_60%,#FDF3E4_100%)] flex items-center justify-center">
+            <Logo variant="gradient" size="lg" />
+          </div>
+          <div className="mt-3 flex items-center justify-between">
+            <span className="text-sm font-extrabold text-ink">Fryndo Stamp</span>
+            <span className="h-5 px-1.5 inline-flex items-center rounded-[7px] bg-rarity-legendary text-white text-[10px] font-extrabold uppercase tracking-wide">
+              Legendary
+            </span>
+          </div>
+          <p className="mt-1 text-[11px] text-[#8A8A95]">Fryndo · Collectible</p>
+        </div>
+      </div>
 
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex items-center gap-3 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl mb-6"
-            >
-              <svg
-                className="w-5 h-5 text-red-500 flex-shrink-0"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <span className="text-sm text-red-600 dark:text-red-400">{error}</span>
-            </motion.div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Username Field */}
-            <motion.div {...fadeInUp} transition={{ delay: 0.15 }}>
-              <label
-                htmlFor="username"
-                className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
-              >
-                닉네임
-              </label>
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <svg
-                    className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"
-                    />
-                  </svg>
-                  <input
-                    type="text"
-                    id="username"
-                    name="username"
-                    value={formData.username}
-                    onChange={handleChange}
-                    onBlur={() => handleBlur('username')}
-                    placeholder="한글, 영문, 숫자 가능 (2-20자)"
-                    required
-                    className={`w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all ${
-                      touched.username
-                        ? validation.username
-                          ? 'border-green-500'
-                          : 'border-red-500'
-                        : 'border-gray-200 dark:border-gray-700'
-                    }`}
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={checkUsernameDuplicate}
-                  disabled={!formData.username || duplicateCheck.username.loading}
-                  className={`px-4 py-3 text-white text-sm font-medium rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed ${getCheckButtonStyle('username')}`}
-                >
-                  {getCheckButtonText('username')}
-                </button>
-              </div>
-              {touched.username && !validation.username && (
-                <p className="mt-1 text-xs text-red-500">한글, 영문, 숫자, 밑줄만 사용 (2-20자)</p>
-              )}
-              {duplicateCheck.username.checked && duplicateCheck.username.available && (
-                <p className="mt-1 text-xs text-green-500">사용 가능한 닉네임입니다</p>
-              )}
-            </motion.div>
-
-            {/* Email Field */}
-            <motion.div {...fadeInUp} transition={{ delay: 0.2 }}>
-              <label
-                htmlFor="email"
-                className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
-              >
-                이메일
-              </label>
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <svg
-                    className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                    />
-                  </svg>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    onBlur={() => handleBlur('email')}
-                    placeholder="your@email.com"
-                    required
-                    className={`w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all ${
-                      touched.email
-                        ? validation.email
-                          ? 'border-green-500'
-                          : 'border-red-500'
-                        : 'border-gray-200 dark:border-gray-700'
-                    }`}
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={checkEmailDuplicate}
-                  disabled={!formData.email || duplicateCheck.email.loading}
-                  className={`px-4 py-3 text-white text-sm font-medium rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed ${getCheckButtonStyle('email')}`}
-                >
-                  {getCheckButtonText('email')}
-                </button>
-              </div>
-              {touched.email && !validation.email && (
-                <p className="mt-1 text-xs text-red-500">올바른 이메일 형식을 입력해주세요</p>
-              )}
-              {duplicateCheck.email.checked && duplicateCheck.email.available && (
-                <p className="mt-1 text-xs text-green-500">사용 가능한 이메일입니다</p>
-              )}
-            </motion.div>
-
-            {/* Password Field */}
-            <motion.div {...fadeInUp} transition={{ delay: 0.25 }}>
-              <label
-                htmlFor="password"
-                className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
-              >
-                비밀번호
-              </label>
-              <div className="relative">
-                <svg
-                  className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                  />
-                </svg>
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  id="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  onBlur={() => handleBlur('password')}
-                  placeholder="영문 대소문자, 숫자, 특수문자 포함 8-20자"
-                  required
-                  className={`w-full pl-12 pr-12 py-3 bg-gray-50 dark:bg-gray-800 border rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all ${
-                    touched.password
-                      ? validation.password
-                        ? 'border-green-500'
-                        : 'border-red-500'
-                      : 'border-gray-200 dark:border-gray-700'
-                  }`}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                >
-                  {showPassword ? (
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
-                      />
-                    </svg>
-                  ) : (
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                      />
-                    </svg>
-                  )}
-                </button>
-              </div>
-              {formData.password && (
-                <div className="mt-2 flex items-center gap-2">
-                  <div className="flex-1 flex gap-1">
-                    {[1, 2, 3].map(level => (
-                      <div
-                        key={level}
-                        className={`h-1 flex-1 rounded-full transition-all ${
-                          passwordStrength.level >= level
-                            ? passwordStrength.color
-                            : 'bg-gray-200 dark:bg-gray-700'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <span
-                    className={`text-xs font-medium ${
-                      passwordStrength.level === 1
-                        ? 'text-red-500'
-                        : passwordStrength.level === 2
-                          ? 'text-amber-500'
-                          : 'text-green-500'
-                    }`}
-                  >
-                    {passwordStrength.text}
-                  </span>
-                </div>
-              )}
-            </motion.div>
-
-            {/* Confirm Password Field */}
-            <motion.div {...fadeInUp} transition={{ delay: 0.3 }}>
-              <label
-                htmlFor="confirmPassword"
-                className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2"
-              >
-                비밀번호 확인
-              </label>
-              <div className="relative">
-                <svg
-                  className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                  />
-                </svg>
-                <input
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  onBlur={() => handleBlur('confirmPassword')}
-                  placeholder="비밀번호를 다시 입력하세요"
-                  required
-                  className={`w-full pl-12 pr-12 py-3 bg-gray-50 dark:bg-gray-800 border rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all ${
-                    touched.confirmPassword && formData.confirmPassword
-                      ? validation.confirmPassword
-                        ? 'border-green-500'
-                        : 'border-red-500'
-                      : 'border-gray-200 dark:border-gray-700'
-                  }`}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                >
-                  {showConfirmPassword ? (
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
-                      />
-                    </svg>
-                  ) : (
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                      />
-                    </svg>
-                  )}
-                </button>
-              </div>
-              {touched.confirmPassword &&
-                !validation.confirmPassword &&
-                formData.confirmPassword && (
-                  <p className="mt-1 text-xs text-red-500">비밀번호가 일치하지 않습니다</p>
-                )}
-              {validation.confirmPassword && formData.confirmPassword && (
-                <p className="mt-1 text-xs text-green-500">비밀번호가 일치합니다</p>
-              )}
-            </motion.div>
-
-            <motion.button
-              {...fadeInUp}
-              transition={{ delay: 0.35 }}
-              type="submit"
-              disabled={loading}
-              className="w-full py-4 mt-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-semibold rounded-xl hover:from-violet-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:shadow-lg hover:shadow-violet-500/25 hover:-translate-y-0.5 flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  <span>가입 중...</span>
-                </>
-              ) : (
-                <span>회원가입</span>
-              )}
-            </motion.button>
-          </form>
-
-          <motion.div {...fadeInUp} transition={{ delay: 0.4 }} className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200 dark:border-gray-700" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white dark:bg-gray-900 text-gray-500">또는</span>
-              </div>
-            </div>
-
-            <div className="mt-4 space-y-3">
-              {GOOGLE_CLIENT_ID && (
-                <GoogleButtonErrorBoundary>
-                  <GoogleSignupButtonInner
-                    disabled={oauthLoading !== null}
-                    loading={oauthLoading === 'google'}
-                    onLoginStart={() => setOauthLoading('google')}
-                    onSuccess={accessToken => handleOAuthSuccess('google', accessToken)}
-                    onError={setError}
-                  />
-                </GoogleButtonErrorBoundary>
-              )}
-              <button
-                type="button"
-                onClick={handleKakaoSignup}
-                disabled={oauthLoading !== null}
-                className="w-full flex items-center justify-center gap-3 py-3.5 bg-[#FEE500] rounded-xl text-[#3C1E1E] font-medium hover:bg-[#FDD835] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-              >
-                {oauthLoading === 'kakao' ? (
-                  <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                ) : (
-                  <svg className="w-5 h-5" viewBox="0 0 24 24">
-                    <path
-                      fill="#3C1E1E"
-                      d="M12 3c-5.52 0-10 3.59-10 8 0 2.87 1.89 5.39 4.74 6.82-.21.78-.77 2.83-.88 3.27-.14.54.2.53.42.39.17-.11 2.74-1.86 3.85-2.62.62.09 1.25.14 1.87.14 5.52 0 10-3.59 10-8s-4.48-8-10-8z"
-                    />
-                  </svg>
-                )}
-                카카오로 시작하기
-              </button>
-              {NAVER_CLIENT_ID && (
-                <button
-                  type="button"
-                  onClick={handleNaverSignup}
-                  disabled={oauthLoading !== null}
-                  className="w-full flex items-center justify-center gap-3 py-3.5 bg-[#03C75A] rounded-xl text-white font-medium hover:bg-[#02b351] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                >
-                  {oauthLoading === 'naver' ? (
-                    <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      />
-                    </svg>
-                  ) : (
-                    <svg className="w-5 h-5" viewBox="0 0 24 24">
-                      <path
-                        fill="white"
-                        d="M16.273 12.845L7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"
-                        transform="scale(0.8) translate(3, 3)"
-                      />
-                    </svg>
-                  )}
-                  네이버로 시작하기
-                </button>
-              )}
-            </div>
-          </motion.div>
-
-          <motion.p
-            {...fadeInUp}
-            transition={{ delay: 0.45 }}
-            className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400"
-          >
-            이미 계정이 있으신가요?{' '}
+      {/* Right form panel */}
+      <div className="relative flex-1 flex flex-col bg-sand-50 dark:bg-[#0a0a0b]">
+        <div className="flex items-center justify-between px-6 py-5 lg:justify-end">
+          <Link to="/" className="flex items-center gap-2 lg:hidden">
+            <Logo variant="gradient" size="sm" />
+            <span className="font-extrabold text-ink dark:text-white tracking-tight">Fryndo</span>
+          </Link>
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
             <Link
               to="/login"
-              className="font-semibold text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors"
+              className="h-[42px] px-5 inline-flex items-center text-sm font-bold text-ink dark:text-gray-900 bg-sand-200 dark:bg-white rounded-xl hover:bg-sand-300 dark:hover:bg-gray-100 transition-all"
             >
-              로그인
+              Login
             </Link>
-          </motion.p>
+          </div>
         </div>
-      </motion.div>
+
+        <div className="flex-1 flex items-center justify-center px-6 pb-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="w-full max-w-[480px]"
+          >
+            <div className="bg-white dark:bg-gray-900 rounded-[20px] p-8 md:p-10 shadow-[0_10px_30px_rgba(16,16,20,0.06)] dark:border dark:border-gray-800">
+              <motion.div {...fadeInUp} className="mb-8">
+                <h1 className="text-[30px] font-extrabold tracking-tight text-ink dark:text-white mb-2">
+                  회원가입
+                </h1>
+                <p className="text-[#4A4A55] dark:text-gray-400">
+                  여행 동반자와 함께할 모험을 시작하세요
+                </p>
+              </motion.div>
+
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-center gap-3 p-4 bg-[#FBF0EF] dark:bg-red-900/20 border border-[#F0D6D3] dark:border-red-800 rounded-[13px] mb-6"
+                >
+                  <svg
+                    className="w-5 h-5 text-danger flex-shrink-0"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <span className="text-sm text-danger dark:text-red-400">{error}</span>
+                </motion.div>
+              )}
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Username Field */}
+                <motion.div {...fadeInUp} transition={{ delay: 0.15 }}>
+                  <label htmlFor="username" className={labelClass}>
+                    닉네임
+                  </label>
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        value={formData.username}
+                        onChange={handleChange}
+                        onBlur={() => handleBlur('username')}
+                        placeholder="한글, 영문, 숫자 가능 (2-20자)"
+                        required
+                        className={`${inputBaseClass} ${
+                          touched.username
+                            ? validationBorder(validation.username)
+                            : 'border-transparent dark:border-gray-700'
+                        }`}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={checkUsernameDuplicate}
+                      disabled={!formData.username || duplicateCheck.username.loading}
+                      className={`px-4 h-12 text-white text-sm font-bold rounded-[13px] transition-all disabled:opacity-50 disabled:cursor-not-allowed ${getCheckButtonStyle('username')}`}
+                    >
+                      {getCheckButtonText('username')}
+                    </button>
+                  </div>
+                  {touched.username && !validation.username && (
+                    <p className="mt-1 text-xs text-danger">
+                      한글, 영문, 숫자, 밑줄만 사용 (2-20자)
+                    </p>
+                  )}
+                  {duplicateCheck.username.checked && duplicateCheck.username.available && (
+                    <p className="mt-1 text-xs text-success">사용 가능한 닉네임입니다</p>
+                  )}
+                </motion.div>
+
+                {/* Email Field */}
+                <motion.div {...fadeInUp} transition={{ delay: 0.2 }}>
+                  <label htmlFor="email" className={labelClass}>
+                    이메일
+                  </label>
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        onBlur={() => handleBlur('email')}
+                        placeholder="your@email.com"
+                        required
+                        className={`${inputBaseClass} ${
+                          touched.email
+                            ? validationBorder(validation.email)
+                            : 'border-transparent dark:border-gray-700'
+                        }`}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={checkEmailDuplicate}
+                      disabled={!formData.email || duplicateCheck.email.loading}
+                      className={`px-4 h-12 text-white text-sm font-bold rounded-[13px] transition-all disabled:opacity-50 disabled:cursor-not-allowed ${getCheckButtonStyle('email')}`}
+                    >
+                      {getCheckButtonText('email')}
+                    </button>
+                  </div>
+                  {touched.email && !validation.email && (
+                    <p className="mt-1 text-xs text-danger">올바른 이메일 형식을 입력해주세요</p>
+                  )}
+                  {duplicateCheck.email.checked && duplicateCheck.email.available && (
+                    <p className="mt-1 text-xs text-success">사용 가능한 이메일입니다</p>
+                  )}
+                </motion.div>
+
+                {/* Password Field */}
+                <motion.div {...fadeInUp} transition={{ delay: 0.25 }}>
+                  <label htmlFor="password" className={labelClass}>
+                    비밀번호
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      id="password"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      onBlur={() => handleBlur('password')}
+                      placeholder="영문 대소문자, 숫자, 특수문자 포함 8-20자"
+                      required
+                      className={`${inputBaseClass} pr-12 ${
+                        touched.password
+                          ? validationBorder(validation.password)
+                          : 'border-transparent dark:border-gray-700'
+                      }`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-[#9A9AA4] hover:text-ink dark:hover:text-gray-300 transition-colors"
+                    >
+                      {showPassword ? (
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
+                          />
+                        </svg>
+                      ) : (
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                          />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                  {formData.password && (
+                    <div className="mt-2 flex items-center gap-2">
+                      <div className="flex-1 flex gap-1">
+                        {[1, 2, 3].map(level => (
+                          <div
+                            key={level}
+                            className={`h-1.5 flex-1 rounded-full transition-all ${
+                              passwordStrength.level >= level
+                                ? passwordStrength.color
+                                : 'bg-[#EDECE8] dark:bg-gray-700'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <span
+                        className={`text-xs font-bold ${
+                          passwordStrength.level === 1
+                            ? 'text-danger'
+                            : passwordStrength.level === 2
+                              ? 'text-rarity-legendary'
+                              : 'text-success'
+                        }`}
+                      >
+                        {passwordStrength.text}
+                      </span>
+                    </div>
+                  )}
+                </motion.div>
+
+                {/* Confirm Password Field */}
+                <motion.div {...fadeInUp} transition={{ delay: 0.3 }}>
+                  <label htmlFor="confirmPassword" className={labelClass}>
+                    비밀번호 확인
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      onBlur={() => handleBlur('confirmPassword')}
+                      placeholder="비밀번호를 다시 입력하세요"
+                      required
+                      className={`${inputBaseClass} pr-12 ${
+                        touched.confirmPassword && formData.confirmPassword
+                          ? validationBorder(validation.confirmPassword)
+                          : 'border-transparent dark:border-gray-700'
+                      }`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-[#9A9AA4] hover:text-ink dark:hover:text-gray-300 transition-colors"
+                    >
+                      {showConfirmPassword ? (
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
+                          />
+                        </svg>
+                      ) : (
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                          />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                  {touched.confirmPassword &&
+                    !validation.confirmPassword &&
+                    formData.confirmPassword && (
+                      <p className="mt-1 text-xs text-danger">비밀번호가 일치하지 않습니다</p>
+                    )}
+                  {validation.confirmPassword && formData.confirmPassword && (
+                    <p className="mt-1 text-xs text-success">비밀번호가 일치합니다</p>
+                  )}
+                </motion.div>
+
+                <motion.button
+                  {...fadeInUp}
+                  transition={{ delay: 0.35 }}
+                  type="submit"
+                  disabled={loading}
+                  className="w-full h-14 mt-2 bg-primary-500 text-white font-extrabold rounded-[15px] hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-[0_8px_22px_rgba(74,58,255,0.3)] flex items-center justify-center gap-2"
+                >
+                  {loading ? (
+                    <>
+                      <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      <span>가입 중...</span>
+                    </>
+                  ) : (
+                    <span>회원가입</span>
+                  )}
+                </motion.button>
+              </form>
+
+              <motion.div {...fadeInUp} transition={{ delay: 0.4 }} className="mt-6">
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-[#F2F1ED] dark:border-gray-700" />
+                  </div>
+                  <div className="relative flex justify-center text-xs font-bold tracking-wider">
+                    <span className="px-4 bg-white dark:bg-gray-900 text-[#9A9AA4]">또는</span>
+                  </div>
+                </div>
+
+                <div className="mt-4 space-y-3">
+                  {GOOGLE_CLIENT_ID && (
+                    <GoogleButtonErrorBoundary>
+                      <GoogleSignupButtonInner
+                        disabled={oauthLoading !== null}
+                        loading={oauthLoading === 'google'}
+                        onLoginStart={() => setOauthLoading('google')}
+                        onSuccess={accessToken => handleOAuthSuccess('google', accessToken)}
+                        onError={setError}
+                      />
+                    </GoogleButtonErrorBoundary>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleKakaoSignup}
+                    disabled={oauthLoading !== null}
+                    className="w-full h-14 flex items-center justify-center gap-3 bg-[#FEE500] rounded-[15px] text-[#191600] font-bold hover:bg-[#FDD835] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  >
+                    {oauthLoading === 'kakao' ? (
+                      <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5" viewBox="0 0 24 24">
+                        <path
+                          fill="#191600"
+                          d="M12 3c-5.52 0-10 3.59-10 8 0 2.87 1.89 5.39 4.74 6.82-.21.78-.77 2.83-.88 3.27-.14.54.2.53.42.39.17-.11 2.74-1.86 3.85-2.62.62.09 1.25.14 1.87.14 5.52 0 10-3.59 10-8s-4.48-8-10-8z"
+                        />
+                      </svg>
+                    )}
+                    카카오로 시작하기
+                  </button>
+                  {NAVER_CLIENT_ID && (
+                    <button
+                      type="button"
+                      onClick={handleNaverSignup}
+                      disabled={oauthLoading !== null}
+                      className="w-full h-14 flex items-center justify-center gap-3 bg-[#03C75A] rounded-[15px] text-white font-bold hover:bg-[#02b351] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    >
+                      {oauthLoading === 'naver' ? (
+                        <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          />
+                        </svg>
+                      ) : (
+                        <svg className="w-5 h-5" viewBox="0 0 24 24">
+                          <path
+                            fill="white"
+                            d="M16.273 12.845L7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"
+                            transform="scale(0.8) translate(3, 3)"
+                          />
+                        </svg>
+                      )}
+                      네이버로 시작하기
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+
+              <motion.p
+                {...fadeInUp}
+                transition={{ delay: 0.45 }}
+                className="mt-6 text-center text-sm text-[#74747F] dark:text-gray-400"
+              >
+                이미 계정이 있으신가요?{' '}
+                <Link
+                  to="/login"
+                  className="font-bold text-primary-500 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
+                >
+                  로그인
+                </Link>
+              </motion.p>
+            </div>
+          </motion.div>
+        </div>
+      </div>
     </div>
   );
 };
