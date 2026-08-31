@@ -59,7 +59,7 @@ const mockInAppPurchases = {
 const loadPaymentService = () => {
   jest.resetModules();
   jest.doMock('@react-native-async-storage/async-storage', () => mockAsyncStorage);
-  jest.doMock('expo-in-app-purchases', () => mockInAppPurchases);
+  jest.doMock('../lib/iapShim', () => mockInAppPurchases);
   jest.doMock('react-native', () => ({
     Alert: mockAlert,
   }));

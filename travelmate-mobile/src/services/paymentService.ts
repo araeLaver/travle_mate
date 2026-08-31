@@ -4,7 +4,9 @@
  */
 
 import { Alert } from 'react-native';
-import * as InAppPurchases from 'expo-in-app-purchases';
+// expo-in-app-purchases is deprecated (fails to compile on SDK 52);
+// shim reports IAP unavailable until a maintained IAP lib replaces it.
+import * as InAppPurchases from '../lib/iapShim';
 import { apiClient } from './apiClient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
