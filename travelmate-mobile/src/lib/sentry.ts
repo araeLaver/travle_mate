@@ -194,19 +194,16 @@ export const trackPayment = (productId: string, success: boolean, error?: string
 };
 
 /**
- * Start a performance transaction
+ * Start a performance span (Sentry v6 replaced startTransaction with spans)
  */
 export const startTransaction = (name: string, op: string) => {
-  return Sentry.startTransaction({
-    name,
-    op,
-  });
+  return Sentry.startInactiveSpan({ name, op });
 };
 
 /**
  * Wrap navigation with Sentry
  */
-export const routingInstrumentation = new Sentry.ReactNavigationInstrumentation();
+export const routingInstrumentation = Sentry.reactNavigationIntegration();
 
 /**
  * Wrap component with Sentry for performance monitoring
