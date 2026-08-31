@@ -1,18 +1,23 @@
 # Fryndo 출시 전 외부 자격증명 체크리스트
 
-코드/설정은 출시 준비가 끝났고, 아래 항목은 **저장소에 담을 수 없는 외부 계정/키**라서
-운영자가 직접 발급·설정해야 한다. 각 항목의 placeholder 위치를 함께 적는다.
+(2026-08-31 갱신) EAS·Firebase·Google OAuth는 완료. 남은 항목만 운영자 작업 필요.
 
-## 모바일 (travelmate-mobile) — EAS 빌드 전 필수
+## 완료 ✅
 
-| # | 항목 | 설정 위치 | 현재 값 (placeholder) |
-|---|------|-----------|----------------------|
-| 1 | EAS 프로젝트 연결 (`eas init`) | `app.json` → `extra.eas.projectId`, `updates.url` | `your-project-id` |
-| 2 | Apple 제출 계정 | `eas.json` → `submit.production.ios` (`appleId`, `ascAppId`, `appleTeamId`) | `your-apple-id@example.com` 등 |
-| 3 | Google Play 서비스 계정 키 | `eas.json` → `submit.production.android.serviceAccountKeyPath` | `./google-play-service-account.json` (파일 없음) |
-| 4 | Firebase Android 설정 | `app.json` → `android.googleServicesFile` | `./google-services.json` (파일 없음) — FCM 푸시에 필요 |
-| 5 | Google Maps Android API 키 | `app.json` → `android.config.googleMaps.apiKey` | `YOUR_GOOGLE_MAPS_API_KEY` — 없으면 Android 지도 백지 |
-| 6 | Google OAuth 클라이언트 ID 4종 | `app.json` → `extra.googleIosClientId` / `googleAndroidClientId` / `googleWebClientId` / `googleExpoClientId` | `YOUR_GOOGLE_..._CLIENT_ID` — 없으면 Google 로그인 불가 |
+- **EAS**: `@downlab/fryndo` (projectId `f9508e1a-...`), Android 키스토어 EAS 관리
+- **Firebase**: 프로젝트 `fryndo-23e4a` (Spark 무료 요금제 — Blaze 업그레이드 발생했었으나 다운그레이드 완료), Android 앱 `com.fryndo.app`, `google-services.json` 저장소 반영
+- **Google OAuth**: 동의 화면(외부) + 클라이언트 3종 (`app.json` 반영; 웹 secret은 루트 `.env`)
+- **IAP**: expo-in-app-purchases 제거(사장된 패키지) → `src/lib/iapShim` — 스토어 결제는 정식 출시 시 react-native-iap/RevenueCat로 교체
+
+## 모바일 — 남은 항목
+
+| # | 항목 | 설정 위치 | 상태 |
+|---|------|-----------|------|
+| 1 | Apple 제출 계정 ($99/년) | `eas.json` → `submit.production.ios` | placeholder |
+| 2 | Google Play 서비스 계정 키 ($25) | `eas.json` → `submit.production.android` | 파일 없음 |
+| 3 | FCM V1 서비스 계정 키 | Firebase 콘솔 → 서비스 계정 → 새 비공개 키 → expo.dev Credentials 업로드 | 미등록 (푸시 테스트 전까지 불필요; 자동 다운로드 차단으로 수동 발급 필요) |
+| 4 | Google Maps Android API 키 | `app.json` → `android.config.googleMaps.apiKey` | **보류** — Maps SDK는 결제 계정 필수라 사용자 결정으로 스킵. 활성화하려면 GCP 결제 연결 후 키 발급 |
+| 5 | Sentry DSN (모바일) | `app.json` → `extra.sentryDsn` + EAS secret `SENTRY_AUTH_TOKEN` | 계정 미생성. 계정 생성은 운영자 직접 (빌드는 `SENTRY_DISABLE_AUTO_UPLOAD=true`로 우회 중) |
 | 7 | Sentry DSN (모바일) | `app.json` → `extra.sentryDsn` | placeholder — 미설정 시 초기화를 건너뛰도록 가드됨 (`src/lib/sentry.ts`) |
 
 주의:
