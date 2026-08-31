@@ -146,10 +146,10 @@
     "extra": {
       "apiUrl": "https://api.fryndo.com",
       "webUrl": "https://fryndo.com",
-      "googleIosClientId": "YOUR_GOOGLE_IOS_CLIENT_ID",
-      "googleAndroidClientId": "YOUR_GOOGLE_ANDROID_CLIENT_ID",
-      "googleWebClientId": "YOUR_GOOGLE_WEB_CLIENT_ID",
-      "googleExpoClientId": "YOUR_GOOGLE_EXPO_CLIENT_ID",
+      "googleIosClientId": "383693754351-0m0n2dhcqrurbkjm29u97hnte2si2nln.apps.googleusercontent.com",
+      "googleAndroidClientId": "383693754351-tfhkp919gstoo8if77v41117dv06f0no.apps.googleusercontent.com",
+      "googleWebClientId": "383693754351-fatu4q4r7p5stpqd237bngbjh3hinais.apps.googleusercontent.com",
+      "googleExpoClientId": "383693754351-fatu4q4r7p5stpqd237bngbjh3hinais.apps.googleusercontent.com",
       "sentryDsn": "https://your-sentry-dsn@sentry.io/project-id",
       "eas": {
         "projectId": "f9508e1a-a6fc-4572-801b-a96b72d670ee"
