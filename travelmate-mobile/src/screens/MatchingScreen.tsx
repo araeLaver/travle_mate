@@ -2,7 +2,7 @@
  * Matching Request Management Screen
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -17,7 +17,8 @@ import {
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { apiClient } from '../services/apiClient';
-import { palette, fonts, type, spacing, radii } from '../theme';
+import { ThemePalette, fonts, type, spacing, radii } from '../theme';
+import { useTheme } from '../contexts/ThemeContext';
 import Icon from '../components/icons/Icon';
 
 type MatchingScreenNavigationProp = NativeStackNavigationProp<
@@ -82,7 +83,9 @@ interface MatchRequest {
   reviewWritten?: boolean;
 }
 
-const STATUS_LABELS: Record<MatchStatus, { text: string; color: string }> = {
+const statusLabelsFor = (
+  palette: ThemePalette
+): Record<MatchStatus, { text: string; color: string }> => ({
   PENDING: { text: '대기중', color: palette.rarityLegendary },
   ACCEPTED: { text: '수락됨', color: palette.primary },
   REJECTED: { text: '거절됨', color: palette.error },
@@ -90,9 +93,12 @@ const STATUS_LABELS: Record<MatchStatus, { text: string; color: string }> = {
   CANCELLED: { text: '취소됨', color: palette.textMuted },
   EXPIRED: { text: '만료됨', color: palette.textMuted },
   MATCHED: { text: '매칭됨', color: palette.primary },
-};
+});
 
 const MatchingScreen: React.FC<Props> = ({ navigation }) => {
+  const { palette } = useTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
+  const statusLabels = useMemo(() => statusLabelsFor(palette), [palette]);
   const [tab, setTab] = useState<TabType>('received');
   const [matches, setMatches] = useState<MatchRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -246,7 +252,7 @@ const MatchingScreen: React.FC<Props> = ({ navigation }) => {
   });
 
   const renderMatchCard = ({ item }: { item: MatchRequest }) => {
-    const statusInfo = STATUS_LABELS[item.status];
+    const statusInfo = statusLabels[item.status];
     return (
       <TouchableOpacity
         style={styles.matchCard}
@@ -272,7 +278,7 @@ const MatchingScreen: React.FC<Props> = ({ navigation }) => {
               <Text style={styles.nickname}>{item.otherUser.nickname}</Text>
               {item.otherUser.isVerified && (
                 <View style={styles.verifiedBadge}>
-                  <Icon name="check" size={10} color={palette.white} strokeWidth={3} />
+                  <Icon name="check" size={10} color={palette.onPrimary} strokeWidth={3} />
                 </View>
               )}
             </View>
@@ -406,7 +412,7 @@ const MatchingScreen: React.FC<Props> = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (palette: ThemePalette) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: palette.surface,
@@ -540,7 +546,7 @@ const styles = StyleSheet.create({
   acceptButtonText: {
     fontFamily: fonts.extrabold,
     fontSize: 14,
-    color: palette.white,
+    color: palette.onPrimary,
   },
   rejectButton: {
     flex: 1,
@@ -575,7 +581,7 @@ const styles = StyleSheet.create({
   completeButtonText: {
     fontFamily: fonts.extrabold,
     fontSize: 14,
-    color: palette.white,
+    color: palette.background,
   },
   reviewButton: {
     flex: 1,

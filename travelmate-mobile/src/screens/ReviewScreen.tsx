@@ -2,7 +2,7 @@
  * Review Write Screen — post-travel mutual review
  */
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -25,7 +25,8 @@ import {
   TravelReviewRatingKey,
   TravelReviewRatings,
 } from '../services/travelReviewPayload';
-import { palette, fonts, type, spacing, radii } from '../theme';
+import { useTheme } from '../contexts/ThemeContext';
+import { ThemePalette, fonts, type, spacing, radii } from '../theme';
 import Icon from '../components/icons/Icon';
 
 type ReviewScreenNavigationProp = NativeStackNavigationProp<
@@ -52,6 +53,8 @@ const CRITERIA: Array<{
 ];
 
 const ReviewScreen: React.FC<Props> = ({ navigation, route }) => {
+  const { palette } = useTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const { matchId, targetUserId, targetUserNickname } = route.params;
   const targetDisplayName = targetUserNickname || '상대방';
   const [ratings, setRatings] = useState<TravelReviewRatings>({
@@ -194,7 +197,8 @@ const ReviewScreen: React.FC<Props> = ({ navigation, route }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: palette.background,
@@ -302,7 +306,7 @@ const styles = StyleSheet.create({
   },
   submitButtonText: {
     ...type.button,
-    color: palette.white,
+    color: palette.onPrimary,
   },
   bottomPadding: {
     height: 48,

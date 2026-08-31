@@ -2,7 +2,7 @@
  * Home Screen for TravelMate Mobile
  */
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -20,7 +20,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNotifications } from '../contexts/NotificationContext';
 import { nftService, NearbyLocation } from '../services/nftService';
 import * as Location from 'expo-location';
-import { palette, fonts, type, spacing, radii, rarityColor } from '../theme';
+import { useTheme } from '../contexts/ThemeContext';
+import { ThemePalette, fonts, type, spacing, radii, rarityColorFor } from '../theme';
 import Icon, { IconName } from '../components/icons/Icon';
 
 type HomeScreenNavigationProp = CompositeNavigationProp<
@@ -34,13 +35,19 @@ interface Props {
 
 const NEARBY_CARD_WIDTH = 150;
 
-const QuickActionIcon: React.FC<{ name: IconName }> = ({ name }) => (
+const QuickActionIcon: React.FC<{
+  name: IconName;
+  palette: ThemePalette;
+  styles: ReturnType<typeof createStyles>;
+}> = ({ name, palette, styles }) => (
   <View style={styles.actionIcon}>
     <Icon name={name} size={22} color={palette.primary} />
   </View>
 );
 
 const HomeScreen: React.FC<Props> = ({ navigation }) => {
+  const { palette } = useTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const { user } = useAuth();
   const { unreadCount } = useNotifications();
   const [nearbyLocations, setNearbyLocations] = useState<NearbyLocation[]>([]);
@@ -101,7 +108,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
             </View>
           )}
           <View
-            style={[styles.rarityBadge, { backgroundColor: rarityColor(location.rarity) }]}
+            style={[styles.rarityBadge, { backgroundColor: rarityColorFor(palette, location.rarity) }]}
           >
             <Text style={styles.rarityText}>
               {nftService.getRarityLabel(location.rarity)}
@@ -211,7 +218,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
             style={styles.actionButton}
             onPress={() => navigation.navigate('Map' as any)}
           >
-            <QuickActionIcon name="pin" />
+            <QuickActionIcon name="pin" palette={palette} styles={styles} />
             <Text style={styles.actionText}>지도 보기</Text>
           </TouchableOpacity>
 
@@ -219,7 +226,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
             style={styles.actionButton}
             onPress={() => navigation.navigate('Collection' as any)}
           >
-            <QuickActionIcon name="grid" />
+            <QuickActionIcon name="grid" palette={palette} styles={styles} />
             <Text style={styles.actionText}>내 컬렉션</Text>
           </TouchableOpacity>
 
@@ -227,7 +234,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
             style={styles.actionButton}
             onPress={() => navigation.navigate('UserSearch')}
           >
-            <QuickActionIcon name="search" />
+            <QuickActionIcon name="search" palette={palette} styles={styles} />
             <Text style={styles.actionText}>동행자 찾기</Text>
           </TouchableOpacity>
 
@@ -235,7 +242,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
             style={styles.actionButton}
             onPress={() => navigation.navigate('Matching')}
           >
-            <QuickActionIcon name="users" />
+            <QuickActionIcon name="users" palette={palette} styles={styles} />
             <Text style={styles.actionText}>매칭 관리</Text>
           </TouchableOpacity>
 
@@ -243,7 +250,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
             style={styles.actionButton}
             onPress={() => navigation.navigate('Settings')}
           >
-            <QuickActionIcon name="gear" />
+            <QuickActionIcon name="gear" palette={palette} styles={styles} />
             <Text style={styles.actionText}>설정</Text>
           </TouchableOpacity>
         </View>
@@ -305,7 +312,8 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: palette.background,
@@ -362,7 +370,7 @@ const styles = StyleSheet.create({
     ...type.badge,
     fontSize: 9,
     lineHeight: 11,
-    color: palette.white,
+    color: palette.onPrimary,
   },
   avatar: {
     width: 40,
@@ -518,7 +526,7 @@ const styles = StyleSheet.create({
   },
   rarityText: {
     ...type.badge,
-    color: palette.white,
+    color: palette.background,
   },
   cardFooter: {
     flexDirection: 'row',
@@ -574,6 +582,6 @@ const styles = StyleSheet.create({
   bottomPadding: {
     height: spacing.xxl,
   },
-});
+  });
 
 export default HomeScreen;

@@ -2,7 +2,7 @@
  * Profile Screen for TravelMate Mobile
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -22,7 +22,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { takePhoto, pickImage, showImageSourcePicker } from '../services/cameraService';
 import apiClient from '../services/apiClient';
 import Icon, { IconName } from '../components/icons/Icon';
-import { palette, fonts, type, spacing, radii } from '../theme';
+import { useTheme } from '../contexts/ThemeContext';
+import { ThemePalette, fonts, type, spacing, radii } from '../theme';
 
 type ProfileScreenNavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<MainTabParamList, 'Profile'>,
@@ -38,9 +39,11 @@ interface MenuRowProps {
   label: string;
   subtext?: string;
   onPress?: () => void;
+  palette: ThemePalette;
+  styles: ReturnType<typeof createStyles>;
 }
 
-const MenuRow: React.FC<MenuRowProps> = ({ icon, label, subtext, onPress }) => (
+const MenuRow: React.FC<MenuRowProps> = ({ icon, label, subtext, onPress, palette, styles }) => (
   <TouchableOpacity style={styles.menuItem} onPress={onPress}>
     <View style={styles.menuIconTile}>
       <Icon name={icon} size={20} color={palette.textSecondary} />
@@ -54,6 +57,8 @@ const MenuRow: React.FC<MenuRowProps> = ({ icon, label, subtext, onPress }) => (
 );
 
 const ProfileScreen: React.FC<Props> = ({ navigation }) => {
+  const { palette } = useTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const { user, logout, refreshUser } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
@@ -164,9 +169,9 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
             )}
             <View style={styles.cameraButton}>
               {uploadingPhoto ? (
-                <ActivityIndicator size="small" color={palette.white} />
+                <ActivityIndicator size="small" color={palette.onPrimary} />
               ) : (
-                <Icon name="camera" size={14} color={palette.white} />
+                <Icon name="camera" size={14} color={palette.onPrimary} />
               )}
             </View>
           </TouchableOpacity>
@@ -204,6 +209,8 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
         <Text style={styles.menuTitle}>내 활동</Text>
 
         <MenuRow
+          palette={palette}
+          styles={styles}
           icon="crown"
           label="내 컬렉션"
           subtext={`${user.totalNftsCollected}개의 NFT`}
@@ -211,6 +218,8 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
         />
 
         <MenuRow
+          palette={palette}
+          styles={styles}
           icon="wallet"
           label="포인트 내역"
           subtext={`${user.totalPoints.toLocaleString()} P`}
@@ -223,18 +232,24 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
         <Text style={styles.menuTitle}>설정</Text>
 
         <MenuRow
+          palette={palette}
+          styles={styles}
           icon="gear"
           label="앱 설정"
           onPress={() => navigation.navigate('Settings')}
         />
 
         <MenuRow
+          palette={palette}
+          styles={styles}
           icon="user"
           label="프로필 편집"
           onPress={() => {/* 프로필 편집 페이지 */}}
         />
 
         <MenuRow
+          palette={palette}
+          styles={styles}
           icon="bell"
           label="알림 설정"
           onPress={() => {/* 알림 설정 */}}
@@ -245,11 +260,11 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
       <View style={styles.menuSection}>
         <Text style={styles.menuTitle}>지원</Text>
 
-        <MenuRow icon="chat" label="도움말" />
+        <MenuRow palette={palette} styles={styles} icon="chat" label="도움말" />
 
-        <MenuRow icon="stamp" label="이용약관" />
+        <MenuRow palette={palette} styles={styles} icon="stamp" label="이용약관" />
 
-        <MenuRow icon="lock" label="개인정보처리방침" />
+        <MenuRow palette={palette} styles={styles} icon="lock" label="개인정보처리방침" />
       </View>
 
       {/* Logout Button */}
@@ -266,7 +281,8 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: palette.background,
@@ -323,7 +339,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: palette.white,
+    borderColor: palette.background,
   },
   profileInfo: {
     marginLeft: spacing.lg,
@@ -386,7 +402,7 @@ const styles = StyleSheet.create({
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: palette.white,
+    backgroundColor: palette.surface,
     borderWidth: 1,
     borderColor: palette.hairline,
     padding: spacing.md,
@@ -397,7 +413,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: radii.iconButton,
-    backgroundColor: palette.surface,
+    backgroundColor: palette.surfaceAlt,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: spacing.md,
@@ -443,6 +459,6 @@ const styles = StyleSheet.create({
   bottomPadding: {
     height: 48,
   },
-});
+  });
 
 export default ProfileScreen;

@@ -3,7 +3,7 @@
  * Displays user's NFT collection
  */
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -21,7 +21,8 @@ import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { RootStackParamList, MainTabParamList } from '../navigation/AppNavigator';
 import { nftService, NftCollection } from '../services/nftService';
 import { ListSkeleton } from '../components/SkeletonLoader';
-import { palette, fonts, type, spacing, radii, rarityColor } from '../theme';
+import { useTheme } from '../contexts/ThemeContext';
+import { ThemePalette, fonts, type, spacing, radii, rarityColorFor } from '../theme';
 import Icon from '../components/icons/Icon';
 
 type CollectionScreenNavigationProp = CompositeNavigationProp<
@@ -37,19 +38,22 @@ const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - spacing.screenH * 2 - spacing.md) / 2;
 
 /** Rarity → stat-number tint (common uses ink per spec; UNCOMMON has no design equivalent). */
-const rarityStatColor = (rarity: string): string => {
+const rarityStatColor = (palette: ThemePalette, rarity: string): string => {
   switch (rarity) {
     case 'COMMON':
       return palette.ink;
     case 'UNCOMMON':
       return '#10B981';
     default:
-      return rarityColor(rarity);
+      return rarityColorFor(palette, rarity);
   }
 };
 
 /** Mint status → chip colors (민팅됨 = primarySoft/primary per spec). */
-const mintStatusChip = (status: string): { backgroundColor: string; color: string } => {
+const mintStatusChip = (
+  palette: ThemePalette,
+  status: string
+): { backgroundColor: string; color: string } => {
   switch (status) {
     case 'MINTED':
       return { backgroundColor: palette.primarySoft, color: palette.primary };
@@ -63,6 +67,8 @@ const mintStatusChip = (status: string): { backgroundColor: string; color: strin
 };
 
 const CollectionScreen: React.FC<Props> = ({ navigation }) => {
+  const { palette } = useTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const [collections, setCollections] = useState<NftCollection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -114,8 +120,8 @@ const CollectionScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const renderItem = ({ item }: { item: NftCollection }) => {
-    const itemRarityColor = rarityColor(item.rarity);
-    const mintChip = mintStatusChip(item.mintStatus);
+    const itemRarityColor = rarityColorFor(palette, item.rarity);
+    const mintChip = mintStatusChip(palette, item.mintStatus);
 
     return (
       <TouchableOpacity
@@ -171,7 +177,7 @@ const CollectionScreen: React.FC<Props> = ({ navigation }) => {
           const count = collections.filter((c) => c.rarity === rarity).length;
           return (
             <View key={rarity} style={styles.statTile}>
-              <Text style={[styles.statCount, { color: rarityStatColor(rarity) }]}>
+              <Text style={[styles.statCount, { color: rarityStatColor(palette, rarity) }]}>
                 {count}
               </Text>
               <Text style={styles.statLabel}>{nftService.getRarityLabel(rarity)}</Text>
@@ -239,7 +245,8 @@ const CollectionScreen: React.FC<Props> = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: palette.background,
@@ -327,7 +334,7 @@ const styles = StyleSheet.create({
   },
   rarityBadgeText: {
     ...type.badge,
-    color: palette.white,
+    color: palette.background,
   },
   cardContent: {
     padding: spacing.md,
@@ -396,12 +403,12 @@ const styles = StyleSheet.create({
   },
   emptyButtonText: {
     ...type.button,
-    color: palette.white,
+    color: palette.onPrimary,
   },
   footer: {
     paddingVertical: spacing.lg,
     alignItems: 'center',
   },
-});
+  });
 
 export default CollectionScreen;

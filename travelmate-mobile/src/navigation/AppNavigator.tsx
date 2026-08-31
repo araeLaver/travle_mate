@@ -2,15 +2,21 @@
  * App Navigator for Fryndo Mobile
  */
 
-import React from 'react';
-import { NavigationContainer, NavigationContainerRef } from '@react-navigation/native';
+import React, { useMemo } from 'react';
+import {
+  NavigationContainer,
+  NavigationContainerRef,
+  DefaultTheme,
+  DarkTheme,
+} from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, Text, StyleSheet } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { linkingConfig, setNavigationRef } from '../services/deepLinkService';
 import Icon, { IconName } from '../components/icons/Icon';
-import { palette, fonts } from '../theme';
+import { ThemePalette, fonts } from '../theme';
 
 // Screens
 import LoginScreen from '../screens/LoginScreen';
@@ -77,15 +83,18 @@ const TAB_ICONS: Record<string, IconName> = {
   Profile: 'user',
 };
 
-const TabIcon = ({ name, focused }: { name: string; focused: boolean }) => (
-  <View style={styles.tabIconContainer}>
-    <Icon
-      name={TAB_ICONS[name] || 'compass'}
-      size={24}
-      color={focused ? palette.primary : palette.placeholder}
-    />
-  </View>
-);
+const TabIcon = ({ name, focused }: { name: string; focused: boolean }) => {
+  const { palette } = useTheme();
+  return (
+    <View style={styles.tabIconContainer}>
+      <Icon
+        name={TAB_ICONS[name] || 'compass'}
+        size={24}
+        color={focused ? palette.primary : palette.placeholder}
+      />
+    </View>
+  );
+};
 
 // Auth Navigator
 const AuthNavigator = () => {
@@ -99,6 +108,7 @@ const AuthNavigator = () => {
 
 // Main Tab Navigator
 const MainTabNavigator = () => {
+  const { palette } = useTheme();
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -152,12 +162,28 @@ const MainTabNavigator = () => {
 // App Navigator
 const AppNavigator = () => {
   const { isAuthenticated, isLoading } = useAuth();
+  const { palette, isDark } = useTheme();
+  const themedStyles = useMemo(() => createThemedStyles(palette), [palette]);
+  const navigationTheme = useMemo(() => {
+    const base = isDark ? DarkTheme : DefaultTheme;
+    return {
+      ...base,
+      colors: {
+        ...base.colors,
+        primary: palette.primary,
+        background: palette.background,
+        card: palette.background,
+        text: palette.ink,
+        border: palette.hairline,
+      },
+    };
+  }, [isDark, palette]);
   const navigationRef = React.useRef<NavigationContainerRef<RootStackParamList>>(null);
 
   if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Fryndo</Text>
+      <View style={themedStyles.loadingContainer}>
+        <Text style={themedStyles.loadingText}>Fryndo</Text>
       </View>
     );
   }
@@ -165,10 +191,18 @@ const AppNavigator = () => {
   return (
     <NavigationContainer
       ref={navigationRef}
+      theme={navigationTheme}
       linking={isAuthenticated ? linkingConfig : undefined}
       onReady={() => setNavigationRef(navigationRef.current)}
     >
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator
+        screenOptions={{
+          headerShown: false,
+          headerStyle: { backgroundColor: palette.background },
+          headerTintColor: palette.ink,
+          headerTitleStyle: { color: palette.ink },
+        }}
+      >
         {isAuthenticated ? (
           <>
             <Stack.Screen name="Main" component={MainTabNavigator} />
@@ -179,7 +213,6 @@ const AppNavigator = () => {
                 headerShown: true,
                 headerTitle: '장소 상세',
                 headerBackTitle: '뒤로',
-                headerTintColor: palette.ink,
               }}
             />
             <Stack.Screen
@@ -189,7 +222,6 @@ const AppNavigator = () => {
                 headerShown: true,
                 headerTitle: '설정',
                 headerBackTitle: '뒤로',
-                headerTintColor: palette.ink,
               }}
             />
             <Stack.Screen
@@ -198,7 +230,6 @@ const AppNavigator = () => {
               options={{
                 headerShown: true,
                 headerBackTitle: '뒤로',
-                headerTintColor: palette.ink,
               }}
             />
             <Stack.Screen
@@ -208,7 +239,6 @@ const AppNavigator = () => {
                 headerShown: true,
                 headerTitle: '새 그룹 만들기',
                 headerBackTitle: '뒤로',
-                headerTintColor: palette.ink,
               }}
             />
             <Stack.Screen
@@ -218,7 +248,6 @@ const AppNavigator = () => {
                 headerShown: true,
                 headerTitle: '알림',
                 headerBackTitle: '뒤로',
-                headerTintColor: palette.ink,
               }}
             />
             <Stack.Screen
@@ -228,7 +257,6 @@ const AppNavigator = () => {
                 headerShown: true,
                 headerTitle: '프리미엄',
                 headerBackTitle: '뒤로',
-                headerTintColor: palette.ink,
               }}
             />
             <Stack.Screen
@@ -238,7 +266,6 @@ const AppNavigator = () => {
                 headerShown: true,
                 headerTitle: '동행자 찾기',
                 headerBackTitle: '뒤로',
-                headerTintColor: palette.ink,
               }}
             />
             <Stack.Screen
@@ -248,7 +275,6 @@ const AppNavigator = () => {
                 headerShown: true,
                 headerTitle: '프로필',
                 headerBackTitle: '뒤로',
-                headerTintColor: palette.ink,
               }}
             />
             <Stack.Screen
@@ -258,7 +284,6 @@ const AppNavigator = () => {
                 headerShown: true,
                 headerTitle: '리뷰 작성',
                 headerBackTitle: '뒤로',
-                headerTintColor: palette.ink,
               }}
             />
             <Stack.Screen
@@ -268,7 +293,6 @@ const AppNavigator = () => {
                 headerShown: true,
                 headerTitle: '매칭 관리',
                 headerBackTitle: '뒤로',
-                headerTintColor: palette.ink,
               }}
             />
           </>
@@ -280,19 +304,23 @@ const AppNavigator = () => {
   );
 };
 
+const createThemedStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+    loadingContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: palette.primary,
+    },
+    loadingText: {
+      fontSize: 30,
+      fontFamily: fonts.extrabold,
+      color: palette.onPrimary,
+      letterSpacing: -0.9,
+    },
+  });
+
 const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: palette.primary,
-  },
-  loadingText: {
-    fontSize: 30,
-    fontFamily: fonts.extrabold,
-    color: palette.white,
-    letterSpacing: -0.9,
-  },
   tabIconContainer: {
     alignItems: 'center',
     justifyContent: 'center',

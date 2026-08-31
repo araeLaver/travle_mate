@@ -3,7 +3,7 @@
  * Shows network status when offline or syncing
  */
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -13,7 +13,8 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useOffline } from '../contexts/OfflineContext';
-import { palette, fonts, spacing, radii } from '../theme';
+import { ThemePalette, fonts, spacing, radii } from '../theme';
+import { useTheme } from '../contexts/ThemeContext';
 import Icon, { IconName } from './icons/Icon';
 
 interface Props {
@@ -22,6 +23,8 @@ interface Props {
 }
 
 const OfflineBanner: React.FC<Props> = ({ showPendingCount = true, onSyncPress }) => {
+  const { palette, isDark } = useTheme();
+  const styles = useMemo(() => createStyles(palette, isDark), [palette, isDark]);
   const { isOnline, pendingActionsCount, syncPendingActions } = useOffline();
   const slideAnim = useRef(new Animated.Value(-60)).current;
   const [isSyncing, setIsSyncing] = React.useState(false);
@@ -110,14 +113,14 @@ const OfflineBanner: React.FC<Props> = ({ showPendingCount = true, onSyncPress }
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (palette: ThemePalette, isDark: boolean) => StyleSheet.create({
   container: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     zIndex: 1000,
-    backgroundColor: palette.ink,
+    backgroundColor: isDark ? palette.surfaceAlt : palette.ink,
     paddingTop: 44, // Safe area top
     paddingBottom: spacing.sm,
     paddingHorizontal: spacing.lg,
@@ -133,12 +136,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   message: {
-    color: palette.white,
+    color: isDark ? palette.ink : palette.white,
     fontFamily: fonts.bold,
     fontSize: 13,
   },
   subMessage: {
-    color: palette.darkTextSecondary,
+    color: isDark ? palette.textSecondary : '#A0A0AC',
     fontFamily: fonts.semibold,
     fontSize: 11,
     marginTop: 2,

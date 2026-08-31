@@ -2,7 +2,7 @@
  * User Search & Recommendation Screen
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -17,7 +17,8 @@ import {
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { apiClient } from '../services/apiClient';
-import { palette, fonts, type, spacing, radii } from '../theme';
+import { ThemePalette, fonts, type, spacing, radii } from '../theme';
+import { useTheme } from '../contexts/ThemeContext';
 import Icon from '../components/icons/Icon';
 
 type UserSearchScreenNavigationProp = NativeStackNavigationProp<
@@ -56,6 +57,8 @@ interface MatchRecommendation {
 }
 
 const UserSearchScreen: React.FC<Props> = ({ navigation }) => {
+  const { palette } = useTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const [query, setQuery] = useState('');
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [recommended, setRecommended] = useState<UserProfile[]>([]);
@@ -146,7 +149,7 @@ const UserSearchScreen: React.FC<Props> = ({ navigation }) => {
           <Text style={styles.nickname}>{item.nickname}</Text>
           {item.isVerified && (
             <View style={styles.verifiedBadge}>
-              <Icon name="check" size={10} color={palette.white} strokeWidth={3} />
+              <Icon name="check" size={10} color={palette.onPrimary} strokeWidth={3} />
             </View>
           )}
         </View>
@@ -232,7 +235,7 @@ const UserSearchScreen: React.FC<Props> = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (palette: ThemePalette) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: palette.background,

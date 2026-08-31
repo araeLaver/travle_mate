@@ -2,7 +2,7 @@
  * Settings Screen for TravelMate Mobile
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -26,10 +26,15 @@ import {
   BiometricType,
 } from '../services/biometricService';
 import { buildWebUrl } from '../services/appConfig';
-import { palette, fonts, type, spacing, radii } from '../theme';
+import { ThemePalette, fonts, type, spacing, radii } from '../theme';
+import { useTheme, ThemeMode } from '../contexts/ThemeContext';
 import Icon from '../components/icons/Icon';
 
-const TOGGLE_TRACK = { false: palette.outline, true: palette.primary };
+const THEME_MODE_OPTIONS: { value: ThemeMode; label: string }[] = [
+  { value: 'light', label: '라이트' },
+  { value: 'dark', label: '다크' },
+  { value: 'system', label: '시스템' },
+];
 
 type SettingsScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -41,6 +46,12 @@ interface Props {
 }
 
 const SettingsScreen: React.FC<Props> = ({ navigation }) => {
+  const { palette, isDark, mode, setMode } = useTheme();
+  const styles = useMemo(() => createStyles(palette, isDark), [palette, isDark]);
+  const toggleTrack = useMemo(
+    () => ({ false: palette.outline, true: palette.primary }),
+    [palette]
+  );
   const [pushNotifications, setPushNotifications] = useState(true);
   const [locationServices, setLocationServices] = useState(true);
   const [nearbyAlerts, setNearbyAlerts] = useState(true);
@@ -144,7 +155,7 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
               onValueChange={(value) =>
                 handleToggle('pushNotifications', value, setPushNotifications)
               }
-              trackColor={TOGGLE_TRACK}
+              trackColor={toggleTrack}
               thumbColor={palette.white}
             />
           </View>
@@ -164,7 +175,7 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
               onValueChange={(value) =>
                 handleToggle('nearbyAlerts', value, setNearbyAlerts)
               }
-              trackColor={TOGGLE_TRACK}
+              trackColor={toggleTrack}
               thumbColor={palette.white}
               disabled={!pushNotifications}
             />
@@ -185,10 +196,50 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
               onValueChange={(value) =>
                 handleToggle('collectAlerts', value, setCollectAlerts)
               }
-              trackColor={TOGGLE_TRACK}
+              trackColor={toggleTrack}
               thumbColor={palette.white}
               disabled={!pushNotifications}
             />
+          </View>
+        </View>
+      </View>
+
+      {/* App Settings Section */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>앱 설정</Text>
+
+        <View style={styles.card}>
+          <View style={styles.settingItem}>
+            <View style={styles.rowIcon}>
+              <Icon name="spark" size={22} color={palette.ink} />
+            </View>
+            <View style={styles.settingInfo}>
+              <Text style={styles.settingTitle}>테마</Text>
+              <Text style={styles.settingDescription}>
+                앱 화면 테마를 선택합니다
+              </Text>
+            </View>
+            <View style={styles.segmentContainer}>
+              {THEME_MODE_OPTIONS.map(option => (
+                <TouchableOpacity
+                  key={option.value}
+                  style={[
+                    styles.segment,
+                    mode === option.value && styles.segmentActive,
+                  ]}
+                  onPress={() => setMode(option.value)}
+                >
+                  <Text
+                    style={[
+                      styles.segmentText,
+                      mode === option.value && styles.segmentTextActive,
+                    ]}
+                  >
+                    {option.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
         </View>
       </View>
@@ -211,7 +262,7 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
               <Switch
                 value={biometricOn}
                 onValueChange={handleBiometricToggle}
-                trackColor={TOGGLE_TRACK}
+                trackColor={toggleTrack}
                 thumbColor={palette.white}
               />
             </View>
@@ -239,7 +290,7 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
               onValueChange={(value) =>
                 handleToggle('locationServices', value, setLocationServices)
               }
-              trackColor={TOGGLE_TRACK}
+              trackColor={toggleTrack}
               thumbColor={palette.white}
             />
           </View>
@@ -334,7 +385,7 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (palette: ThemePalette, isDark: boolean) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: palette.surface,
@@ -414,6 +465,40 @@ const styles = StyleSheet.create({
   infoValue: {
     ...type.caption,
     color: palette.textMuted,
+  },
+  segmentContainer: {
+    flexDirection: 'row',
+    backgroundColor: palette.surface,
+    borderRadius: 10,
+    padding: 3,
+  },
+  segment: {
+    height: 36,
+    paddingHorizontal: spacing.md,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  segmentActive: {
+    backgroundColor: isDark ? palette.surfaceAlt : palette.background,
+    ...(isDark
+      ? {}
+      : {
+          shadowColor: '#000000',
+          shadowOpacity: 0.08,
+          shadowRadius: 4,
+          shadowOffset: { width: 0, height: 1 },
+          elevation: 2,
+        }),
+  },
+  segmentText: {
+    fontFamily: fonts.semibold,
+    fontSize: 12,
+    color: palette.textMuted,
+  },
+  segmentTextActive: {
+    fontFamily: fonts.bold,
+    color: palette.ink,
   },
   bottomPadding: {
     height: 48,

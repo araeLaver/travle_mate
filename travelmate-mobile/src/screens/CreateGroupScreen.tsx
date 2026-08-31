@@ -3,7 +3,7 @@
  * Form for creating a new travel group
  */
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -30,7 +30,8 @@ import {
   toCreateGroupRequest,
 } from './createGroupForm';
 import type { Purpose } from './createGroupForm';
-import { palette, fonts, type, spacing, radii } from '../theme';
+import { ThemePalette, fonts, type, spacing, radii } from '../theme';
+import { useTheme } from '../contexts/ThemeContext';
 
 type CreateGroupScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'CreateGroup'>;
 
@@ -39,6 +40,8 @@ interface Props {
 }
 
 const CreateGroupScreen: React.FC<Props> = ({ navigation }) => {
+  const { palette } = useTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [destination, setDestination] = useState('');
@@ -259,7 +262,7 @@ const CreateGroupScreen: React.FC<Props> = ({ navigation }) => {
           disabled={isLoading}
         >
           {isLoading ? (
-            <ActivityIndicator color={palette.white} />
+            <ActivityIndicator color={palette.onPrimary} />
           ) : (
             <Text style={styles.createButtonText}>그룹 만들기</Text>
           )}
@@ -269,7 +272,7 @@ const CreateGroupScreen: React.FC<Props> = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (palette: ThemePalette) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: palette.background,
@@ -346,7 +349,7 @@ const styles = StyleSheet.create({
     color: palette.textSecondary,
   },
   optionButtonTextActive: {
-    color: palette.white,
+    color: palette.background,
   },
   footer: {
     padding: spacing.screenH,
@@ -367,7 +370,7 @@ const styles = StyleSheet.create({
   },
   createButtonText: {
     ...type.button,
-    color: palette.white,
+    color: palette.onPrimary,
   },
 });
 

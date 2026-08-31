@@ -2,7 +2,7 @@
  * User Detail Profile Screen
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -19,7 +19,8 @@ import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { apiClient } from '../services/apiClient';
 import Icon from '../components/icons/Icon';
-import { palette, fonts, type, spacing, radii } from '../theme';
+import { useTheme } from '../contexts/ThemeContext';
+import { ThemePalette, fonts, type, spacing, radii } from '../theme';
 
 type UserProfileScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -85,16 +86,21 @@ interface Review {
   createdAt: string;
 }
 
-const TRUST_BADGES: Record<string, { label: string; color: string }> = {
+const createTrustBadges = (
+  palette: ThemePalette
+): Record<string, { label: string; color: string }> => ({
   NEW: { label: '새싹', color: palette.rarityCommon },
   NEWCOMER: { label: '새싹', color: palette.rarityCommon },
   BRONZE: { label: '브론즈', color: palette.warningText },
   SILVER: { label: '실버', color: palette.textTertiary },
   GOLD: { label: '골드', color: palette.rarityLegendary },
   PLATINUM: { label: '플래티넘', color: palette.rarityEpic },
-};
+});
 
 const UserProfileScreen: React.FC<Props> = ({ navigation, route }) => {
+  const { palette } = useTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
+  const trustBadges = useMemo(() => createTrustBadges(palette), [palette]);
   const { userId } = route.params;
   const [user, setUser] = useState<UserDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -214,7 +220,7 @@ const UserProfileScreen: React.FC<Props> = ({ navigation, route }) => {
     );
   }
 
-  const badge = TRUST_BADGES[user.trustLevel] || TRUST_BADGES.NEWCOMER;
+  const badge = trustBadges[user.trustLevel] || trustBadges.NEWCOMER;
 
   return (
     <ScrollView
@@ -242,7 +248,7 @@ const UserProfileScreen: React.FC<Props> = ({ navigation, route }) => {
             <Text style={styles.nickname}>{user.nickname}</Text>
             {user.isVerified && (
               <View style={styles.verifiedBadge}>
-                <Icon name="check" size={10} color={palette.white} strokeWidth={2.5} />
+                <Icon name="check" size={10} color={palette.onPrimary} strokeWidth={2.5} />
               </View>
             )}
           </View>
@@ -363,7 +369,8 @@ const UserProfileScreen: React.FC<Props> = ({ navigation, route }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: palette.background,
@@ -390,7 +397,7 @@ const styles = StyleSheet.create({
     height: 96,
     borderRadius: 48,
     borderWidth: 4,
-    borderColor: palette.white,
+    borderColor: palette.background,
   },
   profileImagePlaceholder: {
     width: 96,
@@ -534,7 +541,7 @@ const styles = StyleSheet.create({
     color: palette.ink,
   },
   reviewCard: {
-    backgroundColor: palette.white,
+    backgroundColor: palette.surface,
     borderWidth: 1,
     borderColor: palette.hairline,
     padding: 14,
@@ -583,7 +590,7 @@ const styles = StyleSheet.create({
   },
   matchButtonText: {
     ...type.button,
-    color: palette.white,
+    color: palette.onPrimary,
   },
   reportButton: {
     paddingVertical: 14,
@@ -597,6 +604,6 @@ const styles = StyleSheet.create({
   bottomPadding: {
     height: 48,
   },
-});
+  });
 
 export default UserProfileScreen;

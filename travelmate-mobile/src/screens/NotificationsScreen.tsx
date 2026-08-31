@@ -3,7 +3,7 @@
  * Displays user notifications list
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -21,28 +21,31 @@ import {
   PushNotification,
   NotificationType,
 } from '../services/notificationService';
-import { palette, fonts, type, spacing, radii } from '../theme';
+import { ThemePalette, fonts, type, spacing, radii } from '../theme';
+import { useTheme } from '../contexts/ThemeContext';
 import Icon, { IconName } from '../components/icons/Icon';
 
 /** Visual mapping: notification type -> icon + tinted tile colors (design system). */
-const NOTIFICATION_VISUALS: Partial<
-  Record<NotificationType, { icon: IconName; bg: string; fg: string }>
-> = {
-  FOLLOW: { icon: 'user', bg: palette.primarySoft, fg: palette.primary },
-  LIKE: { icon: 'heart', bg: palette.primarySoft, fg: palette.primary },
-  COMMENT: { icon: 'chat', bg: palette.primarySoft, fg: palette.primary },
-  MENTION: { icon: 'chat', bg: palette.primarySoft, fg: palette.primary },
-  GROUP_INVITE: { icon: 'users', bg: palette.primarySoft, fg: palette.primary },
-  GROUP_MESSAGE: { icon: 'send', bg: palette.primarySoft, fg: palette.primary },
-  NEW_MESSAGE: { icon: 'send', bg: palette.primarySoft, fg: palette.primary },
-  NFT_COLLECTED: { icon: 'stamp', bg: palette.warningBg, fg: palette.rarityLegendary },
-  ACHIEVEMENT: { icon: 'crown', bg: palette.warningBg, fg: palette.rarityLegendary },
-  NFT_MINTED: { icon: 'spark', bg: '#F1EAFC', fg: palette.rarityEpic },
-  REVIEW: { icon: 'star', bg: '#F1EAFC', fg: palette.rarityEpic },
-  NEARBY_LOCATION: { icon: 'pin', bg: palette.primarySoft, fg: palette.primary },
+const notificationVisualsFor = (
+  palette: ThemePalette,
+  isDark: boolean
+): Partial<Record<NotificationType, { icon: IconName; bg: string; fg: string }>> => {
+  const epicTile = isDark ? 'rgba(166,108,245,0.16)' : '#F1EAFC';
+  return {
+    FOLLOW: { icon: 'user', bg: palette.primarySoft, fg: palette.primary },
+    LIKE: { icon: 'heart', bg: palette.primarySoft, fg: palette.primary },
+    COMMENT: { icon: 'chat', bg: palette.primarySoft, fg: palette.primary },
+    MENTION: { icon: 'chat', bg: palette.primarySoft, fg: palette.primary },
+    GROUP_INVITE: { icon: 'users', bg: palette.primarySoft, fg: palette.primary },
+    GROUP_MESSAGE: { icon: 'send', bg: palette.primarySoft, fg: palette.primary },
+    NEW_MESSAGE: { icon: 'send', bg: palette.primarySoft, fg: palette.primary },
+    NFT_COLLECTED: { icon: 'stamp', bg: palette.warningBg, fg: palette.rarityLegendary },
+    ACHIEVEMENT: { icon: 'crown', bg: palette.warningBg, fg: palette.rarityLegendary },
+    NFT_MINTED: { icon: 'spark', bg: epicTile, fg: palette.rarityEpic },
+    REVIEW: { icon: 'star', bg: epicTile, fg: palette.rarityEpic },
+    NEARBY_LOCATION: { icon: 'pin', bg: palette.primarySoft, fg: palette.primary },
+  };
 };
-
-const DEFAULT_VISUAL = { icon: 'bell' as IconName, bg: palette.primarySoft, fg: palette.primary };
 
 type NotificationsScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -54,6 +57,16 @@ interface Props {
 }
 
 const NotificationsScreen: React.FC<Props> = ({ navigation }) => {
+  const { palette, isDark } = useTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
+  const notificationVisuals = useMemo(
+    () => notificationVisualsFor(palette, isDark),
+    [palette, isDark]
+  );
+  const defaultVisual = useMemo(
+    () => ({ icon: 'bell' as IconName, bg: palette.primarySoft, fg: palette.primary }),
+    [palette]
+  );
   const [notifications, setNotifications] = useState<PushNotification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -158,7 +171,7 @@ const NotificationsScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const renderNotification = ({ item }: { item: PushNotification }) => {
-    const visual = NOTIFICATION_VISUALS[item.type] || DEFAULT_VISUAL;
+    const visual = notificationVisuals[item.type] || defaultVisual;
 
     return (
       <TouchableOpacity
@@ -246,7 +259,7 @@ const NotificationsScreen: React.FC<Props> = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (palette: ThemePalette) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: palette.background,

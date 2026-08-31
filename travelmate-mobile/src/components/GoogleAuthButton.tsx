@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Text, TouchableOpacity, StyleSheet, StyleProp, ViewStyle, TextStyle } from 'react-native';
 import * as Google from 'expo-auth-session/providers/google';
 import { socialAuthService } from '../services/socialAuthService';
-import { palette, fonts, radii } from '../theme';
+import { useTheme } from '../contexts/ThemeContext';
+import { ThemePalette, fonts, radii } from '../theme';
 
 interface GoogleAuthButtonProps {
   label: string;
@@ -21,6 +22,8 @@ const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
   textStyle,
   onAuthenticated,
 }) => {
+  const { palette } = useTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const [request, response, promptAsync] = Google.useAuthRequest(
     socialAuthService.getGoogleAuthConfig()
   );
@@ -43,12 +46,13 @@ const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
-  // Base auth-button style (Google brand guidelines: white bg, subtle border)
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
+  // Base auth-button style (Google brand guidelines: outline button on theme background)
   button: {
     height: 54,
     borderRadius: radii.button,
-    backgroundColor: palette.white,
+    backgroundColor: palette.background,
     borderWidth: 1,
     borderColor: palette.outline,
     flexDirection: 'row',

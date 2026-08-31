@@ -27,12 +27,19 @@ import {
 import { AuthProvider } from './src/contexts/AuthContext';
 import { NotificationProvider } from './src/contexts/NotificationContext';
 import { OfflineProvider } from './src/contexts/OfflineContext';
+import { ThemeProvider, useTheme } from './src/contexts/ThemeContext';
 import AppNavigator from './src/navigation/AppNavigator';
 import OfflineBanner from './src/components/OfflineBanner';
 import { initSentry } from './src/lib/sentry';
 import { palette } from './src/theme';
 
 initSentry();
+
+/** StatusBar that follows the active theme (must render inside ThemeProvider). */
+const ThemedStatusBar = () => {
+  const { isDark } = useTheme();
+  return <StatusBar style={isDark ? 'light' : 'dark'} />;
+};
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -54,17 +61,19 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
+      <ThemeProvider>
       <AuthProvider>
         <OfflineProvider>
           <NotificationProvider>
             <View style={styles.container}>
               <OfflineBanner />
-              <StatusBar style="auto" />
+              <ThemedStatusBar />
               <AppNavigator />
             </View>
           </NotificationProvider>
         </OfflineProvider>
       </AuthProvider>
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }

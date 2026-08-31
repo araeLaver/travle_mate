@@ -2,7 +2,7 @@
  * Location Detail Screen for TravelMate Mobile
  */
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -20,7 +20,8 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { nftService, CollectibleLocation } from '../services/nftService';
 import * as Location from 'expo-location';
-import { palette, fonts, type, spacing, radii, rarityColor } from '../theme';
+import { useTheme } from '../contexts/ThemeContext';
+import { ThemePalette, fonts, type, spacing, radii, rarityColorFor } from '../theme';
 import Icon from '../components/icons/Icon';
 
 type LocationDetailScreenRouteProp = RouteProp<RootStackParamList, 'LocationDetail'>;
@@ -35,6 +36,8 @@ interface Props {
 }
 
 const LocationDetailScreen: React.FC<Props> = ({ route, navigation }) => {
+  const { palette } = useTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const { locationId } = route.params;
   const [location, setLocation] = useState<CollectibleLocation | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -151,7 +154,7 @@ const LocationDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     );
   }
 
-  const badgeColor = rarityColor(location.rarity);
+  const badgeColor = rarityColorFor(palette, location.rarity);
   const isWithinRange =
     distance !== null && distance * 1000 <= location.collectRadius;
 
@@ -269,7 +272,7 @@ const LocationDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             disabled={isCollecting}
           >
             {isCollecting ? (
-              <ActivityIndicator color={palette.white} />
+              <ActivityIndicator color={palette.onPrimary} />
             ) : (
               <Text style={styles.collectButtonText}>방문 인증하고 수집</Text>
             )}
@@ -280,7 +283,8 @@ const LocationDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: palette.background,
@@ -332,7 +336,7 @@ const styles = StyleSheet.create({
   },
   rarityText: {
     ...type.badge,
-    color: palette.white,
+    color: palette.background,
   },
   title: {
     fontSize: 23,
@@ -423,7 +427,7 @@ const styles = StyleSheet.create({
   },
   collectButtonText: {
     ...type.button,
-    color: palette.white,
+    color: palette.onPrimary,
   },
   collectedBanner: {
     flexDirection: 'row',

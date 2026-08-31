@@ -2,7 +2,7 @@
  * Login Screen for TravelMate Mobile
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -20,7 +20,8 @@ import { AuthStackParamList } from '../navigation/AppNavigator';
 import { useAuth } from '../contexts/AuthContext';
 import { socialAuthService } from '../services/socialAuthService';
 import GoogleAuthButton from '../components/GoogleAuthButton';
-import { palette, fonts, type, spacing, radii } from '../theme';
+import { useTheme } from '../contexts/ThemeContext';
+import { ThemePalette, fonts, type, spacing, radii } from '../theme';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -31,6 +32,8 @@ interface Props {
 }
 
 const LoginScreen: React.FC<Props> = ({ navigation }) => {
+  const { palette } = useTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const { login, loginWithGoogle, loginWithApple } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -163,7 +166,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
             disabled={anyLoading}
           >
             {isLoading ? (
-              <ActivityIndicator color={palette.white} />
+              <ActivityIndicator color={palette.onPrimary} />
             ) : (
               <Text style={styles.buttonText}>로그인</Text>
             )}
@@ -182,7 +185,8 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: palette.background,
@@ -218,7 +222,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   googleButton: {
-    backgroundColor: palette.white,
+    backgroundColor: palette.background,
     borderWidth: 1,
     borderColor: palette.outline,
   },
@@ -231,7 +235,7 @@ const styles = StyleSheet.create({
     color: '#4285F4', // Google brand blue (kept per brand guidelines)
   },
   appleIcon: {
-    color: palette.white,
+    color: palette.background,
     fontSize: 20,
   },
   socialButtonText: {
@@ -240,7 +244,7 @@ const styles = StyleSheet.create({
     color: palette.ink,
   },
   appleButtonText: {
-    color: palette.white,
+    color: palette.background,
   },
   socialLoading: {
     marginTop: spacing.xs,
@@ -285,7 +289,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     ...type.button,
-    color: palette.white,
+    color: palette.onPrimary,
   },
   footer: {
     flexDirection: 'row',

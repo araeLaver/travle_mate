@@ -3,7 +3,7 @@
  * Real-time chat within a group
  */
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -25,7 +25,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { chatService, ChatMessage, GroupMember } from '../services/chatService';
 import * as Location from 'expo-location';
 import Icon from '../components/icons/Icon';
-import { palette, fonts, type, spacing, radii } from '../theme';
+import { useTheme } from '../contexts/ThemeContext';
+import { ThemePalette, fonts, type, spacing, radii } from '../theme';
 
 type ChatRoomScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'ChatRoom'>;
 type ChatRoomScreenRouteProp = RouteProp<RootStackParamList, 'ChatRoom'>;
@@ -37,6 +38,8 @@ interface Props {
 
 const ChatRoomScreen: React.FC<Props> = ({ navigation, route }) => {
   const { groupId, groupName } = route.params;
+  const { palette } = useTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const { user } = useAuth();
   const flatListRef = useRef<FlatList>(null);
 
@@ -92,7 +95,7 @@ const ChatRoomScreen: React.FC<Props> = ({ navigation, route }) => {
         </TouchableOpacity>
       ),
     });
-  }, [navigation, groupName, members.length, showMembers]);
+  }, [navigation, groupName, members.length, showMembers, styles]);
 
   const handleSend = async () => {
     if (!inputText.trim() || isSending) return;
@@ -210,7 +213,7 @@ const ChatRoomScreen: React.FC<Props> = ({ navigation, route }) => {
               <Icon
                 name="pin"
                 size={22}
-                color={isMyMessage ? palette.white : palette.primary}
+                color={isMyMessage ? palette.onPrimary : palette.primary}
               />
               <Text style={[styles.locationText, isMyMessage && styles.myMessageText]}>
                 {item.locationName || item.content}
@@ -327,9 +330,9 @@ const ChatRoomScreen: React.FC<Props> = ({ navigation, route }) => {
           accessibilityLabel="전송"
         >
           {isSending ? (
-            <ActivityIndicator size="small" color={palette.white} />
+            <ActivityIndicator size="small" color={palette.onPrimary} />
           ) : (
-            <Icon name="send" size={20} color={palette.white} />
+            <Icon name="send" size={20} color={palette.onPrimary} />
           )}
         </TouchableOpacity>
       </View>
@@ -337,16 +340,17 @@ const ChatRoomScreen: React.FC<Props> = ({ navigation, route }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: palette.backgroundAlt,
+    backgroundColor: palette.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: palette.backgroundAlt,
+    backgroundColor: palette.background,
   },
   headerButton: {
     paddingHorizontal: spacing.md,
@@ -402,7 +406,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     backgroundColor: '#10B981',
     borderWidth: 2,
-    borderColor: palette.white,
+    borderColor: palette.background,
   },
   messagesContainer: {
     padding: spacing.lg,
@@ -452,7 +456,7 @@ const styles = StyleSheet.create({
     marginLeft: spacing.xs,
   },
   messageBubble: {
-    backgroundColor: palette.white,
+    backgroundColor: palette.surface,
     borderWidth: 1,
     borderColor: palette.hairline,
     borderRadius: radii.card,
@@ -473,7 +477,7 @@ const styles = StyleSheet.create({
     color: palette.ink,
   },
   myMessageText: {
-    color: palette.white,
+    color: palette.onPrimary,
   },
   messageTime: {
     fontFamily: fonts.semibold,
@@ -495,7 +499,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: palette.primarySoft,
+    backgroundColor: palette.surfaceAlt,
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: radii.input,
@@ -507,7 +511,7 @@ const styles = StyleSheet.create({
     color: palette.primary,
   },
   locationBubble: {
-    backgroundColor: palette.white,
+    backgroundColor: palette.surface,
     borderWidth: 1,
     borderColor: palette.hairline,
     borderRadius: radii.card,
@@ -532,7 +536,8 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
   },
   myLocationHint: {
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: palette.onPrimary,
+    opacity: 0.7,
   },
   imageBubble: {
     borderRadius: radii.card,
@@ -585,6 +590,6 @@ const styles = StyleSheet.create({
   sendButtonDisabled: {
     backgroundColor: palette.disabled,
   },
-});
+  });
 
 export default ChatRoomScreen;

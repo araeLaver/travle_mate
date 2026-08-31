@@ -3,7 +3,7 @@
  * NFT Collection Map with nearby locations
  */
 
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -21,7 +21,8 @@ import { CompositeNavigationProp } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { RootStackParamList, MainTabParamList } from '../navigation/AppNavigator';
 import { nftService, NearbyLocation, CollectNftResponse } from '../services/nftService';
-import { palette, fonts, type, spacing, radii, shadows } from '../theme';
+import { useTheme } from '../contexts/ThemeContext';
+import { ThemePalette, fonts, type, spacing, radii, shadows } from '../theme';
 import Icon from '../components/icons/Icon';
 
 type MapScreenNavigationProp = CompositeNavigationProp<
@@ -36,6 +37,8 @@ interface Props {
 const { width, height } = Dimensions.get('window');
 
 const MapScreen: React.FC<Props> = ({ navigation }) => {
+  const { palette } = useTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const mapRef = useRef<MapView>(null);
   const [userLocation, setUserLocation] = useState<{
     latitude: number;
@@ -290,7 +293,7 @@ const MapScreen: React.FC<Props> = ({ navigation }) => {
                     disabled={isCollecting}
                   >
                     {isCollecting ? (
-                      <ActivityIndicator color={palette.white} />
+                      <ActivityIndicator color={palette.onPrimary} />
                     ) : (
                       <Text style={styles.collectButtonText}>수집하기</Text>
                     )}
@@ -324,7 +327,8 @@ const MapScreen: React.FC<Props> = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -361,7 +365,7 @@ const styles = StyleSheet.create({
     bottom: 120,
     width: 44,
     height: 44,
-    backgroundColor: palette.white,
+    backgroundColor: palette.background,
     borderRadius: radii.iconButton,
     justifyContent: 'center',
     alignItems: 'center',
@@ -371,7 +375,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: spacing.lg,
     bottom: 100,
-    backgroundColor: palette.white,
+    backgroundColor: palette.background,
     borderRadius: radii.card,
     borderWidth: 1,
     borderColor: palette.hairline,
@@ -407,7 +411,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: palette.white,
+    backgroundColor: palette.background,
     borderTopLeftRadius: radii.sheet,
     borderTopRightRadius: radii.sheet,
     padding: spacing.xxl,
@@ -444,7 +448,7 @@ const styles = StyleSheet.create({
   },
   rarityText: {
     ...type.badge,
-    color: palette.white,
+    color: palette.background,
   },
   modalDescription: {
     ...type.bodySmall,
@@ -491,7 +495,7 @@ const styles = StyleSheet.create({
   },
   collectButtonText: {
     ...type.button,
-    color: palette.white,
+    color: palette.onPrimary,
   },
   collectedBanner: {
     flexDirection: 'row',
@@ -533,6 +537,6 @@ const styles = StyleSheet.create({
     ...type.button,
     color: palette.ink,
   },
-});
+  });
 
 export default MapScreen;

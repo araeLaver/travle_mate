@@ -81,3 +81,7 @@ application-*.yml
 secrets/
 *.p12
 credentials.json
+
+# Firebase service account keys (secrets)
+fcm-service-account.json
+*firebase-adminsdk*.json

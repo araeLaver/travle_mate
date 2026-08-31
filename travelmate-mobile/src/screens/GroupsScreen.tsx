@@ -3,7 +3,7 @@
  * Displays list of user's groups and public groups
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -20,7 +20,8 @@ import { RootStackParamList } from '../navigation/AppNavigator';
 import { chatService, TravelGroup } from '../services/chatService';
 import { ListSkeleton } from '../components/SkeletonLoader';
 import Icon from '../components/icons/Icon';
-import { palette, fonts, type, spacing, radii } from '../theme';
+import { useTheme } from '../contexts/ThemeContext';
+import { ThemePalette, fonts, type, spacing, radii } from '../theme';
 
 type GroupsScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Groups'>;
 
@@ -31,6 +32,8 @@ interface Props {
 type TabType = 'my' | 'public';
 
 const GroupsScreen: React.FC<Props> = ({ navigation }) => {
+  const { palette } = useTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const [activeTab, setActiveTab] = useState<TabType>('my');
   const [myGroups, setMyGroups] = useState<TravelGroup[]>([]);
   const [publicGroups, setPublicGroups] = useState<TravelGroup[]>([]);
@@ -216,7 +219,7 @@ const GroupsScreen: React.FC<Props> = ({ navigation }) => {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>그룹 채팅</Text>
         <TouchableOpacity onPress={handleCreateGroup} style={styles.addButton}>
-          <Icon name="plus" size={16} color={palette.white} />
+          <Icon name="plus" size={16} color={palette.background} />
           <Text style={styles.addButtonText}>만들기</Text>
         </TouchableOpacity>
       </View>
@@ -273,7 +276,8 @@ const GroupsScreen: React.FC<Props> = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: palette.background,
@@ -310,7 +314,7 @@ const styles = StyleSheet.create({
   addButtonText: {
     ...type.bodySmall,
     fontFamily: fonts.bold,
-    color: palette.white,
+    color: palette.background,
   },
   tabs: {
     flexDirection: 'row',
@@ -363,7 +367,7 @@ const styles = StyleSheet.create({
   groupItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: palette.white,
+    backgroundColor: palette.surface,
     borderRadius: radii.card,
     borderWidth: 1,
     borderColor: palette.hairline,
@@ -402,7 +406,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     ...type.badge,
-    color: palette.white,
+    color: palette.onPrimary,
   },
   groupInfo: {
     flex: 1,
@@ -493,8 +497,8 @@ const styles = StyleSheet.create({
   },
   createButtonText: {
     ...type.button,
-    color: palette.white,
+    color: palette.onPrimary,
   },
-});
+  });
 
 export default GroupsScreen;
