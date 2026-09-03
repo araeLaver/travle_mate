@@ -47,10 +47,8 @@ public class ChatDto {
     
     @Data
     public static class MessageRequest {
-        @NotNull
         private Long chatRoomId;
         
-        @NotNull
         private Long senderId;
         
         @NotBlank

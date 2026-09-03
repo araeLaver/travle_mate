@@ -9,15 +9,17 @@ const APP_VERSION = Constants.expoConfig?.version || '1.0.0';
  * Initialize Sentry for React Native
  */
 export const initSentry = () => {
-  if (!SENTRY_DSN) {
-    console.log('Sentry DSN not configured, skipping initialization');
+  if (!SENTRY_DSN || SENTRY_DSN.includes('your-sentry-dsn')) {
+    if (__DEV__) {
+      console.log('Sentry DSN not configured, skipping initialization');
+    }
     return;
   }
 
   Sentry.init({
     dsn: SENTRY_DSN,
     environment: ENVIRONMENT,
-    release: `travelmate-mobile@${APP_VERSION}`,
+    release: `fryndo-mobile@${APP_VERSION}`,
     dist: Constants.expoConfig?.extra?.buildNumber || '1',
 
     // Enable automatic instrumentation
@@ -72,7 +74,9 @@ export const initSentry = () => {
   Sentry.setTag('platform', Constants.platform?.os || 'unknown');
   Sentry.setTag('expo_sdk', Constants.expoConfig?.sdkVersion || 'unknown');
 
-  console.log('Sentry initialized for environment:', ENVIRONMENT);
+  if (__DEV__) {
+    console.log('Sentry initialized for environment:', ENVIRONMENT);
+  }
 };
 
 /**
@@ -190,19 +194,16 @@ export const trackPayment = (productId: string, success: boolean, error?: string
 };
 
 /**
- * Start a performance transaction
+ * Start a performance span (Sentry v6 replaced startTransaction with spans)
  */
 export const startTransaction = (name: string, op: string) => {
-  return Sentry.startTransaction({
-    name,
-    op,
-  });
+  return Sentry.startInactiveSpan({ name, op });
 };
 
 /**
  * Wrap navigation with Sentry
  */
-export const routingInstrumentation = new Sentry.ReactNavigationInstrumentation();
+export const routingInstrumentation = Sentry.reactNavigationIntegration();
 
 /**
  * Wrap component with Sentry for performance monitoring

@@ -1,8 +1,10 @@
 package com.travelmate.controller;
 
+import com.travelmate.security.AuthenticatedUserId;
 import com.travelmate.dto.AuthDto;
 import com.travelmate.entity.TwoFactorAuth;
 import com.travelmate.entity.User;
+import com.travelmate.exception.BusinessException;
 import com.travelmate.repository.UserRepository;
 import com.travelmate.service.TwoFactorAuthService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,7 +18,6 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -42,9 +43,9 @@ public class TwoFactorAuthController {
     @GetMapping("/status")
     @Operation(summary = "2FA 상태 조회", description = "현재 사용자의 2FA 활성화 상태를 조회합니다.")
     public ResponseEntity<TwoFactorStatusResponse> getStatus(
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal String userId) {
 
-        User user = getUserFromDetails(userDetails);
+        User user = getUserFromId(userId);
         boolean isEnabled = twoFactorAuthService.verifyTwoFactorCode(user, null);
 
         return ResponseEntity.ok(TwoFactorStatusResponse.builder()
@@ -58,10 +59,10 @@ public class TwoFactorAuthController {
     @PostMapping("/setup")
     @Operation(summary = "2FA 설정 시작", description = "2FA 설정을 초기화하고 QR 코드 URI를 반환합니다.")
     public ResponseEntity<TwoFactorSetupResponse> setup(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal String userId,
             @Valid @RequestBody TwoFactorSetupRequest request) {
 
-        User user = getUserFromDetails(userDetails);
+        User user = getUserFromId(userId);
         TwoFactorAuth.TwoFactorMethod method = TwoFactorAuth.TwoFactorMethod.valueOf(
                 request.getMethod() != null ? request.getMethod() : "TOTP");
 
@@ -82,10 +83,10 @@ public class TwoFactorAuthController {
     @PostMapping("/enable")
     @Operation(summary = "2FA 활성화", description = "TOTP 코드를 검증하고 2FA를 활성화합니다.")
     public ResponseEntity<TwoFactorEnableResponse> enable(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal String userId,
             @Valid @RequestBody TwoFactorVerifyRequest request) {
 
-        User user = getUserFromDetails(userDetails);
+        User user = getUserFromId(userId);
         boolean success = twoFactorAuthService.enableTwoFactorAuth(user, request.getCode());
 
         return ResponseEntity.ok(TwoFactorEnableResponse.builder()
@@ -100,10 +101,10 @@ public class TwoFactorAuthController {
     @PostMapping("/disable")
     @Operation(summary = "2FA 비활성화", description = "2FA를 비활성화합니다.")
     public ResponseEntity<TwoFactorEnableResponse> disable(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal String userId,
             @Valid @RequestBody TwoFactorVerifyRequest request) {
 
-        User user = getUserFromDetails(userDetails);
+        User user = getUserFromId(userId);
         twoFactorAuthService.disableTwoFactorAuth(user, request.getCode());
 
         return ResponseEntity.ok(TwoFactorEnableResponse.builder()
@@ -118,10 +119,10 @@ public class TwoFactorAuthController {
     @PostMapping("/verify")
     @Operation(summary = "2FA 코드 검증", description = "TOTP 또는 백업 코드를 검증합니다.")
     public ResponseEntity<TwoFactorVerifyResponse> verify(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal String userId,
             @Valid @RequestBody TwoFactorVerifyRequest request) {
 
-        User user = getUserFromDetails(userDetails);
+        User user = getUserFromId(userId);
         boolean valid = twoFactorAuthService.verifyTwoFactorCode(user, request.getCode());
 
         return ResponseEntity.ok(TwoFactorVerifyResponse.builder()
@@ -136,9 +137,9 @@ public class TwoFactorAuthController {
     @GetMapping("/backup-codes")
     @Operation(summary = "백업 코드 조회", description = "남은 백업 코드를 조회합니다.")
     public ResponseEntity<BackupCodesResponse> getBackupCodes(
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal String userId) {
 
-        User user = getUserFromDetails(userDetails);
+        User user = getUserFromId(userId);
         List<String> backupCodes = twoFactorAuthService.getBackupCodes(user);
 
         return ResponseEntity.ok(BackupCodesResponse.builder()
@@ -153,9 +154,9 @@ public class TwoFactorAuthController {
     @PostMapping("/backup-codes/regenerate")
     @Operation(summary = "백업 코드 재생성", description = "새로운 백업 코드를 생성합니다.")
     public ResponseEntity<BackupCodesResponse> regenerateBackupCodes(
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal String userId) {
 
-        User user = getUserFromDetails(userDetails);
+        User user = getUserFromId(userId);
         List<String> newBackupCodes = twoFactorAuthService.regenerateBackupCodes(user);
 
         return ResponseEntity.ok(BackupCodesResponse.builder()
@@ -164,10 +165,10 @@ public class TwoFactorAuthController {
                 .build());
     }
 
-    private User getUserFromDetails(UserDetails userDetails) {
-        Long userId = Long.parseLong(userDetails.getUsername());
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+    private User getUserFromId(String userId) {
+        Long userIdLong = AuthenticatedUserId.parse(userId);
+        return userRepository.findById(userIdLong)
+                .orElseThrow(() -> BusinessException.userNotFound(userIdLong));
     }
 
     // DTO Classes

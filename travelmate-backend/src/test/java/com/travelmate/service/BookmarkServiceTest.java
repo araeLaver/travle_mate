@@ -124,7 +124,8 @@ class BookmarkServiceTest {
             // When & Then
             assertThatThrownBy(() -> bookmarkService.createBookmark(999L, request))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("사용자를 찾을 수 없습니다");
+                    .hasMessageContaining("사용자를 찾을 수 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 404, "USER_NOT_FOUND"));
         }
 
         @Test
@@ -143,7 +144,8 @@ class BookmarkServiceTest {
             // When & Then
             assertThatThrownBy(() -> bookmarkService.createBookmark(1L, request))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("이미 북마크한 항목");
+                    .hasMessageContaining("이미 북마크한 항목")
+                    .satisfies(ex -> assertBusinessException(ex, 409, "CONFLICT"));
         }
 
         @Test
@@ -160,7 +162,8 @@ class BookmarkServiceTest {
             // When & Then
             assertThatThrownBy(() -> bookmarkService.createBookmark(1L, request))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("게시글을 찾을 수 없습니다");
+                    .hasMessageContaining("게시글을 찾을 수 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 404, "NOT_FOUND"));
         }
     }
 
@@ -239,7 +242,8 @@ class BookmarkServiceTest {
             // When & Then
             assertThatThrownBy(() -> bookmarkService.updateBookmark(1L, 999L, request))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("북마크를 찾을 수 없습니다");
+                    .hasMessageContaining("북마크를 찾을 수 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 404, "NOT_FOUND"));
         }
 
         @Test
@@ -253,7 +257,8 @@ class BookmarkServiceTest {
             // When & Then
             assertThatThrownBy(() -> bookmarkService.updateBookmark(2L, 1L, request))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("수정할 권한이 없습니다");
+                    .hasMessageContaining("수정할 권한이 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 403, "FORBIDDEN"));
         }
     }
 
@@ -284,7 +289,8 @@ class BookmarkServiceTest {
             // When & Then
             assertThatThrownBy(() -> bookmarkService.deleteBookmark(1L, 999L))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("북마크를 찾을 수 없습니다");
+                    .hasMessageContaining("북마크를 찾을 수 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 404, "NOT_FOUND"));
         }
 
         @Test
@@ -296,7 +302,8 @@ class BookmarkServiceTest {
             // When & Then
             assertThatThrownBy(() -> bookmarkService.deleteBookmark(2L, 1L))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("삭제할 권한이 없습니다");
+                    .hasMessageContaining("삭제할 권한이 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 403, "FORBIDDEN"));
         }
     }
 
@@ -473,5 +480,11 @@ class BookmarkServiceTest {
             assertThat(result).isEqualTo(3);
             verify(bookmarkRepository).updateFolderName(1L, "여행", "해외여행");
         }
+    }
+
+    private void assertBusinessException(Throwable throwable, int status, String errorCode) {
+        BusinessException exception = (BusinessException) throwable;
+        assertThat(exception.getStatus().value()).isEqualTo(status);
+        assertThat(exception.getErrorCodeStr()).isEqualTo(errorCode);
     }
 }

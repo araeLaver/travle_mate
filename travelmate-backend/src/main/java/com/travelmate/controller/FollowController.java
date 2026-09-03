@@ -1,5 +1,6 @@
 package com.travelmate.controller;
 
+import com.travelmate.security.AuthenticatedUserId;
 import com.travelmate.dto.FollowDto;
 import com.travelmate.service.FollowService;
 import lombok.RequiredArgsConstructor;
@@ -9,7 +10,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,7 +22,6 @@ import java.util.Map;
 public class FollowController {
 
     private final FollowService followService;
-    private final com.travelmate.service.UserService userService;
 
     /**
      * 팔로우하기
@@ -31,9 +30,9 @@ public class FollowController {
     @PostMapping("/{userId}/follow")
     public ResponseEntity<FollowDto.FollowResponse> follow(
             @PathVariable Long userId,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal String principalUserId) {
 
-        Long followerId = getCurrentUserId(userDetails);
+        Long followerId = parseUserId(principalUserId);
         FollowDto.FollowResponse response = followService.follow(followerId, userId);
         return ResponseEntity.ok(response);
     }
@@ -45,9 +44,9 @@ public class FollowController {
     @DeleteMapping("/{userId}/follow")
     public ResponseEntity<FollowDto.FollowResponse> unfollow(
             @PathVariable Long userId,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal String principalUserId) {
 
-        Long followerId = getCurrentUserId(userDetails);
+        Long followerId = parseUserId(principalUserId);
         FollowDto.FollowResponse response = followService.unfollow(followerId, userId);
         return ResponseEntity.ok(response);
     }
@@ -59,10 +58,10 @@ public class FollowController {
     @GetMapping("/{userId}/followers")
     public ResponseEntity<Page<FollowDto.FollowUserResponse>> getFollowers(
             @PathVariable Long userId,
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal String principalUserId,
             @PageableDefault(size = 20) Pageable pageable) {
 
-        Long viewerId = userDetails != null ? getCurrentUserId(userDetails) : null;
+        Long viewerId = principalUserId != null ? parseUserId(principalUserId) : null;
         Page<FollowDto.FollowUserResponse> followers = followService.getFollowers(userId, viewerId, pageable);
         return ResponseEntity.ok(followers);
     }
@@ -74,10 +73,10 @@ public class FollowController {
     @GetMapping("/{userId}/following")
     public ResponseEntity<Page<FollowDto.FollowUserResponse>> getFollowing(
             @PathVariable Long userId,
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal String principalUserId,
             @PageableDefault(size = 20) Pageable pageable) {
 
-        Long viewerId = userDetails != null ? getCurrentUserId(userDetails) : null;
+        Long viewerId = principalUserId != null ? parseUserId(principalUserId) : null;
         Page<FollowDto.FollowUserResponse> following = followService.getFollowing(userId, viewerId, pageable);
         return ResponseEntity.ok(following);
     }
@@ -99,9 +98,9 @@ public class FollowController {
     @GetMapping("/{userId}/follow-status")
     public ResponseEntity<FollowDto.FollowStatusResponse> getFollowStatus(
             @PathVariable Long userId,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal String principalUserId) {
 
-        Long viewerId = getCurrentUserId(userDetails);
+        Long viewerId = parseUserId(principalUserId);
         FollowDto.FollowStatusResponse status = followService.getFollowStatus(viewerId, userId);
         return ResponseEntity.ok(status);
     }
@@ -125,10 +124,10 @@ public class FollowController {
      */
     @GetMapping("/me/followers")
     public ResponseEntity<Page<FollowDto.FollowUserResponse>> getMyFollowers(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal String principalUserId,
             @PageableDefault(size = 20) Pageable pageable) {
 
-        Long userId = getCurrentUserId(userDetails);
+        Long userId = parseUserId(principalUserId);
         Page<FollowDto.FollowUserResponse> followers = followService.getFollowers(userId, userId, pageable);
         return ResponseEntity.ok(followers);
     }
@@ -139,10 +138,10 @@ public class FollowController {
      */
     @GetMapping("/me/following")
     public ResponseEntity<Page<FollowDto.FollowUserResponse>> getMyFollowing(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal String principalUserId,
             @PageableDefault(size = 20) Pageable pageable) {
 
-        Long userId = getCurrentUserId(userDetails);
+        Long userId = parseUserId(principalUserId);
         Page<FollowDto.FollowUserResponse> following = followService.getFollowing(userId, userId, pageable);
         return ResponseEntity.ok(following);
     }
@@ -153,9 +152,9 @@ public class FollowController {
      */
     @GetMapping("/me/follow-stats")
     public ResponseEntity<FollowDto.FollowStatsResponse> getMyFollowStats(
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal String principalUserId) {
 
-        Long userId = getCurrentUserId(userDetails);
+        Long userId = parseUserId(principalUserId);
         FollowDto.FollowStatsResponse stats = followService.getFollowStats(userId);
         return ResponseEntity.ok(stats);
     }
@@ -167,9 +166,9 @@ public class FollowController {
     @PostMapping("/follow-status/batch")
     public ResponseEntity<List<FollowDto.UserWithFollowStatus>> getFollowStatusBatch(
             @RequestBody Map<String, List<Long>> request,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal String principalUserId) {
 
-        Long viewerId = getCurrentUserId(userDetails);
+        Long viewerId = parseUserId(principalUserId);
         List<Long> userIds = request.get("userIds");
 
         if (userIds == null || userIds.isEmpty()) {
@@ -180,8 +179,7 @@ public class FollowController {
         return ResponseEntity.ok(result);
     }
 
-    private Long getCurrentUserId(UserDetails userDetails) {
-        String email = userDetails.getUsername();
-        return userService.findByEmail(email).getId();
+    private Long parseUserId(String userId) {
+        return AuthenticatedUserId.parse(userId);
     }
 }

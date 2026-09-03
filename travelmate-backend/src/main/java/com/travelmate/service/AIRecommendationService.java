@@ -4,6 +4,7 @@ import com.travelmate.dto.AIRecommendationDto;
 import com.travelmate.dto.AIRecommendationDto.*;
 import com.travelmate.entity.User;
 import com.travelmate.entity.nft.UserNftCollection;
+import com.travelmate.exception.BusinessException;
 import com.travelmate.repository.UserRepository;
 import com.travelmate.repository.nft.UserNftCollectionRepository;
 import com.travelmate.service.ai.AiItineraryService;
@@ -68,7 +69,7 @@ public class AIRecommendationService {
         log.info("Getting personalized recommendations for user {}", userId);
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         UserAnalysis analysis = analyzeUser(userId);
 
@@ -99,7 +100,7 @@ public class AIRecommendationService {
     @Cacheable(value = "userAnalysis", key = "#userId")
     public UserAnalysis analyzeUser(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         List<UserNftCollection> collections = collectionRepository.findByUserId(userId);
 

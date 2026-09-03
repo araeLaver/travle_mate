@@ -1,34 +1,30 @@
 {
   "expo": {
     "name": "Fryndo",
-    "slug": "travelmate",
+    "slug": "fryndo",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "scheme": "travelmate",
+    "scheme": "fryndo",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#3B82F6"
+      "backgroundColor": "#4A3AFF"
     },
     "assetBundlePatterns": [
       "**/*"
     ],
-    "updates": {
-      "fallbackToCacheTimeout": 0,
-      "url": "https://u.expo.dev/your-project-id"
-    },
     "runtimeVersion": {
       "policy": "sdkVersion"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.travelmate.app",
+      "bundleIdentifier": "com.fryndo.app",
       "buildNumber": "1",
       "usesAppleSignIn": true,
       "associatedDomains": [
-        "applinks:travelmate.app"
+        "applinks:fryndo.com"
       ],
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Fryndo는 주변 NFT 수집 장소를 찾기 위해 위치 정보가 필요합니다.",
@@ -51,20 +47,25 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#3B82F6"
+        "backgroundColor": "#F5F4F1"
       },
-      "package": "com.travelmate.app",
-      "versionCode": 1,
+      "package": "com.fryndo.app",
+      "versionCode": 2,
       "permissions": [
-        "ACCESS_COARSE_LOCATION",
-        "ACCESS_FINE_LOCATION",
-        "ACCESS_BACKGROUND_LOCATION",
-        "CAMERA",
-        "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE",
-        "RECEIVE_BOOT_COMPLETED",
-        "VIBRATE",
-        "BILLING"
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_BACKGROUND_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.VIBRATE",
+        "android.permission.BILLING",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_LOCATION",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT"
       ],
       "config": {
         "googleMaps": {
@@ -78,7 +79,7 @@
           "data": [
             {
               "scheme": "https",
-              "host": "travelmate.app",
+              "host": "fryndo.com",
               "pathPrefix": "/share"
             }
           ],
@@ -107,7 +108,7 @@
         "expo-notifications",
         {
           "icon": "./assets/notification-icon.png",
-          "color": "#3B82F6",
+          "color": "#4A3AFF",
           "sounds": [
             "./assets/sounds/chat.wav"
           ]
@@ -136,35 +137,44 @@
       [
         "@sentry/react-native/expo",
         {
-          "organization": "travelmate",
-          "project": "travelmate-mobile"
+          "organization": "fryndo",
+          "project": "fryndo-mobile"
         }
-      ]
+      ],
+      "expo-font"
     ],
     "extra": {
+      "apiUrl": "https://api.fryndo.com",
+      "webUrl": "https://fryndo.com",
+      "googleIosClientId": "383693754351-0m0n2dhcqrurbkjm29u97hnte2si2nln.apps.googleusercontent.com",
+      "googleAndroidClientId": "383693754351-tfhkp919gstoo8if77v41117dv06f0no.apps.googleusercontent.com",
+      "googleWebClientId": "383693754351-fatu4q4r7p5stpqd237bngbjh3hinais.apps.googleusercontent.com",
+      "googleExpoClientId": "383693754351-fatu4q4r7p5stpqd237bngbjh3hinais.apps.googleusercontent.com",
+      "sentryDsn": "https://your-sentry-dsn@sentry.io/project-id",
       "eas": {
-        "projectId": "your-project-id"
-      },
-      "apiUrl": "https://api.travelmate.app",
-      "webUrl": "https://travelmate.app",
-      "sentryDsn": "https://your-sentry-dsn@sentry.io/project-id"
+        "projectId": "f9508e1a-a6fc-4572-801b-a96b72d670ee"
+      }
     },
     "hooks": {
       "postPublish": [
         {
           "file": "@sentry/react-native/expo",
           "config": {
-            "organization": "travelmate",
-            "project": "travelmate-mobile"
+            "organization": "fryndo",
+            "project": "fryndo-mobile"
           }
         }
       ]
     },
-    "owner": "travelmate-team",
+    "owner": "downlab",
     "privacy": "public",
     "platforms": [
       "ios",
       "android"
-    ]
+    ],
+    "updates": {
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/f9508e1a-a6fc-4572-801b-a96b72d670ee"
+    }
   }
 }

@@ -25,6 +25,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -149,6 +151,50 @@ class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(userResponse.getId()))
                 .andExpect(jsonPath("$.email").value(userResponse.getEmail()));
+    }
+
+    @Test
+    @DisplayName("사용자 위치 업데이트 - 인증 사용자 ID 사용")
+    void updateLocation_UsesAuthenticatedUserId() throws Exception {
+        // Given
+        UserDto.LocationUpdateRequest request = new UserDto.LocationUpdateRequest();
+        request.setUserId(999L);
+        request.setLatitude(37.5665);
+        request.setLongitude(126.9780);
+
+        // When & Then
+        mockMvc.perform(put("/users/location")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+
+        verify(userService).updateUserLocation(eq(1L), any(UserDto.LocationUpdateRequest.class));
+    }
+
+    @Test
+    @DisplayName("폰 흔들기 사용자 검색 - 인증 사용자 ID 사용")
+    void findUsersOnShake_UsesAuthenticatedUserId() throws Exception {
+        // Given
+        UserDto.ShakeRequest request = new UserDto.ShakeRequest();
+        request.setUserId(999L);
+        request.setLatitude(37.5665);
+        request.setLongitude(126.9780);
+        request.setAccelerationX(10.0);
+        request.setAccelerationY(10.0);
+        request.setAccelerationZ(10.0);
+
+        when(userService.findUsersOnShake(eq(1L), any(UserDto.ShakeRequest.class)))
+                .thenReturn(Collections.emptyList());
+
+        // When & Then
+        mockMvc.perform(post("/users/shake")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+
+        verify(userService).findUsersOnShake(eq(1L), any(UserDto.ShakeRequest.class));
     }
 
     @Test

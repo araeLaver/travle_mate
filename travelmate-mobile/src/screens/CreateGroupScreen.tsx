@@ -3,7 +3,7 @@
  * Form for creating a new travel group
  */
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,6 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  Switch,
   Alert,
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -20,6 +19,19 @@ import {
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { chatService } from '../services/chatService';
+import {
+  GROUP_DESCRIPTION_MAX_LENGTH,
+  GROUP_DESTINATION_MAX_LENGTH,
+  GROUP_NAME_MAX_LENGTH,
+  MAX_MEMBERS_OPTIONS,
+  PURPOSE_OPTIONS,
+  getCreateGroupValidationMessage,
+  isoDateDaysFromNow,
+  toCreateGroupRequest,
+} from './createGroupForm';
+import type { Purpose } from './createGroupForm';
+import { ThemePalette, fonts, type, spacing, radii } from '../theme';
+import { useTheme } from '../contexts/ThemeContext';
 
 type CreateGroupScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'CreateGroup'>;
 
@@ -27,30 +39,31 @@ interface Props {
   navigation: CreateGroupScreenNavigationProp;
 }
 
-const MAX_MEMBERS_OPTIONS = [5, 10, 20, 50, 100];
-
 const CreateGroupScreen: React.FC<Props> = ({ navigation }) => {
+  const { palette } = useTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [isPublic, setIsPublic] = useState(true);
-  const [maxMembers, setMaxMembers] = useState(20);
+  const [destination, setDestination] = useState('');
+  const [startDate, setStartDate] = useState(isoDateDaysFromNow(7));
+  const [endDate, setEndDate] = useState(isoDateDaysFromNow(10));
+  const [purpose, setPurpose] = useState<Purpose>('LEISURE');
+  const [maxMembers, setMaxMembers] = useState(4);
   const [isLoading, setIsLoading] = useState(false);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const validateForm = (): boolean => {
-    if (!name.trim()) {
-      Alert.alert('입력 오류', '그룹 이름을 입력해주세요.');
-      return false;
-    }
-    if (name.trim().length < 2) {
-      Alert.alert('입력 오류', '그룹 이름은 2자 이상이어야 합니다.');
-      return false;
-    }
-    if (name.trim().length > 50) {
-      Alert.alert('입력 오류', '그룹 이름은 50자 이하여야 합니다.');
-      return false;
-    }
-    if (description.length > 500) {
-      Alert.alert('입력 오류', '설명은 500자 이하여야 합니다.');
+    const message = getCreateGroupValidationMessage({
+      name,
+      description,
+      destination,
+      startDate,
+      endDate,
+      purpose,
+      maxMembers,
+    });
+    if (message) {
+      Alert.alert('입력 오류', message);
       return false;
     }
     return true;
@@ -61,12 +74,15 @@ const CreateGroupScreen: React.FC<Props> = ({ navigation }) => {
 
     setIsLoading(true);
     try {
-      const group = await chatService.createGroup({
-        name: name.trim(),
-        description: description.trim(),
-        isPublic,
+      const group = await chatService.createGroup(toCreateGroupRequest({
+        name,
+        description,
+        destination,
+        startDate,
+        endDate,
+        purpose,
         maxMembers,
-      });
+      }));
 
       Alert.alert('성공', '그룹이 생성되었습니다.', [
         {
@@ -98,50 +114,116 @@ const CreateGroupScreen: React.FC<Props> = ({ navigation }) => {
         <View style={styles.section}>
           <Text style={styles.label}>그룹 이름 *</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, focusedField === 'name' && styles.inputFocused]}
             value={name}
             onChangeText={setName}
+            onFocus={() => setFocusedField('name')}
+            onBlur={() => setFocusedField(null)}
             placeholder="그룹 이름을 입력하세요"
-            placeholderTextColor="#9CA3AF"
-            maxLength={50}
+            placeholderTextColor={palette.placeholder}
+            maxLength={GROUP_NAME_MAX_LENGTH}
           />
-          <Text style={styles.charCount}>{name.length}/50</Text>
+          <Text style={styles.charCount}>{name.length}/{GROUP_NAME_MAX_LENGTH}</Text>
         </View>
 
         {/* Description */}
         <View style={styles.section}>
           <Text style={styles.label}>설명</Text>
           <TextInput
-            style={[styles.input, styles.textArea]}
+            style={[
+              styles.input,
+              styles.textArea,
+              focusedField === 'description' && styles.inputFocused,
+            ]}
             value={description}
             onChangeText={setDescription}
+            onFocus={() => setFocusedField('description')}
+            onBlur={() => setFocusedField(null)}
             placeholder="그룹에 대한 설명을 입력하세요"
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={palette.placeholder}
             multiline
             numberOfLines={4}
-            maxLength={500}
+            maxLength={GROUP_DESCRIPTION_MAX_LENGTH}
             textAlignVertical="top"
           />
-          <Text style={styles.charCount}>{description.length}/500</Text>
+          <Text style={styles.charCount}>
+            {description.length}/{GROUP_DESCRIPTION_MAX_LENGTH}
+          </Text>
         </View>
 
-        {/* Public/Private Toggle */}
         <View style={styles.section}>
-          <View style={styles.toggleRow}>
-            <View style={styles.toggleInfo}>
-              <Text style={styles.label}>공개 그룹</Text>
-              <Text style={styles.toggleDescription}>
-                {isPublic
-                  ? '누구나 그룹을 검색하고 참여할 수 있습니다'
-                  : '초대를 통해서만 참여할 수 있습니다'}
-              </Text>
+          <Text style={styles.label}>목적지 *</Text>
+          <TextInput
+            style={[styles.input, focusedField === 'destination' && styles.inputFocused]}
+            value={destination}
+            onChangeText={setDestination}
+            onFocus={() => setFocusedField('destination')}
+            onBlur={() => setFocusedField(null)}
+            placeholder="예: 제주도, 도쿄, 파리"
+            placeholderTextColor={palette.placeholder}
+            maxLength={GROUP_DESTINATION_MAX_LENGTH}
+          />
+          <Text style={styles.charCount}>
+            {destination.length}/{GROUP_DESTINATION_MAX_LENGTH}
+          </Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.label}>여행 기간 *</Text>
+          <View style={styles.dateRow}>
+            <View style={styles.dateField}>
+              <Text style={styles.fieldHint}>시작일</Text>
+              <TextInput
+                style={[styles.input, focusedField === 'startDate' && styles.inputFocused]}
+                value={startDate}
+                onChangeText={setStartDate}
+                onFocus={() => setFocusedField('startDate')}
+                onBlur={() => setFocusedField(null)}
+                placeholder="YYYY-MM-DD"
+                placeholderTextColor={palette.placeholder}
+                keyboardType="numbers-and-punctuation"
+                maxLength={10}
+              />
             </View>
-            <Switch
-              value={isPublic}
-              onValueChange={setIsPublic}
-              trackColor={{ false: '#D1D5DB', true: '#93C5FD' }}
-              thumbColor={isPublic ? '#3B82F6' : '#F3F4F6'}
-            />
+            <View style={styles.dateField}>
+              <Text style={styles.fieldHint}>종료일</Text>
+              <TextInput
+                style={[styles.input, focusedField === 'endDate' && styles.inputFocused]}
+                value={endDate}
+                onChangeText={setEndDate}
+                onFocus={() => setFocusedField('endDate')}
+                onBlur={() => setFocusedField(null)}
+                placeholder="YYYY-MM-DD"
+                placeholderTextColor={palette.placeholder}
+                keyboardType="numbers-and-punctuation"
+                maxLength={10}
+              />
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.label}>여행 목적</Text>
+          <View style={styles.optionsRow}>
+            {PURPOSE_OPTIONS.map(option => (
+              <TouchableOpacity
+                key={option.value}
+                style={[
+                  styles.optionButton,
+                  purpose === option.value && styles.optionButtonActive,
+                ]}
+                onPress={() => setPurpose(option.value)}
+              >
+                <Text
+                  style={[
+                    styles.optionButtonText,
+                    purpose === option.value && styles.optionButtonTextActive,
+                  ]}
+                >
+                  {option.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
         </View>
 
@@ -170,14 +252,6 @@ const CreateGroupScreen: React.FC<Props> = ({ navigation }) => {
             ))}
           </View>
         </View>
-
-        {/* Tips */}
-        <View style={styles.tipsSection}>
-          <Text style={styles.tipsTitle}>💡 그룹 생성 팁</Text>
-          <Text style={styles.tipItem}>• 명확한 그룹 이름을 사용하세요</Text>
-          <Text style={styles.tipItem}>• 그룹의 목적을 설명에 작성하세요</Text>
-          <Text style={styles.tipItem}>• 여행 지역이나 테마를 포함하면 좋아요</Text>
-        </View>
       </ScrollView>
 
       {/* Create Button */}
@@ -188,7 +262,7 @@ const CreateGroupScreen: React.FC<Props> = ({ navigation }) => {
           disabled={isLoading}
         >
           {isLoading ? (
-            <ActivityIndicator color="#FFFFFF" />
+            <ActivityIndicator color={palette.onPrimary} />
           ) : (
             <Text style={styles.createButtonText}>그룹 만들기</Text>
           )}
@@ -198,128 +272,105 @@ const CreateGroupScreen: React.FC<Props> = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (palette: ThemePalette) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: palette.background,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: 20,
+    padding: spacing.screenH,
   },
   section: {
-    marginBottom: 24,
+    marginBottom: spacing.xxl,
   },
   label: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 8,
+    ...type.bodySmall,
+    fontFamily: fonts.bold,
+    color: palette.ink,
+    marginBottom: spacing.sm,
   },
   input: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    paddingHorizontal: 16,
+    backgroundColor: palette.surface,
+    borderRadius: radii.input,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
+    paddingHorizontal: spacing.lg,
     paddingVertical: 14,
-    fontSize: 16,
-    color: '#111827',
+    fontFamily: fonts.medium,
+    fontSize: 15,
+    color: palette.ink,
+  },
+  inputFocused: {
+    borderColor: palette.primary,
+    backgroundColor: palette.background,
   },
   textArea: {
     height: 100,
     paddingTop: 14,
   },
   charCount: {
-    fontSize: 12,
-    color: '#9CA3AF',
+    ...type.caption,
+    color: palette.placeholder,
     textAlign: 'right',
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
-  toggleRow: {
+  dateRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    padding: 16,
+    gap: 10,
   },
-  toggleInfo: {
+  dateField: {
     flex: 1,
-    marginRight: 16,
   },
-  toggleDescription: {
-    fontSize: 13,
-    color: '#6B7280',
-    marginTop: 4,
+  fieldHint: {
+    ...type.caption,
+    color: palette.textTertiary,
+    marginBottom: 6,
   },
   optionsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: spacing.sm,
   },
   optionButton: {
-    paddingHorizontal: 16,
+    paddingHorizontal: spacing.lg,
     paddingVertical: 10,
-    borderRadius: 20,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderRadius: radii.chip,
+    backgroundColor: palette.surface,
   },
   optionButtonActive: {
-    backgroundColor: '#3B82F6',
-    borderColor: '#3B82F6',
+    backgroundColor: palette.ink,
   },
   optionButtonText: {
-    fontSize: 14,
-    color: '#374151',
-    fontWeight: '500',
+    fontFamily: fonts.bold,
+    fontSize: 13,
+    color: palette.textSecondary,
   },
   optionButtonTextActive: {
-    color: '#FFFFFF',
-  },
-  tipsSection: {
-    backgroundColor: '#EFF6FF',
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 8,
-  },
-  tipsTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#1E40AF',
-    marginBottom: 12,
-  },
-  tipItem: {
-    fontSize: 14,
-    color: '#3B82F6',
-    lineHeight: 22,
+    color: palette.background,
   },
   footer: {
-    padding: 20,
-    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
-    backgroundColor: '#FFFFFF',
+    padding: spacing.screenH,
+    paddingBottom: Platform.OS === 'ios' ? 34 : spacing.screenH,
+    backgroundColor: palette.background,
     borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
+    borderTopColor: palette.hairline,
   },
   createButton: {
-    backgroundColor: '#3B82F6',
-    borderRadius: 12,
-    paddingVertical: 16,
+    backgroundColor: palette.primary,
+    borderRadius: radii.button,
+    height: 50,
     alignItems: 'center',
     justifyContent: 'center',
   },
   createButtonDisabled: {
-    backgroundColor: '#93C5FD',
+    opacity: 0.5,
   },
   createButtonText: {
-    color: '#FFFFFF',
-    fontSize: 17,
-    fontWeight: '600',
+    ...type.button,
+    color: palette.onPrimary,
   },
 });
 

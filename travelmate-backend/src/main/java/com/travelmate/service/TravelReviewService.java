@@ -34,7 +34,7 @@ public class TravelReviewService {
      * 동행 후 상호평가를 작성합니다.
      *
      * <ul>
-     *   <li>매칭 상태가 MATCHED여야 합니다.</li>
+     *   <li>매칭 상태가 COMPLETED여야 합니다. 레거시 MATCHED 상태도 허용합니다.</li>
      *   <li>리뷰어가 해당 매칭의 참여자(requester 또는 receiver)여야 합니다.</li>
      *   <li>리뷰어와 리뷰이가 다른 사람이어야 합니다.</li>
      *   <li>동일 reviewer + matchRequest 조합의 중복 평가를 허용하지 않습니다.</li>
@@ -58,11 +58,12 @@ public class TravelReviewService {
                 .orElseThrow(() -> BusinessException.userNotFound(request.getRevieweeId()));
 
         MatchRequest matchRequest = matchRequestRepository.findById(request.getMatchRequestId())
-                .orElseThrow(() -> new BusinessException("매칭 요청을 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.notFound("매칭 요청을 찾을 수 없습니다."));
 
-        // 3. 매칭 상태 검증 (MATCHED만 허용)
-        if (matchRequest.getStatus() != MatchStatus.MATCHED) {
-            throw new BusinessException("성사된 매칭(MATCHED)에 대해서만 평가를 작성할 수 있습니다.");
+        // 3. 매칭 상태 검증 (완료된 동행만 허용)
+        if (matchRequest.getStatus() != MatchStatus.COMPLETED
+                && matchRequest.getStatus() != MatchStatus.MATCHED) {
+            throw BusinessException.badRequest("완료된 매칭(COMPLETED)에 대해서만 평가를 작성할 수 있습니다.");
         }
 
         // 4. 리뷰어가 해당 매칭 참여자인지 확인
@@ -134,7 +135,7 @@ public class TravelReviewService {
     @Transactional(readOnly = true)
     public List<TravelReviewDto.ReviewResponse> getReviewsForMatch(Long matchRequestId) {
         matchRequestRepository.findById(matchRequestId)
-                .orElseThrow(() -> new BusinessException("매칭 요청을 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.notFound("매칭 요청을 찾을 수 없습니다."));
 
         return travelReviewRepository.findByMatchRequestIdWithUsers(matchRequestId)
                 .stream()

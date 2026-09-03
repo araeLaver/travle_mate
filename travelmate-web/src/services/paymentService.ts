@@ -191,7 +191,7 @@ class PaymentService {
    */
   async applyCoupon(couponCode: string, amount: number): Promise<CouponApplyResult> {
     return apiClient.get<CouponApplyResult>(
-      `/payment/coupon/apply?couponCode=${couponCode}&amount=${amount}`
+      `/payment/coupon/apply?couponCode=${encodeURIComponent(couponCode)}&amount=${amount}`
     );
   }
 

@@ -4,6 +4,7 @@
 
 import { apiClient } from './apiClient';
 import { getFirebaseMessaging, vapidKey, isFirebaseConfigured } from '../lib/firebase';
+import { logger } from '../lib/utils';
 
 export type DeviceType = 'ANDROID' | 'IOS' | 'WEB';
 
@@ -66,8 +67,7 @@ class PushNotificationService {
    */
   async requestPermission(): Promise<boolean> {
     if (!this.isSupported()) {
-      // eslint-disable-next-line no-console
-      console.warn('Push notifications are not supported');
+      logger.warn('Push notifications are not supported');
       return false;
     }
 
@@ -81,8 +81,7 @@ class PushNotificationService {
 
       return this.permissionGranted;
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to request notification permission:', error);
+      logger.error('Failed to request notification permission:', error);
       return false;
     }
   }
@@ -116,17 +115,15 @@ class PushNotificationService {
       });
 
       if (token) {
-        this.fcmToken = token;
         await this.registerTokenWithServer(token);
-        // eslint-disable-next-line no-console
-        console.log('FCM token initialized');
+        this.fcmToken = token;
+        logger.log('FCM token initialized');
       }
 
       return token;
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to initialize FCM token:', error);
-      return null;
+      logger.error('Failed to initialize FCM token:', error);
+      throw error;
     }
   }
 
@@ -136,13 +133,11 @@ class PushNotificationService {
   private async registerServiceWorker(): Promise<ServiceWorkerRegistration | null> {
     try {
       const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-      // eslint-disable-next-line no-console
-      console.log('Service Worker registered');
+      logger.log('Service Worker registered');
       return registration;
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Service Worker registration failed:', error);
-      return null;
+      logger.error('Service Worker registration failed:', error);
+      throw error;
     }
   }
 
@@ -160,11 +155,10 @@ class PushNotificationService {
       };
 
       await apiClient.post('/push/register', request);
-      // eslint-disable-next-line no-console
-      console.log('Token registered with server');
+      logger.log('Token registered with server');
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to register token with server:', error);
+      logger.error('Failed to register token with server:', error);
+      throw error;
     }
   }
 
@@ -179,11 +173,10 @@ class PushNotificationService {
     try {
       await apiClient.post('/push/unregister', { token: this.fcmToken });
       this.fcmToken = null;
-      // eslint-disable-next-line no-console
-      console.log('Token unregistered');
+      logger.log('Token unregistered');
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to unregister token:', error);
+      logger.error('Failed to unregister token:', error);
+      throw error;
     }
   }
 
@@ -193,11 +186,10 @@ class PushNotificationService {
   async subscribeToTopic(topic: string): Promise<void> {
     try {
       await apiClient.post(`/push/subscribe/${topic}`);
-      // eslint-disable-next-line no-console
-      console.log(`Subscribed to topic: ${topic}`);
+      logger.log(`Subscribed to topic: ${topic}`);
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(`Failed to subscribe to topic ${topic}:`, error);
+      logger.error(`Failed to subscribe to topic ${topic}:`, error);
+      throw error;
     }
   }
 
@@ -207,11 +199,10 @@ class PushNotificationService {
   async unsubscribeFromTopic(topic: string): Promise<void> {
     try {
       await apiClient.delete(`/push/subscribe/${topic}`);
-      // eslint-disable-next-line no-console
-      console.log(`Unsubscribed from topic: ${topic}`);
+      logger.log(`Unsubscribed from topic: ${topic}`);
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(`Failed to unsubscribe from topic ${topic}:`, error);
+      logger.error(`Failed to unsubscribe from topic ${topic}:`, error);
+      throw error;
     }
   }
 
@@ -227,8 +218,7 @@ class PushNotificationService {
     const { onMessage } = await import('firebase/messaging');
 
     return onMessage(messaging, payload => {
-      // eslint-disable-next-line no-console
-      console.log('Foreground message received:', payload);
+      logger.log('Foreground message received:', payload);
 
       const notificationPayload: NotificationPayload = {
         title: payload.notification?.title || '',
@@ -287,7 +277,7 @@ class PushNotificationService {
    * Get notification preferences
    */
   async getPreferences(): Promise<NotificationPreferences> {
-    return await apiClient.get<NotificationPreferences>('/settings/notifications');
+    return await apiClient.get<NotificationPreferences>('/push/preferences');
   }
 
   /**
@@ -296,7 +286,7 @@ class PushNotificationService {
   async updatePreferences(
     preferences: Partial<NotificationPreferences>
   ): Promise<NotificationPreferences> {
-    return await apiClient.put<NotificationPreferences>('/settings/notifications', preferences);
+    return await apiClient.put<NotificationPreferences>('/push/preferences', preferences);
   }
 
   /**

@@ -148,6 +148,37 @@ public class AdminDto {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
+    public static class RecommendationFeedbackResponse {
+        private Long id;
+        private Long userId;
+        private String userNickname;
+        private Integer rating;
+        private String comment;
+        private String feedbackType;
+        private String targetType;
+        private Long targetId;
+        private String metadata;
+        private LocalDateTime createdAt;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class RecommendationFeedbackStats {
+        private long totalFeedback;
+        private double averageRating;
+        private long lowRatingCount;
+        private long feedbackLast7Days;
+        private Map<Integer, Long> ratingDistribution;
+        private Map<String, Long> feedbackTypeDistribution;
+        private Map<String, Long> targetTypeDistribution;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class CreateLocationRequest {
         private String name;
         private String description;

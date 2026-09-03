@@ -2,7 +2,7 @@
  * Register Screen for TravelMate Mobile
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -15,12 +15,14 @@ import {
   ActivityIndicator,
   ScrollView,
 } from 'react-native';
-import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '../navigation/AppNavigator';
 import { useAuth } from '../contexts/AuthContext';
 import { socialAuthService } from '../services/socialAuthService';
+import GoogleAuthButton from '../components/GoogleAuthButton';
+import { useTheme } from '../contexts/ThemeContext';
+import { ThemePalette, fonts, type, spacing, radii } from '../theme';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -31,6 +33,8 @@ interface Props {
 }
 
 const RegisterScreen: React.FC<Props> = ({ navigation }) => {
+  const { palette } = useTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const { register, loginWithGoogle, loginWithApple } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -40,24 +44,17 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
   const [isSocialLoading, setIsSocialLoading] = useState(false);
   const [isAppleAvailable, setIsAppleAvailable] = useState(false);
 
-  const googleConfig = socialAuthService.getGoogleAuthConfig();
-  const [request, response, promptAsync] = Google.useAuthRequest(googleConfig);
+  const isGoogleAvailable = socialAuthService.isGoogleSignInConfigured();
 
   useEffect(() => {
     socialAuthService.isAppleSignInAvailable().then(setIsAppleAvailable);
   }, []);
 
-  useEffect(() => {
-    if (response?.type === 'success') {
-      handleGoogleResponse(response.authentication);
-    }
-  }, [response]);
-
-  const handleGoogleResponse = async (authentication: any) => {
-    if (!authentication) return;
+  const handleGoogleResponse = async (idToken?: string, accessToken?: string) => {
+    if (!idToken && !accessToken) return;
     setIsSocialLoading(true);
     try {
-      await loginWithGoogle(authentication.idToken, authentication.accessToken);
+      await loginWithGoogle(idToken, accessToken);
     } catch (error: any) {
       Alert.alert('Google 가입 실패', error.message || 'Google 계정으로 가입할 수 없습니다.');
     } finally {
@@ -139,14 +136,16 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
 
           {/* Social Login */}
           <View style={styles.socialContainer}>
-            <TouchableOpacity
-              style={[styles.socialButton, styles.googleButton]}
-              onPress={() => promptAsync()}
-              disabled={!request || anyLoading}
-            >
-              <Text style={styles.socialIcon}>G</Text>
-              <Text style={styles.socialButtonText}>Google로 가입하기</Text>
-            </TouchableOpacity>
+            {isGoogleAvailable && (
+              <GoogleAuthButton
+                label="Google로 가입하기"
+                buttonStyle={[styles.socialButton, styles.googleButton]}
+                iconStyle={styles.socialIcon}
+                textStyle={styles.socialButtonText}
+                disabled={anyLoading}
+                onAuthenticated={handleGoogleResponse}
+              />
+            )}
 
             {isAppleAvailable && (
               <TouchableOpacity
@@ -154,13 +153,13 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
                 onPress={handleAppleSignup}
                 disabled={anyLoading}
               >
-                <Text style={[styles.socialIcon, styles.appleIcon]}>{'\uF8FF'}</Text>
+                <Text style={[styles.socialIcon, styles.appleIcon]}>{''}</Text>
                 <Text style={[styles.socialButtonText, styles.appleButtonText]}>Apple로 가입하기</Text>
               </TouchableOpacity>
             )}
 
             {isSocialLoading && (
-              <ActivityIndicator style={styles.socialLoading} color="#3B82F6" />
+              <ActivityIndicator style={styles.socialLoading} color={palette.primary} />
             )}
           </View>
 
@@ -178,7 +177,7 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
               <TextInput
                 style={styles.input}
                 placeholder="example@email.com"
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor={palette.placeholder}
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
@@ -192,7 +191,7 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
               <TextInput
                 style={styles.input}
                 placeholder="2~20자 닉네임"
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor={palette.placeholder}
                 value={nickname}
                 onChangeText={setNickname}
                 autoCapitalize="none"
@@ -205,7 +204,7 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
               <TextInput
                 style={styles.input}
                 placeholder="8자 이상"
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor={palette.placeholder}
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry
@@ -217,7 +216,7 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
               <TextInput
                 style={styles.input}
                 placeholder="비밀번호 재입력"
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor={palette.placeholder}
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
                 secureTextEntry
@@ -230,7 +229,7 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
               disabled={anyLoading}
             >
               {isLoading ? (
-                <ActivityIndicator color="#fff" />
+                <ActivityIndicator color={palette.onPrimary} />
               ) : (
                 <Text style={styles.buttonText}>가입하기</Text>
               )}
@@ -250,10 +249,11 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: palette.background,
   },
   scrollContent: {
     flexGrow: 1,
@@ -261,129 +261,126 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     justifyContent: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.screenH,
     paddingVertical: 48,
   },
   header: {
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: spacing.xxl,
   },
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#111827',
+    ...type.title,
+    color: palette.ink,
   },
   subtitle: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginTop: 8,
+    ...type.bodySmall,
+    color: palette.textTertiary,
+    marginTop: spacing.sm,
   },
   socialContainer: {
-    gap: 12,
-    marginBottom: 24,
+    gap: spacing.md,
+    marginBottom: spacing.xxl,
   },
   socialButton: {
-    height: 50,
-    borderRadius: 12,
+    height: 54,
+    borderRadius: radii.button,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
   },
   googleButton: {
-    backgroundColor: '#fff',
+    backgroundColor: palette.background,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
+    borderColor: palette.outline,
   },
   appleButton: {
-    backgroundColor: '#000',
+    backgroundColor: palette.ink,
   },
   socialIcon: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#4285F4',
+    fontFamily: fonts.bold,
+    color: '#4285F4', // Google brand blue (kept per brand guidelines)
   },
   appleIcon: {
-    color: '#fff',
+    color: palette.background,
     fontSize: 20,
   },
   socialButtonText: {
     fontSize: 15,
-    fontWeight: '600',
-    color: '#374151',
+    fontFamily: fonts.bold,
+    color: palette.ink,
   },
   appleButtonText: {
-    color: '#fff',
+    color: palette.background,
   },
   socialLoading: {
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
   divider: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: spacing.xxl,
   },
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: palette.hairline,
   },
   dividerText: {
-    paddingHorizontal: 12,
-    fontSize: 13,
-    color: '#9CA3AF',
+    paddingHorizontal: spacing.md,
+    ...type.caption,
+    color: palette.placeholder,
   },
   form: {
-    gap: 16,
+    gap: spacing.lg,
   },
   inputContainer: {
-    gap: 8,
+    gap: spacing.sm,
   },
   label: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#374151',
+    fontSize: 13,
+    fontFamily: fonts.bold,
+    color: palette.textSecondary,
   },
   input: {
-    height: 50,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    fontSize: 16,
-    backgroundColor: '#F9FAFB',
-    color: '#111827',
+    height: 52,
+    borderRadius: radii.input,
+    paddingHorizontal: spacing.lg,
+    fontSize: 15,
+    fontFamily: fonts.medium,
+    backgroundColor: palette.surface,
+    color: palette.ink,
   },
   button: {
-    height: 50,
-    backgroundColor: '#3B82F6',
-    borderRadius: 12,
+    height: 54,
+    backgroundColor: palette.primary,
+    borderRadius: radii.button,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
   buttonDisabled: {
     opacity: 0.7,
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    ...type.button,
+    color: palette.onPrimary,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 24,
-    gap: 8,
+    marginTop: spacing.xxl,
+    gap: spacing.sm,
   },
   footerText: {
-    color: '#6B7280',
-    fontSize: 14,
+    ...type.bodySmall,
+    color: palette.textTertiary,
   },
   linkText: {
-    color: '#3B82F6',
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 13,
+    fontFamily: fonts.bold,
+    color: palette.primary,
   },
 });
 

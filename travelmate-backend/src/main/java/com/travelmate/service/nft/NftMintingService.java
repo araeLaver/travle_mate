@@ -30,29 +30,29 @@ public class NftMintingService {
     @Transactional
     public MintingDto.MintingResponse requestMinting(Long userId, Long collectionId, String walletAddress) {
         UserNftCollection collection = userNftCollectionRepository.findById(collectionId)
-                .orElseThrow(() -> new BusinessException("NFT 컬렉션을 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.notFound("NFT 컬렉션을 찾을 수 없습니다."));
 
         // 권한 확인
         if (!collection.getUser().getId().equals(userId)) {
-            throw new BusinessException("권한이 없습니다.");
+            throw BusinessException.forbidden("권한이 없습니다.");
         }
 
         // 이미 민팅된 경우
         if (collection.getMintStatus() == MintStatus.MINTED) {
-            throw new BusinessException("이미 민팅된 NFT입니다.");
+            throw BusinessException.conflict("이미 민팅된 NFT입니다.");
         }
 
         // 민팅 중인 경우
         if (collection.getMintStatus() == MintStatus.MINTING ||
             collection.getMintStatus() == MintStatus.CONFIRMING) {
-            throw new BusinessException("민팅이 진행 중입니다.");
+            throw BusinessException.conflict("민팅이 진행 중입니다.");
         }
 
         // 지갑 주소 설정
         if (walletAddress != null && !walletAddress.isEmpty()) {
             collection.setWalletAddress(walletAddress);
         } else if (collection.getWalletAddress() == null || collection.getWalletAddress().isEmpty()) {
-            throw new BusinessException("지갑 주소가 필요합니다.");
+            throw BusinessException.badRequest("지갑 주소가 필요합니다.");
         }
 
         // 민팅 상태 업데이트
@@ -90,8 +90,14 @@ public class NftMintingService {
             // 민팅 실행 (PolygonBlockchainService가 상태 업데이트를 처리함)
             CompletableFuture<PolygonBlockchainService.MintResult> future =
                     blockchainService.mintNftAsync(collection.getId(), collection.getWalletAddress(), metadataUri);
+            if (future == null) {
+                throw new IllegalStateException("블록체인 민팅 요청이 시작되지 않았습니다.");
+            }
 
             PolygonBlockchainService.MintResult result = future.get();
+            if (result == null) {
+                throw new IllegalStateException("블록체인 민팅 결과가 비어 있습니다.");
+            }
 
             if (result.success()) {
                 log.info("민팅 성공: collectionId={}, tokenId={}",
@@ -113,11 +119,11 @@ public class NftMintingService {
     @Transactional(readOnly = true)
     public MintingDto.MintingStatusResponse getMintingStatus(Long userId, Long collectionId) {
         UserNftCollection collection = userNftCollectionRepository.findById(collectionId)
-                .orElseThrow(() -> new BusinessException("NFT 컬렉션을 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.notFound("NFT 컬렉션을 찾을 수 없습니다."));
 
         // 권한 확인
         if (!collection.getUser().getId().equals(userId)) {
-            throw new BusinessException("권한이 없습니다.");
+            throw BusinessException.forbidden("권한이 없습니다.");
         }
 
         return MintingDto.MintingStatusResponse.builder()
@@ -153,21 +159,21 @@ public class NftMintingService {
     @Transactional
     public MintingDto.MintingResponse retryMinting(Long userId, Long collectionId) {
         UserNftCollection collection = userNftCollectionRepository.findById(collectionId)
-                .orElseThrow(() -> new BusinessException("NFT 컬렉션을 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.notFound("NFT 컬렉션을 찾을 수 없습니다."));
 
         // 권한 확인
         if (!collection.getUser().getId().equals(userId)) {
-            throw new BusinessException("권한이 없습니다.");
+            throw BusinessException.forbidden("권한이 없습니다.");
         }
 
         // FAILED 상태인 경우에만 재시도 가능
         if (collection.getMintStatus() != MintStatus.FAILED) {
-            throw new BusinessException("실패한 NFT만 재시도할 수 있습니다.");
+            throw BusinessException.badRequest("실패한 NFT만 재시도할 수 있습니다.");
         }
 
         // 지갑 주소 확인
         if (collection.getWalletAddress() == null || collection.getWalletAddress().isEmpty()) {
-            throw new BusinessException("지갑 주소가 필요합니다.");
+            throw BusinessException.badRequest("지갑 주소가 필요합니다.");
         }
 
         // 민팅 상태 업데이트

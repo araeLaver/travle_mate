@@ -3,6 +3,7 @@ package com.travelmate.service.nft;
 import com.travelmate.entity.nft.CollectionSet;
 import com.travelmate.entity.nft.CollectibleLocation;
 import com.travelmate.entity.nft.UserNftCollection;
+import com.travelmate.exception.BusinessException;
 import com.travelmate.repository.nft.CollectionSetRepository;
 import com.travelmate.repository.nft.UserNftCollectionRepository;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +40,7 @@ public class CollectionSetService {
     @Transactional(readOnly = true)
     public CollectionSetProgress getSetProgress(Long setId, Long userId) {
         CollectionSet set = collectionSetRepository.findById(setId)
-                .orElseThrow(() -> new IllegalArgumentException("컬렉션 세트를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.notFound("컬렉션 세트를 찾을 수 없습니다."));
 
         List<UserNftCollection> userCollections = userNftCollectionRepository.findByUserId(userId);
         Set<Long> collectedLocationIds = userCollections.stream()

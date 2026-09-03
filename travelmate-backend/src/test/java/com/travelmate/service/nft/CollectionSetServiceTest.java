@@ -3,6 +3,7 @@ package com.travelmate.service.nft;
 import com.travelmate.entity.nft.CollectibleLocation;
 import com.travelmate.entity.nft.CollectionSet;
 import com.travelmate.entity.nft.UserNftCollection;
+import com.travelmate.exception.BusinessException;
 import com.travelmate.repository.nft.CollectionSetRepository;
 import com.travelmate.repository.nft.UserNftCollectionRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -123,7 +124,8 @@ class CollectionSetServiceTest {
             when(collectionSetRepository.findById(999L)).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> collectionSetService.getSetProgress(999L, 1L))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(ex -> assertBusinessException(ex, 404, "NOT_FOUND"));
         }
     }
 
@@ -200,5 +202,11 @@ class CollectionSetServiceTest {
             f.setAccessible(true);
             f.set(set, id);
         } catch (Exception e) { throw new RuntimeException(e); }
+    }
+
+    private void assertBusinessException(Throwable throwable, int status, String errorCode) {
+        BusinessException exception = (BusinessException) throwable;
+        assertThat(exception.getStatus().value()).isEqualTo(status);
+        assertThat(exception.getErrorCodeStr()).isEqualTo(errorCode);
     }
 }

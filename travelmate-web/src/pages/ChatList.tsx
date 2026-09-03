@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { chatService, ChatRoom } from '../services/chatService';
+import { authService } from '../services/authService';
+import { chatRestService, ChatRoom } from '../services/chatRestService';
 import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
 import SEOHead from '../components/SEOHead';
@@ -27,6 +28,24 @@ const ChatList: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
+  const getCurrentUserId = () => authService.getUser()?.id?.toString() || '';
+  const getParticipantUserId = (participant: ChatRoom['participants'][number]) =>
+    participant.userId || participant.id;
+  const isDirectRoom = (room: ChatRoom) => room.roomType === 'PRIVATE';
+
+  const loadChatRooms = useCallback(async () => {
+    try {
+      const rooms = await chatRestService.getChatRooms();
+      setChatRooms(rooms);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to load chat rooms:', error);
+      setChatRooms([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     loadChatRooms();
 
@@ -35,18 +54,7 @@ const ChatList: React.FC = () => {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, []);
-
-  const loadChatRooms = () => {
-    try {
-      const rooms = chatService.getChatRooms();
-      setChatRooms(rooms);
-    } catch (error) {
-      // Failed to load chat rooms
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [loadChatRooms]);
 
   const filteredRooms = chatRooms.filter(
     room =>
@@ -74,7 +82,8 @@ const ChatList: React.FC = () => {
   };
 
   const getOnlineParticipants = (room: ChatRoom) => {
-    return room.participants.filter(p => p.id !== chatService.getCurrentUserId() && p.isOnline)
+    const currentUserId = getCurrentUserId();
+    return room.participants.filter(p => getParticipantUserId(p) !== currentUserId && p.isOnline)
       .length;
   };
 
@@ -92,7 +101,7 @@ const ChatList: React.FC = () => {
   if (isLoading) {
     return (
       <div
-        className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] flex items-center justify-center"
+        className="min-h-screen bg-sand-100 dark:bg-[#0a0a0b] flex items-center justify-center"
         role="status"
         aria-live="polite"
       >
@@ -102,7 +111,7 @@ const ChatList: React.FC = () => {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-r from-violet-500 to-pink-500 flex items-center justify-center animate-pulse">
+          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-primary-100 flex items-center justify-center animate-pulse">
             <span className="text-3xl">💬</span>
           </div>
           <p className="text-gray-600 dark:text-gray-300 text-lg">채팅방을 불러오는 중...</p>
@@ -113,7 +122,7 @@ const ChatList: React.FC = () => {
 
   return (
     <div
-      className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] relative overflow-hidden"
+      className="min-h-screen bg-sand-100 dark:bg-[#0a0a0b] relative overflow-hidden"
       role="main"
       aria-label="채팅 목록"
     >
@@ -122,14 +131,14 @@ const ChatList: React.FC = () => {
 
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 px-4 py-3">
-        <div className="max-w-4xl mx-auto bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-2xl px-6 py-3 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
+        <div className="max-w-4xl mx-auto bg-white/90 dark:bg-gray-900/70 backdrop-blur-xl rounded-2xl px-6 py-3 border border-sand-300 dark:border-gray-800/50 shadow-[0_10px_30px_rgba(16,16,20,0.06)]">
           <div className="flex items-center justify-between">
             <Logo />
             <div className="flex items-center gap-3">
               <ThemeToggle />
               <button
                 onClick={() => navigate('/dashboard')}
-                className="px-4 py-2 bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-violet-500/25 transition-all duration-300 hover:-translate-y-0.5 text-sm"
+                className="px-4 py-2 bg-primary-500 hover:bg-primary-700 text-white font-bold rounded-xl transition-all duration-300 hover:-translate-y-0.5 text-sm"
               >
                 대시보드
               </button>
@@ -143,11 +152,11 @@ const ChatList: React.FC = () => {
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <motion.header className="text-center mb-8" {...fadeInUp}>
-            <div className="inline-flex items-center gap-3 px-4 py-2 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-full border border-gray-200/50 dark:border-gray-700/50 mb-4">
+            <div className="inline-flex items-center gap-3 px-4 py-2 bg-primary-100 dark:bg-gray-800/60 rounded-full mb-4">
               <span className="text-2xl">💬</span>
-              <span className="text-gray-600 dark:text-gray-300 font-medium">채팅</span>
+              <span className="text-primary-500 dark:text-gray-300 font-bold">채팅</span>
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white mb-2">
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-ink dark:text-white mb-2">
               여행 메이트와의 대화
             </h1>
             <p className="text-gray-500 dark:text-gray-400">
@@ -162,7 +171,7 @@ const ChatList: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-4 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
+            <div className="bg-white dark:bg-gray-900/80 rounded-[18px] p-4 shadow-[0_10px_30px_rgba(16,16,20,0.06)]">
               <div className="relative">
                 <label htmlFor="chat-search" className="sr-only">
                   채팅방 검색
@@ -173,7 +182,7 @@ const ChatList: React.FC = () => {
                   placeholder="채팅방이나 메시지 검색..."
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
-                  className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 pl-12 outline-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-violet-500/50 transition-all"
+                  className="w-full bg-sand-100 dark:bg-gray-800 rounded-[13px] px-4 py-3 pl-12 outline-none text-ink dark:text-white placeholder-[#9A9AA4] dark:placeholder-gray-500 focus:bg-white focus:ring-2 focus:ring-primary-500 transition-all"
                   aria-describedby="search-results-count"
                 />
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
@@ -193,9 +202,11 @@ const ChatList: React.FC = () => {
             aria-label="채팅방 목록"
           >
             <div className="flex items-center justify-between mb-4 px-2">
-              <h2 className="text-lg font-bold text-gray-800 dark:text-white">활성 채팅방</h2>
+              <h2 className="text-lg font-extrabold tracking-tight text-ink dark:text-white">
+                활성 채팅방
+              </h2>
               <span
-                className="px-3 py-1 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-full text-sm font-medium"
+                className="px-3 py-1 bg-primary-100 dark:bg-primary-900/30 text-primary-500 dark:text-primary-400 rounded-full text-sm font-bold"
                 aria-label={`총 ${filteredRooms.length}개의 채팅방`}
               >
                 {filteredRooms.length}개
@@ -204,24 +215,24 @@ const ChatList: React.FC = () => {
 
             {filteredRooms.length === 0 ? (
               <motion.div
-                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-8 border border-gray-200/50 dark:border-gray-800/50 shadow-lg text-center"
+                className="bg-white dark:bg-gray-900/80 rounded-[18px] p-8 shadow-[0_10px_30px_rgba(16,16,20,0.06)] text-center"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 role="status"
               >
-                <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-r from-violet-100 to-pink-100 dark:from-violet-900/30 dark:to-pink-900/30 flex items-center justify-center">
+                <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center">
                   <span className="text-4xl">💬</span>
                 </div>
                 {searchQuery ? (
                   <>
-                    <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
+                    <h3 className="text-xl font-extrabold tracking-tight text-ink dark:text-white mb-2">
                       검색 결과가 없습니다
                     </h3>
                     <p className="text-gray-500 dark:text-gray-400">다른 키워드로 검색해보세요.</p>
                   </>
                 ) : (
                   <>
-                    <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
+                    <h3 className="text-xl font-extrabold tracking-tight text-ink dark:text-white mb-2">
                       아직 채팅방이 없습니다
                     </h3>
                     <p className="text-gray-500 dark:text-gray-400 mb-6">
@@ -229,7 +240,7 @@ const ChatList: React.FC = () => {
                     </p>
                     <button
                       onClick={() => navigate('/dashboard')}
-                      className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-violet-500/25 transition-all duration-300 hover:-translate-y-0.5"
+                      className="inline-flex items-center gap-2 px-6 py-3 bg-primary-500 hover:bg-primary-700 text-white font-bold rounded-[13px] shadow-[0_8px_22px_rgba(74,58,255,0.3)] transition-all duration-300 hover:-translate-y-0.5"
                       aria-label="여행 메이트 찾기 페이지로 이동"
                     >
                       <span>🔍</span>
@@ -246,10 +257,12 @@ const ChatList: React.FC = () => {
                 animate="animate"
               >
                 {filteredRooms.map(room => {
+                  const currentUserId = getCurrentUserId();
                   const otherParticipant = room.participants.find(
-                    p => p.id !== chatService.getCurrentUserId()
+                    p => getParticipantUserId(p) !== currentUserId
                   );
-                  const isOnline = room.type === 'direct' && otherParticipant?.isOnline;
+                  const isDirect = isDirectRoom(room);
+                  const isOnline = isDirect && otherParticipant?.isOnline;
                   const unreadText =
                     room.unreadCount > 0
                       ? `, 읽지 않은 메시지 ${room.unreadCount > 99 ? '99개 이상' : room.unreadCount + '개'}`
@@ -259,18 +272,18 @@ const ChatList: React.FC = () => {
                     <motion.li
                       key={room.id}
                       variants={fadeInUp}
-                      className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-4 border border-gray-200/50 dark:border-gray-800/50 shadow-lg cursor-pointer hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
+                      className="bg-white dark:bg-gray-900/80 rounded-2xl p-4 shadow-[0_10px_30px_rgba(16,16,20,0.06)] cursor-pointer hover:shadow-[0_10px_30px_rgba(16,16,20,0.1)] hover:-translate-y-0.5 transition-all duration-300"
                       onClick={() => navigate(`/chat/${room.id}`)}
                       onKeyDown={e => handleRoomKeyDown(e, room.id)}
                       tabIndex={0}
                       role="button"
-                      aria-label={`${room.name} 채팅방${room.type === 'direct' ? (isOnline ? ', 온라인' : ', 오프라인') : `, 참여자 ${room.participants.length}명`}${unreadText}`}
+                      aria-label={`${room.name} 채팅방${isDirect ? (isOnline ? ', 온라인' : ', 오프라인') : `, 참여자 ${room.participants.length}명`}${unreadText}`}
                     >
                       <div className="flex items-center gap-4">
                         {/* Avatar */}
                         <div className="relative flex-shrink-0" aria-hidden="true">
-                          {room.type === 'direct' ? (
-                            <div className="w-14 h-14 rounded-full bg-gradient-to-r from-violet-500 to-pink-500 flex items-center justify-center text-white text-xl font-bold overflow-hidden">
+                          {isDirect ? (
+                            <div className="w-14 h-14 rounded-full bg-primary-400 flex items-center justify-center text-white text-xl font-bold overflow-hidden">
                               {otherParticipant?.profileImage ? (
                                 <img
                                   src={otherParticipant.profileImage}
@@ -282,14 +295,14 @@ const ChatList: React.FC = () => {
                               )}
                             </div>
                           ) : (
-                            <div className="w-14 h-14 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center text-white">
+                            <div className="w-14 h-14 rounded-full bg-ink flex items-center justify-center text-white">
                               <span className="text-xl">👥</span>
                             </div>
                           )}
-                          {room.type === 'direct' && (
+                          {isDirect && (
                             <span
                               className={`absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-white dark:border-gray-900 ${
-                                isOnline ? 'bg-green-500' : 'bg-gray-400'
+                                isOnline ? 'bg-success' : 'bg-sand-500'
                               }`}
                             />
                           )}
@@ -299,26 +312,26 @@ const ChatList: React.FC = () => {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between mb-1">
                             <div className="flex items-center gap-2">
-                              <h3 className="font-bold text-gray-800 dark:text-white truncate">
+                              <h3 className="font-bold text-ink dark:text-white truncate">
                                 {room.name}
                               </h3>
-                              {room.type === 'group' && (
+                              {!isDirect && (
                                 <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
                                   <span>👥</span>
                                   {getTotalParticipants(room)}명
                                   {getOnlineParticipants(room) > 0 && (
-                                    <span className="text-green-500 dark:text-green-400">
+                                    <span className="text-success dark:text-green-400">
                                       • {getOnlineParticipants(room)}명 온라인
                                     </span>
                                   )}
                                 </span>
                               )}
-                              {room.type === 'direct' && (
+                              {isDirect && (
                                 <span
                                   className={`text-xs px-2 py-0.5 rounded-full ${
                                     isOnline
-                                      ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
-                                      : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
+                                      ? 'bg-success/10 dark:bg-green-900/30 text-success dark:text-green-400'
+                                      : 'bg-sand-200 dark:bg-gray-800 text-[#74747F] dark:text-gray-400'
                                   }`}
                                 >
                                   {isOnline ? '온라인' : '오프라인'}
@@ -329,14 +342,14 @@ const ChatList: React.FC = () => {
                               {room.lastMessage && (
                                 <time
                                   className="text-xs text-gray-400 dark:text-gray-500"
-                                  dateTime={room.lastMessage.timestamp.toISOString()}
+                                  dateTime={room.lastMessage.sentAt.toISOString()}
                                 >
-                                  {formatTime(room.lastMessage.timestamp)}
+                                  {formatTime(room.lastMessage.sentAt)}
                                 </time>
                               )}
                               {room.unreadCount > 0 && (
                                 <span
-                                  className="min-w-[20px] h-5 px-1.5 bg-gradient-to-r from-violet-600 to-pink-600 text-white text-xs font-bold rounded-full flex items-center justify-center"
+                                  className="min-w-[20px] h-5 px-1.5 bg-primary-500 text-white text-xs font-extrabold rounded-[7px] flex items-center justify-center"
                                   aria-hidden="true"
                                 >
                                   {room.unreadCount > 99 ? '99+' : room.unreadCount}
@@ -352,19 +365,19 @@ const ChatList: React.FC = () => {
                             {room.lastMessage ? (
                               <>
                                 <span className="font-medium">
-                                  {room.lastMessage.senderId === chatService.getCurrentUserId()
+                                  {room.lastMessage.senderId === currentUserId
                                     ? '나'
                                     : room.lastMessage.senderName}
                                   :
                                 </span>{' '}
                                 <span>
-                                  {room.lastMessage.type === 'text' ? (
+                                  {room.lastMessage.messageType === 'TEXT' ? (
                                     room.lastMessage.content
-                                  ) : room.lastMessage.type === 'image' ? (
+                                  ) : room.lastMessage.messageType === 'IMAGE' ? (
                                     <span className="inline-flex items-center gap-1">
                                       📷 이미지
                                     </span>
-                                  ) : room.lastMessage.type === 'location' ? (
+                                  ) : room.lastMessage.messageType === 'LOCATION' ? (
                                     <span className="inline-flex items-center gap-1">📍 위치</span>
                                   ) : (
                                     <span className="inline-flex items-center gap-1">
@@ -396,7 +409,7 @@ const ChatList: React.FC = () => {
           >
             <button
               onClick={() => navigate('/dashboard')}
-              className="flex items-center justify-center gap-2 p-4 bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold rounded-2xl hover:shadow-lg hover:shadow-violet-500/25 transition-all duration-300 hover:-translate-y-0.5"
+              className="flex items-center justify-center gap-2 p-4 bg-primary-500 hover:bg-primary-700 text-white font-bold rounded-2xl shadow-[0_8px_22px_rgba(74,58,255,0.3)] transition-all duration-300 hover:-translate-y-0.5"
               aria-label="새로운 여행 메이트 찾기"
             >
               <span className="text-xl">🔍</span>
@@ -404,7 +417,7 @@ const ChatList: React.FC = () => {
             </button>
             <button
               onClick={() => navigate('/groups')}
-              className="flex items-center justify-center gap-2 p-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-800/50 text-gray-800 dark:text-white font-semibold rounded-2xl hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
+              className="flex items-center justify-center gap-2 p-4 bg-white dark:bg-gray-900/80 border border-sand-300 dark:border-gray-800/50 text-ink dark:text-white font-bold rounded-2xl hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
               aria-label="여행 그룹 목록 보기"
             >
               <span className="text-xl">🗺️</span>

@@ -1,4 +1,4 @@
-FROM maven:3.9.9-eclipse-temurin-17-alpine AS builder
+FROM maven:3.9.9-eclipse-temurin-17 AS builder
 
 WORKDIR /app
 
@@ -10,15 +10,18 @@ RUN mvn dependency:go-offline -B --no-transfer-progress
 COPY src src
 RUN mvn clean package -Dmaven.test.skip=true -B --no-transfer-progress
 
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:17-jre
 
 LABEL maintainer="Fryndo Team"
 LABEL version="1.0"
 LABEL description="Fryndo Backend API Server"
 
-RUN addgroup -S travelmate && adduser -S travelmate -G travelmate
+RUN groupadd --system travelmate && \
+    useradd --system --gid travelmate --home-dir /app --shell /usr/sbin/nologin travelmate
 
-RUN apk add --no-cache curl tini
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl tini && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 

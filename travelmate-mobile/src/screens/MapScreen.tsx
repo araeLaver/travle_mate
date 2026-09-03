@@ -3,7 +3,7 @@
  * NFT Collection Map with nearby locations
  */
 
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -21,6 +21,9 @@ import { CompositeNavigationProp } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { RootStackParamList, MainTabParamList } from '../navigation/AppNavigator';
 import { nftService, NearbyLocation, CollectNftResponse } from '../services/nftService';
+import { useTheme } from '../contexts/ThemeContext';
+import { ThemePalette, fonts, type, spacing, radii, shadows } from '../theme';
+import Icon from '../components/icons/Icon';
 
 type MapScreenNavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<MainTabParamList, 'Map'>,
@@ -34,6 +37,8 @@ interface Props {
 const { width, height } = Dimensions.get('window');
 
 const MapScreen: React.FC<Props> = ({ navigation }) => {
+  const { palette } = useTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const mapRef = useRef<MapView>(null);
   const [userLocation, setUserLocation] = useState<{
     latitude: number;
@@ -128,19 +133,19 @@ const MapScreen: React.FC<Props> = ({ navigation }) => {
 
   const getMarkerColor = (rarity: string): string => {
     const colors: Record<string, string> = {
-      COMMON: '#9CA3AF',
+      COMMON: palette.rarityCommon,
       UNCOMMON: '#10B981',
-      RARE: '#3B82F6',
-      EPIC: '#8B5CF6',
-      LEGENDARY: '#F59E0B',
+      RARE: palette.rarityRare,
+      EPIC: palette.rarityEpic,
+      LEGENDARY: palette.rarityLegendary,
     };
-    return colors[rarity] || '#9CA3AF';
+    return colors[rarity] || palette.rarityCommon;
   };
 
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#3B82F6" />
+        <ActivityIndicator size="large" color={palette.primary} />
         <Text style={styles.loadingText}>위치를 확인하는 중...</Text>
       </View>
     );
@@ -179,7 +184,7 @@ const MapScreen: React.FC<Props> = ({ navigation }) => {
                 longitude: item.location.longitude,
               }}
               onPress={() => handleMarkerPress(item)}
-              pinColor={item.isCollected ? '#D1D5DB' : getMarkerColor(item.location.rarity)}
+              pinColor={item.isCollected ? palette.disabled : getMarkerColor(item.location.rarity)}
             />
             {!item.isCollected && (
               <Circle
@@ -188,8 +193,8 @@ const MapScreen: React.FC<Props> = ({ navigation }) => {
                   longitude: item.location.longitude,
                 }}
                 radius={item.location.collectRadius}
-                fillColor="rgba(59, 130, 246, 0.1)"
-                strokeColor="rgba(59, 130, 246, 0.3)"
+                fillColor="rgba(74, 58, 255, 0.08)"
+                strokeColor="rgba(74, 58, 255, 0.3)"
                 strokeWidth={1}
               />
             )}
@@ -199,7 +204,7 @@ const MapScreen: React.FC<Props> = ({ navigation }) => {
 
       {/* My Location Button */}
       <TouchableOpacity style={styles.myLocationButton} onPress={centerOnUser}>
-        <Text style={styles.myLocationIcon}>📍</Text>
+        <Icon name="nav" size={20} color={palette.ink} />
       </TouchableOpacity>
 
       {/* Legend */}
@@ -234,7 +239,7 @@ const MapScreen: React.FC<Props> = ({ navigation }) => {
                     onPress={() => setShowCollectModal(false)}
                     style={styles.closeButton}
                   >
-                    <Text style={styles.closeButtonText}>✕</Text>
+                    <Icon name="close" size={18} color={palette.textTertiary} />
                   </TouchableOpacity>
                 </View>
 
@@ -278,6 +283,7 @@ const MapScreen: React.FC<Props> = ({ navigation }) => {
 
                 {selectedLocation.isCollected ? (
                   <View style={styles.collectedBanner}>
+                    <Icon name="check" size={16} color={palette.primary} />
                     <Text style={styles.collectedBannerText}>이미 수집한 장소입니다</Text>
                   </View>
                 ) : selectedLocation.distance * 1000 <= selectedLocation.location.collectRadius ? (
@@ -287,7 +293,7 @@ const MapScreen: React.FC<Props> = ({ navigation }) => {
                     disabled={isCollecting}
                   >
                     {isCollecting ? (
-                      <ActivityIndicator color="#fff" />
+                      <ActivityIndicator color={palette.onPrimary} />
                     ) : (
                       <Text style={styles.collectButtonText}>수집하기</Text>
                     )}
@@ -321,7 +327,8 @@ const MapScreen: React.FC<Props> = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -333,71 +340,61 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F9FAFB',
+    backgroundColor: palette.background,
   },
   loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: '#6B7280',
+    ...type.bodySmall,
+    marginTop: spacing.lg,
+    color: palette.textTertiary,
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F9FAFB',
-    padding: 24,
+    backgroundColor: palette.background,
+    padding: spacing.xxl,
   },
   errorText: {
-    fontSize: 16,
-    color: '#6B7280',
+    ...type.body,
+    color: palette.textTertiary,
     textAlign: 'center',
-    lineHeight: 24,
   },
   myLocationButton: {
     position: 'absolute',
-    right: 16,
+    right: spacing.lg,
     bottom: 120,
-    width: 48,
-    height: 48,
-    backgroundColor: '#fff',
-    borderRadius: 24,
+    width: 44,
+    height: 44,
+    backgroundColor: palette.background,
+    borderRadius: radii.iconButton,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  myLocationIcon: {
-    fontSize: 20,
+    ...shadows.floating,
   },
   legend: {
     position: 'absolute',
-    left: 16,
+    left: spacing.lg,
     bottom: 100,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    backgroundColor: palette.background,
+    borderRadius: radii.card,
+    borderWidth: 1,
+    borderColor: palette.hairline,
+    padding: spacing.md,
+    ...shadows.floating,
   },
   legendTitle: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 8,
+    ...type.caption,
+    fontFamily: fonts.bold,
+    color: palette.textSecondary,
+    marginBottom: spacing.sm,
   },
   legendItems: {
-    gap: 4,
+    gap: spacing.xs,
   },
   legendItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
   },
   legendDot: {
     width: 12,
@@ -405,31 +402,34 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   legendText: {
-    fontSize: 10,
-    color: '#6B7280',
+    ...type.tabLabel,
+    color: palette.textTertiary,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(16, 16, 20, 0.5)',
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 24,
+    backgroundColor: palette.background,
+    borderTopLeftRadius: radii.sheet,
+    borderTopRightRadius: radii.sheet,
+    padding: spacing.xxl,
     maxHeight: height * 0.7,
+    ...shadows.sheet,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#111827',
+    fontFamily: fonts.extrabold,
+    fontSize: 18,
+    lineHeight: 24,
+    letterSpacing: -0.36,
+    color: palette.ink,
     flex: 1,
   },
   closeButton: {
@@ -438,103 +438,105 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  closeButtonText: {
-    fontSize: 20,
-    color: '#6B7280',
-  },
   rarityBadge: {
     alignSelf: 'flex-start',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 6,
-    marginBottom: 12,
+    height: 24,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.sm + 2,
+    borderRadius: radii.badge,
+    marginBottom: spacing.md,
   },
   rarityText: {
-    fontSize: 12,
-    color: '#fff',
-    fontWeight: '600',
+    ...type.badge,
+    color: palette.background,
   },
   modalDescription: {
+    ...type.bodySmall,
     fontSize: 14,
-    color: '#6B7280',
-    lineHeight: 20,
-    marginBottom: 16,
+    lineHeight: 21,
+    fontFamily: fonts.medium,
+    color: palette.textSecondary,
+    marginBottom: spacing.lg,
   },
   modalInfo: {
-    backgroundColor: '#F9FAFB',
-    borderRadius: 12,
-    padding: 16,
-    gap: 8,
-    marginBottom: 16,
+    backgroundColor: palette.surface,
+    borderRadius: radii.card,
+    padding: spacing.lg,
+    gap: spacing.sm,
+    marginBottom: spacing.lg,
   },
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   infoLabel: {
+    ...type.bodySmall,
     fontSize: 14,
-    color: '#6B7280',
+    fontFamily: fonts.medium,
+    color: palette.textTertiary,
   },
   infoValue: {
+    ...type.bodySmall,
     fontSize: 14,
-    fontWeight: '600',
-    color: '#111827',
+    fontFamily: fonts.bold,
+    color: palette.ink,
   },
   collectButton: {
-    backgroundColor: '#3B82F6',
-    borderRadius: 12,
+    backgroundColor: palette.primary,
+    borderRadius: radii.button,
     height: 50,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.md,
+    ...shadows.primaryGlow,
   },
   collectButtonDisabled: {
     opacity: 0.7,
   },
   collectButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    ...type.button,
+    color: palette.onPrimary,
   },
   collectedBanner: {
-    backgroundColor: '#D1FAE5',
-    borderRadius: 12,
-    padding: 16,
+    flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
+    gap: spacing.sm - 2,
+    backgroundColor: palette.primarySoft,
+    borderRadius: radii.input,
+    padding: spacing.lg,
+    marginBottom: spacing.md,
   },
   collectedBannerText: {
-    color: '#059669',
-    fontSize: 14,
-    fontWeight: '500',
+    ...type.caption,
+    fontFamily: fonts.bold,
+    color: palette.primary,
   },
   tooFarBanner: {
-    backgroundColor: '#FEF3C7',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: palette.warningBg,
+    borderRadius: radii.input,
+    padding: spacing.lg,
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   tooFarText: {
-    color: '#D97706',
+    ...type.bodySmall,
     fontSize: 14,
-    fontWeight: '500',
+    lineHeight: 21,
+    color: palette.warningText,
     textAlign: 'center',
-    lineHeight: 20,
   },
   detailButton: {
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 12,
+    backgroundColor: palette.surfaceAlt,
+    borderRadius: radii.button,
     height: 50,
     justifyContent: 'center',
     alignItems: 'center',
   },
   detailButtonText: {
-    color: '#374151',
-    fontSize: 16,
-    fontWeight: '500',
+    ...type.button,
+    color: palette.ink,
   },
-});
+  });
 
 export default MapScreen;

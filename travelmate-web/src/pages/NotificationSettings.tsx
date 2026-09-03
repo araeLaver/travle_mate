@@ -6,7 +6,6 @@ import { useToast } from '../components/Toast';
 import { Notification } from '../types';
 import Logo from '../components/Logo';
 import ThemeToggle from '../components/ThemeToggle';
-import PageBackground from '../components/PageBackground';
 
 interface NotificationPreferences {
   pushEnabled: boolean;
@@ -173,26 +172,26 @@ const NotificationSettings: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] relative overflow-hidden">
-      <PageBackground />
-
+    <div className="min-h-screen bg-sand-100 dark:bg-[#0a0a0b] relative overflow-hidden">
       {/* Navigation */}
       <motion.nav
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="sticky top-0 z-50 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50"
+        className="sticky top-0 z-50 bg-white dark:bg-gray-900 border-b border-[#F2F1ED] dark:border-gray-800"
       >
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate(-1)}
-              className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="p-2 rounded-[13px] bg-sand-100 hover:bg-sand-200 dark:bg-gray-800 dark:hover:bg-gray-700 transition-colors"
             >
               <span className="text-xl">←</span>
             </button>
             <Logo size="sm" />
           </div>
-          <h1 className="text-lg font-bold text-gray-800 dark:text-white">알림 설정</h1>
+          <h1 className="text-xl font-extrabold tracking-tight text-ink dark:text-white">
+            알림 설정
+          </h1>
           <ThemeToggle />
         </div>
       </motion.nav>
@@ -201,18 +200,20 @@ const NotificationSettings: React.FC = () => {
         {/* 푸시 알림 섹션 */}
         <motion.section
           {...fadeInUp}
-          className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-700/50 overflow-hidden"
+          className="bg-white dark:bg-gray-900 rounded-[18px] shadow-[0_10px_30px_rgba(16,16,20,0.06)] dark:border dark:border-gray-800 overflow-hidden"
         >
-          <div className="p-4 border-b border-gray-200/50 dark:border-gray-700/50">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-white">푸시 알림</h2>
+          <div className="p-4 border-b border-[#F2F1ED] dark:border-gray-800">
+            <h2 className="text-lg font-extrabold tracking-tight text-ink dark:text-white">
+              푸시 알림
+            </h2>
           </div>
           <div className="p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <span className="text-2xl">🔔</span>
                 <div>
-                  <p className="font-medium text-gray-800 dark:text-white">푸시 알림 받기</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <p className="font-bold text-ink dark:text-white">푸시 알림 받기</p>
+                  <p className="text-sm text-[#74747F] dark:text-gray-400">
                     모든 알림을 실시간으로 받습니다
                   </p>
                 </div>
@@ -224,7 +225,7 @@ const NotificationSettings: React.FC = () => {
                   onChange={() => handleToggle('pushEnabled')}
                   className="sr-only peer"
                 />
-                <div className="w-14 h-7 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-violet-600 peer-checked:to-pink-600"></div>
+                <div className="w-12 h-[29px] bg-sand-400 dark:bg-gray-700 peer-focus:outline-none rounded-[15px] peer peer-checked:after:translate-x-[19px] rtl:peer-checked:after:-translate-x-[19px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-transparent after:border after:rounded-full after:h-[25px] after:w-[25px] after:transition-all after:shadow-sm peer-checked:bg-primary-500"></div>
               </label>
             </div>
           </div>
@@ -234,17 +235,19 @@ const NotificationSettings: React.FC = () => {
         <motion.section
           {...fadeInUp}
           transition={{ delay: 0.1 }}
-          className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-700/50 overflow-hidden"
+          className="bg-white dark:bg-gray-900 rounded-[18px] shadow-[0_10px_30px_rgba(16,16,20,0.06)] dark:border dark:border-gray-800 overflow-hidden"
         >
-          <div className="p-4 border-b border-gray-200/50 dark:border-gray-700/50">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-white">알림 유형</h2>
+          <div className="p-4 border-b border-[#F2F1ED] dark:border-gray-800">
+            <h2 className="text-lg font-extrabold tracking-tight text-ink dark:text-white">
+              알림 유형
+            </h2>
           </div>
-          <div className="divide-y divide-gray-200/50 dark:divide-gray-700/50">
+          <div className="divide-y divide-[#F2F1ED] dark:divide-gray-800">
             {settingItems.map(item => (
               <div key={item.key} className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <span className="text-xl">{item.icon}</span>
-                  <span className="font-medium text-gray-800 dark:text-white">{item.label}</span>
+                  <span className="font-bold text-ink dark:text-white">{item.label}</span>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
@@ -255,7 +258,7 @@ const NotificationSettings: React.FC = () => {
                     className="sr-only peer"
                   />
                   <div
-                    className={`w-14 h-7 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-gradient-to-r peer-checked:from-violet-600 peer-checked:to-pink-600 ${
+                    className={`w-12 h-[29px] bg-sand-400 dark:bg-gray-700 peer-focus:outline-none rounded-[15px] peer peer-checked:after:translate-x-[19px] rtl:peer-checked:after:-translate-x-[19px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-transparent after:border after:rounded-full after:h-[25px] after:w-[25px] after:transition-all after:shadow-sm peer-checked:bg-primary-500 ${
                       !preferences.pushEnabled ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
                   ></div>
@@ -269,17 +272,17 @@ const NotificationSettings: React.FC = () => {
         <motion.section
           {...fadeInUp}
           transition={{ delay: 0.2 }}
-          className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-700/50 overflow-hidden"
+          className="bg-white dark:bg-gray-900 rounded-[18px] shadow-[0_10px_30px_rgba(16,16,20,0.06)] dark:border dark:border-gray-800 overflow-hidden"
         >
-          <div className="p-4 border-b border-gray-200/50 dark:border-gray-700/50 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+          <div className="p-4 border-b border-[#F2F1ED] dark:border-gray-800 flex items-center justify-between">
+            <h2 className="text-lg font-extrabold tracking-tight text-ink dark:text-white">
               최근 알림{' '}
-              {unreadCount > 0 && <span className="text-violet-500">({unreadCount})</span>}
+              {unreadCount > 0 && <span className="text-primary-500">({unreadCount})</span>}
             </h2>
             {unreadCount > 0 && (
               <button
                 onClick={handleMarkAllAsRead}
-                className="text-sm text-violet-600 dark:text-violet-400 font-medium hover:underline"
+                className="text-sm text-primary-500 dark:text-primary-300 font-bold hover:underline"
               >
                 모두 읽음
               </button>
@@ -288,15 +291,15 @@ const NotificationSettings: React.FC = () => {
 
           {loading ? (
             <div className="flex flex-col items-center justify-center py-12">
-              <div className="w-10 h-10 border-4 border-violet-500 border-t-transparent rounded-full animate-spin" />
+              <div className="w-10 h-10 border-4 border-primary-500 border-t-transparent rounded-full animate-spin" />
             </div>
           ) : notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <span className="text-5xl mb-3">🔕</span>
-              <p className="text-gray-500 dark:text-gray-400">읽지 않은 알림이 없습니다</p>
+              <p className="text-[#74747F] dark:text-gray-400">읽지 않은 알림이 없습니다</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-200/50 dark:divide-gray-700/50">
+            <div className="divide-y divide-[#F2F1ED] dark:divide-gray-800">
               {notifications.map(notif => (
                 <motion.div
                   key={notif.id}
@@ -305,31 +308,29 @@ const NotificationSettings: React.FC = () => {
                   exit={{ opacity: 0, x: 20 }}
                   className="p-4 flex items-start gap-3"
                 >
-                  <div className="w-10 h-10 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-xl flex-shrink-0">
+                  <div className="w-[34px] h-[34px] rounded-[11px] bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center text-lg flex-shrink-0">
                     {getNotificationIcon(notif.type)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-gray-800 dark:text-white truncate">
-                      {notif.title}
-                    </h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">
+                    <h4 className="font-bold text-ink dark:text-white truncate">{notif.title}</h4>
+                    <p className="text-sm text-[#74747F] dark:text-gray-400 line-clamp-2">
                       {notif.message}
                     </p>
-                    <span className="text-xs text-gray-400 dark:text-gray-500">
+                    <span className="text-xs text-[#9A9AA4] dark:text-gray-500">
                       {formatDate(notif.createdAt)}
                     </span>
                   </div>
                   <div className="flex gap-2 flex-shrink-0">
                     <button
                       onClick={() => handleMarkAsRead(notif.id)}
-                      className="p-2 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 text-green-600 dark:text-green-400 transition-colors"
+                      className="p-2 rounded-lg hover:bg-success/10 dark:hover:bg-green-900/30 text-success dark:text-green-400 transition-colors"
                       title="읽음 처리"
                     >
                       ✓
                     </button>
                     <button
                       onClick={() => handleDelete(notif.id)}
-                      className="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 transition-colors"
+                      className="p-2 rounded-lg hover:bg-[#FBF0EF] dark:hover:bg-red-900/30 text-danger dark:text-red-400 transition-colors"
                       title="삭제"
                     >
                       ✕

@@ -8,6 +8,7 @@ import {
   aiRecommendationService,
   ChatResponse,
   PlaceRecommendation,
+  isChatRequestValidationError,
 } from '../../services/aiRecommendationService';
 
 interface Message {
@@ -89,7 +90,9 @@ const AIChat: React.FC<AIChatProps> = ({ className = '', initialContext, onPlace
       const errorMessage: Message = {
         id: `error-${Date.now()}`,
         type: 'ai',
-        content: '죄송합니다. 응답을 생성하는 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.',
+        content: isChatRequestValidationError(error)
+          ? error.message
+          : '죄송합니다. 응답을 생성하는 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.',
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, errorMessage]);
@@ -123,15 +126,15 @@ const AIChat: React.FC<AIChatProps> = ({ className = '', initialContext, onPlace
 
   return (
     <div
-      className={`flex flex-col h-full bg-white dark:bg-gray-900 rounded-lg shadow-lg ${className}`}
+      className={`flex flex-col h-full bg-white dark:bg-gray-900 rounded-2xl shadow-[0_10px_30px_rgba(16,16,20,0.06)] ${className}`}
     >
       {/* Header */}
-      <div className="flex items-center gap-3 p-4 border-b dark:border-gray-700">
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+      <div className="flex items-center gap-3 p-4 border-b border-sand-300 dark:border-gray-700">
+        <div className="w-10 h-10 rounded-full bg-primary-500 flex items-center justify-center">
           <span className="text-white text-xl">AI</span>
         </div>
         <div>
-          <h3 className="font-semibold text-gray-900 dark:text-white">Fryndo AI</h3>
+          <h3 className="font-extrabold text-ink dark:text-white">Fryndo AI</h3>
           <p className="text-sm text-gray-500 dark:text-gray-400">여행 어시스턴트</p>
         </div>
       </div>
@@ -144,10 +147,10 @@ const AIChat: React.FC<AIChatProps> = ({ className = '', initialContext, onPlace
             className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             <div
-              className={`max-w-[80%] rounded-lg p-3 ${
+              className={`max-w-[80%] rounded-[18px] p-3 ${
                 message.type === 'user'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white'
+                  ? 'bg-primary-500 text-white rounded-br-md'
+                  : 'bg-sand-100 dark:bg-gray-800 text-ink dark:text-white rounded-bl-md'
               }`}
             >
               <p className="whitespace-pre-wrap">{message.content}</p>
@@ -199,18 +202,18 @@ const AIChat: React.FC<AIChatProps> = ({ className = '', initialContext, onPlace
         {/* Loading indicator */}
         {isLoading && (
           <div className="flex justify-start">
-            <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3">
+            <div className="bg-sand-100 dark:bg-gray-800 rounded-[18px] rounded-bl-md p-3">
               <div className="flex space-x-2">
                 <div
-                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                  className="w-2 h-2 bg-primary-400 rounded-full animate-bounce"
                   style={{ animationDelay: '0ms' }}
                 />
                 <div
-                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                  className="w-2 h-2 bg-primary-400 rounded-full animate-bounce"
                   style={{ animationDelay: '150ms' }}
                 />
                 <div
-                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                  className="w-2 h-2 bg-primary-400 rounded-full animate-bounce"
                   style={{ animationDelay: '300ms' }}
                 />
               </div>
@@ -230,7 +233,7 @@ const AIChat: React.FC<AIChatProps> = ({ className = '', initialContext, onPlace
               <button
                 key={idx}
                 onClick={() => handleActionClick(prompt)}
-                className="text-sm px-3 py-1.5 rounded-full border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="text-sm font-semibold px-3 py-1.5 rounded-[10px] bg-sand-100 dark:bg-gray-800 text-[#4A4A55] dark:text-gray-300 hover:bg-sand-200 dark:hover:bg-gray-700 transition-colors"
               >
                 {prompt}
               </button>
@@ -240,7 +243,7 @@ const AIChat: React.FC<AIChatProps> = ({ className = '', initialContext, onPlace
       )}
 
       {/* Input */}
-      <div className="p-4 border-t dark:border-gray-700">
+      <div className="p-4 border-t border-sand-300 dark:border-gray-700">
         <div className="flex gap-2">
           <input
             ref={inputRef}
@@ -249,13 +252,13 @@ const AIChat: React.FC<AIChatProps> = ({ className = '', initialContext, onPlace
             onChange={e => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="메시지를 입력하세요..."
-            className="flex-1 px-4 py-2 border rounded-full dark:bg-gray-800 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 px-4 py-2 bg-sand-100 border border-transparent rounded-[13px] text-ink placeholder-[#9A9AA4] dark:bg-gray-800 dark:border-gray-600 dark:text-white focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary-500"
             disabled={isLoading}
           />
           <button
             onClick={handleSend}
             disabled={!input.trim() || isLoading}
-            className="px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2 bg-primary-500 text-white rounded-[13px] hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"

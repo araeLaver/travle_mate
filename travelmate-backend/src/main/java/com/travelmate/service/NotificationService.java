@@ -2,6 +2,7 @@ package com.travelmate.service;
 
 import com.travelmate.entity.Notification;
 import com.travelmate.entity.User;
+import com.travelmate.exception.BusinessException;
 import com.travelmate.repository.NotificationRepository;
 import com.travelmate.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -150,7 +151,7 @@ public class NotificationService {
             String relatedType) {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         Notification notification = Notification.builder()
                 .user(user)

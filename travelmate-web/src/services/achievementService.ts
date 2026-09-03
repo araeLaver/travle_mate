@@ -30,7 +30,7 @@ class AchievementService {
    * 완료된 업적만 조회
    */
   async getCompletedAchievements(): Promise<AchievementResponse[]> {
-    return apiClient.get('/achievements/completed');
+    return apiClient.get('/achievements/my/completed');
   }
 
   /**

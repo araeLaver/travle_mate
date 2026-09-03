@@ -5,6 +5,7 @@ import com.travelmate.dto.UserDto;
 import com.travelmate.entity.User;
 import com.travelmate.exception.UserException;
 import com.travelmate.repository.UserRepository;
+import com.travelmate.security.AuthenticatedUserId;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -26,6 +27,7 @@ import com.travelmate.repository.UserTrustScoreRepository;
 import com.travelmate.entity.UserTrustScore;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.access.AccessDeniedException;
 
 @Service
 @RequiredArgsConstructor
@@ -158,8 +160,8 @@ public class UserService {
         return convertToDto(user);
     }
     
-    public void updateUserLocation(UserDto.LocationUpdateRequest request) {
-        User user = userRepository.findById(request.getUserId())
+    public void updateUserLocation(Long userId, UserDto.LocationUpdateRequest request) {
+        User user = userRepository.findById(userId)
             .orElseThrow(() -> new UserException("사용자를 찾을 수 없습니다."));
         
         user.setCurrentLatitude(request.getLatitude());
@@ -184,7 +186,7 @@ public class UserService {
     }
     
     @Transactional(readOnly = true)
-    public List<UserDto.Response> findUsersOnShake(UserDto.ShakeRequest request) {
+    public List<UserDto.Response> findUsersOnShake(Long userId, UserDto.ShakeRequest request) {
         // 가속도계 값으로 흔들기 강도 계산
         double shakeIntensity = Math.sqrt(
             Math.pow(request.getAccelerationX(), 2) +
@@ -204,7 +206,7 @@ public class UserService {
             request.getLatitude(), request.getLongitude(), searchRadius);
         
         log.info("폰 흔들기로 {} 반경 {}km 내 {}명의 사용자 발견", 
-            request.getUserId(), searchRadius, users.size());
+            userId, searchRadius, users.size());
         
         return users.stream()
             .limit(10) // 최대 10명까지만 반환
@@ -270,8 +272,8 @@ public class UserService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getName() != null) {
             try {
-                return Long.parseLong(authentication.getName());
-            } catch (NumberFormatException e) {
+                return AuthenticatedUserId.parse(authentication);
+            } catch (AccessDeniedException e) {
                 log.warn("Invalid user ID format: {}", authentication.getName());
             }
         }
@@ -292,6 +294,18 @@ public class UserService {
             }
             user.setNickname(request.getNickname());
         }
+
+        if (request.getFullName() != null) {
+            user.setFullName(request.getFullName());
+        }
+
+        if (request.getAge() != null) {
+            user.setAge(request.getAge());
+        }
+
+        if (request.getGender() != null) {
+            user.setGender(request.getGender());
+        }
         
         if (request.getBio() != null) {
             user.setBio(request.getBio());
@@ -307,6 +321,14 @@ public class UserService {
         
         if (request.getTravelStyle() != null) {
             user.setTravelStyle(request.getTravelStyle());
+        }
+
+        if (request.getInterests() != null) {
+            user.setInterests(new ArrayList<>(request.getInterests()));
+        }
+
+        if (request.getLanguages() != null) {
+            user.setLanguages(new ArrayList<>(request.getLanguages()));
         }
         
         User savedUser = userRepository.save(user);

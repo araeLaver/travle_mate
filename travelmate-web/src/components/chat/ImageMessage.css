@@ -4,7 +4,7 @@
   border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
-  background: rgba(255, 255, 255, 0.05);
+  background: #f5f4f1;
 }
 
 .image-message.my-message {
@@ -29,13 +29,13 @@
   justify-content: center;
   width: 200px;
   height: 150px;
-  background: rgba(255, 255, 255, 0.05);
+  background: #f5f4f1;
 }
 
 .image-loading svg {
   width: 32px;
   height: 32px;
-  color: rgba(255, 255, 255, 0.5);
+  color: #8a8a95;
   animation: spin 1s linear infinite;
 }
 
@@ -52,8 +52,8 @@
   justify-content: center;
   width: 200px;
   height: 100px;
-  background: rgba(239, 68, 68, 0.1);
-  color: rgba(255, 255, 255, 0.6);
+  background: rgba(180, 69, 59, 0.08);
+  color: #b4453b;
   font-size: 13px;
 }
 

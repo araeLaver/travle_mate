@@ -5,6 +5,7 @@
 
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
+import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import { apiClient } from './apiClient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -24,12 +25,29 @@ export type NotificationType =
   | 'FOLLOW'
   | 'LIKE'
   | 'COMMENT'
+  | 'REVIEW'
   | 'GROUP_INVITE'
+  | 'GROUP_JOIN'
+  | 'GROUP_LEAVE'
+  | 'GROUP_UPDATE'
+  | 'GROUP_DELETE'
   | 'GROUP_MESSAGE'
+  | 'NEW_MESSAGE'
+  | 'MENTION'
   | 'NFT_COLLECTED'
   | 'NFT_MINTED'
   | 'NEARBY_LOCATION'
   | 'ACHIEVEMENT'
+  | 'ACHIEVEMENT_UNLOCKED'
+  | 'MARKETPLACE_SOLD'
+  | 'MARKETPLACE_PURCHASED'
+  | 'MARKETPLACE_LISTING_EXPIRED'
+  | 'POINTS_RECEIVED'
+  | 'POINTS_SPENT'
+  | 'MATCH_REQUEST'
+  | 'MATCH_ACCEPTED'
+  | 'MATCH_REJECTED'
+  | 'FRIEND_REQUEST'
   | 'SYSTEM';
 
 export interface NotificationData {
@@ -52,8 +70,79 @@ export interface NotificationPreferences {
   marketingNotifications: boolean;
 }
 
+interface BackendNotification {
+  id: number;
+  type: NotificationType;
+  title: string;
+  message: string;
+  actionUrl?: string;
+  relatedId?: number;
+  relatedType?: string;
+  read: boolean;
+  isRead?: boolean;
+  createdAt: string;
+}
+
+interface BackendNotificationPreferences {
+  follow: boolean;
+  message: boolean;
+  nftCollected: boolean;
+  mintingComplete: boolean;
+  groupInvite: boolean;
+  reviewHelpful: boolean;
+  email: boolean;
+  push: boolean;
+}
+
 const FCM_TOKEN_KEY = '@travelmate:fcmToken';
 const NOTIFICATION_PREFS_KEY = '@travelmate:notificationPrefs';
+
+const DEFAULT_NOTIFICATION_PREFERENCES: NotificationPreferences = {
+  enabled: true,
+  followNotifications: true,
+  likeNotifications: true,
+  commentNotifications: true,
+  groupNotifications: true,
+  nftNotifications: true,
+  nearbyNotifications: true,
+  marketingNotifications: false,
+};
+
+const isNotificationPreferences = (value: unknown): value is NotificationPreferences => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return false;
+  }
+
+  const prefs = value as Record<keyof NotificationPreferences, unknown>;
+  return (
+    typeof prefs.enabled === 'boolean' &&
+    typeof prefs.followNotifications === 'boolean' &&
+    typeof prefs.likeNotifications === 'boolean' &&
+    typeof prefs.commentNotifications === 'boolean' &&
+    typeof prefs.groupNotifications === 'boolean' &&
+    typeof prefs.nftNotifications === 'boolean' &&
+    typeof prefs.nearbyNotifications === 'boolean' &&
+    typeof prefs.marketingNotifications === 'boolean'
+  );
+};
+
+const getErrorStatus = (error: unknown): number | undefined => {
+  if (!error || typeof error !== 'object') return undefined;
+
+  const status =
+    'status' in error
+      ? (error as { status?: unknown }).status
+      : (error as { response?: { status?: unknown } }).response?.status;
+  const numericStatus = Number(status);
+
+  return Number.isFinite(numericStatus) ? numericStatus : undefined;
+};
+
+const debugLog = (...args: unknown[]): void => {
+  if (__DEV__) {
+    console.log(...args);
+  }
+};
 
 // Configure notification behavior
 Notifications.setNotificationHandler({
@@ -86,7 +175,7 @@ class NotificationService {
   async registerForPushNotifications(): Promise<string | null> {
     // Check if physical device
     if (!Device.isDevice) {
-      console.log('Push notifications require a physical device');
+      debugLog('Push notifications require a physical device');
       return null;
     }
 
@@ -100,33 +189,38 @@ class NotificationService {
     }
 
     if (finalStatus !== 'granted') {
-      console.log('Push notification permission not granted');
+      debugLog('Push notification permission not granted');
       return null;
     }
 
     try {
       // Get Expo push token
+      const projectId =
+        process.env.EXPO_PROJECT_ID ||
+        (typeof Constants.expoConfig?.extra?.eas?.projectId === 'string'
+          ? Constants.expoConfig.extra.eas.projectId
+          : undefined);
       const tokenData = await Notifications.getExpoPushTokenAsync({
-        projectId: process.env.EXPO_PROJECT_ID,
+        projectId,
       });
-      this.expoPushToken = tokenData.data;
-
-      // Store token locally
-      await AsyncStorage.setItem(FCM_TOKEN_KEY, this.expoPushToken);
+      const token = tokenData.data;
 
       // Register token with backend
-      await this.registerTokenWithServer(this.expoPushToken);
+      await this.registerTokenWithServer(token);
 
       // Android-specific channel setup
       if (Platform.OS === 'android') {
         await this.setupAndroidChannels();
       }
 
-      console.log('Push token registered:', this.expoPushToken);
+      this.expoPushToken = token;
+      await AsyncStorage.setItem(FCM_TOKEN_KEY, token);
+
+      debugLog('Push token registered:', this.expoPushToken);
       return this.expoPushToken;
     } catch (error) {
       console.error('Failed to register push token:', error);
-      return null;
+      throw error;
     }
   }
 
@@ -169,13 +263,16 @@ class NotificationService {
    */
   private async registerTokenWithServer(token: string): Promise<void> {
     try {
-      await apiClient.post('/notifications/register-device', {
+      await apiClient.post('/push/register', {
         token,
-        platform: Platform.OS,
-        deviceType: Device.modelName || 'Unknown',
+        deviceType: this.getDeviceType(),
+        deviceModel: Device.modelName || 'Unknown',
+        osVersion: Device.osVersion || Platform.Version?.toString(),
+        appVersion: Constants.expoConfig?.version || '1.0.0',
       });
     } catch (error) {
       console.error('Failed to register token with server:', error);
+      throw error;
     }
   }
 
@@ -185,13 +282,13 @@ class NotificationService {
   private setupNotificationListeners(): void {
     // Listener for notifications received while app is foregrounded
     this.notificationListener = Notifications.addNotificationReceivedListener(notification => {
-      console.log('Notification received:', notification);
+      debugLog('Notification received:', notification);
       this.handleNotificationReceived(notification);
     });
 
     // Listener for user interaction with notification
     this.responseListener = Notifications.addNotificationResponseReceivedListener(response => {
-      console.log('Notification response:', response);
+      debugLog('Notification response:', response);
       this.handleNotificationResponse(response);
     });
   }
@@ -203,7 +300,7 @@ class NotificationService {
     const { title, body, data } = notification.request.content;
 
     // You can add custom logic here, e.g., update badge count, show in-app notification
-    console.log('Received notification:', { title, body, data });
+    debugLog('Received notification:', { title, body, data });
   }
 
   /**
@@ -224,7 +321,7 @@ class NotificationService {
   private navigateToTarget(data: NotificationData): void {
     // This should be implemented with navigation reference
     // For now, just log the navigation intent
-    console.log('Navigate to:', data);
+    debugLog('Navigate to:', data);
 
     // Example navigation logic:
     // if (data.groupId) {
@@ -242,14 +339,23 @@ class NotificationService {
     totalElements: number;
     totalPages: number;
   }> {
-    return apiClient.get(`/notifications?page=${page}&size=20`);
+    const response = await apiClient.get<{
+      content: BackendNotification[];
+      totalElements: number;
+      totalPages: number;
+    }>(`/notifications?page=${page}&size=20`);
+
+    return {
+      ...response,
+      content: response.content.map(notification => this.toPushNotification(notification)),
+    };
   }
 
   /**
    * Get unread notification count
    */
   async getUnreadCount(): Promise<number> {
-    const response = await apiClient.get<{ count: number }>('/notifications/unread-count');
+    const response = await apiClient.get<{ count: number }>('/notifications/unread/count');
     return response.count;
   }
 
@@ -257,14 +363,14 @@ class NotificationService {
    * Mark notification as read
    */
   async markAsRead(notificationId: number): Promise<void> {
-    await apiClient.patch(`/notifications/${notificationId}/read`);
+    await apiClient.post('/notifications/read', [notificationId]);
   }
 
   /**
    * Mark all notifications as read
    */
   async markAllAsRead(): Promise<void> {
-    await apiClient.patch('/notifications/read-all');
+    await apiClient.post('/notifications/read/all');
   }
 
   /**
@@ -279,27 +385,31 @@ class NotificationService {
    */
   async getPreferences(): Promise<NotificationPreferences> {
     try {
-      const stored = await AsyncStorage.getItem(NOTIFICATION_PREFS_KEY);
-      if (stored) {
-        return JSON.parse(stored);
-      }
-
-      // Fetch from server
-      const prefs = await apiClient.get<NotificationPreferences>('/notifications/preferences');
+      const backendPrefs = await apiClient.get<BackendNotificationPreferences>('/push/preferences');
+      const prefs = this.toMobilePreferences(backendPrefs);
       await AsyncStorage.setItem(NOTIFICATION_PREFS_KEY, JSON.stringify(prefs));
       return prefs;
     } catch (error) {
-      // Return defaults
-      return {
-        enabled: true,
-        followNotifications: true,
-        likeNotifications: true,
-        commentNotifications: true,
-        groupNotifications: true,
-        nftNotifications: true,
-        nearbyNotifications: true,
-        marketingNotifications: false,
-      };
+      const stored = await AsyncStorage.getItem(NOTIFICATION_PREFS_KEY);
+      if (stored) {
+        try {
+          const cached = JSON.parse(stored) as unknown;
+          if (!isNotificationPreferences(cached)) {
+            throw new Error('Cached notification preferences shape is invalid');
+          }
+          return cached;
+        } catch (cacheError) {
+          console.warn('Failed to parse cached notification preferences:', cacheError);
+          await AsyncStorage.removeItem(NOTIFICATION_PREFS_KEY);
+        }
+      }
+
+      if (getErrorStatus(error) === 404) {
+        return DEFAULT_NOTIFICATION_PREFERENCES;
+      }
+
+      console.error('Failed to fetch notification preferences:', error);
+      throw error;
     }
   }
 
@@ -310,7 +420,7 @@ class NotificationService {
     const currentPrefs = await this.getPreferences();
     const updatedPrefs = { ...currentPrefs, ...prefs };
 
-    await apiClient.put('/notifications/preferences', updatedPrefs);
+    await apiClient.put('/push/preferences', this.toBackendPreferences(updatedPrefs));
     await AsyncStorage.setItem(NOTIFICATION_PREFS_KEY, JSON.stringify(updatedPrefs));
 
     return updatedPrefs;
@@ -379,11 +489,10 @@ class NotificationService {
   async unregister(): Promise<void> {
     if (this.expoPushToken) {
       try {
-        await apiClient.delete('/notifications/unregister-device', {
-          data: { token: this.expoPushToken },
-        });
+        await apiClient.post('/push/unregister', { token: this.expoPushToken });
       } catch (error) {
         console.error('Failed to unregister device:', error);
+        throw error;
       }
     }
 
@@ -407,7 +516,7 @@ class NotificationService {
    * Get notification icon based on type
    */
   getNotificationIcon(type: NotificationType): string {
-    const icons: Record<NotificationType, string> = {
+    const icons: Partial<Record<NotificationType, string>> = {
       FOLLOW: '👤',
       LIKE: '❤️',
       COMMENT: '💬',
@@ -427,7 +536,7 @@ class NotificationService {
    * Get notification color based on type
    */
   getNotificationColor(type: NotificationType): string {
-    const colors: Record<NotificationType, string> = {
+    const colors: Partial<Record<NotificationType, string>> = {
       FOLLOW: '#3B82F6',
       LIKE: '#EF4444',
       COMMENT: '#10B981',
@@ -441,6 +550,64 @@ class NotificationService {
     };
 
     return colors[type] || '#6B7280';
+  }
+
+  private getDeviceType(): 'ANDROID' | 'IOS' | 'WEB' {
+    if (Platform.OS === 'ios') return 'IOS';
+    if (Platform.OS === 'android') return 'ANDROID';
+    return 'WEB';
+  }
+
+  private toPushNotification(notification: BackendNotification): PushNotification {
+    const data: NotificationData = {};
+
+    if (notification.relatedId) {
+      data.targetId = notification.relatedId;
+      data.targetType = notification.relatedType;
+
+      if (notification.relatedType === 'GROUP') {
+        data.groupId = notification.relatedId;
+      }
+      if (notification.relatedType === 'LOCATION') {
+        data.locationId = notification.relatedId;
+      }
+    }
+
+    return {
+      id: notification.id,
+      title: notification.title,
+      body: notification.message,
+      type: notification.type,
+      data,
+      isRead: notification.isRead ?? notification.read,
+      createdAt: notification.createdAt,
+    };
+  }
+
+  private toMobilePreferences(prefs: BackendNotificationPreferences): NotificationPreferences {
+    return {
+      enabled: prefs.push,
+      followNotifications: prefs.follow,
+      likeNotifications: prefs.reviewHelpful,
+      commentNotifications: prefs.reviewHelpful,
+      groupNotifications: prefs.groupInvite || prefs.message,
+      nftNotifications: prefs.nftCollected || prefs.mintingComplete,
+      nearbyNotifications: prefs.push,
+      marketingNotifications: prefs.email,
+    };
+  }
+
+  private toBackendPreferences(prefs: NotificationPreferences): BackendNotificationPreferences {
+    return {
+      follow: prefs.followNotifications,
+      message: prefs.groupNotifications,
+      nftCollected: prefs.nftNotifications,
+      mintingComplete: prefs.nftNotifications,
+      groupInvite: prefs.groupNotifications,
+      reviewHelpful: prefs.commentNotifications || prefs.likeNotifications,
+      email: prefs.marketingNotifications,
+      push: prefs.enabled,
+    };
   }
 }
 

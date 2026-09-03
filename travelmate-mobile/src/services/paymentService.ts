@@ -3,18 +3,20 @@
  * Handles in-app purchases and subscriptions using Expo IAP
  */
 
-import { Platform, Alert } from 'react-native';
-import * as InAppPurchases from 'expo-in-app-purchases';
+import { Alert } from 'react-native';
+// expo-in-app-purchases is deprecated (fails to compile on SDK 52);
+// shim reports IAP unavailable until a maintained IAP lib replaces it.
+import * as InAppPurchases from '../lib/iapShim';
 import { apiClient } from './apiClient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Product IDs - these should match App Store Connect / Google Play Console
 export const PRODUCT_IDS = {
-  PREMIUM_MONTHLY: 'travelmate.premium.monthly',
-  PREMIUM_YEARLY: 'travelmate.premium.yearly',
-  POINTS_SMALL: 'travelmate.points.small',
-  POINTS_MEDIUM: 'travelmate.points.medium',
-  POINTS_LARGE: 'travelmate.points.large',
+  PREMIUM_MONTHLY: 'fryndo.premium.monthly',
+  PREMIUM_YEARLY: 'fryndo.premium.yearly',
+  POINTS_SMALL: 'fryndo.points.small',
+  POINTS_MEDIUM: 'fryndo.points.medium',
+  POINTS_LARGE: 'fryndo.points.large',
 } as const;
 
 export type ProductId = (typeof PRODUCT_IDS)[keyof typeof PRODUCT_IDS];
@@ -51,9 +53,80 @@ export interface PointsBalance {
   total: number;
 }
 
+interface BackendSubscriptionInfo {
+  tier?: string;
+  status?: 'ACTIVE' | 'CANCELLED' | 'EXPIRED';
+  endDate?: string;
+  autoRenew?: boolean;
+}
+
+interface BackendPointBalance {
+  totalPoints: number;
+  lifetimeEarned?: number;
+  lifetimeSpent?: number;
+}
+
 const STORAGE_KEYS = {
   SUBSCRIPTION_STATUS: '@travelmate:subscription',
   POINTS_BALANCE: '@travelmate:points',
+};
+
+const DEFAULT_SUBSCRIPTION_STATUS: SubscriptionStatus = {
+  isActive: false,
+  planId: null,
+  expiresAt: null,
+  autoRenew: false,
+};
+
+const DEFAULT_POINTS_BALANCE: PointsBalance = {
+  available: 0,
+  pending: 0,
+  total: 0,
+};
+
+const isNullableString = (value: unknown): value is string | null =>
+  value === null || typeof value === 'string';
+
+const isNonNegativeFiniteNumber = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isFinite(value) && value >= 0;
+
+const isSubscriptionStatus = (value: unknown): value is SubscriptionStatus => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return false;
+  }
+
+  const status = value as Record<keyof SubscriptionStatus, unknown>;
+  return (
+    typeof status.isActive === 'boolean' &&
+    isNullableString(status.planId) &&
+    isNullableString(status.expiresAt) &&
+    typeof status.autoRenew === 'boolean'
+  );
+};
+
+const isPointsBalance = (value: unknown): value is PointsBalance => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return false;
+  }
+
+  const balance = value as Record<keyof PointsBalance, unknown>;
+  return (
+    isNonNegativeFiniteNumber(balance.available) &&
+    isNonNegativeFiniteNumber(balance.pending) &&
+    isNonNegativeFiniteNumber(balance.total)
+  );
+};
+
+const getErrorStatus = (error: unknown): number | undefined => {
+  if (!error || typeof error !== 'object') return undefined;
+
+  const status =
+    'status' in error
+      ? (error as { status?: unknown }).status
+      : (error as { response?: { status?: unknown } }).response?.status;
+  const numericStatus = Number(status);
+
+  return Number.isFinite(numericStatus) ? numericStatus : undefined;
 };
 
 class PaymentService {
@@ -71,8 +144,6 @@ class PaymentService {
       // Connect to the store
       await InAppPurchases.connectAsync();
 
-      this.isInitialized = true;
-
       // Set up purchase listener
       this.setupPurchaseListener();
 
@@ -82,10 +153,12 @@ class PaymentService {
       // Process any pending purchases
       await this.processPendingPurchases();
 
+      this.isInitialized = true;
       return true;
     } catch (error) {
+      this.isInitialized = false;
       console.error('IAP initialization failed:', error);
-      return false;
+      throw error;
     }
   }
 
@@ -140,10 +213,10 @@ class PaymentService {
         return products;
       }
 
-      return [];
+      throw new Error(`Failed to load IAP products: response code ${responseCode}`);
     } catch (error) {
       console.error('Failed to load products:', error);
-      return [];
+      throw error;
     }
   }
 
@@ -175,10 +248,11 @@ class PaymentService {
    */
   async purchaseProduct(productId: ProductId): Promise<boolean> {
     if (!this.isInitialized) {
-      const initialized = await this.initialize();
-      if (!initialized) {
+      try {
+        await this.initialize();
+      } catch (error) {
         Alert.alert('오류', '결제 시스템을 초기화할 수 없습니다.');
-        return false;
+        throw error;
       }
     }
 
@@ -188,7 +262,7 @@ class PaymentService {
     } catch (error) {
       console.error('Purchase failed:', error);
       Alert.alert('구매 실패', '결제 중 오류가 발생했습니다. 다시 시도해주세요.');
-      return false;
+      throw error;
     }
   }
 
@@ -226,19 +300,10 @@ class PaymentService {
    * Verify purchase on server
    */
   private async verifyPurchaseOnServer(purchase: InAppPurchases.InAppPurchase): Promise<boolean> {
-    try {
-      const response = await apiClient.post<{ verified: boolean }>('/payments/verify', {
-        productId: purchase.productId,
-        transactionId: purchase.orderId,
-        receipt: purchase.transactionReceipt,
-        platform: Platform.OS,
-      });
-
-      return response.verified;
-    } catch (error) {
-      console.error('Server verification failed:', error);
-      return false;
-    }
+    console.warn(
+      `IAP receipt verification is not supported by the current backend payment API: ${purchase.productId}`
+    );
+    return false;
   }
 
   /**
@@ -248,15 +313,18 @@ class PaymentService {
     try {
       const { responseCode, results } = await InAppPurchases.getPurchaseHistoryAsync();
 
-      if (responseCode === InAppPurchases.IAPResponseCode.OK && results) {
-        for (const purchase of results) {
-          if (!purchase.acknowledged) {
-            await this.handlePurchase(purchase);
-          }
+      if (responseCode !== InAppPurchases.IAPResponseCode.OK) {
+        throw new Error(`Failed to process pending purchases: response code ${responseCode}`);
+      }
+
+      for (const purchase of results || []) {
+        if (!purchase.acknowledged) {
+          await this.handlePurchase(purchase);
         }
       }
     } catch (error) {
       console.error('Failed to process pending purchases:', error);
+      throw error;
     }
   }
 
@@ -268,7 +336,8 @@ class PaymentService {
   async getSubscriptionStatus(): Promise<SubscriptionStatus> {
     try {
       // Try to get from server first
-      const status = await apiClient.get<SubscriptionStatus>('/payments/subscription/status');
+      const backendStatus = await apiClient.get<BackendSubscriptionInfo>('/payment/subscription');
+      const status = this.toSubscriptionStatus(backendStatus);
 
       // Cache locally
       await AsyncStorage.setItem(STORAGE_KEYS.SUBSCRIPTION_STATUS, JSON.stringify(status));
@@ -278,15 +347,24 @@ class PaymentService {
       // Fall back to cached status
       const cached = await AsyncStorage.getItem(STORAGE_KEYS.SUBSCRIPTION_STATUS);
       if (cached) {
-        return JSON.parse(cached);
+        try {
+          const parsed = JSON.parse(cached) as unknown;
+          if (!isSubscriptionStatus(parsed)) {
+            throw new Error('Cached subscription status shape is invalid');
+          }
+          return parsed;
+        } catch (cacheError) {
+          console.warn('Failed to parse cached subscription status:', cacheError);
+          await AsyncStorage.removeItem(STORAGE_KEYS.SUBSCRIPTION_STATUS);
+        }
       }
 
-      return {
-        isActive: false,
-        planId: null,
-        expiresAt: null,
-        autoRenew: false,
-      };
+      if (getErrorStatus(error) === 404) {
+        return DEFAULT_SUBSCRIPTION_STATUS;
+      }
+
+      console.error('Failed to fetch subscription status:', error);
+      throw error;
     }
   }
 
@@ -302,12 +380,11 @@ class PaymentService {
    */
   async cancelSubscription(): Promise<boolean> {
     try {
-      await apiClient.post('/payments/subscription/cancel');
-      await this.updateSubscriptionStatus();
+      await apiClient.post('/payment/subscription/cancel');
       return true;
     } catch (error) {
       console.error('Failed to cancel subscription:', error);
-      return false;
+      throw error;
     }
   }
 
@@ -318,25 +395,32 @@ class PaymentService {
     try {
       const { responseCode, results } = await InAppPurchases.getPurchaseHistoryAsync();
 
-      if (responseCode === InAppPurchases.IAPResponseCode.OK && results) {
-        // Verify each purchase on server
-        for (const purchase of results) {
-          await this.verifyPurchaseOnServer(purchase);
-        }
-
-        await this.updateSubscriptionStatus();
-        await this.updatePointsBalance();
-
-        Alert.alert('복원 완료', '구매 내역이 복원되었습니다.');
-        return true;
+      if (responseCode !== InAppPurchases.IAPResponseCode.OK) {
+        throw new Error(`Failed to restore purchases: response code ${responseCode}`);
       }
 
-      Alert.alert('복원 실패', '복원할 구매 내역이 없습니다.');
-      return false;
+      if (!results || results.length === 0) {
+        Alert.alert('복원 실패', '복원할 구매 내역이 없습니다.');
+        return false;
+      }
+
+      // Verify each purchase on server
+      for (const purchase of results) {
+        const verified = await this.verifyPurchaseOnServer(purchase);
+        if (!verified) {
+          throw new Error(`Failed to verify restored purchase: ${purchase.productId}`);
+        }
+      }
+
+      await this.updateSubscriptionStatus();
+      await this.updatePointsBalance();
+
+      Alert.alert('복원 완료', '구매 내역이 복원되었습니다.');
+      return true;
     } catch (error) {
       console.error('Failed to restore purchases:', error);
       Alert.alert('복원 실패', '구매 복원 중 오류가 발생했습니다.');
-      return false;
+      throw error;
     }
   }
 
@@ -347,7 +431,8 @@ class PaymentService {
    */
   async getPointsBalance(): Promise<PointsBalance> {
     try {
-      const balance = await apiClient.get<PointsBalance>('/payments/points/balance');
+      const backendBalance = await apiClient.get<BackendPointBalance>('/points/balance');
+      const balance = this.toPointsBalance(backendBalance);
 
       // Cache locally
       await AsyncStorage.setItem(STORAGE_KEYS.POINTS_BALANCE, JSON.stringify(balance));
@@ -357,14 +442,24 @@ class PaymentService {
       // Fall back to cached balance
       const cached = await AsyncStorage.getItem(STORAGE_KEYS.POINTS_BALANCE);
       if (cached) {
-        return JSON.parse(cached);
+        try {
+          const parsed = JSON.parse(cached) as unknown;
+          if (!isPointsBalance(parsed)) {
+            throw new Error('Cached points balance shape is invalid');
+          }
+          return parsed;
+        } catch (cacheError) {
+          console.warn('Failed to parse cached points balance:', cacheError);
+          await AsyncStorage.removeItem(STORAGE_KEYS.POINTS_BALANCE);
+        }
       }
 
-      return {
-        available: 0,
-        pending: 0,
-        total: 0,
-      };
+      if (getErrorStatus(error) === 404) {
+        return DEFAULT_POINTS_BALANCE;
+      }
+
+      console.error('Failed to fetch points balance:', error);
+      throw error;
     }
   }
 
@@ -441,6 +536,23 @@ class PaymentService {
       this.purchaseListenerActive = false;
       this.products.clear();
     }
+  }
+
+  private toSubscriptionStatus(status: BackendSubscriptionInfo): SubscriptionStatus {
+    return {
+      isActive: status.status === 'ACTIVE',
+      planId: status.tier || null,
+      expiresAt: status.endDate || null,
+      autoRenew: status.autoRenew || false,
+    };
+  }
+
+  private toPointsBalance(balance: BackendPointBalance): PointsBalance {
+    return {
+      available: balance.totalPoints || 0,
+      pending: 0,
+      total: balance.totalPoints || 0,
+    };
   }
 }
 

@@ -1,5 +1,6 @@
 package com.travelmate.controller;
 
+import com.travelmate.security.AuthenticatedUserId;
 import com.travelmate.service.nft.CollectionSetService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -25,19 +26,19 @@ public class CollectionSetController {
 
     @GetMapping("/progress")
     public ResponseEntity<?> getMyProgress(Authentication auth) {
-        Long userId = Long.parseLong(auth.getName());
+        Long userId = AuthenticatedUserId.parse(auth);
         return ResponseEntity.ok(collectionSetService.getUserSetProgress(userId));
     }
 
     @GetMapping("/{setId}/progress")
     public ResponseEntity<?> getSetProgress(@PathVariable Long setId, Authentication auth) {
-        Long userId = Long.parseLong(auth.getName());
+        Long userId = AuthenticatedUserId.parse(auth);
         return ResponseEntity.ok(collectionSetService.getSetProgress(setId, userId));
     }
 
     @GetMapping("/completed")
     public ResponseEntity<?> getCompletedSets(Authentication auth) {
-        Long userId = Long.parseLong(auth.getName());
+        Long userId = AuthenticatedUserId.parse(auth);
         return ResponseEntity.ok(collectionSetService.checkNewlyCompletedSets(userId));
     }
 }

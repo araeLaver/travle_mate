@@ -4,7 +4,7 @@
 
 .dashboard {
   min-height: 100vh;
-  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%);
+  background: linear-gradient(135deg, #101014 0%, #101014 50%, #101014 100%);
   position: relative;
   overflow-x: hidden;
 }
@@ -52,7 +52,7 @@
 .dashboard-header h1 {
   font-size: 48px;
   font-weight: 800;
-  background: linear-gradient(135deg, #fff 0%, #c4b5fd 50%, #a78bfa 100%);
+  background: linear-gradient(135deg, #fff 0%, #d6d2ff 50%, #8e7bff 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -133,7 +133,7 @@
 .stat-icon svg {
   width: 28px;
   height: 28px;
-  stroke: #c4b5fd;
+  stroke: #d6d2ff;
 }
 
 .stat-icon.online {
@@ -141,7 +141,7 @@
 }
 
 .stat-icon.online svg {
-  stroke: #6ee7b7;
+  stroke: #3f8f5f;
 }
 
 .stat-icon.explore {
@@ -149,7 +149,7 @@
 }
 
 .stat-icon.explore svg {
-  stroke: #93c5fd;
+  stroke: #2e7df6;
 }
 
 .stat-content {
@@ -204,7 +204,7 @@
 .location-icon svg {
   width: 24px;
   height: 24px;
-  stroke: #fcd34d;
+  stroke: #e0952a;
 }
 
 /* Skeleton Loading */
@@ -278,12 +278,12 @@
 .location-status {
   font-size: 14px;
   font-weight: 600;
-  color: #4ade80;
+  color: #3f8f5f;
   margin-bottom: 6px;
 }
 
 .location-status.default {
-  color: #fbbf24;
+  color: #e0952a;
 }
 
 .location-address {
@@ -322,12 +322,12 @@
 
 .radius-select:focus {
   outline: none;
-  border-color: #8b5cf6;
+  border-color: #4a3aff;
   box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
 }
 
 .radius-select option {
-  background: #1e1b4b;
+  background: #101014;
   color: #fff;
 }
 
@@ -363,12 +363,12 @@
 }
 
 .location-btn.primary {
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  background: linear-gradient(135deg, #4a3aff 0%, #4a3aff 100%);
   color: white;
 }
 
 .location-btn.secondary {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, #3f8f5f 0%, #3f8f5f 100%);
   color: white;
 }
 
@@ -453,7 +453,7 @@
 }
 
 .mood-btn.active {
-  background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+  background: linear-gradient(135deg, #4a3aff 0%, #4a3aff 100%);
   border-color: transparent;
   color: white;
   box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
@@ -483,7 +483,7 @@
 }
 
 .radar-container.active .radar-circle {
-  border-color: #8b5cf6;
+  border-color: #4a3aff;
   animation: radarPulse 2s infinite;
 }
 
@@ -503,7 +503,7 @@
   left: 50%;
   width: 2px;
   height: 50%;
-  background: linear-gradient(to bottom, #8b5cf6, transparent);
+  background: linear-gradient(to bottom, #4a3aff, transparent);
   transform-origin: bottom center;
   transform: translateX(-50%) rotate(0deg);
   opacity: 0.8;
@@ -528,7 +528,7 @@
   left: 50%;
   width: 16px;
   height: 16px;
-  background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+  background: linear-gradient(135deg, #4a3aff 0%, #4a3aff 100%);
   border-radius: 50%;
   transform: translate(-50%, -50%);
   box-shadow: 0 0 30px rgba(139, 92, 246, 0.6);
@@ -564,7 +564,7 @@
   align-items: center;
   gap: 10px;
   padding: 18px 48px;
-  background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+  background: linear-gradient(135deg, #4a3aff 0%, #4a3aff 100%);
   color: white;
   border: none;
   border-radius: 50px;
@@ -594,7 +594,7 @@
 }
 
 .discovery-btn.discovering {
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  background: linear-gradient(135deg, #4a3aff 0%, #4a3aff 100%);
 }
 
 /* Spinner Animation */
@@ -668,7 +668,7 @@
   align-items: center;
   gap: 8px;
   padding: 14px 28px;
-  background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+  background: linear-gradient(135deg, #4a3aff 0%, #4a3aff 100%);
   color: white;
   border: none;
   border-radius: 50px;
@@ -711,7 +711,7 @@
 }
 
 .section-header .badge {
-  background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+  background: linear-gradient(135deg, #4a3aff 0%, #4a3aff 100%);
   color: white;
   padding: 6px 14px;
   border-radius: 50px;
@@ -769,7 +769,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+  background: linear-gradient(135deg, #4a3aff 0%, #4a3aff 100%);
   border: 3px solid rgba(139, 92, 246, 0.5);
   margin-bottom: 16px;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
@@ -805,7 +805,7 @@
 }
 
 .online-indicator.online {
-  background: #4ade80;
+  background: #3f8f5f;
   box-shadow: 0 0 8px rgba(74, 222, 128, 0.6);
 }
 
@@ -821,7 +821,7 @@
 .user-mood {
   font-size: 15px;
   font-weight: 600;
-  color: #c4b5fd;
+  color: #d6d2ff;
   margin-bottom: 10px;
 }
 
@@ -851,7 +851,7 @@
 .interest-tag {
   padding: 6px 14px;
   background: rgba(139, 92, 246, 0.2);
-  color: #c4b5fd;
+  color: #d6d2ff;
   border-radius: 50px;
   font-size: 12px;
   font-weight: 600;
@@ -873,7 +873,7 @@
 }
 
 .match-score strong {
-  color: #a78bfa;
+  color: #8e7bff;
   font-weight: 700;
   font-size: 18px;
 }
@@ -892,7 +892,7 @@
 }
 
 .match-label strong {
-  color: #a78bfa;
+  color: #8e7bff;
   font-size: 16px;
 }
 
@@ -905,7 +905,7 @@
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #8b5cf6 0%, #ec4899 100%);
+  background: linear-gradient(90deg, #4a3aff 0%, #4a3aff 100%);
   border-radius: 4px;
   transition: width 0.5s ease;
 }
@@ -938,7 +938,7 @@
 }
 
 .btn-action.primary {
-  background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+  background: linear-gradient(135deg, #4a3aff 0%, #4a3aff 100%);
   color: white;
   box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
 }
@@ -972,7 +972,7 @@
 }
 
 .btn-small.primary {
-  background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+  background: linear-gradient(135deg, #4a3aff 0%, #4a3aff 100%);
   color: white;
   box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
 }
@@ -1173,7 +1173,7 @@
 }
 
 .action-icon.nft {
-  background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+  background: linear-gradient(135deg, #8e7bff, #4a3aff);
 }
 
 .nft-emoji {

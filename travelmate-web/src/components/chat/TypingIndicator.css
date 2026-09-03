@@ -17,7 +17,7 @@
   height: 24px;
   border-radius: 50%;
   overflow: hidden;
-  border: 2px solid #0a0a0f;
+  border: 2px solid #fafaf8;
   margin-left: -8px;
 }
 
@@ -34,7 +34,7 @@
 .typing-avatar .avatar-placeholder {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #8b5cf6, #a855f7);
+  background: #4a3aff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -48,10 +48,10 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(255, 255, 255, 0.05);
+  background: #ffffff;
   padding: 8px 12px;
   border-radius: 16px;
-  border: 1px solid rgba(138, 43, 226, 0.15);
+  border: 1px solid #efeeea;
 }
 
 /* Typing Dots Animation */
@@ -64,7 +64,7 @@
 .typing-dots .dot {
   width: 6px;
   height: 6px;
-  background: rgba(168, 85, 247, 0.8);
+  background: rgba(74, 58, 255, 0.8);
   border-radius: 50%;
   animation: typingBounce 1.4s infinite ease-in-out;
 }
@@ -97,7 +97,7 @@
 /* Typing Text */
 .typing-text {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
+  color: #74747f;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

@@ -5,6 +5,7 @@ import com.travelmate.entity.User;
 import com.travelmate.entity.nft.CollectibleLocation;
 import com.travelmate.entity.nft.LocationCategory;
 import com.travelmate.entity.nft.UserNftCollection;
+import com.travelmate.exception.BusinessException;
 import com.travelmate.repository.UserRepository;
 import com.travelmate.repository.nft.UserNftCollectionRepository;
 import com.travelmate.service.ai.AiItineraryService;
@@ -199,8 +200,13 @@ class AIRecommendationServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> aiRecommendationService.getPersonalizedRecommendations(999L, request))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessage("사용자를 찾을 수 없습니다.");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("사용자를 찾을 수 없습니다")
+                    .satisfies(ex -> {
+                        BusinessException businessException = (BusinessException) ex;
+                        assertThat(businessException.getStatus().value()).isEqualTo(404);
+                        assertThat(businessException.getErrorCodeStr()).isEqualTo("USER_NOT_FOUND");
+                    });
         }
 
         @Test

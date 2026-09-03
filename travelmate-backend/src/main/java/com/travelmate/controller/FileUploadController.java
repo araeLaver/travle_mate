@@ -1,5 +1,6 @@
 package com.travelmate.controller;
 
+import com.travelmate.security.AuthenticatedUserId;
 import com.travelmate.service.FileUploadService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,12 +21,13 @@ public class FileUploadController {
 
     @PostMapping("/upload/image")
     public ResponseEntity<Map<String, String>> uploadImage(
-            @AuthenticationPrincipal Long userId,
+            @AuthenticationPrincipal String userId,
             @RequestParam("file") MultipartFile file) {
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         try {
             // 파일 소유자 정보와 함께 저장
-            String fileUrl = fileUploadService.uploadImage(file, userId);
-            log.info("이미지 업로드 성공: {} by user {}", fileUrl, userId);
+            String fileUrl = fileUploadService.uploadImage(file, userIdLong);
+            log.info("이미지 업로드 성공: {} by user {}", fileUrl, userIdLong);
             return ResponseEntity.ok(Map.of(
                 "success", "true",
                 "url", fileUrl,
@@ -41,10 +43,11 @@ public class FileUploadController {
 
     @PostMapping("/upload/profile")
     public ResponseEntity<Map<String, String>> uploadProfileImage(
-            @AuthenticationPrincipal Long userId,
+            @AuthenticationPrincipal String userId,
             @RequestParam("file") MultipartFile file) {
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         try {
-            String fileUrl = fileUploadService.uploadProfileImage(file, userId);
+            String fileUrl = fileUploadService.uploadProfileImage(file, userIdLong);
             return ResponseEntity.ok(Map.of(
                 "success", "true",
                 "url", fileUrl,
@@ -60,12 +63,13 @@ public class FileUploadController {
 
     @PostMapping("/upload/document")
     public ResponseEntity<Map<String, String>> uploadDocument(
-            @AuthenticationPrincipal Long userId,
+            @AuthenticationPrincipal String userId,
             @RequestParam("file") MultipartFile file) {
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         try {
             // 파일 소유자 정보와 함께 저장
-            String fileUrl = fileUploadService.uploadDocument(file, userId);
-            log.info("문서 업로드 성공: {} by user {}", fileUrl, userId);
+            String fileUrl = fileUploadService.uploadDocument(file, userIdLong);
+            log.info("문서 업로드 성공: {} by user {}", fileUrl, userIdLong);
             return ResponseEntity.ok(Map.of(
                 "success", "true",
                 "url", fileUrl,
@@ -81,24 +85,25 @@ public class FileUploadController {
 
     @DeleteMapping("/delete")
     public ResponseEntity<Map<String, String>> deleteFile(
-            @AuthenticationPrincipal Long userId,
+            @AuthenticationPrincipal String userId,
             @RequestParam("url") String fileUrl) {
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         try {
             // 파일 소유자만 삭제 가능 (권한 검증 포함)
-            fileUploadService.deleteFileWithAuth(fileUrl, userId);
-            log.info("파일 삭제 성공: {} by user {}", fileUrl, userId);
+            fileUploadService.deleteFileWithAuth(fileUrl, userIdLong);
+            log.info("파일 삭제 성공: {} by user {}", fileUrl, userIdLong);
             return ResponseEntity.ok(Map.of(
                 "success", "true",
                 "message", "파일 삭제 성공"
             ));
         } catch (SecurityException e) {
-            log.warn("파일 삭제 권한 없음: {} by user {}", fileUrl, userId);
+            log.warn("파일 삭제 권한 없음: {} by user {}", fileUrl, userIdLong);
             return ResponseEntity.status(403).body(Map.of(
                 "success", "false",
                 "message", e.getMessage()
             ));
         } catch (Exception e) {
-            log.error("파일 삭제 실패: {} by user {}", fileUrl, userId, e);
+            log.error("파일 삭제 실패: {} by user {}", fileUrl, userIdLong, e);
             return ResponseEntity.badRequest().body(Map.of(
                 "success", "false",
                 "message", "파일 삭제 실패"

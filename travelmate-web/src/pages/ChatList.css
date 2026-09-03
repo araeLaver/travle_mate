@@ -4,7 +4,7 @@
 
 .chat-list-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%);
+  background: linear-gradient(135deg, #101014 0%, #101014 50%, #101014 100%);
   position: relative;
   padding: 2rem;
 }
@@ -15,10 +15,10 @@
   position: fixed;
   inset: 0;
   background:
-    radial-gradient(at 20% 30%, rgba(139, 92, 246, 0.3) 0px, transparent 50%),
-    radial-gradient(at 80% 20%, rgba(236, 72, 153, 0.25) 0px, transparent 50%),
-    radial-gradient(at 40% 80%, rgba(59, 130, 246, 0.25) 0px, transparent 50%),
-    radial-gradient(at 90% 70%, rgba(167, 139, 250, 0.2) 0px, transparent 50%);
+    radial-gradient(at 20% 30%, rgba(74, 58, 255, 0.3) 0px, transparent 50%),
+    radial-gradient(at 80% 20%, rgba(74, 58, 255, 0.25) 0px, transparent 50%),
+    radial-gradient(at 40% 80%, rgba(74, 58, 255, 0.25) 0px, transparent 50%),
+    radial-gradient(at 90% 70%, rgba(74, 58, 255, 0.2) 0px, transparent 50%);
   pointer-events: none;
   z-index: 0;
 }
@@ -37,7 +37,7 @@
   height: 100vh;
   text-align: center;
   color: rgba(255, 255, 255, 0.8);
-  background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%);
+  background: linear-gradient(135deg, #101014 0%, #101014 50%, #101014 100%);
 }
 
 .loading-spinner {
@@ -48,7 +48,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(236, 72, 153, 0.3) 100%);
+  background: linear-gradient(135deg, rgba(74, 58, 255, 0.3) 0%, rgba(74, 58, 255, 0.3) 100%);
   border-radius: 50%;
   padding: 1rem;
 }
@@ -100,7 +100,7 @@
 .chat-list-header h1 {
   font-size: 3rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #fff 0%, #c4b5fd 50%, #a78bfa 100%);
+  background: linear-gradient(135deg, #fff 0%, #8e7bff 50%, #8e7bff 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -120,7 +120,7 @@
 .chat-list-header h1 .header-icon svg {
   width: 2.5rem;
   height: 2.5rem;
-  stroke: #a78bfa;
+  stroke: #8e7bff;
 }
 
 .chat-list-header p {
@@ -172,8 +172,8 @@
 
 .search-input:focus {
   outline: none;
-  border-color: rgba(139, 92, 246, 0.5);
-  box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+  border-color: rgba(74, 58, 255, 0.5);
+  box-shadow: 0 0 20px rgba(74, 58, 255, 0.2);
   background: rgba(255, 255, 255, 0.12);
 }
 
@@ -226,7 +226,7 @@
 }
 
 .room-count {
-  background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+  background: linear-gradient(135deg, #4a3aff 0%, #4a3aff 100%);
   color: white;
   padding: 0.375rem 0.875rem;
   border-radius: 20px;
@@ -253,7 +253,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(236, 72, 153, 0.3) 100%);
+  background: linear-gradient(135deg, rgba(74, 58, 255, 0.3) 0%, rgba(74, 58, 255, 0.3) 100%);
   border-radius: 50%;
   padding: 1rem;
 }
@@ -287,7 +287,7 @@
 }
 
 .find-mates-btn {
-  background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+  background: linear-gradient(135deg, #4a3aff 0%, #4a3aff 100%);
   color: white;
   border: none;
   padding: 0.875rem 2rem;
@@ -315,7 +315,7 @@
 
 .find-mates-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);
+  box-shadow: 0 10px 30px rgba(74, 58, 255, 0.4);
 }
 
 /* Chat Rooms List */
@@ -380,7 +380,7 @@
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+  background: linear-gradient(135deg, #4a3aff 0%, #4a3aff 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -469,7 +469,7 @@
 }
 
 .status-icon.online svg {
-  fill: #4ade80;
+  fill: #3f8f5f;
 }
 
 .online-status .status-icon svg {
@@ -478,7 +478,7 @@
 }
 
 .online-status.online .status-icon svg {
-  fill: #4ade80;
+  fill: #3f8f5f;
 }
 
 .online-status.offline .status-icon svg {
@@ -486,12 +486,12 @@
 }
 
 .online-count {
-  color: #4ade80;
+  color: #3f8f5f;
   font-weight: 500;
 }
 
 .online-status.online {
-  color: #4ade80;
+  color: #3f8f5f;
 }
 
 .room-meta {
@@ -508,7 +508,7 @@
 }
 
 .unread-badge {
-  background: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);
+  background: linear-gradient(135deg, #4a3aff 0%, #b4453b 100%);
   color: white;
   padding: 0.25rem 0.625rem;
   border-radius: 12px;
@@ -517,7 +517,7 @@
   min-width: 22px;
   text-align: center;
   line-height: 1.2;
-  box-shadow: 0 2px 10px rgba(236, 72, 153, 0.4);
+  box-shadow: 0 2px 10px rgba(74, 58, 255, 0.4);
 }
 
 /* Last Message */
@@ -584,13 +584,13 @@
 }
 
 .action-btn.primary {
-  background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+  background: linear-gradient(135deg, #4a3aff 0%, #4a3aff 100%);
   color: white;
 }
 
 .action-btn.primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);
+  box-shadow: 0 10px 30px rgba(74, 58, 255, 0.4);
 }
 
 .action-btn.secondary {

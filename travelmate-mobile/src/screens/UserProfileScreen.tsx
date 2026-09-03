@@ -2,7 +2,7 @@
  * User Detail Profile Screen
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -18,6 +18,9 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { apiClient } from '../services/apiClient';
+import Icon from '../components/icons/Icon';
+import { useTheme } from '../contexts/ThemeContext';
+import { ThemePalette, fonts, type, spacing, radii } from '../theme';
 
 type UserProfileScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -50,6 +53,31 @@ interface UserDetail {
   recentReviews: Review[];
 }
 
+interface BackendUserProfile {
+  id: number;
+  nickname: string;
+  email?: string;
+  profileImageUrl?: string;
+  bio?: string;
+  travelStyle?: string;
+  languages?: string[];
+  rating?: number;
+  reviewCount?: number;
+  isEmailVerified?: boolean;
+  phoneVerified?: boolean;
+  trustBadge?: string;
+  trustScore?: number;
+  createdAt: string;
+}
+
+interface BackendReview {
+  id: number;
+  reviewerNickname: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+}
+
 interface Review {
   id: number;
   reviewerNickname: string;
@@ -58,15 +86,21 @@ interface Review {
   createdAt: string;
 }
 
-const TRUST_BADGES: Record<string, { label: string; color: string }> = {
-  NEWCOMER: { label: '새싹', color: '#9CA3AF' },
-  BRONZE: { label: '브론즈', color: '#CD7F32' },
-  SILVER: { label: '실버', color: '#A0AEC0' },
-  GOLD: { label: '골드', color: '#F59E0B' },
-  PLATINUM: { label: '플래티넘', color: '#8B5CF6' },
-};
+const createTrustBadges = (
+  palette: ThemePalette
+): Record<string, { label: string; color: string }> => ({
+  NEW: { label: '새싹', color: palette.rarityCommon },
+  NEWCOMER: { label: '새싹', color: palette.rarityCommon },
+  BRONZE: { label: '브론즈', color: palette.warningText },
+  SILVER: { label: '실버', color: palette.textTertiary },
+  GOLD: { label: '골드', color: palette.rarityLegendary },
+  PLATINUM: { label: '플래티넘', color: palette.rarityEpic },
+});
 
 const UserProfileScreen: React.FC<Props> = ({ navigation, route }) => {
+  const { palette } = useTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
+  const trustBadges = useMemo(() => createTrustBadges(palette), [palette]);
   const { userId } = route.params;
   const [user, setUser] = useState<UserDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -74,8 +108,11 @@ const UserProfileScreen: React.FC<Props> = ({ navigation, route }) => {
 
   const loadUser = useCallback(async () => {
     try {
-      const data = await apiClient.get<UserDetail>(`/users/${userId}/profile`);
-      setUser(data);
+      const [profile, reviews] = await Promise.all([
+        apiClient.get<BackendUserProfile>(`/users/profile/${userId}`),
+        apiClient.get<BackendReview[]>(`/users/reviews/${userId}`),
+      ]);
+      setUser(toUserDetail(profile, reviews));
     } catch (error) {
       console.log('Failed to load user profile:', error);
       Alert.alert('오류', '프로필을 불러올 수 없습니다.');
@@ -96,7 +133,7 @@ const UserProfileScreen: React.FC<Props> = ({ navigation, route }) => {
 
   const handleSendMatchRequest = async () => {
     try {
-      await apiClient.post('/matching/request', { targetUserId: userId });
+      await apiClient.post('/matching/requests', { receiverId: userId });
       Alert.alert('완료', '매칭 요청을 보냈습니다.');
     } catch (error) {
       Alert.alert('오류', '매칭 요청에 실패했습니다.');
@@ -114,10 +151,11 @@ const UserProfileScreen: React.FC<Props> = ({ navigation, route }) => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await apiClient.post('/reports', {
-                targetType: 'USER',
-                targetId: userId,
-                reason: 'USER_REPORT',
+              await apiClient.post('/users/report', {
+                reportedUserId: userId,
+                reportType: 'OTHER',
+                reason: '사용자 신고',
+                description: '모바일 앱에서 접수된 사용자 신고입니다.',
               });
               Alert.alert('완료', '신고가 접수되었습니다.');
             } catch {
@@ -141,14 +179,35 @@ const UserProfileScreen: React.FC<Props> = ({ navigation, route }) => {
   const renderStars = (rating: number) => {
     const filled = Math.round(rating);
     return Array.from({ length: 5 }, (_, i) =>
-      i < filled ? '\u2605' : '\u2606'
+      i < filled ? '★' : '☆'
     ).join('');
   };
+
+  const toUserDetail = (
+    profile: BackendUserProfile,
+    reviews: BackendReview[] = []
+  ): UserDetail => ({
+    id: profile.id,
+    nickname: profile.nickname,
+    email: profile.email,
+    profileImageUrl: profile.profileImageUrl,
+    bio: profile.bio,
+    travelStyle: profile.travelStyle,
+    languages: profile.languages || [],
+    isVerified: Boolean(profile.isEmailVerified || profile.phoneVerified),
+    trustLevel: profile.trustBadge || 'NEW',
+    trustScore: profile.trustScore || 50,
+    totalTrips: 0,
+    averageRating: profile.rating || 0,
+    totalReviews: profile.reviewCount || reviews.length,
+    createdAt: profile.createdAt,
+    recentReviews: reviews.slice(0, 5),
+  });
 
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#3B82F6" />
+        <ActivityIndicator size="large" color={palette.primary} />
       </View>
     );
   }
@@ -161,7 +220,7 @@ const UserProfileScreen: React.FC<Props> = ({ navigation, route }) => {
     );
   }
 
-  const badge = TRUST_BADGES[user.trustLevel] || TRUST_BADGES.NEWCOMER;
+  const badge = trustBadges[user.trustLevel] || trustBadges.NEWCOMER;
 
   return (
     <ScrollView
@@ -189,7 +248,7 @@ const UserProfileScreen: React.FC<Props> = ({ navigation, route }) => {
             <Text style={styles.nickname}>{user.nickname}</Text>
             {user.isVerified && (
               <View style={styles.verifiedBadge}>
-                <Text style={styles.verifiedText}>V</Text>
+                <Icon name="check" size={10} color={palette.onPrimary} strokeWidth={2.5} />
               </View>
             )}
           </View>
@@ -310,176 +369,184 @@ const UserProfileScreen: React.FC<Props> = ({ navigation, route }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: palette.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F9FAFB',
+    backgroundColor: palette.background,
   },
   errorText: {
-    fontSize: 16,
-    color: '#6B7280',
+    ...type.body,
+    color: palette.textTertiary,
   },
   header: {
-    backgroundColor: '#fff',
-    padding: 24,
+    backgroundColor: palette.background,
+    padding: spacing.xxl,
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: palette.hairline,
   },
   profileImage: {
     width: 96,
     height: 96,
     borderRadius: 48,
+    borderWidth: 4,
+    borderColor: palette.background,
   },
   profileImagePlaceholder: {
     width: 96,
     height: 96,
     borderRadius: 48,
-    backgroundColor: '#3B82F6',
+    backgroundColor: palette.primarySoft,
     justifyContent: 'center',
     alignItems: 'center',
   },
   profileInitial: {
+    fontFamily: fonts.extrabold,
     fontSize: 36,
-    fontWeight: 'bold',
-    color: '#fff',
+    color: palette.primary,
   },
   nameSection: {
     alignItems: 'center',
-    marginTop: 12,
+    marginTop: spacing.md,
   },
   nameRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   nickname: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#111827',
+    fontFamily: fonts.extrabold,
+    fontSize: 21,
+    lineHeight: 27,
+    color: palette.ink,
   },
   verifiedBadge: {
-    backgroundColor: '#3B82F6',
-    borderRadius: 10,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    marginLeft: 8,
-  },
-  verifiedText: {
-    fontSize: 11,
-    fontWeight: 'bold',
-    color: '#fff',
+    backgroundColor: palette.primary,
+    borderRadius: 9,
+    width: 18,
+    height: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: spacing.sm,
   },
   trustBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginTop: 8,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: radii.badge,
+    marginTop: spacing.sm,
   },
   trustText: {
-    fontSize: 13,
-    fontWeight: '600',
+    ...type.caption,
+    fontFamily: fonts.bold,
   },
   section: {
-    paddingHorizontal: 24,
-    paddingVertical: 16,
+    paddingHorizontal: spacing.screenH,
+    paddingVertical: spacing.lg,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 12,
+    ...type.heading,
+    color: palette.ink,
+    marginBottom: spacing.md,
   },
   bioText: {
-    fontSize: 15,
-    color: '#374151',
-    lineHeight: 22,
+    ...type.bodySmall,
+    fontFamily: fonts.medium,
+    color: palette.textSecondary,
   },
   statsRow: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
-    marginHorizontal: 16,
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 16,
+    backgroundColor: palette.surface,
+    marginHorizontal: spacing.screenH,
+    borderRadius: radii.input,
+    padding: spacing.lg,
+    marginTop: spacing.lg,
   },
   statItem: {
     flex: 1,
     alignItems: 'center',
   },
   statValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#111827',
+    ...type.statNumber,
+    color: palette.ink,
   },
   statLabel: {
-    fontSize: 12,
-    color: '#6B7280',
-    marginTop: 4,
+    fontFamily: fonts.bold,
+    fontSize: 11,
+    lineHeight: 15,
+    color: palette.textMuted,
+    marginTop: spacing.xs,
   },
   statDivider: {
     width: 1,
-    backgroundColor: '#E5E7EB',
-    marginHorizontal: 4,
+    backgroundColor: palette.outline,
+    marginHorizontal: spacing.xs,
   },
   compatSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    marginHorizontal: 16,
-    marginTop: 8,
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: palette.tintIndigo,
+    marginHorizontal: spacing.screenH,
+    marginTop: spacing.sm,
+    borderRadius: radii.input,
+    padding: spacing.lg,
   },
   compatTitle: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginRight: 12,
+    ...type.bodySmall,
+    color: palette.textTertiary,
+    marginRight: spacing.md,
   },
   compatBar: {
     flex: 1,
     height: 8,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: palette.track,
     borderRadius: 4,
+    overflow: 'hidden',
   },
   compatFill: {
     height: 8,
-    backgroundColor: '#3B82F6',
+    backgroundColor: palette.primary,
     borderRadius: 4,
   },
   compatScore: {
+    fontFamily: fonts.extrabold,
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#3B82F6',
-    marginLeft: 12,
+    lineHeight: 21,
+    color: palette.primary,
+    marginLeft: spacing.md,
   },
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    backgroundColor: '#fff',
+    backgroundColor: palette.surface,
     padding: 14,
-    borderRadius: 10,
+    borderRadius: radii.chip,
     marginBottom: 6,
   },
   infoLabel: {
+    fontFamily: fonts.semibold,
     fontSize: 14,
-    color: '#6B7280',
+    lineHeight: 19,
+    color: palette.textTertiary,
   },
   infoValue: {
+    fontFamily: fonts.bold,
     fontSize: 14,
-    color: '#111827',
-    fontWeight: '500',
+    lineHeight: 19,
+    color: palette.ink,
   },
   reviewCard: {
-    backgroundColor: '#fff',
+    backgroundColor: palette.surface,
+    borderWidth: 1,
+    borderColor: palette.hairline,
     padding: 14,
-    borderRadius: 10,
-    marginBottom: 8,
+    borderRadius: radii.card,
+    marginBottom: spacing.sm,
   },
   reviewHeader: {
     flexDirection: 'row',
@@ -487,53 +554,56 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   reviewerName: {
+    fontFamily: fonts.bold,
     fontSize: 14,
-    fontWeight: '600',
-    color: '#111827',
+    lineHeight: 19,
+    color: palette.ink,
   },
   reviewStars: {
+    fontFamily: fonts.semibold,
     fontSize: 14,
-    color: '#F59E0B',
+    color: palette.rarityLegendary,
   },
   reviewComment: {
+    fontFamily: fonts.medium,
     fontSize: 14,
-    color: '#374151',
+    lineHeight: 21,
+    color: palette.textSecondary,
     marginTop: 6,
-    lineHeight: 20,
   },
   reviewDate: {
-    fontSize: 12,
-    color: '#9CA3AF',
+    ...type.caption,
+    color: palette.textMuted,
     marginTop: 6,
   },
   actionSection: {
-    paddingHorizontal: 24,
-    paddingVertical: 16,
+    paddingHorizontal: spacing.screenH,
+    paddingVertical: spacing.lg,
     gap: 10,
   },
   matchButton: {
-    backgroundColor: '#3B82F6',
-    paddingVertical: 14,
-    borderRadius: 12,
+    backgroundColor: palette.primary,
+    height: 50,
+    borderRadius: radii.button,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   matchButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
+    ...type.button,
+    color: palette.onPrimary,
   },
   reportButton: {
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: radii.button,
     alignItems: 'center',
   },
   reportButtonText: {
-    fontSize: 14,
-    color: '#9CA3AF',
+    ...type.bodySmall,
+    color: palette.textMuted,
   },
   bottomPadding: {
     height: 48,
   },
-});
+  });
 
 export default UserProfileScreen;

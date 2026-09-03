@@ -1,5 +1,6 @@
 package com.travelmate.controller;
 
+import com.travelmate.security.AuthenticatedUserId;
 import com.travelmate.dto.AdminDto;
 import com.travelmate.entity.Report;
 import com.travelmate.entity.Report.ReportStatus;
@@ -133,6 +134,26 @@ public class AdminController {
         return ResponseEntity.noContent().build();
     }
 
+    // ===== Recommendation Feedback =====
+
+    @GetMapping("/recommendation-feedback")
+    @Operation(summary = "추천 피드백 목록", description = "추천 품질 개선용 사용자 피드백을 조회합니다.")
+    public ResponseEntity<Page<AdminDto.RecommendationFeedbackResponse>> getRecommendationFeedback(
+            @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) Integer rating,
+            @RequestParam(required = false) String feedbackType,
+            @RequestParam(required = false) String targetType,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(adminService.getRecommendationFeedback(
+                userId, rating, feedbackType, targetType, pageable));
+    }
+
+    @GetMapping("/recommendation-feedback/stats")
+    @Operation(summary = "추천 피드백 통계", description = "추천 피드백 평점/유형별 집계를 조회합니다.")
+    public ResponseEntity<AdminDto.RecommendationFeedbackStats> getRecommendationFeedbackStats() {
+        return ResponseEntity.ok(adminService.getRecommendationFeedbackStats());
+    }
+
     // ===== Report Dashboard =====
 
     @GetMapping("/reports")
@@ -158,7 +179,7 @@ public class AdminController {
             @PathVariable Long reportId,
             @Valid @RequestBody ProcessReportRequest request) {
         Report report = reportService.processReport(
-                reportId, Long.parseLong(adminUserId), request.getStatus(), request.getAdminNote());
+                reportId, AuthenticatedUserId.parse(adminUserId), request.getStatus(), request.getAdminNote());
         return ResponseEntity.ok(ReportResponse.from(report));
     }
 

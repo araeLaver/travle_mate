@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { locationService, TravelMate, Location } from '../services/locationService';
-import { chatService } from '../services/chatService';
+import { chatRestService } from '../services/chatRestService';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../components/Toast';
 import { getErrorMessage, logError } from '../utils/errorHandler';
@@ -104,9 +104,24 @@ const Dashboard: React.FC = () => {
     threshold: 60,
   });
 
-  const startChat = (mate: TravelMate) => {
-    const room = chatService.createChatRoom(mate.name, mate.id);
-    navigate(`/chat/${room.id}`);
+  const startChat = async (mate: TravelMate) => {
+    const participantId = Number(mate.id);
+    if (!Number.isFinite(participantId)) {
+      toast.error('실제 사용자 정보가 있는 메이트와만 채팅을 시작할 수 있습니다.');
+      return;
+    }
+
+    try {
+      const room = await chatRestService.createChatRoom({
+        roomName: mate.name,
+        roomType: 'PRIVATE',
+        participantIds: [mate.id],
+      });
+      navigate(`/chat/${room.id}`);
+    } catch (error) {
+      logError('Dashboard.startChat', error);
+      toast.error(getErrorMessage(error));
+    }
   };
 
   const sendGreeting = (mate: TravelMate) => {
@@ -118,35 +133,19 @@ const Dashboard: React.FC = () => {
   };
 
   const setManualLocation = async () => {
-    const gwangjuLocation = {
-      latitude: 37.4138,
-      longitude: 127.2557,
-      address: '경기도 광주시 (수동 설정)',
-    };
-
     try {
-      const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
-      const response = await fetch(
-        `${API_BASE_URL}/location/address?lat=${gwangjuLocation.latitude}&lng=${gwangjuLocation.longitude}`
-      );
+      const gwangjuLocation = await locationService.setManualLocation({
+        latitude: 37.4138,
+        longitude: 127.2557,
+        address: '경기도 광주시 (수동 설정)',
+      });
 
-      if (response.ok) {
-        const data = await response.json();
-        if (data && data.documents && data.documents.length > 0) {
-          const doc = data.documents[0];
-          if (doc.road_address && doc.road_address.address_name) {
-            gwangjuLocation.address = doc.road_address.address_name;
-          } else if (doc.address && doc.address.address_name) {
-            gwangjuLocation.address = doc.address.address_name;
-          }
-        }
-      }
-    } catch {
-      // 주소 조회 실패시 기본 주소 사용
+      setCurrentLocation(gwangjuLocation);
+      setIsLocationEnabled(true);
+    } catch (error) {
+      logError('Dashboard.setManualLocation', error);
+      toast.error(getErrorMessage(error));
     }
-
-    setCurrentLocation(gwangjuLocation);
-    setIsLocationEnabled(true);
   };
 
   const getTimeGreeting = () => {
@@ -165,7 +164,7 @@ const Dashboard: React.FC = () => {
         <img
           src={image}
           alt={`${name}의 프로필 사진`}
-          className="rounded-full object-cover border-3 border-violet-400/50 shadow-lg"
+          className="rounded-full object-cover border-3 border-white shadow-[0_4px_12px_rgba(16,16,20,0.12)]"
           style={{ width: size, height: size }}
           onError={e => {
             e.currentTarget.style.display = 'none';
@@ -177,7 +176,7 @@ const Dashboard: React.FC = () => {
 
     return (
       <div
-        className="flex items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-pink-500 border-3 border-violet-400/50 shadow-lg text-white font-bold"
+        className="flex items-center justify-center rounded-full bg-primary-500 border-3 border-white shadow-[0_4px_12px_rgba(16,16,20,0.12)] text-white font-bold"
         style={{ width: size, height: size, fontSize: size * 0.4 }}
         aria-label={`${name}의 프로필`}
       >
@@ -186,38 +185,39 @@ const Dashboard: React.FC = () => {
     );
   };
 
+  // 틴트 아이콘 타일 (디자인 시스템: #ECEBFF / #FDF3E4 / #F1EAFC / success 틴트)
   const quickActions = [
     {
       label: '그룹 만들기',
       icon: '🗺️',
       path: '/groups/create',
-      gradient: 'from-blue-500 to-cyan-500',
+      tint: 'bg-primary-100',
     },
-    { label: '그룹 찾기', icon: '🔍', path: '/groups', gradient: 'from-emerald-500 to-teal-500' },
-    { label: '채팅방', icon: '💬', path: '/chat', gradient: 'from-pink-500 to-rose-500' },
-    { label: '내 프로필', icon: '👤', path: '/profile', gradient: 'from-amber-500 to-orange-500' },
-    { label: '매칭', icon: '🤝', path: '/matching', gradient: 'from-violet-500 to-purple-500' },
-    { label: 'AI 추천', icon: '🤖', path: '/ai', gradient: 'from-cyan-500 to-blue-500' },
-    { label: '리더보드', icon: '🏆', path: '/leaderboard', gradient: 'from-rose-500 to-pink-500' },
+    { label: '그룹 찾기', icon: '🔍', path: '/groups', tint: 'bg-[#EAF5EE]' },
+    { label: '채팅방', icon: '💬', path: '/chat', tint: 'bg-[#F1EAFC]' },
+    { label: '내 프로필', icon: '👤', path: '/profile', tint: 'bg-[#FDF3E4]' },
+    { label: '매칭', icon: '🤝', path: '/matching', tint: 'bg-primary-100' },
+    { label: 'AI 추천', icon: '🤖', path: '/ai', tint: 'bg-[#F1EAFC]' },
+    { label: '리더보드', icon: '🏆', path: '/leaderboard', tint: 'bg-[#FDF3E4]' },
     {
       label: '알림 설정',
       icon: '🔔',
       path: '/settings/notifications',
-      gradient: 'from-indigo-500 to-violet-500',
+      tint: 'bg-primary-100',
     },
   ];
 
   return (
-    <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] relative overflow-hidden">
+    <div className="min-h-screen bg-sand-100 dark:bg-[#0a0a0b] relative overflow-hidden">
       <PageBackground />
 
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 px-4 py-3">
-        <div className="max-w-6xl mx-auto bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-2xl px-6 py-3 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
+        <div className="max-w-6xl mx-auto bg-white dark:bg-gray-900 rounded-2xl px-6 py-3 border border-sand-300 dark:border-gray-800 shadow-[0_10px_30px_rgba(16,16,20,0.06)]">
           <div className="flex items-center justify-between">
             <button onClick={() => navigate('/')} className="flex items-center gap-2">
               <Logo size="md" />
-              <span className="font-bold text-gray-900 dark:text-white">Fryndo</span>
+              <span className="font-extrabold tracking-tight text-ink dark:text-white">Fryndo</span>
             </button>
             <div className="flex items-center gap-3">
               <ThemeToggle />
@@ -236,7 +236,7 @@ const Dashboard: React.FC = () => {
             aria-live="polite"
           >
             <div
-              className={`flex items-center gap-2 text-sm text-violet-600 dark:text-violet-400 font-medium ${isRefreshing ? 'animate-pulse' : ''}`}
+              className={`flex items-center gap-2 text-sm text-primary-500 dark:text-primary-400 font-semibold ${isRefreshing ? 'animate-pulse' : ''}`}
             >
               <svg
                 className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`}
@@ -274,14 +274,14 @@ const Dashboard: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <p className="text-lg text-gray-600 dark:text-gray-400 mb-2">{getTimeGreeting()},</p>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            <span className="bg-gradient-to-r from-violet-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-              {userName}
-            </span>
-            <span className="text-gray-900 dark:text-white">님!</span>
+          <p className="text-sm font-semibold text-[#8A8A95] dark:text-gray-400 mb-2">
+            {getTimeGreeting()},
+          </p>
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
+            <span className="text-primary-500">{userName}</span>
+            <span className="text-ink dark:text-white">님!</span>
           </h1>
-          <p className="text-gray-500 dark:text-gray-400">오늘도 멋진 여행을 만들어보세요</p>
+          <p className="text-[#74747F] dark:text-gray-400">오늘도 멋진 여행을 만들어보세요</p>
         </motion.header>
 
         {/* Stats Grid */}
@@ -293,31 +293,38 @@ const Dashboard: React.FC = () => {
           aria-label="통계 요약"
         >
           {[
-            { label: '발견된 메이트', value: nearbyUsers.length, icon: '👥', color: 'violet' },
+            {
+              label: '발견된 메이트',
+              value: nearbyUsers.length,
+              icon: '👥',
+              tint: 'bg-primary-100',
+            },
             {
               label: '온라인',
               value: nearbyUsers.filter(u => u.isOnline).length,
               icon: '🟢',
-              color: 'emerald',
+              tint: 'bg-[#EAF5EE]',
             },
-            { label: '탐색 횟수', value: discoveryCount, icon: '🧭', color: 'blue' },
+            { label: '탐색 횟수', value: discoveryCount, icon: '🧭', tint: 'bg-[#FDF3E4]' },
           ].map((stat, idx) => (
             <motion.div
               key={idx}
-              className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-800/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+              className="bg-white dark:bg-gray-900 rounded-[18px] p-5 dark:border dark:border-gray-800 shadow-[0_10px_30px_rgba(16,16,20,0.06)] hover:shadow-[0_10px_30px_rgba(16,16,20,0.1)] transition-all duration-300 hover:-translate-y-1"
               variants={fadeInUp}
             >
               <div className="flex items-center gap-4">
                 <div
-                  className={`w-14 h-14 rounded-xl bg-gradient-to-br from-${stat.color}-400/20 to-${stat.color}-500/20 dark:from-${stat.color}-500/30 dark:to-${stat.color}-600/30 flex items-center justify-center text-2xl`}
+                  className={`w-14 h-14 rounded-xl ${stat.tint} dark:bg-gray-800 flex items-center justify-center text-2xl`}
                 >
                   {stat.icon}
                 </div>
                 <div>
-                  <div className="text-3xl font-bold text-gray-900 dark:text-white">
+                  <div className="font-display text-[34px] leading-none font-bold text-ink dark:text-white">
                     {stat.value}
                   </div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">{stat.label}</div>
+                  <div className="text-xs font-semibold text-[#8A8A95] dark:text-gray-400 mt-1.5">
+                    {stat.label}
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -330,28 +337,28 @@ const Dashboard: React.FC = () => {
             <ListItemSkeleton />
           ) : (
             currentLocation && (
-              <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
+              <div className="bg-white dark:bg-gray-900 rounded-[18px] p-6 dark:border dark:border-gray-800 shadow-[0_10px_30px_rgba(16,16,20,0.06)]">
                 <div className="flex flex-col md:flex-row md:items-start gap-4">
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-amber-400/20 to-orange-500/20 dark:from-amber-500/30 dark:to-orange-600/30 flex items-center justify-center text-2xl flex-shrink-0">
+                  <div className="w-14 h-14 rounded-xl bg-[#FDF3E4] dark:bg-gray-800 flex items-center justify-center text-2xl flex-shrink-0">
                     📍
                   </div>
                   <div className="flex-1">
                     <div
-                      className={`text-sm font-semibold mb-1 ${isLocationEnabled ? 'text-emerald-500' : 'text-amber-500'}`}
+                      className={`text-sm font-bold mb-1 ${isLocationEnabled ? 'text-success' : 'text-rarity-legendary'}`}
                     >
                       {isLocationEnabled ? '실제 GPS 위치' : '기본 위치 사용 중'}
                     </div>
-                    <div className="text-gray-900 dark:text-white font-medium mb-2">
+                    <div className="text-ink dark:text-white font-semibold mb-2">
                       {currentLocation.address ||
                         `${currentLocation.latitude.toFixed(4)}, ${currentLocation.longitude.toFixed(4)}`}
                     </div>
-                    <div className="text-xs text-gray-400 dark:text-gray-500 font-mono mb-3">
+                    <div className="text-xs text-[#9A9AA4] dark:text-gray-500 font-mono mb-3">
                       {currentLocation.latitude.toFixed(6)}, {currentLocation.longitude.toFixed(6)}
                     </div>
                     <div className="flex items-center gap-3 mb-4">
                       <label
                         htmlFor="radius-select"
-                        className="text-sm text-gray-600 dark:text-gray-400"
+                        className="text-sm font-semibold text-[#4A4A55] dark:text-gray-400"
                       >
                         검색 반경:
                       </label>
@@ -359,7 +366,7 @@ const Dashboard: React.FC = () => {
                         id="radius-select"
                         value={searchRadius}
                         onChange={e => setSearchRadius(Number(e.target.value))}
-                        className="px-4 py-2 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-violet-500"
+                        className="px-4 py-2 bg-sand-100 dark:bg-gray-800 border-0 dark:border dark:border-gray-700 rounded-[13px] text-sm font-semibold text-ink dark:text-white focus:outline-none focus:bg-white focus:ring-[1.5px] focus:ring-primary-500"
                       >
                         <option value={1}>1km 이내</option>
                         <option value={3}>3km 이내</option>
@@ -370,19 +377,19 @@ const Dashboard: React.FC = () => {
                     </div>
                     {!isLocationEnabled && (
                       <>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 italic mb-3">
+                        <p className="text-sm text-[#74747F] dark:text-gray-400 mb-3">
                           더 정확한 위치를 원하시면 브라우저에서 위치 권한을 허용해주세요
                         </p>
                         <div className="flex flex-wrap gap-3">
                           <button
                             onClick={requestLocationPermission}
-                            className="px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl text-sm font-semibold hover:shadow-lg transition-all duration-300 flex items-center gap-2"
+                            className="px-4 py-2 bg-primary-500 hover:bg-primary-700 text-white rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-2"
                           >
                             📍 위치 권한 요청
                           </button>
                           <button
                             onClick={setManualLocation}
-                            className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl text-sm font-semibold hover:shadow-lg transition-all duration-300"
+                            className="px-4 py-2 bg-sand-200 hover:bg-sand-400 text-ink dark:bg-gray-800 dark:text-gray-200 rounded-xl text-sm font-bold transition-all duration-300"
                           >
                             경기광주로 설정
                           </button>
@@ -398,17 +405,17 @@ const Dashboard: React.FC = () => {
 
         {/* Discovery Section */}
         <motion.section
-          className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl p-8 border border-gray-200/50 dark:border-gray-800/50 shadow-xl mb-8"
+          className="bg-white dark:bg-gray-900 rounded-[20px] p-8 dark:border dark:border-gray-800 shadow-[0_10px_30px_rgba(16,16,20,0.06)] mb-8"
           {...fadeInUp}
           transition={{ delay: 0.3 }}
         >
-          <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-8">
+          <h2 className="text-2xl font-extrabold tracking-tight text-center text-ink dark:text-white mb-8">
             여행 메이트 발견하기
           </h2>
 
           {/* Mood Selector */}
           <fieldset className="mb-8">
-            <legend className="text-center text-gray-600 dark:text-gray-400 font-medium mb-4">
+            <legend className="text-center text-[#74747F] dark:text-gray-400 font-semibold mb-4">
               현재 나의 여행 기분
             </legend>
             <div
@@ -419,10 +426,10 @@ const Dashboard: React.FC = () => {
               {moods.map(mood => (
                 <button
                   key={mood}
-                  className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${
+                  className={`h-9 px-4 rounded-[10px] text-sm font-bold transition-all duration-300 ${
                     currentMood === mood
-                      ? 'bg-gradient-to-r from-violet-600 to-pink-600 text-white shadow-lg shadow-violet-500/30'
-                      : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
+                      ? 'bg-ink text-white dark:bg-white dark:text-ink'
+                      : 'bg-sand-100 dark:bg-gray-800 text-[#4A4A55] dark:text-gray-400 hover:bg-sand-200 dark:hover:bg-gray-700'
                   }`}
                   onClick={() => setCurrentMood(mood)}
                   role="radio"
@@ -437,27 +444,27 @@ const Dashboard: React.FC = () => {
           {/* Radar Animation */}
           <div className="flex flex-col items-center">
             <div className={`relative w-44 h-44 mb-8 ${isDiscovering ? 'animate-pulse' : ''}`}>
-              <div className="absolute inset-0 rounded-full border-2 border-violet-300/30 dark:border-violet-500/30" />
-              <div className="absolute inset-4 rounded-full border-2 border-violet-300/40 dark:border-violet-500/40" />
-              <div className="absolute inset-8 rounded-full border-2 border-violet-300/50 dark:border-violet-500/50" />
+              <div className="absolute inset-0 rounded-full border-2 border-primary-100 dark:border-primary-500/30" />
+              <div className="absolute inset-4 rounded-full border-2 border-primary-200 dark:border-primary-500/40" />
+              <div className="absolute inset-8 rounded-full border-2 border-primary-300 dark:border-primary-500/50" />
               <div className="absolute inset-0 flex items-center justify-center">
                 <div
-                  className={`w-6 h-6 rounded-full bg-gradient-to-br from-violet-500 to-pink-500 shadow-lg ${isDiscovering ? 'animate-ping' : ''}`}
+                  className={`w-6 h-6 rounded-full bg-primary-500 shadow-[0_8px_22px_rgba(74,58,255,0.3)] ${isDiscovering ? 'animate-ping' : ''}`}
                 />
               </div>
               {isDiscovering && (
                 <div
-                  className="absolute top-1/2 left-1/2 w-1 h-1/2 bg-gradient-to-b from-violet-500 to-transparent origin-bottom"
+                  className="absolute top-1/2 left-1/2 w-1 h-1/2 bg-gradient-to-b from-primary-500 to-transparent origin-bottom"
                   style={{ animation: 'spin 2s linear infinite' }}
                 />
               )}
             </div>
 
             <button
-              className={`discovery-btn px-10 py-4 rounded-full font-semibold text-white text-lg transition-all duration-300 flex items-center gap-3 ${
+              className={`discovery-btn px-10 py-4 rounded-[15px] font-extrabold text-white text-lg transition-all duration-300 flex items-center gap-3 ${
                 isDiscovering
-                  ? 'bg-gradient-to-r from-indigo-500 to-violet-500'
-                  : 'bg-gradient-to-r from-violet-600 to-pink-600 hover:shadow-xl hover:shadow-violet-500/30 hover:-translate-y-1'
+                  ? 'bg-primary-400'
+                  : 'bg-primary-500 hover:bg-primary-700 shadow-[0_8px_22px_rgba(74,58,255,0.3)] hover:-translate-y-1'
               }`}
               onClick={discoverNearbyMates}
               disabled={isDiscovering}
@@ -476,7 +483,7 @@ const Dashboard: React.FC = () => {
               )}
             </button>
 
-            <p className="text-gray-500 dark:text-gray-400 text-sm mt-4">
+            <p className="text-[#74747F] dark:text-gray-400 text-sm mt-4">
               실시간 위치 기반으로 가까운 여행 메이트를 찾아드립니다
             </p>
           </div>
@@ -486,7 +493,7 @@ const Dashboard: React.FC = () => {
         {isDiscovering && nearbyUsers.length === 0 && (
           <motion.section className="mb-8" {...fadeInUp} transition={{ delay: 0.4 }}>
             <div className="flex items-center gap-3 mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              <h2 className="text-2xl font-extrabold tracking-tight text-ink dark:text-white">
                 여행 메이트 탐색 중...
               </h2>
             </div>
@@ -507,10 +514,10 @@ const Dashboard: React.FC = () => {
             aria-label="발견된 여행 메이트 목록"
           >
             <div className="flex items-center gap-3 mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              <h2 className="text-2xl font-extrabold tracking-tight text-ink dark:text-white">
                 발견된 여행 메이트
               </h2>
-              <span className="px-3 py-1 bg-gradient-to-r from-violet-600 to-pink-600 text-white text-sm font-semibold rounded-full">
+              <span className="px-3 py-1 bg-primary-500 text-white text-sm font-extrabold rounded-[9px]">
                 {nearbyUsers.length}명
               </span>
             </div>
@@ -518,7 +525,7 @@ const Dashboard: React.FC = () => {
               {nearbyUsers.map(user => (
                 <motion.article
                   key={user.id}
-                  className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-800/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
+                  className="bg-white dark:bg-gray-900 rounded-[18px] p-6 dark:border dark:border-gray-800 shadow-[0_10px_30px_rgba(16,16,20,0.06)] hover:shadow-[0_10px_30px_rgba(16,16,20,0.1)] transition-all duration-300 hover:-translate-y-2"
                   role="listitem"
                   whileHover={{ scale: 1.02 }}
                 >
@@ -526,21 +533,21 @@ const Dashboard: React.FC = () => {
                     <Avatar name={user.name} image={user.profileImage} size={72} />
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <h4 className="text-lg font-bold text-gray-900 dark:text-white">
+                        <h4 className="text-lg font-extrabold text-ink dark:text-white">
                           {user.name}
                         </h4>
-                        <span className="text-sm text-gray-500 dark:text-gray-400">
+                        <span className="text-sm text-[#8A8A95] dark:text-gray-400">
                           {user.age}세
                         </span>
                         <span
-                          className={`w-2.5 h-2.5 rounded-full ml-auto ${user.isOnline ? 'bg-emerald-400 shadow-lg shadow-emerald-400/50' : 'bg-gray-300 dark:bg-gray-600'}`}
+                          className={`w-2.5 h-2.5 rounded-full ml-auto ${user.isOnline ? 'bg-success shadow-[0_0_8px_rgba(63,143,95,0.5)]' : 'bg-sand-400 dark:bg-gray-600'}`}
                           aria-label={user.isOnline ? '온라인' : '오프라인'}
                         />
                       </div>
-                      <p className="text-violet-500 dark:text-violet-400 font-medium mb-1">
+                      <p className="text-primary-500 dark:text-primary-400 font-bold mb-1">
                         {user.mood}
                       </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                      <p className="text-sm text-[#74747F] dark:text-gray-400 flex items-center gap-1">
                         📍 {user.distance}km · {user.travelStyle}
                       </p>
                     </div>
@@ -550,25 +557,27 @@ const Dashboard: React.FC = () => {
                     {user.interests.slice(0, 3).map((interest, idx) => (
                       <span
                         key={idx}
-                        className="px-3 py-1 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 text-xs font-medium rounded-full"
+                        className="px-3 py-1 bg-primary-100 dark:bg-primary-900/40 text-primary-500 dark:text-primary-400 text-xs font-bold rounded-[8px]"
                       >
                         #{interest}
                       </span>
                     ))}
                   </div>
 
-                  <p className="text-sm text-gray-500 dark:text-gray-400 italic mb-4">{user.bio}</p>
+                  <p className="text-sm text-[#74747F] dark:text-gray-400 mb-4">{user.bio}</p>
 
                   <div className="mb-4">
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">매칭도</span>
-                      <span className="text-violet-600 dark:text-violet-400 font-bold">
+                      <span className="text-sm font-semibold text-[#4A4A55] dark:text-gray-400">
+                        매칭도
+                      </span>
+                      <span className="text-primary-500 dark:text-primary-400 font-extrabold">
                         {user.matchScore}%
                       </span>
                     </div>
-                    <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div className="h-1.5 bg-[#EDECE8] dark:bg-gray-700 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-gradient-to-r from-violet-500 to-pink-500 rounded-full transition-all duration-500"
+                        className="h-full bg-primary-500 rounded-full transition-all duration-500"
                         style={{ width: `${user.matchScore}%` }}
                       />
                     </div>
@@ -576,14 +585,14 @@ const Dashboard: React.FC = () => {
 
                   <div className="flex gap-3">
                     <button
-                      className="flex-1 py-3 bg-gradient-to-r from-violet-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-violet-500/30 transition-all duration-300 flex items-center justify-center gap-2"
-                      onClick={() => startChat(user)}
+                      className="flex-1 py-3 bg-primary-500 hover:bg-primary-700 text-white rounded-xl font-bold shadow-[0_8px_22px_rgba(74,58,255,0.2)] transition-all duration-300 flex items-center justify-center gap-2"
+                      onClick={() => void startChat(user)}
                       aria-label={`${user.name}님과 채팅 시작`}
                     >
                       💬 채팅 시작
                     </button>
                     <button
-                      className="flex-1 py-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl font-semibold border border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-300"
+                      className="flex-1 py-3 bg-sand-200 dark:bg-gray-800 text-ink dark:text-gray-300 rounded-xl font-bold hover:bg-sand-400 dark:hover:bg-gray-700 transition-all duration-300"
                       onClick={() => sendGreeting(user)}
                       aria-label={`${user.name}님에게 인사하기`}
                     >
@@ -596,21 +605,21 @@ const Dashboard: React.FC = () => {
           </motion.section>
         ) : discoveryCount > 0 && !isDiscovering ? (
           <motion.div
-            className="text-center py-16 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-800/50 shadow-lg mb-8"
+            className="text-center py-16 bg-white dark:bg-gray-900 rounded-[18px] dark:border dark:border-gray-800 shadow-[0_10px_30px_rgba(16,16,20,0.06)] mb-8"
             {...fadeInUp}
             transition={{ delay: 0.4 }}
           >
-            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-violet-400/20 to-pink-400/20 dark:from-violet-500/30 dark:to-pink-500/30 flex items-center justify-center text-4xl">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center text-4xl">
               👥
             </div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+            <h3 className="text-xl font-extrabold tracking-tight text-ink dark:text-white mb-2">
               주변에 여행 메이트가 없어요
             </h3>
-            <p className="text-gray-500 dark:text-gray-400 mb-6">
+            <p className="text-[#74747F] dark:text-gray-400 mb-6">
               검색 반경을 넓히거나 다른 시간에 다시 시도해보세요
             </p>
             <button
-              className="px-6 py-3 bg-gradient-to-r from-violet-600 to-pink-600 text-white rounded-full font-semibold hover:shadow-lg hover:shadow-violet-500/30 transition-all duration-300 flex items-center gap-2 mx-auto"
+              className="px-6 py-3 bg-primary-500 hover:bg-primary-700 text-white rounded-[15px] font-bold shadow-[0_8px_22px_rgba(74,58,255,0.3)] transition-all duration-300 flex items-center gap-2 mx-auto"
               onClick={discoverNearbyMates}
             >
               🔄 다시 검색하기
@@ -625,29 +634,29 @@ const Dashboard: React.FC = () => {
 
         {/* Quick Actions */}
         <motion.nav
-          className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl p-8 border border-gray-200/50 dark:border-gray-800/50 shadow-xl"
+          className="bg-white dark:bg-gray-900 rounded-[20px] p-8 dark:border dark:border-gray-800 shadow-[0_10px_30px_rgba(16,16,20,0.06)]"
           {...fadeInUp}
           transition={{ delay: 0.5 }}
           aria-label="빠른 액션"
         >
-          <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-8">
+          <h2 className="text-2xl font-extrabold tracking-tight text-center text-ink dark:text-white mb-8">
             빠른 액션
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {quickActions.map((action, idx) => (
               <motion.button
                 key={idx}
-                className="group p-6 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                className="group p-6 bg-sand-100 dark:bg-gray-800/50 rounded-2xl hover:bg-sand-200 dark:hover:bg-gray-800 transition-all duration-300 hover:-translate-y-1"
                 onClick={() => navigate(action.path)}
                 whileHover={{ scale: 1.02 }}
                 aria-label={action.label}
               >
                 <div
-                  className={`w-12 h-12 mx-auto mb-3 rounded-xl bg-gradient-to-br ${action.gradient} flex items-center justify-center text-2xl shadow-lg`}
+                  className={`w-12 h-12 mx-auto mb-3 rounded-[14px] ${action.tint} dark:bg-gray-700 flex items-center justify-center text-2xl`}
                 >
                   {action.icon}
                 </div>
-                <div className="text-sm font-semibold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+                <div className="text-sm font-bold text-[#4A4A55] dark:text-gray-300 group-hover:text-ink dark:group-hover:text-white transition-colors">
                   {action.label}
                 </div>
               </motion.button>

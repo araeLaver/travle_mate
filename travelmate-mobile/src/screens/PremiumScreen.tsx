@@ -21,6 +21,8 @@ import {
   SubscriptionStatus,
   PRODUCT_IDS,
 } from '../services/paymentService';
+import { palette, fonts, type, spacing, radii } from '../theme';
+import Icon from '../components/icons/Icon';
 
 type PremiumScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Premium'>;
 
@@ -96,11 +98,16 @@ const PremiumScreen: React.FC<Props> = ({ navigation }) => {
           text: '구독 취소',
           style: 'destructive',
           onPress: async () => {
-            const success = await paymentService.cancelSubscription();
-            if (success) {
-              Alert.alert('구독 취소 완료', '구독이 취소되었습니다.');
-              const status = await paymentService.getSubscriptionStatus();
-              setSubscriptionStatus(status);
+            try {
+              const success = await paymentService.cancelSubscription();
+              if (success) {
+                Alert.alert('구독 취소 완료', '구독이 취소되었습니다.');
+                const status = await paymentService.getSubscriptionStatus();
+                setSubscriptionStatus(status);
+              }
+            } catch (error) {
+              console.error('Failed to cancel subscription:', error);
+              Alert.alert('구독 취소 실패', '구독 취소 중 오류가 발생했습니다. 다시 시도해주세요.');
             }
           },
         },
@@ -120,7 +127,7 @@ const PremiumScreen: React.FC<Props> = ({ navigation }) => {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#3B82F6" />
+        <ActivityIndicator size="large" color={palette.primaryDark} />
       </View>
     );
   }
@@ -130,7 +137,9 @@ const PremiumScreen: React.FC<Props> = ({ navigation }) => {
     return (
       <ScrollView style={styles.container}>
         <View style={styles.activeSubscriptionContainer}>
-          <Text style={styles.crownIcon}>👑</Text>
+          <View style={styles.crownIcon}>
+            <Icon name="crown" size={40} color={palette.primaryDark} />
+          </View>
           <Text style={styles.activeTitle}>프리미엄 회원</Text>
           <Text style={styles.activeSubtitle}>
             모든 프리미엄 기능을 이용하고 계십니다
@@ -172,12 +181,13 @@ const PremiumScreen: React.FC<Props> = ({ navigation }) => {
           <Text style={styles.sectionTitle}>이용 가능한 기능</Text>
           {premiumFeatures.map(feature => (
             <View key={feature.id} style={styles.featureItem}>
-              <Text style={styles.featureIcon}>{feature.icon}</Text>
+              <View style={styles.featureIconTile}>
+                <Icon name="check" size={18} color={palette.primaryDark} />
+              </View>
               <View style={styles.featureContent}>
                 <Text style={styles.featureTitle}>{feature.title}</Text>
                 <Text style={styles.featureDescription}>{feature.description}</Text>
               </View>
-              <Text style={styles.checkmark}>✓</Text>
             </View>
           ))}
         </View>
@@ -189,7 +199,9 @@ const PremiumScreen: React.FC<Props> = ({ navigation }) => {
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* Hero Section */}
       <View style={styles.heroSection}>
-        <Text style={styles.heroIcon}>👑</Text>
+        <View style={styles.heroIcon}>
+          <Icon name="crown" size={40} color={palette.primaryDark} />
+        </View>
         <Text style={styles.heroTitle}>Fryndo Premium</Text>
         <Text style={styles.heroSubtitle}>
           프리미엄 기능으로 여행을 더욱 특별하게
@@ -201,7 +213,9 @@ const PremiumScreen: React.FC<Props> = ({ navigation }) => {
         <Text style={styles.sectionTitle}>프리미엄 혜택</Text>
         {premiumFeatures.map(feature => (
           <View key={feature.id} style={styles.featureItem}>
-            <Text style={styles.featureIcon}>{feature.icon}</Text>
+            <View style={styles.featureIconTile}>
+              <Icon name="check" size={18} color={palette.primaryDark} />
+            </View>
             <View style={styles.featureContent}>
               <Text style={styles.featureTitle}>{feature.title}</Text>
               <Text style={styles.featureDescription}>{feature.description}</Text>
@@ -236,7 +250,7 @@ const PremiumScreen: React.FC<Props> = ({ navigation }) => {
             </Text>
             {selectedPlan === PRODUCT_IDS.PREMIUM_YEARLY && (
               <View style={styles.selectedIndicator}>
-                <Text style={styles.selectedIndicatorText}>✓</Text>
+                <Icon name="check" size={13} color={palette.darkBackground} strokeWidth={3} />
               </View>
             )}
           </TouchableOpacity>
@@ -258,7 +272,7 @@ const PremiumScreen: React.FC<Props> = ({ navigation }) => {
             <Text style={styles.planPriceDetail}>언제든 취소 가능</Text>
             {selectedPlan === PRODUCT_IDS.PREMIUM_MONTHLY && (
               <View style={styles.selectedIndicator}>
-                <Text style={styles.selectedIndicatorText}>✓</Text>
+                <Icon name="check" size={13} color={palette.darkBackground} strokeWidth={3} />
               </View>
             )}
           </TouchableOpacity>
@@ -272,7 +286,7 @@ const PremiumScreen: React.FC<Props> = ({ navigation }) => {
         disabled={isPurchasing}
       >
         {isPurchasing ? (
-          <ActivityIndicator color="#FFFFFF" />
+          <ActivityIndicator color={palette.darkBackground} />
         ) : (
           <Text style={styles.purchaseButtonText}>프리미엄 시작하기</Text>
         )}
@@ -297,236 +311,242 @@ const PremiumScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: palette.darkBackground,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: palette.darkBackground,
   },
   heroSection: {
-    backgroundColor: '#3B82F6',
     paddingTop: 40,
     paddingBottom: 40,
-    paddingHorizontal: 24,
+    paddingHorizontal: spacing.xxl,
     alignItems: 'center',
   },
   heroIcon: {
-    fontSize: 64,
-    marginBottom: 16,
+    width: 64,
+    height: 64,
+    borderRadius: radii.cardLarge,
+    backgroundColor: 'rgba(142, 123, 255, 0.18)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: spacing.lg,
   },
   heroTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: 8,
+    ...type.display,
+    color: palette.darkTextPrimary,
+    marginBottom: spacing.sm,
+    textAlign: 'center',
   },
   heroSubtitle: {
-    fontSize: 16,
-    color: '#BFDBFE',
+    fontFamily: fonts.semibold,
+    fontSize: 14,
+    color: palette.darkTextSecondary,
     textAlign: 'center',
   },
   featuresSection: {
-    padding: 24,
+    padding: spacing.xxl,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 16,
+    ...type.heading,
+    color: palette.darkTextPrimary,
+    marginBottom: spacing.lg,
   },
   featureItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
-  featureIcon: {
-    fontSize: 28,
-    marginRight: 16,
+  featureIconTile: {
+    width: 40,
+    height: 40,
+    borderRadius: radii.iconButton,
+    backgroundColor: 'rgba(142, 123, 255, 0.18)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: spacing.lg,
   },
   featureContent: {
     flex: 1,
   },
   featureTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 4,
+    fontFamily: fonts.bold,
+    fontSize: 14,
+    color: palette.darkTextPrimary,
+    marginBottom: 2,
   },
   featureDescription: {
-    fontSize: 14,
-    color: '#6B7280',
-  },
-  checkmark: {
-    fontSize: 20,
-    color: '#10B981',
-    fontWeight: 'bold',
+    fontFamily: fonts.semibold,
+    fontSize: 12,
+    lineHeight: 17,
+    color: palette.darkTextSecondary,
   },
   plansSection: {
-    paddingHorizontal: 24,
-    marginBottom: 24,
+    paddingHorizontal: spacing.xxl,
+    marginBottom: spacing.xxl,
   },
   planCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 12,
-    borderWidth: 2,
-    borderColor: '#E5E7EB',
+    backgroundColor: palette.darkSurface,
+    borderRadius: radii.cardLarge,
+    padding: spacing.xl,
+    marginBottom: spacing.md,
+    borderWidth: 1.5,
+    borderColor: palette.darkLine,
     position: 'relative',
   },
   planCardSelected: {
-    borderColor: '#3B82F6',
-    backgroundColor: '#EFF6FF',
+    borderColor: palette.primaryDark,
+    backgroundColor: 'rgba(142, 123, 255, 0.1)',
   },
   planBadge: {
     position: 'absolute',
     top: -12,
-    right: 16,
-    backgroundColor: '#F59E0B',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
+    right: spacing.lg,
+    backgroundColor: palette.primaryDark,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: radii.chip,
   },
   planBadgeText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '600',
+    ...type.badge,
+    color: palette.darkBackground,
   },
   planHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   planTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#111827',
+    ...type.heading,
+    color: palette.darkTextPrimary,
   },
   planSavings: {
-    fontSize: 14,
-    color: '#10B981',
-    fontWeight: '600',
+    fontFamily: fonts.bold,
+    fontSize: 13,
+    color: palette.primaryDark,
   },
   planPrice: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginBottom: 4,
+    fontFamily: fonts.extrabold,
+    fontSize: 26,
+    letterSpacing: -0.5,
+    color: palette.darkTextPrimary,
+    marginBottom: spacing.xs,
   },
   planPriceDetail: {
-    fontSize: 14,
-    color: '#6B7280',
+    ...type.bodySmall,
+    color: palette.darkTextMuted,
   },
   selectedIndicator: {
     position: 'absolute',
-    top: 16,
-    left: 16,
+    top: spacing.lg,
+    left: spacing.lg,
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#3B82F6',
+    backgroundColor: palette.primaryDark,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  selectedIndicatorText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
   purchaseButton: {
-    backgroundColor: '#3B82F6',
-    marginHorizontal: 24,
-    paddingVertical: 16,
-    borderRadius: 12,
+    backgroundColor: palette.primaryDark,
+    marginHorizontal: spacing.xxl,
+    height: 56,
+    justifyContent: 'center',
+    borderRadius: radii.card,
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   purchaseButtonDisabled: {
-    backgroundColor: '#93C5FD',
+    opacity: 0.5,
   },
   purchaseButtonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '600',
+    ...type.button,
+    color: palette.darkBackground,
   },
   restoreButton: {
-    marginHorizontal: 24,
-    paddingVertical: 12,
+    marginHorizontal: spacing.xxl,
+    paddingVertical: spacing.md,
     alignItems: 'center',
   },
   restoreButtonText: {
-    color: '#3B82F6',
-    fontSize: 16,
-    fontWeight: '500',
+    fontFamily: fonts.bold,
+    fontSize: 14,
+    color: palette.primaryDark,
   },
   termsText: {
-    fontSize: 12,
-    color: '#9CA3AF',
+    ...type.meta,
+    color: palette.darkTextMuted,
     textAlign: 'center',
-    paddingHorizontal: 24,
-    lineHeight: 18,
+    paddingHorizontal: spacing.xxl,
+    lineHeight: 17,
   },
   bottomPadding: {
     height: 40,
   },
   // Active subscription styles
   activeSubscriptionContainer: {
-    backgroundColor: '#3B82F6',
     padding: 32,
     alignItems: 'center',
   },
   crownIcon: {
-    fontSize: 64,
-    marginBottom: 16,
+    width: 64,
+    height: 64,
+    borderRadius: radii.cardLarge,
+    backgroundColor: 'rgba(142, 123, 255, 0.18)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: spacing.lg,
   },
   activeTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: 8,
+    ...type.display,
+    fontSize: 28,
+    lineHeight: 34,
+    color: palette.darkTextPrimary,
+    marginBottom: spacing.sm,
   },
   activeSubtitle: {
-    fontSize: 16,
-    color: '#BFDBFE',
+    fontFamily: fonts.semibold,
+    fontSize: 14,
+    color: palette.darkTextSecondary,
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: spacing.xxl,
   },
   subscriptionDetails: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: palette.darkSurface,
+    borderWidth: 1,
+    borderColor: palette.darkLine,
+    borderRadius: radii.cardLarge,
+    padding: spacing.lg,
     width: '100%',
-    marginBottom: 24,
+    marginBottom: spacing.xxl,
   },
   detailRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 8,
+    paddingVertical: spacing.sm,
   },
   detailLabel: {
-    fontSize: 14,
-    color: '#BFDBFE',
+    ...type.bodySmall,
+    color: palette.darkTextSecondary,
   },
   detailValue: {
-    fontSize: 14,
-    color: '#FFFFFF',
-    fontWeight: '600',
+    fontFamily: fonts.bold,
+    fontSize: 13,
+    color: palette.darkTextPrimary,
   },
   cancelButton: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
+    backgroundColor: palette.darkElevated,
+    paddingHorizontal: spacing.xxl,
+    paddingVertical: spacing.md,
+    borderRadius: radii.iconButton,
   },
   cancelButtonText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '500',
+    fontFamily: fonts.bold,
+    fontSize: 13,
+    color: palette.darkTextPrimary,
   },
 });
 

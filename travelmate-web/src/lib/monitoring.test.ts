@@ -116,6 +116,12 @@ describe('monitoring', () => {
 
       expect(result).toEqual(errors);
     });
+
+    it('should ignore corrupted stored errors', () => {
+      mockSessionStorage.getItem.mockReturnValueOnce('{invalid json');
+
+      expect(errorTracker.getRecentErrors()).toEqual([]);
+    });
   });
 
   describe('performanceMonitor', () => {
@@ -171,6 +177,12 @@ describe('monitoring', () => {
       const result = performanceMonitor.getMetrics();
 
       expect(result).toEqual(metrics);
+    });
+
+    it('should ignore corrupted stored metrics', () => {
+      mockSessionStorage.getItem.mockReturnValueOnce('{invalid json');
+
+      expect(performanceMonitor.getMetrics()).toEqual([]);
     });
 
     it('should clear stored metrics', () => {

@@ -44,7 +44,7 @@ const WalletConnect: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] relative overflow-hidden">
+    <div className="min-h-screen bg-sand-100 dark:bg-[#0a0a0b] relative overflow-hidden">
       <PageBackground />
 
       {/* Navigation */}
@@ -75,12 +75,12 @@ const WalletConnect: React.FC = () => {
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-orange-400 to-pink-500 rounded-3xl flex items-center justify-center shadow-2xl"
+              className="w-24 h-24 mx-auto mb-6 bg-primary-100 dark:bg-primary-900/30 rounded-3xl flex items-center justify-center shadow-[0_10px_30px_rgba(16,16,20,0.1)]"
             >
               <span className="text-5xl">👛</span>
             </motion.div>
 
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-3">
+            <h2 className="text-2xl font-extrabold tracking-tight text-ink dark:text-white mb-3">
               MetaMask 지갑 연결
             </h2>
             <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-md mx-auto">
@@ -96,7 +96,7 @@ const WalletConnect: React.FC = () => {
               {features.map((feature, index) => (
                 <div
                   key={index}
-                  className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-xl p-4 border border-gray-200/50 dark:border-gray-700/50 flex items-center gap-3"
+                  className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-xl p-4 border border-transparent dark:border-gray-700/50 flex items-center gap-3"
                 >
                   <span className="text-2xl">{feature.icon}</span>
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -115,7 +115,7 @@ const WalletConnect: React.FC = () => {
                   href="https://metamask.io/download/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-block px-8 py-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold rounded-xl hover:opacity-90 transition-opacity"
+                  className="inline-block px-8 py-4 bg-primary-500 hover:bg-primary-700 text-white font-bold rounded-[15px] transition-colors"
                 >
                   MetaMask 설치하기
                 </a>
@@ -126,7 +126,7 @@ const WalletConnect: React.FC = () => {
                 transition={{ delay: 0.2 }}
                 onClick={handleConnect}
                 disabled={isConnecting}
-                className="px-8 py-4 bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center gap-3 mx-auto"
+                className="px-8 py-4 bg-primary-500 hover:bg-primary-700 text-white font-bold rounded-[15px] shadow-[0_8px_22px_rgba(74,58,255,0.3)] transition-colors disabled:opacity-50 flex items-center gap-3 mx-auto"
               >
                 {isConnecting ? (
                   <>
@@ -150,7 +150,7 @@ const WalletConnect: React.FC = () => {
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="mt-4 text-red-500 dark:text-red-400"
+                className="mt-4 text-danger dark:text-red-400"
               >
                 {error}
               </motion.p>
@@ -164,20 +164,20 @@ const WalletConnect: React.FC = () => {
             {/* 상태 배지 */}
             <div className="flex items-center justify-center gap-3">
               <span
-                className={`px-4 py-2 rounded-full text-sm font-medium ${
+                className={`px-4 py-2 rounded-full text-sm font-bold ${
                   isVerified
-                    ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
-                    : 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'
+                    ? 'bg-green-100 dark:bg-green-900/30 text-success dark:text-green-400'
+                    : 'bg-[#FDF3E4] dark:bg-amber-900/30 text-rarity-legendary dark:text-amber-400'
                 }`}
               >
                 {isVerified ? '✓ 검증됨' : '⏳ 검증 대기'}
               </span>
               {networkInfo && (
                 <span
-                  className={`px-4 py-2 rounded-full text-sm font-medium ${
+                  className={`px-4 py-2 rounded-full text-sm font-bold ${
                     networkInfo.isTestnet
-                      ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400'
-                      : 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                      ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-500 dark:text-primary-400'
+                      : 'bg-ink text-white'
                   }`}
                 >
                   {networkInfo.name}
@@ -189,7 +189,7 @@ const WalletConnect: React.FC = () => {
             <motion.div
               {...fadeInUp}
               transition={{ delay: 0.1 }}
-              className="bg-gradient-to-br from-violet-600 to-pink-600 rounded-2xl p-6 text-white shadow-xl"
+              className="bg-ink rounded-2xl p-6 text-white shadow-[0_10px_30px_rgba(16,16,20,0.1)]"
             >
               <div className="flex items-center gap-4 mb-6">
                 <img
@@ -198,7 +198,7 @@ const WalletConnect: React.FC = () => {
                   className="w-12 h-12"
                 />
                 <div>
-                  <p className="text-sm opacity-80">지갑 주소</p>
+                  <p className="text-sm text-[#A0A0AC]">지갑 주소</p>
                   <p className="font-mono font-medium" title={walletAddress || ''}>
                     {shortAddress}
                   </p>
@@ -206,21 +206,21 @@ const WalletConnect: React.FC = () => {
               </div>
 
               {walletInfo && (
-                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/20">
+                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/10">
                   <div>
-                    <p className="text-sm opacity-80">잔액</p>
+                    <p className="text-sm text-[#A0A0AC]">잔액</p>
                     <p className="font-semibold">{walletInfo.balanceFormatted}</p>
                   </div>
                   <div>
-                    <p className="text-sm opacity-80">수집한 NFT</p>
+                    <p className="text-sm text-[#A0A0AC]">수집한 NFT</p>
                     <p className="font-semibold">{walletInfo.nftCount}개</p>
                   </div>
                   <div>
-                    <p className="text-sm opacity-80">네트워크</p>
+                    <p className="text-sm text-[#A0A0AC]">네트워크</p>
                     <p className="font-semibold">{walletInfo.networkName}</p>
                   </div>
                   <div>
-                    <p className="text-sm opacity-80">Chain ID</p>
+                    <p className="text-sm text-[#A0A0AC]">Chain ID</p>
                     <p className="font-semibold">{walletInfo.chainId}</p>
                   </div>
                 </div>
@@ -232,7 +232,7 @@ const WalletConnect: React.FC = () => {
               <motion.div
                 {...fadeInUp}
                 transition={{ delay: 0.2 }}
-                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50"
+                className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-transparent dark:border-gray-700/50"
               >
                 <h4 className="font-semibold text-gray-800 dark:text-white mb-4">네트워크 정보</h4>
                 <div className="space-y-3 text-sm">
@@ -255,7 +255,7 @@ const WalletConnect: React.FC = () => {
                       href={networkInfo.blockExplorerUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="block text-violet-600 dark:text-violet-400 hover:underline"
+                      className="block text-primary-500 dark:text-primary-400 hover:underline"
                     >
                       블록 탐색기 열기 →
                     </a>
@@ -268,19 +268,19 @@ const WalletConnect: React.FC = () => {
             <motion.div {...fadeInUp} transition={{ delay: 0.3 }} className="space-y-3">
               <button
                 onClick={() => navigate('/nft')}
-                className="w-full py-4 bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold rounded-xl hover:opacity-90 transition-opacity"
+                className="w-full py-4 bg-primary-500 hover:bg-primary-700 text-white font-bold rounded-[15px] transition-colors"
               >
                 NFT 수집하러 가기
               </button>
               <button
                 onClick={() => navigate('/nft/collection')}
-                className="w-full py-4 bg-white dark:bg-gray-800 text-gray-800 dark:text-white font-semibold rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                className="w-full py-4 bg-sand-200 dark:bg-gray-800 text-ink dark:text-white font-bold rounded-[15px] hover:bg-sand-300 dark:hover:bg-gray-700 transition-colors"
               >
                 내 컬렉션 보기
               </button>
               <button
                 onClick={handleDisconnect}
-                className="w-full py-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 font-semibold rounded-xl hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+                className="w-full py-4 bg-white dark:bg-red-900/20 border-[1.5px] border-[#F0D6D3] text-danger dark:text-red-400 font-bold rounded-[15px] hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
               >
                 연결 해제
               </button>
@@ -292,7 +292,7 @@ const WalletConnect: React.FC = () => {
         <motion.div
           {...fadeInUp}
           transition={{ delay: 0.4 }}
-          className="mt-12 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50"
+          className="mt-12 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-transparent dark:border-gray-700/50"
         >
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-3 flex items-center gap-2">
             <span>💜</span> Polygon 네트워크란?
@@ -311,7 +311,7 @@ const WalletConnect: React.FC = () => {
               href="https://faucet.polygon.technology/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-violet-600 dark:text-violet-400 hover:underline"
+              className="text-primary-500 dark:text-primary-400 hover:underline"
             >
               Polygon Faucet
             </a>

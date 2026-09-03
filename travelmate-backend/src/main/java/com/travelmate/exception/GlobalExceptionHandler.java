@@ -34,7 +34,7 @@ public class GlobalExceptionHandler {
         log.error("Business exception: {}", ex.getMessage());
 
         ErrorResponse errorResponse = ErrorResponse.builder()
-                .code(ex.getErrorCode() != null ? ex.getErrorCode().getCode() : ErrorCode.INTERNAL_ERROR.getCode())
+                .code(ex.getErrorCodeStr())
                 .status(ex.getStatus().value())
                 .error(ex.getStatus().getReasonPhrase())
                 .message(ex.getMessage())
@@ -102,6 +102,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex, WebRequest request) {
         log.warn("Invalid argument: {}", ex.getMessage());
+
+        ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.INVALID_INPUT, getPath(request), ex.getMessage());
+        errorResponse.setTraceId(getTraceId());
+
+        return ResponseEntity.badRequest().body(errorResponse);
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalStateException(IllegalStateException ex, WebRequest request) {
+        log.warn("Invalid state: {}", ex.getMessage());
 
         ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.INVALID_INPUT, getPath(request), ex.getMessage());
         errorResponse.setTraceId(getTraceId());

@@ -8,6 +8,7 @@ import {
   aiRecommendationService,
   PlaceRecommendation,
   PlaceRecommendationRequest,
+  isPlaceRecommendationRequestValidationError,
 } from '../../services/aiRecommendationService';
 
 interface PlaceRecommendationsProps {
@@ -74,6 +75,8 @@ const PlaceRecommendations: React.FC<PlaceRecommendationsProps> = ({
     } catch (err) {
       if (err instanceof GeolocationPositionError) {
         setError('위치 권한을 허용해주세요.');
+      } else if (isPlaceRecommendationRequestValidationError(err)) {
+        setError(err.message);
       } else {
         setError('추천을 불러오는 중 오류가 발생했습니다.');
       }
@@ -100,7 +103,7 @@ const PlaceRecommendations: React.FC<PlaceRecommendationsProps> = ({
       <div
         key={place.placeId}
         onClick={() => onPlaceSelect?.(place)}
-        className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer"
+        className="p-4 bg-white dark:bg-gray-800 rounded-2xl border border-sand-300 dark:border-gray-700 hover:shadow-[0_10px_30px_rgba(16,16,20,0.08)] transition-shadow cursor-pointer"
       >
         {/* Image */}
         {place.imageUrl && (
@@ -117,9 +120,7 @@ const PlaceRecommendations: React.FC<PlaceRecommendationsProps> = ({
         {/* Content */}
         <div className="space-y-2">
           <div className="flex items-start justify-between gap-2">
-            <h3 className="font-semibold text-gray-900 dark:text-white line-clamp-1">
-              {place.name}
-            </h3>
+            <h3 className="font-extrabold text-ink dark:text-white line-clamp-1">{place.name}</h3>
             <span className="flex-shrink-0 text-sm text-gray-500 dark:text-gray-400">
               {place.distance?.toFixed(1)}km
             </span>
@@ -131,11 +132,11 @@ const PlaceRecommendations: React.FC<PlaceRecommendationsProps> = ({
 
           {/* Category & Rating */}
           <div className="flex items-center gap-2 text-sm">
-            <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">
+            <span className="px-2 py-0.5 bg-primary-100 dark:bg-primary-900/30 text-primary-500 dark:text-primary-400 rounded-[7px] font-semibold">
               {place.category}
             </span>
             {place.rating > 0 && (
-              <span className="flex items-center gap-1 text-yellow-500">
+              <span className="flex items-center gap-1 text-rarity-legendary">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-4 w-4"
@@ -154,12 +155,12 @@ const PlaceRecommendations: React.FC<PlaceRecommendationsProps> = ({
 
           {/* Reasons */}
           {place.reasons && place.reasons.length > 0 && (
-            <div className="pt-2 border-t dark:border-gray-700">
+            <div className="pt-2 border-t border-sand-300 dark:border-gray-700">
               <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">AI 추천 이유:</p>
               <ul className="text-xs text-gray-600 dark:text-gray-400 space-y-0.5">
                 {place.reasons.slice(0, 2).map((reason, idx) => (
                   <li key={idx} className="flex items-start gap-1">
-                    <span className="text-blue-500">•</span>
+                    <span className="text-primary-500">•</span>
                     {reason}
                   </li>
                 ))}
@@ -170,12 +171,12 @@ const PlaceRecommendations: React.FC<PlaceRecommendationsProps> = ({
           {/* Additional Info */}
           <div className="flex flex-wrap gap-2 pt-1">
             {place.bestTimeToVisit && (
-              <span className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded">
+              <span className="text-xs px-2 py-0.5 bg-sand-100 dark:bg-gray-700 text-[#74747F] dark:text-gray-400 rounded-[7px]">
                 🕐 {place.bestTimeToVisit}
               </span>
             )}
             {place.estimatedDuration && (
-              <span className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded">
+              <span className="text-xs px-2 py-0.5 bg-sand-100 dark:bg-gray-700 text-[#74747F] dark:text-gray-400 rounded-[7px]">
                 ⏱️ {place.estimatedDuration}
               </span>
             )}
@@ -186,9 +187,11 @@ const PlaceRecommendations: React.FC<PlaceRecommendationsProps> = ({
   };
 
   return (
-    <div className={`bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 ${className}`}>
+    <div
+      className={`bg-white dark:bg-gray-900 rounded-2xl shadow-[0_10px_30px_rgba(16,16,20,0.06)] p-6 ${className}`}
+    >
       {/* Header */}
-      <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+      <h2 className="text-xl font-extrabold tracking-tight text-ink dark:text-white mb-6 flex items-center gap-2">
         <span className="text-2xl">📍</span>
         AI 장소 추천
       </h2>
@@ -197,7 +200,7 @@ const PlaceRecommendations: React.FC<PlaceRecommendationsProps> = ({
       <div className="space-y-4 mb-6">
         {/* Radius */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-xs font-extrabold tracking-wide text-[#8A8A95] dark:text-gray-300 mb-2">
             반경: {filters.radiusKm}km
           </label>
           <input
@@ -206,13 +209,13 @@ const PlaceRecommendations: React.FC<PlaceRecommendationsProps> = ({
             max="20"
             value={filters.radiusKm}
             onChange={e => setFilters(prev => ({ ...prev, radiusKm: Number(e.target.value) }))}
-            className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer"
+            className="w-full h-2 bg-[#EDECE8] dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-primary-500"
           />
         </div>
 
         {/* Categories */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-xs font-extrabold tracking-wide text-[#8A8A95] dark:text-gray-300 mb-2">
             카테고리
           </label>
           <div className="flex flex-wrap gap-2">
@@ -220,10 +223,10 @@ const PlaceRecommendations: React.FC<PlaceRecommendationsProps> = ({
               <button
                 key={cat.value}
                 onClick={() => handleCategoryToggle(cat.value)}
-                className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
+                className={`px-3 py-1.5 rounded-[10px] text-sm font-bold transition-colors ${
                   filters.categories.includes(cat.value)
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                    ? 'bg-ink text-white'
+                    : 'bg-sand-100 dark:bg-gray-800 text-[#4A4A55] dark:text-gray-300 hover:bg-sand-200 dark:hover:bg-gray-700'
                 }`}
               >
                 {cat.icon} {cat.label}
@@ -234,7 +237,7 @@ const PlaceRecommendations: React.FC<PlaceRecommendationsProps> = ({
 
         {/* Time of Day */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-xs font-extrabold tracking-wide text-[#8A8A95] dark:text-gray-300 mb-2">
             시간대
           </label>
           <div className="flex gap-2">
@@ -242,10 +245,10 @@ const PlaceRecommendations: React.FC<PlaceRecommendationsProps> = ({
               <button
                 key={time.value}
                 onClick={() => setFilters(prev => ({ ...prev, timeOfDay: time.value }))}
-                className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                className={`px-3 py-1.5 rounded-[10px] text-sm font-bold transition-colors ${
                   filters.timeOfDay === time.value
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                    ? 'bg-ink text-white'
+                    : 'bg-sand-100 dark:bg-gray-800 text-[#4A4A55] dark:text-gray-300 hover:bg-sand-200 dark:hover:bg-gray-700'
                 }`}
               >
                 {time.label}
@@ -259,7 +262,7 @@ const PlaceRecommendations: React.FC<PlaceRecommendationsProps> = ({
       <button
         onClick={handleGetRecommendations}
         disabled={isLoading}
-        className="w-full py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-medium hover:opacity-90 disabled:opacity-50 transition-opacity flex items-center justify-center gap-2"
+        className="w-full py-3 bg-primary-500 hover:bg-primary-700 text-white rounded-[13px] font-bold shadow-[0_8px_22px_rgba(74,58,255,0.3)] disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
       >
         {isLoading ? (
           <>
@@ -287,7 +290,7 @@ const PlaceRecommendations: React.FC<PlaceRecommendationsProps> = ({
 
       {/* Error */}
       {error && (
-        <div className="mt-4 p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg">
+        <div className="mt-4 p-3 bg-danger/10 dark:bg-red-900/30 text-danger dark:text-red-400 rounded-lg">
           {error}
         </div>
       )}

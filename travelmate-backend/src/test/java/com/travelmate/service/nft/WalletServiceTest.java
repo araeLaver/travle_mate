@@ -3,6 +3,7 @@ package com.travelmate.service.nft;
 import com.travelmate.config.BlockchainConfig;
 import com.travelmate.dto.WalletDto;
 import com.travelmate.entity.User;
+import com.travelmate.exception.BusinessException;
 import com.travelmate.repository.UserRepository;
 import com.travelmate.repository.nft.UserNftCollectionRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -220,8 +221,13 @@ class WalletServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> walletService.verifyAndConnect(1L, request))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessageContaining("사용자를 찾을 수 없습니다");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("사용자를 찾을 수 없습니다")
+                    .satisfies(ex -> {
+                        BusinessException businessException = (BusinessException) ex;
+                        assertThat(businessException.getStatus().value()).isEqualTo(404);
+                        assertThat(businessException.getErrorCodeStr()).isEqualTo("USER_NOT_FOUND");
+                    });
         }
     }
 
@@ -278,8 +284,13 @@ class WalletServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> walletService.getWalletStatus(1L))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessageContaining("사용자를 찾을 수 없습니다");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("사용자를 찾을 수 없습니다")
+                    .satisfies(ex -> {
+                        BusinessException businessException = (BusinessException) ex;
+                        assertThat(businessException.getStatus().value()).isEqualTo(404);
+                        assertThat(businessException.getErrorCodeStr()).isEqualTo("USER_NOT_FOUND");
+                    });
         }
     }
 
@@ -318,8 +329,13 @@ class WalletServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> walletService.disconnectWallet(1L))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessageContaining("사용자를 찾을 수 없습니다");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("사용자를 찾을 수 없습니다")
+                    .satisfies(ex -> {
+                        BusinessException businessException = (BusinessException) ex;
+                        assertThat(businessException.getStatus().value()).isEqualTo(404);
+                        assertThat(businessException.getErrorCodeStr()).isEqualTo("USER_NOT_FOUND");
+                    });
         }
     }
 

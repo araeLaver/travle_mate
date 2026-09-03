@@ -52,19 +52,74 @@ export interface NearbyLocation {
   isCollected: boolean;
 }
 
+interface BackendCollectibleLocation {
+  id: number;
+  name: string;
+  description: string;
+  latitude: number;
+  longitude: number;
+  collectRadius: number;
+  category: string;
+  rarity: string;
+  country: string;
+  city?: string;
+  region: string;
+  imageUrl?: string;
+  nftImageUrl?: string;
+  pointReward: number;
+  isCollected?: boolean;
+  isActive?: boolean;
+  distance?: number;
+}
+
+interface BackendCollectionSummary {
+  id: number;
+  name: string;
+  imageUrl?: string;
+  nftImageUrl?: string;
+  rarity: string;
+  category: string;
+  city?: string;
+  country?: string;
+}
+
+interface BackendNftCollection {
+  id: number;
+  location: BackendCollectionSummary;
+  tokenId?: string;
+  mintStatus: string;
+  collectedAt: string;
+  earnedPoints: number;
+  isVerified: boolean;
+}
+
+interface BackendCollectNftResponse {
+  success: boolean;
+  message: string;
+  nftCollection?: BackendNftCollection;
+  earnedPoints?: number;
+}
+
 class NftService {
   async getNearbyLocations(
     latitude: number,
     longitude: number,
     radiusKm: number = 5
   ): Promise<NearbyLocation[]> {
-    return apiClient.get<NearbyLocation[]>(
-      `/nft/locations/nearby?lat=${latitude}&lng=${longitude}&radiusKm=${radiusKm}`
+    const locations = await apiClient.get<BackendCollectibleLocation[]>(
+      `/nft/nearby?latitude=${latitude}&longitude=${longitude}&radiusKm=${radiusKm}`
     );
+    return locations.map(location => this.toNearbyLocation(location));
   }
 
   async collectNft(request: CollectNftRequest): Promise<CollectNftResponse> {
-    return apiClient.post<CollectNftResponse>('/nft/collect', request);
+    const response = await apiClient.post<BackendCollectNftResponse>('/nft/collect', request);
+    return {
+      success: response.success,
+      message: response.message,
+      nft: response.nftCollection ? this.toNftCollection(response.nftCollection) : undefined,
+      pointsEarned: response.earnedPoints,
+    };
   }
 
   async getMyCollection(page: number = 0, size: number = 20): Promise<{
@@ -72,11 +127,23 @@ class NftService {
     totalElements: number;
     totalPages: number;
   }> {
-    return apiClient.get(`/nft/collection?page=${page}&size=${size}`);
+    const response = await apiClient.get<{
+      content: BackendNftCollection[];
+      totalElements: number;
+      totalPages: number;
+    }>(`/nft/my-collection?page=${page}&size=${size}`);
+
+    return {
+      ...response,
+      content: response.content.map(collection => this.toNftCollection(collection)),
+    };
   }
 
   async getLocationDetails(locationId: number): Promise<CollectibleLocation> {
-    return apiClient.get<CollectibleLocation>(`/nft/locations/${locationId}`);
+    const location = await apiClient.get<BackendCollectibleLocation>(
+      `/nft/collectible-locations/${locationId}`
+    );
+    return this.toCollectibleLocation(location);
   }
 
   async requestMinting(collectionId: number, walletAddress: string): Promise<{
@@ -126,6 +193,46 @@ class NftService {
       FAILED: '민팅 실패',
     };
     return labels[status] || status;
+  }
+
+  private toNearbyLocation(location: BackendCollectibleLocation): NearbyLocation {
+    return {
+      location: this.toCollectibleLocation(location),
+      distance: (location.distance || 0) / 1000,
+      isCollected: Boolean(location.isCollected),
+    };
+  }
+
+  private toCollectibleLocation(location: BackendCollectibleLocation): CollectibleLocation {
+    return {
+      id: location.id,
+      name: location.name,
+      description: location.description,
+      region: location.region || location.city || '',
+      country: location.country,
+      category: location.category,
+      rarity: location.rarity,
+      latitude: location.latitude,
+      longitude: location.longitude,
+      collectRadius: location.collectRadius,
+      imageUrl: location.imageUrl || location.nftImageUrl,
+      pointReward: location.pointReward,
+      isActive: location.isActive ?? true,
+    };
+  }
+
+  private toNftCollection(collection: BackendNftCollection): NftCollection {
+    return {
+      id: collection.id,
+      locationId: collection.location.id,
+      locationName: collection.location.name,
+      locationDescription: '',
+      rarity: collection.location.rarity,
+      imageUrl: collection.location.imageUrl || collection.location.nftImageUrl,
+      collectedAt: collection.collectedAt,
+      mintStatus: collection.mintStatus,
+      tokenId: collection.tokenId,
+    };
   }
 }
 

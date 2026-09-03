@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.fryndo.quick-tunnel</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>-lc</string>
+    <string>cd /Volumes/WorkDrive/Develop/03_travle_mate &amp;&amp; exec /opt/homebrew/bin/cloudflared tunnel --no-autoupdate --url http://127.0.0.1:39080</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>HOME</key>
+    <string>/Users/down</string>
+    <key>PATH</key>
+    <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    <key>LOCAL_URL</key>
+    <string>http://127.0.0.1:39080</string>
+  </dict>
+  <key>WorkingDirectory</key>
+  <string>/Users/down</string>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>StandardOutPath</key>
+  <string>/Users/down/Library/Logs/Fryndo/quick-tunnel-launchd.out.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/down/Library/Logs/Fryndo/quick-tunnel-launchd.err.log</string>
+</dict>
+</plist>
