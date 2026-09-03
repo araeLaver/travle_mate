@@ -29,10 +29,10 @@
     "ios": "4+",
     "android": "Everyone"
   },
-  "supportUrl": "https://travelmate.app/support",
-  "privacyPolicyUrl": "https://travelmate.app/privacy",
-  "termsOfServiceUrl": "https://travelmate.app/terms",
-  "marketingUrl": "https://travelmate.app",
+  "supportUrl": "https://fryndo.com/legal",
+  "privacyPolicyUrl": "https://fryndo.com/legal",
+  "termsOfServiceUrl": "https://fryndo.com/legal",
+  "marketingUrl": "https://fryndo.com",
   "screenshots": {
     "ios": {
       "iPhone6.5": [
