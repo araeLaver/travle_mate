@@ -86,3 +86,4 @@ credentials.json
 fcm-service-account.json
 *firebase-adminsdk*.json
 docker-compose.override.yml
+google-play-service-account.json
