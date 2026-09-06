@@ -51,13 +51,20 @@ public class PolygonBlockchainService {
     @Value("${spring.profiles.active:}")
     private String activeProfiles;
 
+    // 공개 베타는 온체인 민팅 없이 출시 (BLOCKCHAIN_REQUIRE_IN_PROD=false로 명시적 opt-out)
+    @Value("${blockchain.require-in-prod:true}")
+    private boolean requireInProd;
+
     private static final BigInteger GAS_LIMIT = BigInteger.valueOf(300000);
     private static final BigInteger GAS_PRICE = BigInteger.valueOf(30_000_000_000L); // 30 Gwei
 
     @PostConstruct
     void validateProductionConfiguration() {
         if (isProdProfile() && !blockchainConfig.isBlockchainEnabled()) {
-            throw new IllegalStateException("Production NFT minting must enable blockchain.enabled=true");
+            if (requireInProd) {
+                throw new IllegalStateException("Production NFT minting must enable blockchain.enabled=true");
+            }
+            log.warn("블록체인 비활성 상태로 프로덕션 기동 (blockchain.require-in-prod=false) — 온체인 민팅 불가");
         }
     }
 

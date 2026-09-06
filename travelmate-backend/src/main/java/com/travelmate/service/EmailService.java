@@ -39,7 +39,13 @@ public class EmailService {
     public String sendVerificationEmail(String email, String fullName) {
         String token = UUID.randomUUID().toString();
 
-        tokenStorageService.saveEmailVerificationToken(token, email);
+        // 인증 토큰 저장 실패(Redis 장애 등)가 가입 자체를 롤백시키면 안 된다 — 인증 메일은 재발송 가능
+        try {
+            tokenStorageService.saveEmailVerificationToken(token, email);
+        } catch (Exception e) {
+            log.warn("이메일 인증 토큰 저장 실패 — 가입은 계속 진행: {}", e.getMessage());
+            return null;
+        }
         String verificationLink = frontendUrl + "/verify-email?token=" + token;
 
         if (mailEnabled && mailSender.isPresent() && !mailFrom.isEmpty()) {

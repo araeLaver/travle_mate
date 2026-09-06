@@ -35,6 +35,10 @@ public class PhoneVerificationService {
     @Value("${spring.profiles.active:}")
     private String activeProfiles;
 
+    // 공개 베타는 실제 SMS 발송 없이 출시 (SMS_REQUIRE_IN_PROD=false로 명시적 opt-out)
+    @Value("${sms.require-in-prod:true}")
+    private boolean requireInProd;
+
     private static final SecureRandom RANDOM = new SecureRandom();
 
     // 인메모리 인증 코드 저장 (프로덕션에서는 Redis 권장)
@@ -45,7 +49,10 @@ public class PhoneVerificationService {
     @PostConstruct
     void validateProductionConfiguration() {
         if (isProdProfile() && (smsProvider == null || smsProvider.isBlank() || "mock".equalsIgnoreCase(smsProvider))) {
-            throw new IllegalStateException("Production sms.provider must be configured with a real SMS provider");
+            if (requireInProd) {
+                throw new IllegalStateException("Production sms.provider must be configured with a real SMS provider");
+            }
+            log.warn("SMS mock 제공자로 프로덕션 기동 (sms.require-in-prod=false) — 실제 문자 발송 안 됨");
         }
     }
 
