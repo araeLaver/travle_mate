@@ -191,7 +191,7 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
-            <Text style={styles.statValue}>{user.totalPoints.toLocaleString()}</Text>
+            <Text style={styles.statValue}>{(user.totalPoints ?? 0).toLocaleString()}</Text>
             <Text style={styles.statLabel}>포인트</Text>
           </View>
           <View style={styles.statDivider} />
@@ -222,7 +222,7 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
           styles={styles}
           icon="wallet"
           label="포인트 내역"
-          subtext={`${user.totalPoints.toLocaleString()} P`}
+          subtext={`${(user.totalPoints ?? 0).toLocaleString()} P`}
           onPress={() => {/* 포인트 내역 페이지 */}}
         />
       </View>

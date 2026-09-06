@@ -72,8 +72,9 @@ public class TravelGroupService {
     @Transactional(readOnly = true)
     public List<TravelGroupDto.Response> getGroups(TravelGroup.Purpose purpose, 
                                                   Double latitude, Double longitude, Double radiusKm) {
-        List<TravelGroup> groups = travelGroupRepository.findAvailableGroups(
-            purpose, latitude, longitude, radiusKm);
+        List<TravelGroup> groups = (latitude != null && longitude != null && radiusKm != null)
+            ? travelGroupRepository.findAvailableGroupsNear(purpose, latitude, longitude, radiusKm)
+            : travelGroupRepository.findAvailableGroups(purpose);
         
         return groups.stream()
             .map(this::convertToDto)

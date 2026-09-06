@@ -43,6 +43,7 @@ public class UserService {
     private final ReportService reportService;
     private final BetaInviteService betaInviteService;
     private final UserTrustScoreRepository trustScoreRepository;
+    private final com.travelmate.repository.nft.UserPointRepository userPointRepository;
 
     public UserDto.Response registerUser(UserDto.RegisterRequest request) {
         // 베타 모드 체크
@@ -253,6 +254,10 @@ public class UserService {
             .trustScore(getTrustScoreForUser(user.getId()))
             .lastActivityAt(user.getLastActivityAt())
             .createdAt(user.getCreatedAt())
+            .totalNftsCollected(user.getTotalNftsCollected() != null ? user.getTotalNftsCollected() : 0)
+            .totalPoints(userPointRepository.findByUserId(user.getId())
+                .map(com.travelmate.entity.nft.UserPoint::getTotalPoints)
+                .orElse(0L))
             .build();
     }
 

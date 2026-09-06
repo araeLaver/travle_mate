@@ -89,6 +89,8 @@ public class UserDto {
         private Integer trustScore;
         private LocalDateTime lastActivityAt;
         private LocalDateTime createdAt;
+        private Integer totalNftsCollected;
+        private Long totalPoints;
     }
     
     @Data
