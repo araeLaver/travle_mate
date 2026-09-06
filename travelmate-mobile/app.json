@@ -50,7 +50,7 @@
         "backgroundColor": "#F5F4F1"
       },
       "package": "com.fryndo.app",
-      "versionCode": 2,
+      "versionCode": 3,
       "permissions": [
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION",
@@ -141,7 +141,8 @@
           "project": "fryndo-mobile"
         }
       ],
-      "expo-font"
+      "expo-font",
+      "expo-web-browser"
     ],
     "extra": {
       "apiUrl": "https://api.fryndo.com",
@@ -155,19 +156,7 @@
         "projectId": "f9508e1a-a6fc-4572-801b-a96b72d670ee"
       }
     },
-    "hooks": {
-      "postPublish": [
-        {
-          "file": "@sentry/react-native/expo",
-          "config": {
-            "organization": "fryndo",
-            "project": "fryndo-mobile"
-          }
-        }
-      ]
-    },
     "owner": "downlab",
-    "privacy": "public",
     "platforms": [
       "ios",
       "android"

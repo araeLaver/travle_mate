@@ -147,7 +147,8 @@ const debugLog = (...args: unknown[]): void => {
 // Configure notification behavior
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
   }),
@@ -504,12 +505,8 @@ class NotificationService {
    * Cleanup listeners
    */
   cleanup(): void {
-    if (this.notificationListener) {
-      Notifications.removeNotificationSubscription(this.notificationListener);
-    }
-    if (this.responseListener) {
-      Notifications.removeNotificationSubscription(this.responseListener);
-    }
+    this.notificationListener?.remove();
+    this.responseListener?.remove();
   }
 
   /**
