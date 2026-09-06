@@ -85,3 +85,4 @@ credentials.json
 # Firebase service account keys (secrets)
 fcm-service-account.json
 *firebase-adminsdk*.json
+docker-compose.override.yml

@@ -2,6 +2,16 @@
 
 (2026-08-31 갱신) EAS·Firebase·Google OAuth는 완료. 남은 항목만 운영자 작업 필요.
 
+## 2026-09-05 진행 (마퀴 스크린샷 + 런칭 버그 3건 수정)
+
+- **마퀴 스크린샷 확보 완료**: 로컬 백엔드(dev, :8180) + 에뮬레이터(Expo Go) 조합으로 데모 계정(demo@fryndo.com)에 시드 데이터(NFT 3개·1250포인트·여행그룹 2개·채팅 4메시지)를 구성하고 캡처. `store/screenshots/android/phone/`에 04_home / 05_collection / 06_chat_list / 07_chat_room / 08_profile 추가. **지도 화면은 Maps API 키 보류 결정으로 빈 지도라 미확보** — 키 발급 후 촬영 필요.
+- **런칭 버그 3건 발견·수정** (스크린샷 작업 중 실사용에서 발견):
+  1. `ProfileScreen.tsx` — `user.totalPoints`가 undefined일 때 `toLocaleString()` 호출로 **프로필 화면 렌더 크래시** → `?? 0` 가드.
+  2. `CacheConfig.java` — Redis 캐시 직렬화 매퍼에 JavaTimeModule이 없어 `@Cacheable`이 걸린 **`/api/users/me`가 500** (LocalDateTime 직렬화 실패) → 커스텀 ObjectMapper 등록.
+  3. `TravelGroupRepository.java` — 위치 파라미터 없이 `/api/groups` 호출 시 null Double이 bytea로 바인딩돼 **500 (`radians(bytea)`)** → 위치 필터 유무로 쿼리 분리.
+- **API 계약 보강**: `UserDto.Response`에 `totalNftsCollected`·`totalPoints` 추가 (모바일 홈/프로필 통계가 항상 0으로 나오던 계약 공백 해소).
+- 로컬 개발 인프라 메모: colima + `docker compose up -d postgres redis`. 호스트 5432/8080은 타 프로젝트가 점유 → postgres는 `docker-compose.override.yml`(gitignored)로 **15432**, 백엔드는 `SERVER_PORT=8180`으로 기동. 에뮬레이터 위치는 `appops set com.android.shell android:mock_location allow` 후 `cmd location providers add-test-provider`로 주입해야 fused가 인식.
+
 ## 2026-09-01 진행 (앱 출시 준비)
 
 - **프리뷰 APK 실기기 검증 완료**: 커밋 `4947797`(다크모드) preview APK를 Android 에뮬레이터(API 36)에 설치·구동 → 크래시 없이 실행, 로그인/회원가입 화면 디자인 시스템대로 렌더, 네비게이션 동작, **다크모드 OS 테마 전환 라이브 반응 확인**.
