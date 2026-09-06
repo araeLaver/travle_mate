@@ -2,6 +2,18 @@
 
 (2026-08-31 갱신) EAS·Firebase·Google OAuth는 완료. 남은 항목만 운영자 작업 필요.
 
+## 2026-09-06 진행 (Play 내부 테스트 출시 ✅ + Expo SDK 54 업그레이드)
+
+- **내부 테스트 트랙 출시 완료** — `1.0.0 (versionCode 4)`가 활성 상태로 내부 테스터에게 배포됨. 참여 링크는 Play Console → 내부 테스트 → 테스터 → "링크 복사".
+- **Expo SDK 52 → 54 업그레이드 (필수였음)**: Google Play는 2026-08-31부터 신규 앱에 `targetSdk 36`(Android 16)을 요구한다. 기존 `.aab`(vc2)는 targetSdk 34여서 Play API가 거부했다 — 콘솔에 수동 드래그해도 동일하게 거부됐을 것. Expo 52의 상한이 34이므로 54(RN 0.81 / targetSdk 36)로 올려 재빌드했다. 세부는 커밋 `9b61fc0` 참조.
+- **업로드 자동화 구축**: Play Console에는 더 이상 "API 액세스" 메뉴가 없다. 현행 경로는 GCP 서비스 계정 → Play Console 사용자 초대다.
+  - `gcloud services enable androidpublisher.googleapis.com --project=fryndo-23e4a`
+  - 서비스 계정 `fryndo-play-publisher@fryndo-23e4a.iam.gserviceaccount.com`, 키는 `travelmate-mobile/google-play-service-account.json`(gitignore, `eas.json`이 참조)
+  - Play Console → 사용자 및 권한에서 위 이메일 초대, Fryndo 앱 권한 7개 부여
+  - 업로드: `rtk proxy npx --yes eas-cli@23.2.0 submit --platform android --profile preview --id <buildId> --non-interactive` (preview 프로파일 = internal 트랙)
+- **앱 콘텐츠 선언 10건 전부 완료**. 오늘 마무리한 것: 광고 ID 선언(=아니요. `.aab` 매니페스트에 `AD_ID` 권한도 광고 SDK도 없음을 확인), 개인정보처리방침 URL을 `fryndo.com/privacy`(웹에 라우트 없음 → 파킹 페이지)에서 실제로 살아있는 `https://fryndo-web.vercel.app/legal`로 교정. **DNS 연결 후 `https://fryndo.com/legal`로 다시 바꿀 것.**
+- **프로덕션까지 남은 관문(시간 소요)**: 개인 개발자 계정은 프로덕션 액세스 신청 전에 **12명 이상 테스터로 14일 이상 비공개 테스트**를 실행해야 한다. 내부 테스트는 이 요건에 산입되지 않는다.
+
 ## 2026-09-05 진행 (마퀴 스크린샷 + 런칭 버그 3건 수정)
 
 - **마퀴 스크린샷 확보 완료**: 로컬 백엔드(dev, :8180) + 에뮬레이터(Expo Go) 조합으로 데모 계정(demo@fryndo.com)에 시드 데이터(NFT 3개·1250포인트·여행그룹 2개·채팅 4메시지)를 구성하고 캡처. `store/screenshots/android/phone/`에 04_home / 05_collection / 06_chat_list / 07_chat_room / 08_profile 추가. **지도 화면은 Maps API 키 보류 결정으로 빈 지도라 미확보** — 키 발급 후 촬영 필요.
