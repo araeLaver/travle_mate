@@ -7,12 +7,17 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:383693754351:android:3f3d125e85f53fff87f01a",
+        "mobilesdk_app_id": "1:383693754351:android:809b1327f2ac588287f01a",
         "android_client_info": {
-          "package_name": "com.fryndo.app"
+          "package_name": "com.doorimate.app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "383693754351-fatu4q4r7p5stpqd237bngbjh3hinais.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDINhei3gJA_6KkUpuz1tepf8BCrWAITHs"
@@ -20,7 +25,55 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "383693754351-fatu4q4r7p5stpqd237bngbjh3hinais.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "383693754351-0m0n2dhcqrurbkjm29u97hnte2si2nln.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.fryndo.app"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:383693754351:android:3f3d125e85f53fff87f01a",
+        "android_client_info": {
+          "package_name": "com.fryndo.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "383693754351-fatu4q4r7p5stpqd237bngbjh3hinais.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDINhei3gJA_6KkUpuz1tepf8BCrWAITHs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "383693754351-fatu4q4r7p5stpqd237bngbjh3hinais.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "383693754351-0m0n2dhcqrurbkjm29u97hnte2si2nln.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.fryndo.app"
+              }
+            }
+          ]
         }
       }
     }
