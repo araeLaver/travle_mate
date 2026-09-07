@@ -53,7 +53,7 @@ public class PolygonBlockchainService {
 
     // 공개 베타는 온체인 민팅 없이 출시 (BLOCKCHAIN_REQUIRE_IN_PROD=false로 명시적 opt-out)
     @Value("${blockchain.require-in-prod:true}")
-    private boolean requireInProd;
+    private boolean requireInProd = true;
 
     private static final BigInteger GAS_LIMIT = BigInteger.valueOf(300000);
     private static final BigInteger GAS_PRICE = BigInteger.valueOf(30_000_000_000L); // 30 Gwei

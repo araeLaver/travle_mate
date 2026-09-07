@@ -1,19 +1,37 @@
 {
   "appName": {
-    "ko": "Fryndo - AI 여행 동반자",
-    "en": "Fryndo - AI Travel Companion"
+    "ko": "두리메이트 - 여행 동행 매칭",
+    "en": "Doorimate - Travel Companion Matching"
   },
   "shortDescription": {
     "ko": "AI로 여행 동행을 매칭하고, 특별한 장소를 나만의 컬렉션으로 모으는 여행 앱",
     "en": "Match travel companions with AI and collect the special places you visit."
   },
   "fullDescription": {
-    "ko": "Fryndo와 함께 여행을 더 특별하게.\n\nFryndo는 AI 기반 여행 동반자 앱입니다. 여행 스타일과 일정이 잘 맞는 동행을 추천받고, 함께 여행할 친구를 찾고, 특별한 장소를 나만의 컬렉션으로 모아보세요.\n\n■ 주요 기능\n· AI 동행 매칭 — 여행 스타일·일정·관심사를 바탕으로 잘 맞는 동행을 추천합니다\n· 그룹 여행 — 친구들과 그룹을 만들어 함께 계획하고 실시간으로 채팅하세요\n· 실시간 지도 — 주변의 특별한 장소를 지도에서 바로 확인하세요\n· 장소 컬렉션 — 방문한 특별한 장소를 디지털 컬렉션으로 모으고 희귀도별로 완성해 보세요\n· 오프라인 모드 — 인터넷 연결이 없어도 핵심 기능을 이용할 수 있어요\n\n■ 프리미엄\n· 무제한 컬렉션\n· 광고 제거\n· 프리미엄 전용 장소 이용\n· 상세 여행 분석\n\n안전한 동행 문화를 위해 첫 만남은 공개된 장소를 권장하며, 신고·차단 기능을 제공합니다.\n\n지금 Fryndo와 함께 여행을 시작하세요!",
-    "en": "Make your travels more special with Fryndo.\n\nFryndo is an AI-powered travel companion app. Get matched with travellers whose style and schedule fit yours, find friends to travel with, and gather the special places you visit into a collection of your own.\n\n■ Features\n· AI companion matching — recommendations based on travel style, dates and interests\n· Group travel — create a group with friends to plan together and chat in real time\n· Live map — see the special places around you right on the map\n· Place collection — collect the places you visit and complete them by rarity\n· Offline mode — core features keep working without a connection\n\n■ Premium\n· Unlimited collection\n· No ads\n· Premium-only places\n· Detailed travel analytics\n\nFor safety we recommend meeting in public places first, and reporting and blocking are always available.\n\nStart travelling with Fryndo today!"
+    "ko": "두리메이트와 함께 여행을 더 특별하게.\n\n두리메이트는 AI 기반 여행 동반자 앱입니다. 여행 스타일과 일정이 잘 맞는 동행을 추천받고, 함께 여행할 친구를 찾고, 특별한 장소를 나만의 컬렉션으로 모아보세요.\n\n■ 주요 기능\n· AI 동행 매칭 — 여행 스타일·일정·관심사를 바탕으로 잘 맞는 동행을 추천합니다\n· 그룹 여행 — 친구들과 그룹을 만들어 함께 계획하고 실시간으로 채팅하세요\n· 실시간 지도 — 주변의 특별한 장소를 지도에서 바로 확인하세요\n· 장소 컬렉션 — 방문한 특별한 장소를 디지털 컬렉션으로 모으고 희귀도별로 완성해 보세요\n· 오프라인 모드 — 인터넷 연결이 없어도 핵심 기능을 이용할 수 있어요\n\n■ 프리미엄\n· 무제한 컬렉션\n· 광고 제거\n· 프리미엄 전용 장소 이용\n· 상세 여행 분석\n\n안전한 동행 문화를 위해 첫 만남은 공개된 장소를 권장하며, 신고·차단 기능을 제공합니다.\n\n지금 두리메이트와 함께 여행을 시작하세요!",
+    "en": "Make your travels more special with Doorimate.\n\nDoorimate is an AI-powered travel companion app. Get matched with travellers whose style and schedule fit yours, find friends to travel with, and gather the special places you visit into a collection of your own.\n\n■ Features\n· AI companion matching — recommendations based on travel style, dates and interests\n· Group travel — create a group with friends to plan together and chat in real time\n· Live map — see the special places around you right on the map\n· Place collection — collect the places you visit and complete them by rarity\n· Offline mode — core features keep working without a connection\n\n■ Premium\n· Unlimited collection\n· No ads\n· Premium-only places\n· Detailed travel analytics\n\nFor safety we recommend meeting in public places first, and reporting and blocking are always available.\n\nStart travelling with Doorimate today!"
   },
   "keywords": {
-    "ko": ["여행", "동행", "여행친구", "컬렉션", "지도", "위치기반", "소셜", "그룹여행"],
-    "en": ["travel", "companion", "travel buddy", "collection", "map", "location-based", "social", "group travel"]
+    "ko": [
+      "여행",
+      "동행",
+      "여행친구",
+      "컬렉션",
+      "지도",
+      "위치기반",
+      "소셜",
+      "그룹여행"
+    ],
+    "en": [
+      "travel",
+      "companion",
+      "travel buddy",
+      "collection",
+      "map",
+      "location-based",
+      "social",
+      "group travel"
+    ]
   },
   "categories": {
     "ios": {
@@ -29,10 +47,10 @@
     "ios": "4+",
     "android": "Everyone"
   },
-  "supportUrl": "https://fryndo.com/legal",
-  "privacyPolicyUrl": "https://fryndo-web.vercel.app/legal",
-  "termsOfServiceUrl": "https://fryndo.com/legal",
-  "marketingUrl": "https://fryndo.com",
+  "supportUrl": "https://doorimate.com/legal",
+  "privacyPolicyUrl": "https://doorimate.com/legal",
+  "termsOfServiceUrl": "https://doorimate.com/legal",
+  "marketingUrl": "https://doorimate.com",
   "graphics": {
     "icon512": "./store/graphics/icon-512.png",
     "featureGraphic": "./store/graphics/feature-1024x500.png"
@@ -60,8 +78,8 @@
   },
   "releaseNotes": {
     "1.0.0": {
-      "ko": "Fryndo 첫 내부 테스트 버전입니다.\n\n- AI 동행 매칭, 그룹 여행, 실시간 채팅\n- 방문한 장소를 모으는 컬렉션\n- 라이트/다크 모드 지원",
-      "en": "The first internal test build of Fryndo.\n\n- AI companion matching, group travel, real-time chat\n- A collection of the places you visit\n- Light and dark mode"
+      "ko": "두리메이트 첫 내부 테스트 버전입니다.\n\n- AI 동행 매칭, 그룹 여행, 실시간 채팅\n- 방문한 장소를 모으는 컬렉션\n- 라이트/다크 모드 지원",
+      "en": "The first internal test build of Doorimate.\n\n- AI companion matching, group travel, real-time chat\n- A collection of the places you visit\n- Light and dark mode"
     }
   }
 }

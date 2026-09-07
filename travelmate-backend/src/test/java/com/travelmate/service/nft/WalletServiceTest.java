@@ -69,7 +69,7 @@ class WalletServiceTest {
             // Then
             assertThat(response).isNotNull();
             assertThat(response.getMessage()).contains(TEST_WALLET_ADDRESS);
-            assertThat(response.getMessage()).contains("Fryndo 지갑 연결 인증");
+            assertThat(response.getMessage()).contains("두리메이트 지갑 연결 인증");
             assertThat(response.getNonce()).isNotNull();
             assertThat(response.getNonce()).isNotEmpty();
             assertThat(response.getTimestamp()).isGreaterThan(0);

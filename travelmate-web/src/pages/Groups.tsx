@@ -193,8 +193,8 @@ const Groups: React.FC = () => {
     <div className="min-h-screen bg-sand-100 dark:bg-[#0a0a0b] relative overflow-hidden">
       <SEOHead
         title="여행 그룹 - 함께하는 여행"
-        description="Fryndo 여행 그룹에서 마음이 맞는 여행 메이트를 찾아보세요. 목적지별, 여행 스타일별 그룹을 검색하고 새로운 여행 동반자와 특별한 추억을 만드세요."
-        canonical="https://fryndo.com/groups"
+        description="두리메이트 여행 그룹에서 마음이 맞는 여행 메이트를 찾아보세요. 목적지별, 여행 스타일별 그룹을 검색하고 새로운 여행 동반자와 특별한 추억을 만드세요."
+        canonical="https://doorimate.com/groups"
       />
       <PageBackground />
 
@@ -204,7 +204,9 @@ const Groups: React.FC = () => {
           <div className="flex items-center justify-between">
             <button onClick={() => navigate('/')} className="flex items-center gap-2">
               <Logo size="md" />
-              <span className="font-extrabold tracking-tight text-ink dark:text-white">Fryndo</span>
+              <span className="font-extrabold tracking-tight text-ink dark:text-white">
+                Doorimate
+              </span>
             </button>
             <div className="flex items-center gap-3">
               <button

@@ -17,7 +17,7 @@ import ThemeToggle from '../components/ThemeToggle';
 import { useTutorial } from '../contexts/TutorialContext';
 
 const navItems = [
-  { label: '왜 Fryndo인가', href: '#why' },
+  { label: '왜 두리메이트인가', href: '#why' },
   { label: '안전 기준', href: '#safety' },
   { label: '사용 방법', href: '#how' },
 ];
@@ -79,9 +79,9 @@ const Home: React.FC = () => {
         aria-label="주요 메뉴"
       >
         <div className="mx-auto flex h-[76px] max-w-7xl items-center justify-between px-4 md:px-8">
-          <Link to="/" className="flex items-center gap-3" aria-label="Fryndo 홈">
+          <Link to="/" className="flex items-center gap-3" aria-label="두리메이트 홈">
             <Logo variant="gradient" size="md" />
-            <span className="text-xl font-extrabold tracking-tight text-ink">Fryndo</span>
+            <span className="text-xl font-extrabold tracking-tight text-ink">Doorimate</span>
           </Link>
 
           <div className="hidden items-center gap-1 md:flex">
@@ -146,8 +146,8 @@ const Home: React.FC = () => {
               </h1>
 
               <p className="mt-8 max-w-2xl text-lg leading-8 text-[#4A4A55]">
-                Fryndo는 목적지, 일정, 여행 성향, 검증 신호를 기준으로 지금 함께 움직일 수 있는 여행
-                메이트를 찾는 서비스입니다.
+                두리메이트는 목적지, 일정, 여행 성향, 검증 신호를 기준으로 지금 함께 움직일 수 있는
+                여행 메이트를 찾는 서비스입니다.
               </p>
 
               <div className="mt-10 flex flex-col gap-3 sm:flex-row">
@@ -255,7 +255,7 @@ const Home: React.FC = () => {
             <div className="mb-12 flex flex-col justify-between gap-6 md:flex-row md:items-end">
               <div>
                 <p className="text-sm font-extrabold uppercase tracking-[0.32em] text-primary-500">
-                  Why Fryndo
+                  Why Doorimate
                 </p>
                 <h2 className="mt-4 max-w-3xl font-display text-4xl font-black leading-[1.05] tracking-tight text-ink md:text-5xl">
                   그냥 친구 찾기가 아니라, 여행을 같이 완주할 사람 찾기.
@@ -296,8 +296,8 @@ const Home: React.FC = () => {
                 안전 기준을 숨기지 않습니다.
               </h2>
               <p className="mt-6 text-lg leading-8 text-[#4A4A55]">
-                Fryndo는 공개 베타 단계부터 신뢰 신호를 화면 전면에 둡니다. 빠른 매칭보다 안전하게
-                대화할 수 있는 맥락이 우선입니다.
+                두리메이트는 공개 베타 단계부터 신뢰 신호를 화면 전면에 둡니다. 빠른 매칭보다
+                안전하게 대화할 수 있는 맥락이 우선입니다.
               </p>
             </div>
 
@@ -380,7 +380,7 @@ const Home: React.FC = () => {
         <div className="mx-auto flex max-w-7xl flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
             <Logo variant="gradient" size="sm" />
-            <span className="text-xl font-extrabold tracking-tight text-ink">Fryndo</span>
+            <span className="text-xl font-extrabold tracking-tight text-ink">Doorimate</span>
             <span className="rounded-full bg-sand-100 px-3 py-1 text-xs font-extrabold text-[#74747F]">
               Public Beta
             </span>
@@ -397,7 +397,7 @@ const Home: React.FC = () => {
             </Link>
           </div>
           <p className="text-[13px] font-semibold text-[#9A9AA4]">
-            © 2026 Fryndo. Built for safer travel matching.
+            © 2026 Doorimate. Built for safer travel matching.
           </p>
         </div>
       </footer>

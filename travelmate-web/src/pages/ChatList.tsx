@@ -126,7 +126,7 @@ const ChatList: React.FC = () => {
       role="main"
       aria-label="채팅 목록"
     >
-      <SEOHead title="채팅 목록" description="Fryndo 채팅 목록" noIndex={true} />
+      <SEOHead title="채팅 목록" description="두리메이트 채팅 목록" noIndex={true} />
       <PageBackground />
 
       {/* Navigation */}

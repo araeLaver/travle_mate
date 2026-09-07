@@ -42,7 +42,7 @@ const Portfolio: React.FC = () => {
                   className="group-hover:scale-110 transition-transform duration-300"
                 />
                 <span className="text-xl font-extrabold tracking-tight text-ink dark:text-white">
-                  Fryndo
+                  Doorimate
                 </span>
               </Link>
 
@@ -559,7 +559,7 @@ const Portfolio: React.FC = () => {
             <div className="flex items-center gap-3">
               <Logo variant="gradient" size="md" />
               <span className="text-xl font-extrabold tracking-tight text-ink dark:text-white">
-                Fryndo
+                Doorimate
               </span>
             </div>
 
@@ -576,7 +576,7 @@ const Portfolio: React.FC = () => {
             </div>
 
             <div className="text-[13px] font-semibold text-[#9A9AA4] dark:text-gray-500">
-              © 2025 Fryndo
+              © 2025 Doorimate
             </div>
           </div>
         </div>

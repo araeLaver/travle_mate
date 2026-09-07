@@ -476,7 +476,7 @@ class AIRecommendationServiceTest {
             ChatResponse result = aiRecommendationService.chat(1L, request);
 
             // Then
-            assertThat(result.getMessage()).contains("Fryndo AI");
+            assertThat(result.getMessage()).contains("두리메이트 AI");
         }
 
         @Test

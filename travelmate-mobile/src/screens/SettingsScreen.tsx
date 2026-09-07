@@ -122,7 +122,7 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const handleContactSupport = () => {
-    Linking.openURL('mailto:support@fryndo.com?subject=Fryndo 앱 문의');
+    Linking.openURL('mailto:support@doorimate.com?subject=두리메이트 앱 문의');
   };
 
   const handleOpenPrivacyPolicy = () => {

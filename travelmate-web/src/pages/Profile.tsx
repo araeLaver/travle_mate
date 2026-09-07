@@ -209,7 +209,9 @@ const Profile: React.FC = () => {
           <div className="flex items-center justify-between">
             <button onClick={() => navigate('/')} className="flex items-center gap-2">
               <Logo size="md" />
-              <span className="font-extrabold tracking-tight text-ink dark:text-white">Fryndo</span>
+              <span className="font-extrabold tracking-tight text-ink dark:text-white">
+                Doorimate
+              </span>
             </button>
             <div className="flex items-center gap-3">
               <button

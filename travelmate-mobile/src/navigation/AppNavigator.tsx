@@ -1,5 +1,5 @@
 /**
- * App Navigator for Fryndo Mobile
+ * App Navigator for Doorimate Mobile
  */
 
 import React, { useMemo } from 'react';
@@ -183,7 +183,7 @@ const AppNavigator = () => {
   if (isLoading) {
     return (
       <View style={themedStyles.loadingContainer}>
-        <Text style={themedStyles.loadingText}>Fryndo</Text>
+        <Text style={themedStyles.loadingText}>Doorimate</Text>
       </View>
     );
   }

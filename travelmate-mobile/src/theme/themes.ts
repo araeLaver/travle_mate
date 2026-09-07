@@ -1,5 +1,5 @@
 /**
- * Fryndo design system — light & dark theme palettes.
+ * Doorimate design system — light & dark theme palettes.
  * Dark mapping per the design brief (04/07 — SCREENS · DARK):
  * primary flips to #8E7BFF with ink-colored content on it.
  */

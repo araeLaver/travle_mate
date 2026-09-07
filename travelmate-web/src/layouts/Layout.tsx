@@ -68,11 +68,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       {/* 헤더 */}
       <header className="header" data-testid="navbar">
         <div className="header-content">
-          <Link to="/dashboard" className="logo" aria-label="Fryndo 홈으로 이동">
+          <Link to="/dashboard" className="logo" aria-label="두리메이트 홈으로 이동">
             <span className="logo-icon" aria-hidden="true">
               <Logo size="sm" />
             </span>
-            Fryndo
+            Doorimate
           </Link>
           <div className="header-actions">
             {authService.isAuthenticated() ? (
@@ -109,12 +109,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
           <div className="sidebar-footer">
             {authService.isAuthenticated() ? (
-              <div className="promo-card" role="complementary" aria-label="Fryndo Plus 안내">
+              <div className="promo-card" role="complementary" aria-label="두리메이트 Plus 안내">
                 <div className="promo-icon" aria-hidden="true">
                   <Icon name="crown" size={20} color="#E0952A" />
                 </div>
                 <div className="promo-text">
-                  <p className="promo-title">Fryndo Plus</p>
+                  <p className="promo-title">Doorimate Plus</p>
                   <p className="promo-desc">희귀 스탬프 알림과 무제한 매칭을 이용해보세요</p>
                   <Link to="/payment" className="promo-cta">
                     7일 무료 체험

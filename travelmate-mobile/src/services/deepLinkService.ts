@@ -1,6 +1,6 @@
 /**
  * Deep Link Service
- * Handles URL scheme (fryndo://) and universal links (https://fryndo.com)
+ * Handles URL scheme (doorimate://) and universal links (https://doorimate.com)
  */
 
 import { Linking } from 'react-native';
@@ -31,7 +31,7 @@ const parsePositiveIntegerSegment = (value: string | undefined): number | null =
 
 export function parseDeepLink(url: string): DeepLinkRoute | null {
   try {
-    const parsed = new URL(url.replace('fryndo://', 'https://fryndo.com/'));
+    const parsed = new URL(url.replace('doorimate://', 'https://doorimate.com/'));
     const path = parsed.pathname.replace(/^\//, '').replace(/\/$/, '');
     const segments = path.split('/');
 
@@ -123,7 +123,7 @@ export async function initDeepLinks() {
 
 /** Linking config for React Navigation */
 export const linkingConfig = {
-  prefixes: ['fryndo://', 'https://fryndo.com'],
+  prefixes: ['doorimate://', 'https://doorimate.com'],
   config: {
     screens: {
       Main: {

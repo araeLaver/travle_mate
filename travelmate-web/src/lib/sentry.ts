@@ -18,7 +18,7 @@ export const initSentry = () => {
   Sentry.init({
     dsn: SENTRY_DSN,
     environment: ENVIRONMENT,
-    release: `fryndo-web@${process.env.REACT_APP_VERSION || '1.0.0'}`,
+    release: `doorimate-web@${process.env.REACT_APP_VERSION || '1.0.0'}`,
 
     // Performance Monitoring
     tracesSampleRate: ENVIRONMENT === 'production' ? 0.2 : 1.0,
@@ -31,8 +31,8 @@ export const initSentry = () => {
     tracePropagationTargets: [
       'localhost',
       /^\/api/,
-      /^https:\/\/api\.fryndo\.com/,
-      /^https:\/\/fryndo\.com/,
+      /^https:\/\/api\.doorimate\.com/,
+      /^https:\/\/doorimate\.com/,
     ],
 
     // Integration options (Sentry v8+ API - migrated from v7)

@@ -19,7 +19,7 @@ export const initSentry = () => {
   Sentry.init({
     dsn: SENTRY_DSN,
     environment: ENVIRONMENT,
-    release: `fryndo-mobile@${APP_VERSION}`,
+    release: `doorimate-mobile@${APP_VERSION}`,
     dist: Constants.expoConfig?.extra?.buildNumber || '1',
 
     // Enable automatic instrumentation

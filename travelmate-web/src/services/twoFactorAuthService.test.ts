@@ -27,7 +27,7 @@ describe('TwoFactorAuthService', () => {
   it('sets up 2FA with the selected method', async () => {
     const response = {
       secretKey: 'secret',
-      qrCodeUri: 'otpauth://totp/Fryndo:user@example.com?secret=secret',
+      qrCodeUri: 'otpauth://totp/Doorimate:user@example.com?secret=secret',
       backupCodes: ['12345678'],
     };
     mockApiClient.post.mockResolvedValueOnce(response);
@@ -65,10 +65,10 @@ describe('TwoFactorAuthService', () => {
   });
 
   it('encodes QR code URIs and formats 8-character backup codes', () => {
-    const uri = 'otpauth://totp/Fryndo:user@example.com?secret=a+b/c';
+    const uri = 'otpauth://totp/Doorimate:user@example.com?secret=a+b/c';
 
     expect(twoFactorAuthService.generateQrCodeUrl(uri)).toBe(
-      'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=otpauth%3A%2F%2Ftotp%2FFryndo%3Auser%40example.com%3Fsecret%3Da%2Bb%2Fc'
+      'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=otpauth%3A%2F%2Ftotp%2FDoorimate%3Auser%40example.com%3Fsecret%3Da%2Bb%2Fc'
     );
     expect(twoFactorAuthService.formatBackupCode('12345678')).toBe('1234-5678');
     expect(twoFactorAuthService.formatBackupCode('123456')).toBe('123456');

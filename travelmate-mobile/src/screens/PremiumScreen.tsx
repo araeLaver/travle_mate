@@ -202,7 +202,7 @@ const PremiumScreen: React.FC<Props> = ({ navigation }) => {
         <View style={styles.heroIcon}>
           <Icon name="crown" size={40} color={palette.primaryDark} />
         </View>
-        <Text style={styles.heroTitle}>Fryndo Premium</Text>
+        <Text style={styles.heroTitle}>Doorimate Premium</Text>
         <Text style={styles.heroSubtitle}>
           프리미엄 기능으로 여행을 더욱 특별하게
         </Text>

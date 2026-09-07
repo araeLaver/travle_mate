@@ -8,7 +8,7 @@ interface LogoProps {
 }
 
 /**
- * Fryndo compass mark — design system option 1b (선택).
+ * 두리메이트 compass mark — design system option 1b (선택).
  * Rounded tile + ink circle + indigo compass needle.
  */
 const Logo: React.FC<LogoProps> = ({
@@ -36,7 +36,7 @@ const Logo: React.FC<LogoProps> = ({
     },
     gradient: {
       tile: '#F0EFEB',
-      ring: 'url(#fryndo-ink)',
+      ring: 'url(#doorimate-ink)',
       needle: '#4A3AFF',
     },
   };
@@ -51,12 +51,12 @@ const Logo: React.FC<LogoProps> = ({
       xmlns="http://www.w3.org/2000/svg"
       onClick={onClick}
       role="img"
-      aria-label="Fryndo logo"
+      aria-label="Doorimate logo"
     >
       {variant === 'gradient' && (
         <defs>
           <linearGradient
-            id="fryndo-ink"
+            id="doorimate-ink"
             x1="8"
             y1="8"
             x2="32"

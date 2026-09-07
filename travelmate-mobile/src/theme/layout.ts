@@ -1,5 +1,5 @@
 /**
- * Fryndo design system — spacing, radii, shadows.
+ * Doorimate design system — spacing, radii, shadows.
  * 8pt grid, 20px screen padding, 44px minimum tap target.
  */
 import { ViewStyle } from 'react-native';

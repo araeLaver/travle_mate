@@ -84,7 +84,7 @@ const WalletConnect: React.FC = () => {
               MetaMask 지갑 연결
             </h2>
             <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-md mx-auto">
-              Fryndo NFT 시스템은 Polygon 네트워크를 사용합니다. MetaMask 지갑을 연결하여 NFT를
+              두리메이트 NFT 시스템은 Polygon 네트워크를 사용합니다. MetaMask 지갑을 연결하여 NFT를
               수집하고 관리하세요.
             </p>
 
@@ -299,7 +299,7 @@ const WalletConnect: React.FC = () => {
           </h3>
           <p className="text-gray-600 dark:text-gray-400 text-sm mb-6">
             Polygon은 이더리움과 호환되는 레이어2 블록체인으로, 빠른 트랜잭션 속도와 저렴한 가스비를
-            제공합니다. Fryndo는 Polygon Amoy 테스트넷을 사용합니다.
+            제공합니다. 두리메이트는 Polygon Amoy 테스트넷을 사용합니다.
           </p>
 
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-3 flex items-center gap-2">

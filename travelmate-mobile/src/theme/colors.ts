@@ -1,6 +1,6 @@
 /**
- * Fryndo design system — color tokens.
- * Source of truth: claude.ai/design "Mobile app design brief" (Fryndo App.dc.html).
+ * Doorimate design system — color tokens.
+ * Source of truth: claude.ai/design "Mobile app design brief" (Doorimate App.dc.html).
  */
 
 export const palette = {

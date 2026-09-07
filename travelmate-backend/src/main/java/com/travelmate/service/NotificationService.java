@@ -105,7 +105,7 @@ public class NotificationService {
             
             // FCM 메시지 포맷 준비
             Map<String, String> data = new HashMap<>();
-            data.put("title", "Fryndo");
+            data.put("title", "Doorimate");
             data.put("body", message);
             data.put("userId", userId.toString());
             

@@ -1,5 +1,5 @@
 /**
- * Fryndo design system — typography tokens.
+ * Doorimate design system — typography tokens.
  * Manrope (UI), Noto Sans KR (Korean fallback baked into Manrope stack on
  * native we set per-weight families), Playfair Display (display numerals).
  */

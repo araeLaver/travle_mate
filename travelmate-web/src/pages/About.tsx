@@ -33,12 +33,12 @@ const footerItems = [
 const aboutJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'SoftwareApplication',
-  name: 'Fryndo',
+  name: 'Doorimate',
   applicationCategory: 'TravelApplication',
   operatingSystem: 'Web',
-  url: 'https://fryndo.com',
+  url: 'https://doorimate.com',
   description:
-    'Fryndo는 AI 기반 매칭 시스템으로 취향이 맞는 여행 동반자를 연결하는 플랫폼입니다. 50개 이상 국가, 10,000명 이상의 여행자 커뮤니티.',
+    '두리메이트는 AI 기반 매칭 시스템으로 취향이 맞는 여행 동반자를 연결하는 플랫폼입니다. 50개 이상 국가, 10,000명 이상의 여행자 커뮤니티.',
   offers: {
     '@type': 'Offer',
     price: '0',
@@ -61,9 +61,9 @@ const About: React.FC = () => {
   return (
     <div className="min-h-screen bg-sand-100 dark:bg-[#0a0a0b]">
       <SEOHead
-        title="Fryndo 소개 - 여행 동반자 매칭 플랫폼"
-        description="Fryndo는 AI 기반 매칭으로 취향이 맞는 여행 동반자를 연결합니다. 50개 이상 국가, 10,000명 이상의 여행자와 함께 특별한 여행을 만들어보세요."
-        canonical="https://fryndo.com/about"
+        title="두리메이트 소개 - 여행 동반자 매칭 플랫폼"
+        description="두리메이트는 AI 기반 매칭으로 취향이 맞는 여행 동반자를 연결합니다. 50개 이상 국가, 10,000명 이상의 여행자와 함께 특별한 여행을 만들어보세요."
+        canonical="https://doorimate.com/about"
         jsonLd={aboutJsonLd}
       />
       {/* Navigation */}
@@ -78,7 +78,7 @@ const About: React.FC = () => {
                   className="group-hover:scale-110 transition-transform duration-300"
                 />
                 <span className="text-xl font-extrabold tracking-tight text-ink dark:text-white">
-                  Fryndo
+                  Doorimate
                 </span>
               </Link>
 
@@ -125,7 +125,7 @@ const About: React.FC = () => {
           <div className="max-w-4xl mx-auto text-center">
             <motion.div {...fadeInUp}>
               <span className="inline-flex items-center h-8 px-4 bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-300 rounded-full text-sm font-bold mb-6">
-                Fryndo 소개
+                두리메이트 소개
               </span>
             </motion.div>
 
@@ -144,7 +144,7 @@ const About: React.FC = () => {
               transition={{ delay: 0.2 }}
               className="text-lg md:text-xl text-[#4A4A55] dark:text-gray-400 max-w-2xl mx-auto leading-relaxed"
             >
-              Fryndo는 혼자가 아닌 함께하는 여행의 가치를 믿습니다. 전 세계 여행자들과 연결되어
+              두리메이트는 혼자가 아닌 함께하는 여행의 가치를 믿습니다. 전 세계 여행자들과 연결되어
               특별한 여행 경험을 만들어보세요.
             </motion.p>
           </div>
@@ -169,8 +169,8 @@ const About: React.FC = () => {
                 완벽한 동반자를
               </h2>
               <p className="text-[#4A4A55] dark:text-gray-400 mb-6 leading-relaxed">
-                Fryndo는 여행 스타일, 관심사, 일정이 맞는 여행 동반자를 찾아드립니다. AI 기반 매칭
-                시스템으로 최적의 여행 파트너를 추천받고, 실시간 채팅으로 소통하며, 함께 특별한
+                두리메이트는 여행 스타일, 관심사, 일정이 맞는 여행 동반자를 찾아드립니다. AI 기반
+                매칭 시스템으로 최적의 여행 파트너를 추천받고, 실시간 채팅으로 소통하며, 함께 특별한
                 추억을 만들어보세요.
               </p>
               <div className="flex flex-wrap gap-4">
@@ -242,7 +242,7 @@ const About: React.FC = () => {
               가치
             </span>
             <h2 className="font-display text-3xl md:text-4xl font-black tracking-tight text-ink dark:text-white mb-4">
-              Fryndo가 추구하는 가치
+              두리메이트가 추구하는 가치
             </h2>
           </motion.div>
 
@@ -251,7 +251,7 @@ const About: React.FC = () => {
               {
                 icon: RocketLaunchIcon,
                 title: '모험',
-                desc: '새로운 장소, 새로운 사람, 새로운 경험. Fryndo와 함께라면 모든 여행이 모험이 됩니다.',
+                desc: '새로운 장소, 새로운 사람, 새로운 경험. 두리메이트와 함께라면 모든 여행이 모험이 됩니다.',
               },
               {
                 icon: UserGroupIcon,
@@ -302,7 +302,7 @@ const About: React.FC = () => {
                 지금 바로 시작하세요
               </h2>
               <p className="text-lg text-[#A0A0AC] mb-8">
-                Fryndo와 함께 새로운 여행 동반자를 만나보세요.
+                두리메이트와 함께 새로운 여행 동반자를 만나보세요.
                 <br />
                 무료로 시작할 수 있습니다.
               </p>
@@ -325,7 +325,7 @@ const About: React.FC = () => {
             <div className="flex items-center gap-3">
               <Logo variant="gradient" size="md" />
               <span className="text-xl font-extrabold tracking-tight text-ink dark:text-white">
-                Fryndo
+                Doorimate
               </span>
             </div>
 
@@ -342,7 +342,7 @@ const About: React.FC = () => {
             </div>
 
             <div className="text-[13px] font-semibold text-[#9A9AA4] dark:text-gray-500">
-              &copy; 2026 Fryndo
+              &copy; 2026 Doorimate
             </div>
           </div>
         </div>

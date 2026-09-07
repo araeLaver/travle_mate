@@ -1,5 +1,5 @@
 /**
- * Fryndo icon set — 34 icons from the design system (24px viewBox,
+ * Doorimate icon set — 34 icons from the design system (24px viewBox,
  * 1.5 stroke, round caps/joins; names ending in -f are filled).
  */
 import React from 'react';

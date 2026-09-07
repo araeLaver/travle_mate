@@ -37,7 +37,7 @@ public class PhoneVerificationService {
 
     // 공개 베타는 실제 SMS 발송 없이 출시 (SMS_REQUIRE_IN_PROD=false로 명시적 opt-out)
     @Value("${sms.require-in-prod:true}")
-    private boolean requireInProd;
+    private boolean requireInProd = true;
 
     private static final SecureRandom RANDOM = new SecureRandom();
 

@@ -365,7 +365,7 @@ const Chat: React.FC = () => {
       role="main"
       aria-label={`${room.name} 채팅방`}
     >
-      <SEOHead title="채팅" description="Fryndo 채팅" noIndex={true} />
+      <SEOHead title="채팅" description="두리메이트 채팅" noIndex={true} />
       <PageBackground />
 
       {/* Navigation */}

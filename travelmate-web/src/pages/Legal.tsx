@@ -5,11 +5,11 @@ import Logo from '../components/Logo';
 const sections = [
   {
     title: '서비스 성격',
-    body: 'Fryndo는 공개 베타 단계의 여행 동행 매칭 서비스입니다. 사용자는 자신의 여행 일정, 목적지, 관심사, 프로필 정보를 기반으로 다른 사용자 또는 그룹과 연결될 수 있습니다.',
+    body: '두리메이트는 공개 베타 단계의 여행 동행 매칭 서비스입니다. 사용자는 자신의 여행 일정, 목적지, 관심사, 프로필 정보를 기반으로 다른 사용자 또는 그룹과 연결될 수 있습니다.',
   },
   {
     title: '안전 안내',
-    body: 'Fryndo는 사용자 간 연결을 돕지만 오프라인 만남의 결과를 보증하지 않습니다. 첫 만남은 공개된 장소에서 진행하고, 금전 거래나 신분증 공유 등 민감한 요청은 피해야 합니다.',
+    body: '두리메이트는 사용자 간 연결을 돕지만 오프라인 만남의 결과를 보증하지 않습니다. 첫 만남은 공개된 장소에서 진행하고, 금전 거래나 신분증 공유 등 민감한 요청은 피해야 합니다.',
   },
   {
     title: '수집될 수 있는 정보',
@@ -30,7 +30,7 @@ const Legal: React.FC = () => (
     <div className="mx-auto max-w-4xl">
       <Link to="/" className="mb-10 inline-flex items-center gap-3">
         <Logo variant="gradient" size="md" />
-        <span className="text-2xl font-extrabold tracking-tight text-ink">Fryndo</span>
+        <span className="text-2xl font-extrabold tracking-tight text-ink">Doorimate</span>
       </Link>
 
       <section className="rounded-[20px] bg-white p-8 shadow-[0_10px_30px_rgba(16,16,20,0.1)] md:p-12">

@@ -383,7 +383,7 @@ const Register: React.FC = () => {
         />
         <Link to="/" className="relative z-10 flex items-center gap-3 w-fit">
           <Logo variant="white" size="md" />
-          <span className="text-xl font-extrabold text-white tracking-tight">Fryndo</span>
+          <span className="text-xl font-extrabold text-white tracking-tight">Doorimate</span>
         </Link>
 
         <div className="relative z-10">
@@ -396,12 +396,12 @@ const Register: React.FC = () => {
             <Logo variant="gradient" size="lg" />
           </div>
           <div className="mt-3 flex items-center justify-between">
-            <span className="text-sm font-extrabold text-ink">Fryndo Stamp</span>
+            <span className="text-sm font-extrabold text-ink">Doorimate Stamp</span>
             <span className="h-5 px-1.5 inline-flex items-center rounded-[7px] bg-rarity-legendary text-white text-[10px] font-extrabold uppercase tracking-wide">
               Legendary
             </span>
           </div>
-          <p className="mt-1 text-[11px] text-[#8A8A95]">Fryndo · Collectible</p>
+          <p className="mt-1 text-[11px] text-[#8A8A95]">Doorimate · Collectible</p>
         </div>
       </div>
 
@@ -410,7 +410,9 @@ const Register: React.FC = () => {
         <div className="flex items-center justify-between px-6 py-5 lg:justify-end">
           <Link to="/" className="flex items-center gap-2 lg:hidden">
             <Logo variant="gradient" size="sm" />
-            <span className="font-extrabold text-ink dark:text-white tracking-tight">Fryndo</span>
+            <span className="font-extrabold text-ink dark:text-white tracking-tight">
+              Doorimate
+            </span>
           </Link>
           <div className="flex items-center gap-3">
             <ThemeToggle />
