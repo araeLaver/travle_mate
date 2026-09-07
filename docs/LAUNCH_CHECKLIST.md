@@ -1,6 +1,45 @@
-# Fryndo 출시 전 외부 자격증명 체크리스트
+# 두리메이트(Doorimate) 출시 체크리스트
 
-(2026-08-31 갱신) EAS·Firebase·Google OAuth는 완료. 남은 항목만 운영자 작업 필요.
+> ⚠️ 2026-09-07 이전 기록에 나오는 "Fryndo"는 **폐기된 이름**이다. 아래 리브랜딩 항목을 먼저 읽을 것.
+> 과거 섹션의 `fryndo-23e4a`(GCP 프로젝트 ID), `fryndo-play-publisher@…`(서비스 계정), `fryndo-web`(Vercel 프로젝트),
+> `demo@fryndo.com`(시드 계정)은 **실제로 존재하는 값이라 그대로 유지**한다 — 이름만 바뀌었지 그 리소스들은 살아 있다.
+
+## 2026-09-07 리브랜딩 — Fryndo → 두리메이트
+
+**왜**: `fryndo.com`은 우리 도메인이 아니었다. 파킹이 아니라 **제3자의 "Fryndo — AI 데이팅 앱" 정식 서비스 사이트**이고,
+그 사이트가 링크하는 Play 주소가 `com.fryndo.app`으로 우리가 2026-09-01에 선점한 패키지와 동일하다. AI 매칭이라는
+인접 카테고리라 충돌 위험이 실질적이어서 이름을 버렸다. **Play 앱이 아직 '임시' 상태여서 가능했던 결정** —
+프로덕션에 한 번 나가면 번들 ID는 영구 고정이다.
+
+**새 정체성**
+
+| 항목 | 값 |
+|---|---|
+| 브랜드 | 두리메이트 / Doorimate ("두리"=둘이·함께 + mate) |
+| 스토어 노출명 | `두리메이트 - 여행 동행 매칭` |
+| 번들 ID | `com.doorimate.app` |
+| 딥링크 | `doorimate://` / `https://doorimate.com` |
+| API | `https://api.doorimate.com` |
+| Expo slug | `doorimate` |
+
+후보 선정 시 WHOIS로 미등록을 직접 확인하고 동명 앱·서비스 부재까지 검증했다. 1순위였던 "함께"는
+브랜드명이 앱 카피의 일반명사와 충돌해서(→ "함께와 함께 여행을 시작하세요") 탈락시켰다.
+
+**남은 콘솔 작업 (코드는 커밋 `78e72a1`로 완료)**
+
+1. `doorimate.com` 구매 — **사용자 작업**. Gabia 권장(기존에 쓰는 등록기관)
+2. Play Console: `com.doorimate.app`으로 앱 신규 생성 → 스토어 등록정보·앱 콘텐츠 선언 재입력, 기존 Fryndo 앱(임시) 삭제
+3. Play 서비스 계정 `fryndo-play-publisher@…`에 **새 앱 권한 부여** (계정 단위라 계정 자체는 재사용)
+4. Firebase: `com.doorimate.app` Android 앱 추가 → `google-services.json` 교체 (현재 파일은 아직 옛 패키지)
+5. Google OAuth: 새 패키지+SHA-1로 Android 클라이언트 재발급 → `app.json` 반영
+6. expo.dev에서 프로젝트 slug를 `doorimate`로 변경 (app.json이 이미 `doorimate`라 안 맞추면 빌드 실패)
+7. 워드마크 에셋·스토어 스크린샷 8장 재생성 (앱 화면에 이름이 노출됨)
+8. Vercel 프로젝트/Koyeb 커스텀 도메인 새 도메인으로 재설정
+9. 재빌드 → 내부 테스트 재출시
+
+**주의**: `google-services.json`이 아직 `com.fryndo.app`이라 지금 상태로 EAS 빌드를 돌리면 실패한다. 4번이 선행돼야 한다.
+
+
 
 ## 2026-09-06 진행 (Play 내부 테스트 출시 ✅ + Expo SDK 54 업그레이드)
 
