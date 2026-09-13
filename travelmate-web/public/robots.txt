@@ -1,4 +1,4 @@
-# Fryndo
+# 두리메이트 (Doorimate)
 User-agent: *
 Allow: /
 Disallow: /admin
@@ -7,4 +7,4 @@ Disallow: /wallet
 Disallow: /payment
 Disallow: /auth/callback
 
-Sitemap: https://fryndo.com/sitemap.xml
+Sitemap: https://doorimate.com/sitemap.xml

@@ -1,5 +1,5 @@
 /* ===================================
-   Layout - Fryndo Design System
+   Layout - 두리메이트 Design System
    =================================== */
 
 .layout {
@@ -236,7 +236,7 @@
   padding: 16px 14px 4px;
 }
 
-/* Fryndo Plus promo card (ink surface) */
+/* 두리메이트 Plus promo card (ink surface) */
 .promo-card {
   background: #101014; /* ink */
   border-radius: 16px;

@@ -3,7 +3,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Google Fonts — Fryndo design system */
+/* Google Fonts — 두리메이트 design system */
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:wght@500;600&family=Noto+Sans+KR:wght@400;500;700&display=swap');
 
 /* Custom Base Styles */
@@ -171,7 +171,7 @@
     animation: gentle-float 6s ease-in-out infinite;
   }
 
-  /* Soft Gradient Backgrounds — Fryndo photo-placeholder palette */
+  /* Soft Gradient Backgrounds — 두리메이트 photo-placeholder palette */
   .gradient-soft-primary {
     background: linear-gradient(150deg, #c7cee6 0%, #9aa6c9 100%);
   }
@@ -350,24 +350,24 @@
 }
 
 :root {
-  /* Fryndo design system tokens (claude.ai/design brief) */
-  --fryndo-ink: #101014;
-  --fryndo-primary: #4a3aff;
-  --fryndo-primary-soft: #ecebff;
-  --fryndo-sand: #f5f4f1;
-  --fryndo-sand-alt: #f0efeb;
-  --fryndo-cloud: #fafaf8;
-  --fryndo-hairline: #f2f1ed;
-  --fryndo-outline: #e1e0db;
-  --fryndo-legendary: #e0952a;
+  /* 두리메이트 design system tokens (claude.ai/design brief) */
+  --doorimate-ink: #101014;
+  --doorimate-primary: #4a3aff;
+  --doorimate-primary-soft: #ecebff;
+  --doorimate-sand: #f5f4f1;
+  --doorimate-sand-alt: #f0efeb;
+  --doorimate-cloud: #fafaf8;
+  --doorimate-hairline: #f2f1ed;
+  --doorimate-outline: #e1e0db;
+  --doorimate-legendary: #e0952a;
   /* Legacy aliases (kept for gradual migration) */
-  --fryndo-route: #4a3aff;
-  --fryndo-mint: #2e7df6;
+  --doorimate-route: #4a3aff;
+  --doorimate-mint: #2e7df6;
 }
 
 body {
   font-family: 'Manrope', 'Noto Sans KR', ui-sans-serif, system-ui, sans-serif;
-  background: var(--fryndo-sand);
+  background: var(--doorimate-sand);
 }
 
 .font-display {

@@ -1,6 +1,6 @@
 {
-  "short_name": "Fryndo",
-  "name": "Fryndo - 검증된 여행 동행 매칭",
+  "short_name": "두리메이트",
+  "name": "두리메이트 - 검증된 여행 동행 매칭",
   "description": "목적지, 일정, 여행 성향, 검증 신호를 기준으로 안전하게 여행 동행을 찾는 공개 베타 서비스",
   "icons": [
     { "src": "icons/icon-72x72.png", "sizes": "72x72", "type": "image/png", "purpose": "maskable any" },
@@ -14,8 +14,8 @@
   ],
   "start_url": "/",
   "display": "standalone",
-  "theme_color": "#F7F2E8",
-  "background_color": "#F7F2E8",
+  "theme_color": "#F5F4F1",
+  "background_color": "#F5F4F1",
   "orientation": "portrait-primary",
   "scope": "/",
   "lang": "ko",
