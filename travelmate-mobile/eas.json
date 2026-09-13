@@ -16,7 +16,7 @@
       "env": {
         "APP_ENV": "development",
         "EXPO_PUBLIC_API_URL": "http://localhost:8080/api",
-        "EXPO_PUBLIC_WEB_URL": "https://doorimate.com",
+        "EXPO_PUBLIC_WEB_URL": "https://fryndo-web.vercel.app",
         "API_URL": "http://localhost:8080/api",
         "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       }
@@ -32,7 +32,7 @@
       "env": {
         "APP_ENV": "preview",
         "EXPO_PUBLIC_API_URL": "https://fryndo-untab-f93a6aa7.koyeb.app/api",
-        "EXPO_PUBLIC_WEB_URL": "https://doorimate.com",
+        "EXPO_PUBLIC_WEB_URL": "https://fryndo-web.vercel.app",
         "API_URL": "https://fryndo-untab-f93a6aa7.koyeb.app/api",
         "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       }
@@ -48,9 +48,9 @@
       },
       "env": {
         "APP_ENV": "production",
-        "EXPO_PUBLIC_API_URL": "https://api.doorimate.com/api",
-        "EXPO_PUBLIC_WEB_URL": "https://doorimate.com",
-        "API_URL": "https://api.doorimate.com/api",
+        "EXPO_PUBLIC_API_URL": "https://fryndo-untab-f93a6aa7.koyeb.app/api",
+        "EXPO_PUBLIC_WEB_URL": "https://fryndo-web.vercel.app",
+        "API_URL": "https://fryndo-untab-f93a6aa7.koyeb.app/api",
         "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       }
     }
