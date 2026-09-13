@@ -47,10 +47,10 @@
     "ios": "4+",
     "android": "Everyone"
   },
-  "supportUrl": "https://doorimate.com/legal",
-  "privacyPolicyUrl": "https://doorimate.com/legal",
-  "termsOfServiceUrl": "https://doorimate.com/legal",
-  "marketingUrl": "https://doorimate.com",
+  "supportUrl": "https://fryndo-web.vercel.app/legal",
+  "privacyPolicyUrl": "https://fryndo-web.vercel.app/legal",
+  "termsOfServiceUrl": "https://fryndo-web.vercel.app/legal",
+  "marketingUrl": "https://fryndo-web.vercel.app",
   "graphics": {
     "icon512": "./store/graphics/icon-512.png",
     "featureGraphic": "./store/graphics/feature-1024x500.png"

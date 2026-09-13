@@ -31,9 +31,9 @@
       },
       "env": {
         "APP_ENV": "preview",
-        "EXPO_PUBLIC_API_URL": "https://staging-api.doorimate.com/api",
+        "EXPO_PUBLIC_API_URL": "https://fryndo-untab-f93a6aa7.koyeb.app/api",
         "EXPO_PUBLIC_WEB_URL": "https://doorimate.com",
-        "API_URL": "https://staging-api.doorimate.com/api",
+        "API_URL": "https://fryndo-untab-f93a6aa7.koyeb.app/api",
         "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       }
     },
