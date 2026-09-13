@@ -30,16 +30,48 @@
 1. `doorimate.com` 구매 — **사용자 작업**. Gabia 권장(기존에 쓰는 등록기관)
 2. Play Console: `com.doorimate.app`으로 앱 신규 생성 → 스토어 등록정보·앱 콘텐츠 선언 재입력, 기존 Fryndo 앱(임시) 삭제
 3. Play 서비스 계정 `fryndo-play-publisher@…`에 **새 앱 권한 부여** (계정 단위라 계정 자체는 재사용)
-4. Firebase: `com.doorimate.app` Android 앱 추가 → `google-services.json` 교체 (현재 파일은 아직 옛 패키지)
+4. ~~Firebase: `com.doorimate.app` Android 앱 추가 → `google-services.json` 교체~~ **완료** (커밋 `eed4aee`)
 5. Google OAuth: 새 패키지+SHA-1로 Android 클라이언트 재발급 → `app.json` 반영
-6. expo.dev에서 프로젝트 slug를 `doorimate`로 변경 (app.json이 이미 `doorimate`라 안 맞추면 빌드 실패)
-7. 워드마크 에셋·스토어 스크린샷 8장 재생성 (앱 화면에 이름이 노출됨)
+   — **미완. `google-services.json`의 `com.doorimate.app` 블록에 `client_type: 1`(SHA-1 Android 클라이언트)이 없고
+   `app.json`의 `googleAndroidClientId`도 옛 패키지 것 그대로다 → 지금 빌드하면 안드로이드 구글 로그인이 깨진다.**
+6. ~~expo.dev 프로젝트 slug 변경~~ **불필요** — EAS slug는 `fryndo`로 유지하기로 결정(커밋 `7499686`). slug는 외부 노출이 아니고 projectId가 정본.
+7. 워드마크 에셋·스토어 스크린샷 재생성
+   — 웹 정적 에셋·OG 이미지는 **완료**(커밋 `fa21560`), 인증 화면 3장은 **완료**(커밋 `c6c6901`).
+   **마퀴 5장(홈/컬렉션/채팅목록/채팅방/프로필)은 옛 브랜드 노출로 삭제된 상태 → 재촬영 필요.** 지도는 Maps 키 보류로 여전히 미확보.
 8. Vercel 프로젝트/Koyeb 커스텀 도메인 새 도메인으로 재설정
+   — Koyeb에 `api.fryndo.com` 커스텀 도메인이 ERROR 상태로 **남아 있다(우리 도메인이 아니므로 삭제 대상)**.
 9. 재빌드 → 내부 테스트 재출시
 
-**주의**: `google-services.json`이 아직 `com.fryndo.app`이라 지금 상태로 EAS 빌드를 돌리면 실패한다. 4번이 선행돼야 한다.
 
 
+## 2026-09-13 진행 (웹 출시 준비 — 브랜드/SEO 표면 정리)
+
+리브랜딩 커밋이 React 앱은 바꿨지만 `travelmate-web/public/`은 건드리지 않아서, **크롤러가 보는 표면 전체가 아직 Fryndo였고
+canonical·og:url이 제3자 서비스인 `fryndo.com`을 가리키고 있었다.** 커밋 `fa21560`으로 정리:
+
+- `index.html` — title/description/keywords/author/OG/Twitter 전부 두리메이트, canonical·og:url → `doorimate.com`
+- og:image를 **절대 URL로 교체**(카카오·페이스북 크롤러는 `%PUBLIC_URL%` 상대경로를 해석하지 못함) + width/height/alt 추가
+- `manifest.json` — PWA 이름, theme/background color를 디자인 토큰 `#F5F4F1`로 통일(`#F7F2E8`로 index.html과 어긋나 있었음)
+- `robots.txt` 사이트맵 주소, `sitemap.xml` 6개 URL → `doorimate.com`
+- `firebase-messaging-sw.js` 알림 기본 제목, CSS `--fryndo-*` 토큰 12개 → `--doorimate-*`
+- **정적 에셋 재생성** — PWA 아이콘 8종·`favicon.ico`·알림 배지가 아직 **옛 "F" 레터마크 + 구 팔레트**였다(앱은 이미 컴퍼스 마크).
+  `travelmate-mobile/assets/icon.png`에서 다시 뽑아 앱/웹 마크를 일치시키고, `og-image.png`(1200×630)는 컴퍼스+두리메이트 워드마크로 새로 제작.
+- 검증: `tsc` 클린, 웹 테스트 56스위트 / 603 통과.
+
+**스토어 URL은 일부러 되돌렸다** (커밋 `c99b543`): `store/metadata.json`의 support/privacy/terms/marketing이 리브랜딩 일괄 치환으로
+아직 등록도 안 된 `doorimate.com`을 가리키게 됐는데, **Play는 개인정보처리방침 URL의 접속 가능 여부를 검사**하므로
+도메인이 살아날 때까지 `https://fryndo-web.vercel.app/legal`로 유지한다. `eas.json`의 preview 프로파일도 같은 이유로
+`staging-api.doorimate.com` 대신 Koyeb 주소를 직접 호출한다(production 프로파일은 `api.doorimate.com` 유지 — 어차피 도메인 대기).
+
+**⚠️ 백엔드 콜드스타트 342초** (2026-09-13 실측, Koyeb 런타임 로그): 딥슬립에서 깨어난 인스턴스가
+`Started TravelMateApplication in 342.658 seconds`. 그 사이 `/api/actuator/health`는 `livenessState: DOWN` /
+`readinessState: OUT_OF_SERVICE`를 반환하는데 **이건 버그가 아니라 기동이 끝나기 전의 기본값**이다(Tomcat은 포트를 먼저 열고
+`ApplicationReadyEvent`는 나중에 발행됨). 진짜 문제는 **공개 베타 첫 요청이 최대 6분 걸린다는 것** — 출시 전 해결 필요.
+헬스체크 grace가 300s라 342s는 그 한도도 넘는다.
+
+**웹 배포 경로 메모**: 소스는 `travelmate-web`, 배포는 `araeLaver/fryndo-web`(비공개 스냅샷 리포)를 Vercel이 빌드.
+`vercel.json`이 `/api/*`를 Koyeb으로 리라이트한다. 리브랜딩 반영하려면 스냅샷 리포에 동기화 후 푸시 = 라이브 배포.
+Vercel 프로젝트(`prj_PdEZ…`)에 현재 붙은 도메인은 자동 발급 `*.vercel.app` 3개뿐이다.
 
 ## 2026-09-06 진행 (Play 내부 테스트 출시 ✅ + Expo SDK 54 업그레이드)
 
