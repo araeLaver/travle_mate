@@ -20,7 +20,7 @@
 | 번들 ID | `com.doorimate.app` |
 | 딥링크 | `doorimate://` / `https://doorimate.com` |
 | API | `https://api.doorimate.com` |
-| Expo slug | `doorimate` |
+| Expo slug | `fryndo` |
 
 후보 선정 시 WHOIS로 미등록을 직접 확인하고 동명 앱·서비스 부재까지 검증했다. 1순위였던 "함께"는
 브랜드명이 앱 카피의 일반명사와 충돌해서(→ "함께와 함께 여행을 시작하세요") 탈락시켰다.
@@ -72,6 +72,51 @@ canonical·og:url이 제3자 서비스인 `fryndo.com`을 가리키고 있었다
 **웹 배포 경로 메모**: 소스는 `travelmate-web`, 배포는 `araeLaver/fryndo-web`(비공개 스냅샷 리포)를 Vercel이 빌드.
 `vercel.json`이 `/api/*`를 Koyeb으로 리라이트한다. 리브랜딩 반영하려면 스냅샷 리포에 동기화 후 푸시 = 라이브 배포.
 Vercel 프로젝트(`prj_PdEZ…`)에 현재 붙은 도메인은 자동 발급 `*.vercel.app` 3개뿐이다.
+
+## 2026-09-14 진행 (웹 라이브 배포 + 백엔드 성능 결함 3건 수정)
+
+**웹 라이브 반영 완료** — `fryndo-web.vercel.app`이 두리메이트 브랜드로 서빙된다.
+막혔던 원인은 **Vercel Hobby 플랜의 커밋 작성자 규칙**이었다: 비공개 리포는 **커밋 author가 Hobby 팀 소유자
+(`araelaver@gmail.com`)여야** 배포가 돈다. 다른 이메일로 커밋하면 빌드조차 시작되지 않고 `state: BLOCKED`로 떨어진다
+(빌드 로그 0건, errorLink는 troubleshoot-project-collaboration#account-configuration). 09-05 배포가 성공했던 건
+그게 git push가 아니라 **프로젝트 최초 import**였기 때문. → **스냅샷 리포 커밋은 반드시 `araelaver@gmail.com`으로 할 것.**
+
+**canonical/OG/sitemap을 라이브 호스트로 되돌림** (커밋 `550e1da`): 도메인 구매를 미루기로 한 이상
+`doorimate.com`을 가리키면 카카오·페북 미리보기 이미지가 안 뜨고 색인도 안 된다. 도메인 구매 시 이 4곳만 되돌리면 된다.
+같은 이유로 **모바일 프로덕션 프로파일도 `api.doorimate.com` → Koyeb 주소로 교정**(커밋 `db418a2`) —
+그대로 뒀으면 프로덕션 `.aab`가 서버에 아예 붙지 못했다.
+
+**백엔드 실측 결함 3건 (커밋 `55e273e`)** — 라이브 API를 실제로 호출해보다 발견:
+
+1. **JWT를 요청당 4번 파싱**하고 있었다. `JwtAuthenticationFilter`가 `validateToken` → `getUserIdFromToken` →
+   `getEmailFromToken` → `getAuthoritiesFromToken`을 차례로 부르는데 **네 메서드가 각각 서명키를 새로 유도하고
+   파서를 새로 만들어 HS512 검증을 처음부터 다시 했다.** 성능 aspect에 찍힌 실측치가 3590ms/5311ms/3311ms/1491ms —
+   요청 하나에 CPU 14초. 이게 커넥션 풀을 굶겨서 **로그인 6번 만에 서비스가 통째로 멎었다**(Hikari
+   `Connection is not available ... total=0`). 한 번만 파싱하도록 고치고 서명키는 캐시. STOMP CONNECT도 동일(3번→1번).
+2. **매핑 없는 경로가 500 + 전체 스택트레이스**였다. 오타 URL 하나가 스택트레이스 수백 개를 쏟아내 0.1 vCPU에서는
+   그 자체가 장애다. `NoResourceFoundException` → 404 핸들러 추가.
+3. **요청마다 헤더·본문·응답헤더를 INFO로 로깅**하고 있었다. 운영에서는 `RequestLoggingFilter`만 WARN으로 낮춤
+   (추적 필요하면 그 줄만 INFO로).
+
+**수정 전후 (라이브 측정)**
+
+| 항목 | 전 | 후 |
+|---|---|---|
+| 콜드 기동 | 342.7s | **52.5s** |
+| 인증 요청 6연속 | 전부 60s 타임아웃 + 서비스 멎음 | 전부 200, 정상 유지 |
+| 조회 API(워밍) | — | 0.5~1.0s |
+| 로그인(워밍) | — | 2.5~4.0s |
+
+콜드 기동 단축은 **Koyeb 환경변수 2개**가 prod 프로파일을 덮어쓰고 있던 것을 해제해서 얻었다:
+`SPRING_JPA_HIBERNATE_DDL_AUTO=update`(부팅마다 엔티티 58개 스키마 대조) → `validate`,
+`SPRING_SQL_INIT_MODE=always` → `never`. 초기 스키마 부트스트랩용이었는데 역할이 끝난 뒤에도 켜져 있었다.
+
+**남은 성능 제약(무료 플랜의 구조적 한계)**
+- **DB는 싱가포르(`sin`), 앱은 프랑크푸르트(`fra`)** — 쿼리마다 대륙 왕복(~170ms). 앱을 `sin`으로 옮기려 했으나
+  **무료 인스턴스는 `sin`에서 제공되지 않는다**(400). DB를 `fra`로 옮기는 건 가능해 보이나 무료 DB 쿼터를 건드릴 수 있어 보류.
+- 로그인 2.5~4초는 대부분 **BCrypt(strength 10, Spring 기본값) × 0.1 vCPU**다. 강도를 낮추는 건 보안 후퇴라 하지 않음.
+- **무료 Postgres 컴퓨트 쿼터 7.9h/12.5h 사용** — 월 한도에 걸리면 DB가 멈춘다. 출시 전 확인 필요.
+- 점검용 계정 `qa-check-20260913@example.com`(id 19)이 운영 DB에 남아 있다.
 
 ## 2026-09-06 진행 (Play 내부 테스트 출시 ✅ + Expo SDK 54 업그레이드)
 
