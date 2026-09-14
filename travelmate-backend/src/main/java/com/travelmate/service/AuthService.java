@@ -23,9 +23,12 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -38,7 +41,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final UserTrustScoreRepository trustScoreRepository;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
 
     @Value("${app.jwt.expiration}")
     private Long jwtExpiration;
@@ -57,6 +60,9 @@ public class AuthService {
 
     @Value("${app.oauth.kakao.client-secret:}")
     private String kakaoClientSecret;
+
+    @Value("${app.oauth.google.client-ids:}")
+    private String googleClientIds;
 
     /**
      * 로그인 처리 - Access Token + Refresh Token 발급
@@ -97,6 +103,7 @@ public class AuthService {
         if (!refreshToken.isValid()) {
             throw new UserException("만료되었거나 취소된 refresh token입니다.");
         }
+        validateRefreshTokenDevice(refreshToken, deviceId);
 
         User user = refreshToken.getUser();
 
@@ -145,9 +152,7 @@ public class AuthService {
         // OAuth 제공자로부터 사용자 정보 가져오기
         AuthDto.OAuthUserInfo userInfo = getOAuthUserInfo(request.getProvider(), request.getAccessToken());
 
-        // 기존 사용자 확인 또는 새 사용자 생성
-        User user = userRepository.findByEmail(userInfo.getEmail())
-            .orElseGet(() -> createOAuthUser(userInfo));
+        User user = resolveOAuthUser(userInfo);
 
         // Access Token 생성
         String accessToken = jwtService.generateToken(user.getId(), user.getEmail());
@@ -256,9 +261,59 @@ public class AuthService {
         };
     }
 
+    private User resolveOAuthUser(AuthDto.OAuthUserInfo userInfo) {
+        validateOAuthUserInfo(userInfo);
+
+        User.AuthProvider provider = parseAuthProvider(userInfo.getProvider());
+        return userRepository.findByProviderAndProviderId(provider, userInfo.getProviderId())
+            .orElseGet(() -> userRepository.findByEmail(userInfo.getEmail())
+                .map(user -> attachOAuthIdentity(user, provider, userInfo))
+                .orElseGet(() -> createOAuthUser(userInfo, provider)));
+    }
+
+    private void validateOAuthUserInfo(AuthDto.OAuthUserInfo userInfo) {
+        if (userInfo == null
+                || isBlank(userInfo.getProvider())
+                || isBlank(userInfo.getProviderId())
+                || isBlank(userInfo.getEmail())) {
+            throw new UserException("OAuth 필수 사용자 정보가 없습니다.");
+        }
+    }
+
+    private User.AuthProvider parseAuthProvider(String provider) {
+        try {
+            return User.AuthProvider.valueOf(provider.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new UserException("지원하지 않는 OAuth 제공자입니다: " + provider);
+        }
+    }
+
+    private User attachOAuthIdentity(User user, User.AuthProvider provider, AuthDto.OAuthUserInfo userInfo) {
+        User.AuthProvider currentProvider = user.getProvider();
+        String currentProviderId = user.getProviderId();
+
+        boolean canAttach = currentProvider == null
+                || currentProvider == User.AuthProvider.LOCAL
+                || (currentProvider == provider
+                    && (currentProviderId == null || currentProviderId.equals(userInfo.getProviderId())));
+
+        if (!canAttach) {
+            throw new UserException("이미 다른 OAuth 제공자로 가입된 이메일입니다.");
+        }
+
+        if (currentProvider == provider && userInfo.getProviderId().equals(currentProviderId)) {
+            return user;
+        }
+
+        user.setProvider(provider);
+        user.setProviderId(userInfo.getProviderId());
+        user.setIsEmailVerified(true);
+        return userRepository.save(user);
+    }
+
     private AuthDto.OAuthUserInfo getGoogleUserInfo(String accessToken) {
         // 1. 먼저 토큰 유효성 검증 (tokeninfo 엔드포인트)
-        verifyGoogleToken(accessToken);
+        Map<String, Object> tokenInfo = verifyGoogleToken(accessToken);
 
         // 2. 토큰이 유효하면 사용자 정보 조회
         String url = "https://www.googleapis.com/oauth2/v2/userinfo";
@@ -270,9 +325,11 @@ public class AuthService {
             ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, entity, Map.class);
             Map<String, Object> body = response.getBody();
             if (body == null) throw new UserException("Google 응답이 비어있습니다.");
+            validateGoogleEmailVerification(body);
             String id = (String) body.get("id");
             String email = (String) body.get("email");
             if (id == null || email == null) throw new UserException("Google 필수 정보가 없습니다.");
+            validateGoogleUserInfoMatchesToken(tokenInfo, id, email);
 
             return AuthDto.OAuthUserInfo.builder()
                 .provider("google").providerId(id).email(email)
@@ -289,7 +346,7 @@ public class AuthService {
      * tokeninfo 엔드포인트를 통해 토큰의 유효성, 만료 시간, 발급자를 검증
      */
     @SuppressWarnings("unchecked")
-    private void verifyGoogleToken(String accessToken) {
+    private Map<String, Object> verifyGoogleToken(String accessToken) {
         String tokenInfoUrl = "https://oauth2.googleapis.com/tokeninfo?access_token=" + accessToken;
 
         try {
@@ -325,7 +382,11 @@ public class AuthService {
                 }
             }
 
+            validateGoogleAudience(tokenInfo);
+            validateGoogleEmailVerification(tokenInfo);
+
             log.debug("Google 토큰 검증 성공: email={}", tokenInfo.get("email"));
+            return tokenInfo;
 
         } catch (UserException e) {
             throw e;
@@ -333,6 +394,65 @@ public class AuthService {
             log.error("Google 토큰 검증 중 오류", e);
             throw new UserException("Google 토큰 검증에 실패했습니다.");
         }
+    }
+
+    private void validateGoogleUserInfoMatchesToken(
+            Map<String, Object> tokenInfo,
+            String userInfoId,
+            String userInfoEmail
+    ) {
+        String tokenEmail = firstString(tokenInfo, "email");
+        if (tokenEmail != null && !tokenEmail.equalsIgnoreCase(userInfoEmail)) {
+            throw new UserException("Google 사용자 정보가 토큰 정보와 일치하지 않습니다.");
+        }
+
+        String tokenUserId = firstString(tokenInfo, "user_id", "sub");
+        if (tokenUserId != null && !tokenUserId.equals(userInfoId)) {
+            throw new UserException("Google 사용자 정보가 토큰 정보와 일치하지 않습니다.");
+        }
+    }
+
+    private void validateGoogleAudience(Map<String, Object> tokenInfo) {
+        Set<String> allowedClientIds = parseConfiguredGoogleClientIds();
+        if (allowedClientIds.isEmpty()) {
+            return;
+        }
+
+        String audience = firstString(tokenInfo, "aud", "audience", "issued_to");
+        if (audience == null || !allowedClientIds.contains(audience)) {
+            throw new UserException("Google 토큰 audience가 허용된 클라이언트와 일치하지 않습니다.");
+        }
+    }
+
+    private void validateGoogleEmailVerification(Map<String, Object> tokenInfo) {
+        Object verified = tokenInfo.containsKey("verified_email")
+                ? tokenInfo.get("verified_email")
+                : tokenInfo.get("email_verified");
+
+        if (verified != null && !Boolean.parseBoolean(String.valueOf(verified))) {
+            throw new UserException("Google 이메일이 검증되지 않았습니다.");
+        }
+    }
+
+    private Set<String> parseConfiguredGoogleClientIds() {
+        if (googleClientIds == null || googleClientIds.isBlank()) {
+            return Set.of();
+        }
+
+        return Arrays.stream(googleClientIds.split(","))
+                .map(String::trim)
+                .filter(value -> !value.isEmpty())
+                .collect(Collectors.toSet());
+    }
+
+    private String firstString(Map<String, Object> values, String... keys) {
+        for (String key : keys) {
+            Object value = values.get(key);
+            if (value instanceof String stringValue && !stringValue.isBlank()) {
+                return stringValue;
+            }
+        }
+        return null;
     }
 
     @SuppressWarnings("unchecked")
@@ -449,13 +569,15 @@ public class AuthService {
     /**
      * OAuth 사용자 생성
      */
-    private User createOAuthUser(AuthDto.OAuthUserInfo userInfo) {
+    private User createOAuthUser(AuthDto.OAuthUserInfo userInfo, User.AuthProvider provider) {
         User user = new User();
         user.setEmail(userInfo.getEmail());
         user.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));  // 임의의 비밀번호
         user.setNickname(generateUniqueNickname(userInfo.getName()));
         user.setFullName(userInfo.getName());
         user.setProfileImageUrl(userInfo.getProfileImageUrl());
+        user.setProvider(provider);
+        user.setProviderId(userInfo.getProviderId());
         user.setIsActive(true);
         user.setIsEmailVerified(true);  // OAuth 사용자는 이메일 인증 완료로 처리
         user.setIsLocationEnabled(false);
@@ -465,6 +587,20 @@ public class AuthService {
         log.info("새로운 OAuth 사용자 생성: {} (provider: {})", savedUser.getEmail(), userInfo.getProvider());
 
         return savedUser;
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
+    }
+
+    private void validateRefreshTokenDevice(RefreshToken refreshToken, String deviceId) {
+        if (isBlank(deviceId) || isBlank(refreshToken.getDeviceId())) {
+            return;
+        }
+
+        if (!refreshToken.getDeviceId().equals(deviceId)) {
+            throw new UserException("Refresh token 기기 정보가 일치하지 않습니다.");
+        }
     }
 
     /**

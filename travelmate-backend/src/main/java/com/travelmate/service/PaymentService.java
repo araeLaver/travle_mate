@@ -8,10 +8,13 @@ import com.travelmate.entity.Subscription;
 import com.travelmate.entity.Subscription.*;
 import com.travelmate.entity.User;
 import com.travelmate.entity.nft.PointSource;
+import com.travelmate.exception.BusinessException;
+import com.travelmate.exception.ErrorCode;
 import com.travelmate.repository.PaymentRepository;
 import com.travelmate.repository.SubscriptionRepository;
 import com.travelmate.repository.UserRepository;
 import com.travelmate.service.nft.PointService;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -54,6 +57,38 @@ public class PaymentService {
 
     @Value("${app.base-url:http://localhost:3000}")
     private String appBaseUrl;
+
+    @Value("${spring.profiles.active:}")
+    private String activeProfiles;
+
+    @PostConstruct
+    void validateProductionConfiguration() {
+        if (!isProdProfile()) {
+            return;
+        }
+
+        if (isBlank(tossSecretKey) || tossSecretKey.startsWith("test_")) {
+            throw new IllegalStateException("Production payment.toss.secret-key must be a live Toss secret key");
+        }
+
+        if (isBlank(tossClientKey) || tossClientKey.startsWith("test_")) {
+            throw new IllegalStateException("Production payment.toss.client-key must be a live Toss client key");
+        }
+
+        if (isBlank(appBaseUrl) || appBaseUrl.contains("localhost") || appBaseUrl.contains("127.0.0.1")) {
+            throw new IllegalStateException("Production app.base-url must be a public application URL");
+        }
+    }
+
+    private boolean isProdProfile() {
+        return Arrays.stream(activeProfiles.split(","))
+                .map(String::trim)
+                .anyMatch("prod"::equalsIgnoreCase);
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
+    }
 
     // 포인트 상품 목록
     private static final List<PointProduct> POINT_PRODUCTS = Arrays.asList(
@@ -165,7 +200,7 @@ public class PaymentService {
     @Transactional
     public PaymentPrepareResponse preparePayment(Long userId, PaymentRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         // 주문 ID 생성
         String orderId = generateOrderId();
@@ -192,7 +227,7 @@ public class PaymentService {
                 productType = ProductType.SUBSCRIPTION;
                 break;
             default:
-                throw new IllegalArgumentException("지원하지 않는 상품 유형입니다.");
+                throw BusinessException.badRequest("지원하지 않는 상품 유형입니다.");
         }
 
         // 쿠폰 적용
@@ -247,18 +282,18 @@ public class PaymentService {
     @Transactional
     public PaymentResult confirmPayment(Long userId, PaymentConfirmRequest request) {
         Payment payment = paymentRepository.findByOrderId(request.getOrderId())
-                .orElseThrow(() -> new IllegalArgumentException("결제 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND, "결제 정보를 찾을 수 없습니다."));
 
         // 사용자 검증
         if (!payment.getUser().getId().equals(userId)) {
-            throw new IllegalArgumentException("결제 권한이 없습니다.");
+            throw new BusinessException(ErrorCode.FORBIDDEN, "결제 권한이 없습니다.");
         }
 
         // 금액 검증
         if (payment.getFinalAmount().compareTo(request.getAmount()) != 0) {
             log.error("Payment amount mismatch: expected={}, actual={}",
                     payment.getFinalAmount(), request.getAmount());
-            throw new IllegalArgumentException("결제 금액이 일치하지 않습니다.");
+            throw BusinessException.badRequest("결제 금액이 일치하지 않습니다.");
         }
 
         try {
@@ -409,16 +444,16 @@ public class PaymentService {
     @Transactional
     public RefundResult requestRefund(Long userId, RefundRequest request) {
         Payment payment = paymentRepository.findByOrderId(request.getOrderId())
-                .orElseThrow(() -> new IllegalArgumentException("결제 정보를 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND, "결제 정보를 찾을 수 없습니다."));
 
         // 권한 검증
         if (!payment.getUser().getId().equals(userId)) {
-            throw new IllegalArgumentException("환불 권한이 없습니다.");
+            throw new BusinessException(ErrorCode.FORBIDDEN, "환불 권한이 없습니다.");
         }
 
         // 상태 검증
         if (payment.getStatus() != PaymentStatus.COMPLETED) {
-            throw new IllegalArgumentException("환불할 수 없는 결제입니다.");
+            throw BusinessException.conflict("환불할 수 없는 결제입니다.");
         }
 
         BigDecimal refundAmount = request.getRefundAmount() != null
@@ -571,7 +606,7 @@ public class PaymentService {
     @Transactional
     public SubscriptionInfo cancelSubscription(Long userId, String reason) {
         Subscription subscription = subscriptionRepository.findActiveByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("활성 구독이 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND, "활성 구독이 없습니다."));
 
         subscription.cancel(reason);
         subscriptionRepository.save(subscription);
@@ -631,14 +666,14 @@ public class PaymentService {
         return POINT_PRODUCTS.stream()
                 .filter(p -> p.getProductId().equals(productId))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("포인트 상품을 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND, "포인트 상품을 찾을 수 없습니다."));
     }
 
     private SubscriptionProduct findSubscriptionProduct(String productId) {
         return SUBSCRIPTION_PRODUCTS.stream()
                 .filter(p -> p.getProductId().equals(productId))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("구독 상품을 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND, "구독 상품을 찾을 수 없습니다."));
     }
 
     private PaymentHistory toPaymentHistory(Payment payment) {

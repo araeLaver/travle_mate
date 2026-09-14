@@ -36,20 +36,20 @@ public class LocationReviewService {
     @Transactional
     public LocationReviewDto.Response createReview(Long userId, Long locationId, LocationReviewDto.CreateRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         CollectibleLocation location = locationRepository.findById(locationId)
-                .orElseThrow(() -> new BusinessException("장소를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.notFound("장소를 찾을 수 없습니다."));
 
         // 해당 장소를 수집했는지 확인
         boolean hasCollected = userNftCollectionRepository.existsByUserIdAndLocationId(userId, locationId);
         if (!hasCollected) {
-            throw new BusinessException("해당 장소를 수집한 후에 리뷰를 작성할 수 있습니다.");
+            throw BusinessException.badRequest("해당 장소를 수집한 후에 리뷰를 작성할 수 있습니다.");
         }
 
         // 이미 리뷰를 작성했는지 확인
         if (locationReviewRepository.existsByReviewerIdAndLocationId(userId, locationId)) {
-            throw new BusinessException("이미 리뷰를 작성한 장소입니다.");
+            throw BusinessException.conflict("이미 리뷰를 작성한 장소입니다.");
         }
 
         LocationReview review = LocationReview.builder()
@@ -76,11 +76,11 @@ public class LocationReviewService {
     @Transactional
     public LocationReviewDto.Response updateReview(Long userId, Long reviewId, LocationReviewDto.UpdateRequest request) {
         LocationReview review = locationReviewRepository.findById(reviewId)
-                .orElseThrow(() -> new BusinessException("리뷰를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.notFound("리뷰를 찾을 수 없습니다."));
 
         // 작성자 확인
         if (!review.getReviewer().getId().equals(userId)) {
-            throw new BusinessException("본인이 작성한 리뷰만 수정할 수 있습니다.");
+            throw BusinessException.forbidden("본인이 작성한 리뷰만 수정할 수 있습니다.");
         }
 
         if (request.getRating() != null) {
@@ -110,11 +110,11 @@ public class LocationReviewService {
     @Transactional
     public void deleteReview(Long userId, Long reviewId) {
         LocationReview review = locationReviewRepository.findById(reviewId)
-                .orElseThrow(() -> new BusinessException("리뷰를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.notFound("리뷰를 찾을 수 없습니다."));
 
         // 작성자 확인
         if (!review.getReviewer().getId().equals(userId)) {
-            throw new BusinessException("본인이 작성한 리뷰만 삭제할 수 있습니다.");
+            throw BusinessException.forbidden("본인이 작성한 리뷰만 삭제할 수 있습니다.");
         }
 
         Long locationId = review.getLocation().getId();
@@ -155,7 +155,7 @@ public class LocationReviewService {
     @Transactional(readOnly = true)
     public LocationReviewDto.Response getReview(Long userId, Long reviewId) {
         LocationReview review = locationReviewRepository.findById(reviewId)
-                .orElseThrow(() -> new BusinessException("리뷰를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.notFound("리뷰를 찾을 수 없습니다."));
         return toResponse(review, userId);
     }
 
@@ -165,14 +165,14 @@ public class LocationReviewService {
     @Transactional
     public boolean toggleHelpful(Long userId, Long reviewId) {
         LocationReview review = locationReviewRepository.findById(reviewId)
-                .orElseThrow(() -> new BusinessException("리뷰를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.notFound("리뷰를 찾을 수 없습니다."));
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         // 본인 리뷰에는 도움됨 표시 불가
         if (review.getReviewer().getId().equals(userId)) {
-            throw new BusinessException("본인의 리뷰에는 도움됨을 표시할 수 없습니다.");
+            throw BusinessException.badRequest("본인의 리뷰에는 도움됨을 표시할 수 없습니다.");
         }
 
         var existing = reviewHelpfulRepository.findByUserIdAndReviewId(userId, reviewId);
@@ -219,7 +219,7 @@ public class LocationReviewService {
         long reviewCount = locationReviewRepository.countByLocationId(locationId);
 
         CollectibleLocation location = locationRepository.findById(locationId)
-                .orElseThrow(() -> new BusinessException("장소를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.notFound("장소를 찾을 수 없습니다."));
 
         location.setAverageRating(averageRating != null ? averageRating : 0.0);
         location.setReviewCount((int) reviewCount);

@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.travelmate.dto.PostDto;
 import com.travelmate.dto.UserDto;
 import com.travelmate.entity.Post;
+import com.travelmate.exception.BusinessException;
+import com.travelmate.exception.ErrorCode;
 import com.travelmate.security.JwtAuthenticationFilter;
 import com.travelmate.service.PostService;
 import org.junit.jupiter.api.BeforeEach;
@@ -66,7 +68,7 @@ class PostControllerTest {
     void setUp() {
         // SecurityContext 설정
         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                1L, // principal로 userId 사용
+                "1", // principal로 userId 문자열 사용
                 null,
                 Collections.emptyList()
         );
@@ -221,12 +223,13 @@ class PostControllerTest {
         void getPost_NotFound() throws Exception {
             // Given
             when(postService.getPostDetail(999L))
-                    .thenThrow(new RuntimeException("게시글을 찾을 수 없습니다."));
+                    .thenThrow(new BusinessException(ErrorCode.RESOURCE_NOT_FOUND, "게시글을 찾을 수 없습니다."));
 
             // When & Then
             mockMvc.perform(get("/posts/999"))
                     .andDo(print())
-                    .andExpect(status().isInternalServerError());
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.code").value("C1002"));
         }
     }
 
@@ -369,7 +372,9 @@ class PostControllerTest {
                             .param("latitude", "100") // 유효하지 않은 위도
                             .param("longitude", "126.9780"))
                     .andDo(print())
-                    .andExpect(status().isBadRequest());
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
+                    .andExpect(jsonPath("$.message").value("위도는 -90에서 90 사이여야 합니다."));
         }
 
         @Test
@@ -380,7 +385,9 @@ class PostControllerTest {
                             .param("latitude", "37.5665")
                             .param("longitude", "200")) // 유효하지 않은 경도
                     .andDo(print())
-                    .andExpect(status().isBadRequest());
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
+                    .andExpect(jsonPath("$.message").value("경도는 -180에서 180 사이여야 합니다."));
         }
 
         @Test
@@ -392,7 +399,9 @@ class PostControllerTest {
                             .param("longitude", "126.9780")
                             .param("radiusKm", "150")) // 100km 초과
                     .andDo(print())
-                    .andExpect(status().isBadRequest());
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
+                    .andExpect(jsonPath("$.message").value("반경은 0~100km 이내여야 합니다."));
         }
     }
 

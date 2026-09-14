@@ -215,6 +215,30 @@ public class CompanionMatchingService {
         matchRequestRepository.save(matchRequest);
     }
 
+    // ===== 동행 완료 =====
+
+    @Transactional
+    public MatchRequestResponse completeMatchRequest(Long userId, Long requestId) {
+        MatchRequest matchRequest = matchRequestRepository.findById(requestId)
+                .orElseThrow(() -> BusinessException.notFound("매칭 요청을 찾을 수 없습니다."));
+
+        boolean isParticipant = matchRequest.getRequester().getId().equals(userId)
+                || matchRequest.getReceiver().getId().equals(userId);
+        if (!isParticipant) {
+            throw BusinessException.forbidden("해당 매칭의 참여자만 완료 처리할 수 있습니다.");
+        }
+
+        try {
+            matchingStateGuard.validate(matchRequest.getStatus(), MatchStatus.COMPLETED, requestId);
+        } catch (IllegalStateException e) {
+            throw BusinessException.badRequest("수락된 매칭만 완료 처리할 수 있습니다. 현재 상태: " + matchRequest.getStatus());
+        }
+
+        matchRequest.setStatus(MatchStatus.COMPLETED);
+        matchRequest = matchRequestRepository.save(matchRequest);
+        return toMatchRequestResponse(matchRequest);
+    }
+
     // ===== 조회 =====
 
     @Transactional(readOnly = true)
@@ -233,13 +257,14 @@ public class CompanionMatchingService {
 
     @Transactional(readOnly = true)
     public List<MatchHistoryResponse> getMatchHistory(Long userId) {
-        return matchRequestRepository.findAcceptedMatches(userId).stream()
+        return matchRequestRepository.findMatchHistory(userId).stream()
                 .map(mr -> {
                     User partner = mr.getRequester().getId().equals(userId)
                             ? mr.getReceiver() : mr.getRequester();
                     return MatchHistoryResponse.builder()
                             .matchRequestId(mr.getId())
                             .partner(toUserSummary(partner))
+                            .status(mr.getStatus())
                             .totalScore(mr.getTotalScore())
                             .scoreBreakdown(MatchScoreBreakdown.builder()
                                     .travelStyleScore(mr.getTravelStyleScore())

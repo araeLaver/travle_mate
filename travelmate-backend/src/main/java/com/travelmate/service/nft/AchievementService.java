@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.travelmate.dto.NftDto;
 import com.travelmate.entity.User;
 import com.travelmate.entity.nft.*;
+import com.travelmate.exception.BusinessException;
+import com.travelmate.exception.ErrorCode;
 import com.travelmate.repository.UserRepository;
 import com.travelmate.repository.nft.AchievementRepository;
 import com.travelmate.repository.nft.UserAchievementRepository;
@@ -147,7 +149,7 @@ public class AchievementService {
                 .findByTypeAndIsActiveTrueOrderByDisplayOrderAsc(AchievementType.COLLECTION);
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다"));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         for (Achievement achievement : collectionAchievements) {
             // 이미 완료된 업적인지 확인
@@ -217,10 +219,10 @@ public class AchievementService {
     @Transactional
     public void updateAchievementProgress(Long userId, String achievementCode, int progress) {
         Achievement achievement = achievementRepository.findByCode(achievementCode)
-                .orElseThrow(() -> new RuntimeException("업적을 찾을 수 없습니다: " + achievementCode));
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND, "업적을 찾을 수 없습니다: " + achievementCode));
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다"));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         UserAchievement userAchievement = userAchievementRepository
                 .findByUserIdAndAchievementId(userId, achievement.getId())

@@ -91,6 +91,29 @@ export interface LocationManagement {
   averageRating: number | null;
 }
 
+export interface RecommendationFeedback {
+  id: number;
+  userId: number;
+  userNickname: string;
+  rating: number;
+  comment: string | null;
+  feedbackType: string | null;
+  targetType: string | null;
+  targetId: number | null;
+  metadata: string | null;
+  createdAt: string;
+}
+
+export interface RecommendationFeedbackStats {
+  totalFeedback: number;
+  averageRating: number;
+  lowRatingCount: number;
+  feedbackLast7Days: number;
+  ratingDistribution: Record<string, number>;
+  feedbackTypeDistribution: Record<string, number>;
+  targetTypeDistribution: Record<string, number>;
+}
+
 export interface SystemHealth {
   status: string;
   uptime: number;
@@ -120,8 +143,8 @@ export interface BulkActionResponse {
 }
 
 class AdminService {
-  private readonly baseUrl = '/admin/locations';
-  private readonly adminApiUrl = '/api/admin';
+  private readonly collectibleLocationUrl = '/admin/collectible-locations';
+  private readonly adminApiUrl = '/admin';
 
   /**
    * 모든 수집 장소 목록 조회 (페이징)
@@ -131,7 +154,7 @@ class AdminService {
     size: number = 20
   ): Promise<PaginatedResponse<CollectibleLocationAdminResponse>> {
     return apiClient.get<PaginatedResponse<CollectibleLocationAdminResponse>>(
-      `${this.baseUrl}?page=${page}&size=${size}`
+      `${this.collectibleLocationUrl}?page=${page}&size=${size}`
     );
   }
 
@@ -139,7 +162,7 @@ class AdminService {
    * 특정 장소 상세 조회
    */
   async getLocation(id: number): Promise<CollectibleLocationAdminResponse> {
-    return apiClient.get<CollectibleLocationAdminResponse>(`${this.baseUrl}/${id}`);
+    return apiClient.get<CollectibleLocationAdminResponse>(`${this.collectibleLocationUrl}/${id}`);
   }
 
   /**
@@ -147,7 +170,7 @@ class AdminService {
    */
   async createLocation(request: CreateLocationRequest): Promise<CollectibleLocationAdminResponse> {
     return apiClient.post<CollectibleLocationAdminResponse, CreateLocationRequest>(
-      this.baseUrl,
+      this.collectibleLocationUrl,
       request
     );
   }
@@ -160,7 +183,7 @@ class AdminService {
     request: UpdateLocationRequest
   ): Promise<CollectibleLocationAdminResponse> {
     return apiClient.put<CollectibleLocationAdminResponse, UpdateLocationRequest>(
-      `${this.baseUrl}/${id}`,
+      `${this.collectibleLocationUrl}/${id}`,
       request
     );
   }
@@ -169,28 +192,32 @@ class AdminService {
    * 장소 활성화/비활성화 토글
    */
   async toggleLocationActive(id: number): Promise<{ message: string }> {
-    return apiClient.patch<{ message: string }>(`${this.baseUrl}/${id}/toggle-active`);
+    return apiClient.patch<{ message: string }>(
+      `${this.collectibleLocationUrl}/${id}/toggle-active`
+    );
   }
 
   /**
    * 장소 삭제
    */
   async deleteLocation(id: number): Promise<void> {
-    return apiClient.delete<void>(`${this.baseUrl}/${id}`);
+    return apiClient.delete<void>(`${this.collectibleLocationUrl}/${id}`);
   }
 
   /**
    * 시즌 이벤트 장소 조회
    */
   async getSeasonalEvents(): Promise<CollectibleLocationAdminResponse[]> {
-    return apiClient.get<CollectibleLocationAdminResponse[]>(`${this.baseUrl}/seasonal-events`);
+    return apiClient.get<CollectibleLocationAdminResponse[]>(
+      `${this.collectibleLocationUrl}/seasonal-events`
+    );
   }
 
   /**
    * 장소 통계 조회
    */
   async getLocationStats(): Promise<LocationStatsResponse> {
-    return apiClient.get<LocationStatsResponse>(`${this.baseUrl}/stats`);
+    return apiClient.get<LocationStatsResponse>(`${this.collectibleLocationUrl}/stats`);
   }
 
   /**
@@ -198,7 +225,7 @@ class AdminService {
    */
   async bulkCreateLocations(requests: CreateLocationRequest[]): Promise<BulkCreateResponse> {
     return apiClient.post<BulkCreateResponse, CreateLocationRequest[]>(
-      `${this.baseUrl}/bulk`,
+      `${this.collectibleLocationUrl}/bulk`,
       requests
     );
   }
@@ -322,6 +349,42 @@ class AdminService {
    */
   async deleteAdminLocation(locationId: number): Promise<void> {
     return apiClient.delete<void>(`${this.adminApiUrl}/locations/${locationId}`);
+  }
+
+  // ===== Recommendation Feedback API =====
+
+  /**
+   * 추천 피드백 목록 조회
+   */
+  async getRecommendationFeedback(
+    params: {
+      userId?: number;
+      rating?: number;
+      feedbackType?: string;
+      targetType?: string;
+      page?: number;
+      size?: number;
+    } = {}
+  ): Promise<PaginatedResponse<RecommendationFeedback>> {
+    const queryParams = new URLSearchParams();
+    if (params.userId !== undefined) queryParams.append('userId', String(params.userId));
+    if (params.rating !== undefined) queryParams.append('rating', String(params.rating));
+    if (params.feedbackType) queryParams.append('feedbackType', params.feedbackType);
+    if (params.targetType) queryParams.append('targetType', params.targetType);
+    if (params.page !== undefined) queryParams.append('page', String(params.page));
+    if (params.size !== undefined) queryParams.append('size', String(params.size));
+
+    const url = `${this.adminApiUrl}/recommendation-feedback${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+    return apiClient.get<PaginatedResponse<RecommendationFeedback>>(url);
+  }
+
+  /**
+   * 추천 피드백 통계 조회
+   */
+  async getRecommendationFeedbackStats(): Promise<RecommendationFeedbackStats> {
+    return apiClient.get<RecommendationFeedbackStats>(
+      `${this.adminApiUrl}/recommendation-feedback/stats`
+    );
   }
 }
 

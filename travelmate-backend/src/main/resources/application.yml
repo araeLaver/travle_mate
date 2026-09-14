@@ -1,7 +1,7 @@
 server:
   port: ${SERVER_PORT:8080}
   servlet:
-    context-path: /
+    context-path: /api
   compression:
     enabled: true
     mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json,application/xml
@@ -163,6 +163,8 @@ app:
     enabled: true  # 개발환경에서는 Redis 활성화
 
   oauth:
+    google:
+      client-ids: ${GOOGLE_CLIENT_IDS:}
     naver:
       client-id: ${NAVER_CLIENT_ID:}
       client-secret: ${NAVER_CLIENT_SECRET:}
@@ -206,6 +208,7 @@ sentry:
 # 블록체인 설정 (Polygon)
 blockchain:
   enabled: ${BLOCKCHAIN_ENABLED:false}
+  require-in-prod: ${BLOCKCHAIN_REQUIRE_IN_PROD:true}
   polygon:
     rpc-url: ${POLYGON_RPC_URL:https://polygon-amoy.g.alchemy.com/v2/demo}
     chain-id: ${POLYGON_CHAIN_ID:80002}
@@ -248,6 +251,7 @@ payment:
 # SMS 본인인증 설정
 sms:
   provider: ${SMS_PROVIDER:mock}
+  require-in-prod: ${SMS_REQUIRE_IN_PROD:true}
   expiration-minutes: 5
   max-attempts: 5
 
@@ -300,8 +304,13 @@ spring:
       minimum-idle: 1
       idle-timeout: 120000
       connection-timeout: 30000
-      max-lifetime: 1800000
+      # 무료 DB가 유휴 커넥션을 끊으므로: 주기적 keepalive + 짧은 수명 + 소켓 타임아웃으로 죽은 커넥션에 매달리지 않게 함
+      max-lifetime: 240000
+      keepalive-time: 60000
       validation-timeout: 5000
+      data-source-properties:
+        socketTimeout: 30
+        tcpKeepAlive: true
     continue-on-error: false
 
   sql:
@@ -312,7 +321,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update  # 초기 배포 시 스키마 생성을 위해 update로 설정 (이후 validate로 환원 권장)
+      ddl-auto: validate  # 프로덕션에서는 스키마 자동 변경 금지
     show-sql: false
     properties:
       hibernate:
@@ -400,6 +409,9 @@ logging:
   level:
     root: WARN
     com.travelmate: INFO
+    # 요청마다 헤더·파라미터·본문·응답헤더를 INFO로 찍는 필터. 무료 인스턴스(0.1 vCPU)에서는
+    # 이 로깅 자체가 응답시간에 잡히므로 운영에서는 끈다. 문제 추적이 필요하면 이 줄만 INFO로 되돌릴 것.
+    com.travelmate.security.RequestLoggingFilter: WARN
     org.springframework: WARN
     org.hibernate: ERROR
     org.apache: ERROR
@@ -417,9 +429,11 @@ app:
     enabled: ${MAIL_ENABLED:false}  # MVP: 메일 비활성화 (필요시 환경변수로 활성화)
 
   redis:
-    enabled: false  # Koyeb 무료 플랜에서 Redis 미사용
+    enabled: ${APP_REDIS_ENABLED:true}  # 컨테이너 내장 redis-server 사용 (Dockerfile CMD)
 
   oauth:
+    google:
+      client-ids: ${GOOGLE_CLIENT_IDS:}
     naver:
       client-id: ${NAVER_CLIENT_ID:}
       client-secret: ${NAVER_CLIENT_SECRET:}

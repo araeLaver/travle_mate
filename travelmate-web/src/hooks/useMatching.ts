@@ -11,6 +11,7 @@ import {
   sendMatchRequest,
   respondToMatchRequest,
   cancelMatchRequest,
+  completeMatchRequest,
   getReceivedRequests,
   getSentRequests,
   getMatchHistory,
@@ -61,6 +62,17 @@ export function useCancelMatchRequest() {
 
   return useMutation<void, Error, number>({
     mutationFn: requestId => cancelMatchRequest(requestId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: matchingKeys.all });
+    },
+  });
+}
+
+export function useCompleteMatchRequest() {
+  const queryClient = useQueryClient();
+
+  return useMutation<MatchRequestResponse, Error, number>({
+    mutationFn: requestId => completeMatchRequest(requestId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: matchingKeys.all });
     },

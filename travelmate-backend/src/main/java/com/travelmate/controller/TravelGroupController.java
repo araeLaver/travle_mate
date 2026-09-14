@@ -1,5 +1,6 @@
 package com.travelmate.controller;
 
+import com.travelmate.security.AuthenticatedUserId;
 import com.travelmate.dto.TravelGroupDto;
 import com.travelmate.entity.TravelGroup;
 import com.travelmate.service.TravelGroupService;
@@ -24,7 +25,7 @@ public class TravelGroupController {
     public ResponseEntity<TravelGroupDto.Response> createGroup(
             @AuthenticationPrincipal String userId,
             @Valid @RequestBody TravelGroupDto.CreateRequest request) {
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         TravelGroupDto.Response response = travelGroupService.createGroup(userIdLong, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -49,7 +50,7 @@ public class TravelGroupController {
     public ResponseEntity<Void> joinGroup(
             @PathVariable Long id,
             @AuthenticationPrincipal String userId) {
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         travelGroupService.joinGroup(id, userIdLong);
         return ResponseEntity.ok().build();
     }
@@ -58,7 +59,7 @@ public class TravelGroupController {
     public ResponseEntity<Void> leaveGroup(
             @PathVariable Long id,
             @AuthenticationPrincipal String userId) {
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         travelGroupService.leaveGroup(id, userIdLong);
         return ResponseEntity.ok().build();
     }
@@ -68,7 +69,7 @@ public class TravelGroupController {
             @PathVariable Long id,
             @AuthenticationPrincipal String userId,
             @Valid @RequestBody TravelGroupDto.UpdateRequest request) {
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         TravelGroupDto.Response response = travelGroupService.updateGroup(id, userIdLong, request);
         return ResponseEntity.ok(response);
     }
@@ -78,7 +79,7 @@ public class TravelGroupController {
             @PathVariable Long id,
             @AuthenticationPrincipal String userId,
             @RequestParam TravelGroup.Status status) {
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         travelGroupService.updateGroupStatus(id, userIdLong, status);
         return ResponseEntity.ok().build();
     }
@@ -86,7 +87,7 @@ public class TravelGroupController {
     @GetMapping("/my-groups")
     public ResponseEntity<List<TravelGroupDto.Response>> getMyGroups(
             @AuthenticationPrincipal String userId) {
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         List<TravelGroupDto.Response> myGroups = travelGroupService.getMyGroups(userIdLong);
         return ResponseEntity.ok(myGroups);
     }
@@ -95,7 +96,7 @@ public class TravelGroupController {
     public ResponseEntity<Void> deleteGroup(
             @PathVariable Long id,
             @AuthenticationPrincipal String userId) {
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         travelGroupService.deleteGroup(id, userIdLong);
         return ResponseEntity.noContent().build();
     }
@@ -105,7 +106,7 @@ public class TravelGroupController {
             @PathVariable Long id,
             @AuthenticationPrincipal String userId,
             @Valid @RequestBody TravelGroupDto.InviteRequest request) {
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         travelGroupService.inviteToGroup(id, userIdLong, request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }

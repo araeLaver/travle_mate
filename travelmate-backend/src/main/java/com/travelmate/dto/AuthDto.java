@@ -1,6 +1,7 @@
 package com.travelmate.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -49,6 +50,8 @@ public class AuthDto {
     @Data
     public static class OAuthLoginRequest {
         @NotBlank(message = "Provider는 필수입니다")
+        @Pattern(regexp = "google|kakao|naver", flags = Pattern.Flag.CASE_INSENSITIVE,
+                message = "Provider는 google, kakao, naver 중 하나여야 합니다")
         private String provider;  // google, kakao, naver
 
         @NotBlank(message = "Access token은 필수입니다")
@@ -61,6 +64,8 @@ public class AuthDto {
     @Data
     public static class OAuthCodeLoginRequest {
         @NotBlank(message = "Provider는 필수입니다")
+        @Pattern(regexp = "kakao|naver", flags = Pattern.Flag.CASE_INSENSITIVE,
+                message = "Provider는 kakao, naver 중 하나여야 합니다")
         private String provider;  // naver, kakao
 
         @NotBlank(message = "Authorization code는 필수입니다")

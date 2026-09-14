@@ -8,15 +8,17 @@ const ENVIRONMENT = process.env.REACT_APP_ENV || 'development';
  */
 export const initSentry = () => {
   if (!SENTRY_DSN) {
-    // eslint-disable-next-line no-console
-    console.log('Sentry DSN not configured, skipping initialization');
+    if (ENVIRONMENT === 'development') {
+      // eslint-disable-next-line no-console
+      console.log('Sentry DSN not configured, skipping initialization');
+    }
     return;
   }
 
   Sentry.init({
     dsn: SENTRY_DSN,
     environment: ENVIRONMENT,
-    release: `travelmate-web@${process.env.REACT_APP_VERSION || '1.0.0'}`,
+    release: `doorimate-web@${process.env.REACT_APP_VERSION || '1.0.0'}`,
 
     // Performance Monitoring
     tracesSampleRate: ENVIRONMENT === 'production' ? 0.2 : 1.0,
@@ -28,8 +30,9 @@ export const initSentry = () => {
     // Trace propagation targets (Sentry v8+: must be top-level, not inside browserTracingIntegration)
     tracePropagationTargets: [
       'localhost',
-      /^https:\/\/api\.travelmate\.app/,
-      /^https:\/\/travelmate\.app/,
+      /^\/api/,
+      /^https:\/\/api\.doorimate\.com/,
+      /^https:\/\/doorimate\.com/,
     ],
 
     // Integration options (Sentry v8+ API - migrated from v7)
@@ -89,8 +92,10 @@ export const initSentry = () => {
     ],
   });
 
-  // eslint-disable-next-line no-console
-  console.log('Sentry initialized for environment:', ENVIRONMENT);
+  if (ENVIRONMENT === 'development') {
+    // eslint-disable-next-line no-console
+    console.log('Sentry initialized for environment:', ENVIRONMENT);
+  }
 };
 
 /**

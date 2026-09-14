@@ -62,9 +62,11 @@ export interface ChatRoomApiResponse {
   roomName?: string;
   roomType: 'PRIVATE' | 'GROUP' | 'TRAVEL_GROUP';
   participants?: ChatParticipantApiResponse[];
-  lastMessage?: ChatMessageApiResponse;
+  lastMessage?: ChatMessageApiResponse | string;
+  lastMessageAt?: string;
   unreadCount?: number;
   createdAt: string;
+  canSendMessage?: boolean;
   isActive?: boolean;
 }
 
@@ -76,8 +78,11 @@ export interface ChatParticipantApiResponse {
     nickname?: string;
     profileImageUrl?: string;
   };
+  nickname?: string;
   userName?: string;
+  profileImageUrl?: string;
   profileImage?: string;
+  isActive?: boolean;
   isOnline?: boolean;
   lastSeen?: string;
 }
@@ -287,6 +292,7 @@ export interface TravelGroupApiResponse {
   endDate: string;
   maxMembers?: number;
   currentMembers?: number;
+  currentMemberCount?: number;
   members?: GroupMemberApiResponse[];
   tags?: string[];
   groupImageUrl?: string;
@@ -710,7 +716,14 @@ export interface BulkCreateResponse {
 
 // ===== 동반자 매칭 관련 타입 =====
 
-export type MatchStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED' | 'EXPIRED';
+export type MatchStatus =
+  | 'PENDING'
+  | 'ACCEPTED'
+  | 'REJECTED'
+  | 'CANCELLED'
+  | 'EXPIRED'
+  | 'MATCHED'
+  | 'COMPLETED';
 export type BudgetPreference = 'BUDGET' | 'MEDIUM' | 'COMFORT' | 'LUXURY';
 
 export interface MatchScoreBreakdown {
@@ -759,6 +772,7 @@ export interface MatchRequestResponse {
 export interface MatchHistoryResponse {
   matchRequestId: number;
   partner: MatchUserSummary;
+  status?: MatchStatus;
   totalScore: number;
   scoreBreakdown: MatchScoreBreakdown;
   matchedAt: string;

@@ -1,5 +1,6 @@
 package com.travelmate.controller;
 
+import com.travelmate.security.AuthenticatedUserId;
 import com.travelmate.service.PhoneVerificationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,7 +28,7 @@ public class PhoneVerificationController {
             @AuthenticationPrincipal String userId,
             @RequestBody SendRequest request) {
         Map<String, String> result = phoneVerificationService.sendVerificationCode(
-                Long.parseLong(userId), request.getPhoneNumber());
+                AuthenticatedUserId.parse(userId), request.getPhoneNumber());
         return ResponseEntity.ok(result);
     }
 
@@ -37,7 +38,7 @@ public class PhoneVerificationController {
             @AuthenticationPrincipal String userId,
             @RequestBody VerifyRequest request) {
         Map<String, Object> result = phoneVerificationService.verifyCode(
-                Long.parseLong(userId), request.getPhoneNumber(), request.getCode());
+                AuthenticatedUserId.parse(userId), request.getPhoneNumber(), request.getCode());
         return ResponseEntity.ok(result);
     }
 

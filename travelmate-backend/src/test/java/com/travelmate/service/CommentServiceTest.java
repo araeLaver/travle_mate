@@ -169,7 +169,8 @@ class CommentServiceTest {
             // When & Then
             assertThatThrownBy(() -> commentService.createComment(999L, 1L, request))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("사용자를 찾을 수 없습니다");
+                    .hasMessageContaining("사용자를 찾을 수 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 404, "USER_NOT_FOUND"));
         }
 
         @Test
@@ -185,7 +186,8 @@ class CommentServiceTest {
             // When & Then
             assertThatThrownBy(() -> commentService.createComment(1L, 999L, request))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("게시글을 찾을 수 없습니다");
+                    .hasMessageContaining("게시글을 찾을 수 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 404, "NOT_FOUND"));
         }
 
         @Test
@@ -203,7 +205,30 @@ class CommentServiceTest {
             // When & Then
             assertThatThrownBy(() -> commentService.createComment(1L, 1L, request))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("부모 댓글을 찾을 수 없습니다");
+                    .hasMessageContaining("부모 댓글을 찾을 수 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 404, "NOT_FOUND"));
+        }
+
+        @Test
+        @DisplayName("실패 - 다른 게시글의 부모 댓글")
+        void createComment_Fail_InvalidParent() {
+            // Given
+            CommentDto.CreateRequest request = new CommentDto.CreateRequest();
+            request.setContent("답글");
+            request.setParentCommentId(1L);
+            Post otherPost = new Post();
+            otherPost.setId(2L);
+            comment.setPost(otherPost);
+
+            when(userRepository.findById(1L)).thenReturn(Optional.of(author));
+            when(postRepository.findById(1L)).thenReturn(Optional.of(post));
+            when(commentRepository.findByIdAndNotDeleted(1L)).thenReturn(Optional.of(comment));
+
+            // When & Then
+            assertThatThrownBy(() -> commentService.createComment(1L, 1L, request))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("잘못된 부모 댓글")
+                    .satisfies(ex -> assertBusinessException(ex, 400, "BAD_REQUEST"));
         }
     }
 
@@ -241,7 +266,8 @@ class CommentServiceTest {
             // When & Then
             assertThatThrownBy(() -> commentService.updateComment(1L, 999L, request))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("댓글을 찾을 수 없습니다");
+                    .hasMessageContaining("댓글을 찾을 수 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 404, "NOT_FOUND"));
         }
 
         @Test
@@ -256,7 +282,8 @@ class CommentServiceTest {
             // When & Then
             assertThatThrownBy(() -> commentService.updateComment(2L, 1L, request))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("수정할 권한이 없습니다");
+                    .hasMessageContaining("수정할 권한이 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 403, "FORBIDDEN"));
         }
     }
 
@@ -313,7 +340,8 @@ class CommentServiceTest {
             // When & Then
             assertThatThrownBy(() -> commentService.deleteComment(3L, 1L))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("삭제할 권한이 없습니다");
+                    .hasMessageContaining("삭제할 권한이 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 403, "FORBIDDEN"));
         }
     }
 
@@ -353,7 +381,8 @@ class CommentServiceTest {
             // When & Then
             assertThatThrownBy(() -> commentService.likeComment(2L, 1L))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("이미 좋아요한 댓글");
+                    .hasMessageContaining("이미 좋아요한 댓글")
+                    .satisfies(ex -> assertBusinessException(ex, 409, "CONFLICT"));
         }
     }
 
@@ -392,7 +421,8 @@ class CommentServiceTest {
             // When & Then
             assertThatThrownBy(() -> commentService.unlikeComment(2L, 1L))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("좋아요하지 않은 댓글");
+                    .hasMessageContaining("좋아요하지 않은 댓글")
+                    .satisfies(ex -> assertBusinessException(ex, 404, "NOT_FOUND"));
         }
     }
 
@@ -432,7 +462,8 @@ class CommentServiceTest {
             // When & Then
             assertThatThrownBy(() -> commentService.getCommentsByPostId(999L, 1L, pageable))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("게시글을 찾을 수 없습니다");
+                    .hasMessageContaining("게시글을 찾을 수 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 404, "NOT_FOUND"));
         }
     }
 
@@ -475,7 +506,14 @@ class CommentServiceTest {
             // When & Then
             assertThatThrownBy(() -> commentService.getReplies(999L, 1L))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("댓글을 찾을 수 없습니다");
+                    .hasMessageContaining("댓글을 찾을 수 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 404, "NOT_FOUND"));
         }
+    }
+
+    private void assertBusinessException(Throwable throwable, int status, String errorCode) {
+        BusinessException exception = (BusinessException) throwable;
+        assertThat(exception.getStatus().value()).isEqualTo(status);
+        assertThat(exception.getErrorCodeStr()).isEqualTo(errorCode);
     }
 }

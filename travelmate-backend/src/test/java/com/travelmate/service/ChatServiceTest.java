@@ -102,7 +102,6 @@ class ChatServiceTest {
                 room.setId(100L);
                 return room;
             });
-            when(chatParticipantRepository.existsByChatRoomIdAndUserId(anyLong(), anyLong())).thenReturn(false);
             when(chatMessageRepository.save(any(ChatMessage.class))).thenAnswer(inv -> {
                 ChatMessage msg = inv.getArgument(0);
                 msg.setId(1L);
@@ -140,12 +139,12 @@ class ChatServiceTest {
 
             when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
             when(travelGroupRepository.findById(200L)).thenReturn(Optional.of(travelGroup));
+            when(chatRoomRepository.findByTravelGroupId(200L)).thenReturn(Optional.empty());
             when(chatRoomRepository.save(any(ChatRoom.class))).thenAnswer(inv -> {
                 ChatRoom room = inv.getArgument(0);
                 room.setId(100L);
                 return room;
             });
-            when(chatParticipantRepository.existsByChatRoomIdAndUserId(anyLong(), anyLong())).thenReturn(false);
             when(chatMessageRepository.save(any(ChatMessage.class))).thenAnswer(inv -> {
                 ChatMessage msg = inv.getArgument(0);
                 msg.setId(1L);
@@ -163,6 +162,37 @@ class ChatServiceTest {
             // Then
             assertThat(response.getRoomName()).isEqualTo("제주도 여행 채팅");
             assertThat(response.getTravelGroupId()).isEqualTo(200L);
+        }
+
+        @Test
+        @DisplayName("성공 - 기존 여행 그룹 채팅방 재사용")
+        void createChatRoom_TravelGroup_ReusesExistingRoom() {
+            // Given
+            TravelGroup travelGroup = new TravelGroup();
+            travelGroup.setId(200L);
+            travelGroup.setTitle("제주도 여행");
+
+            testChatRoom.setRoomType(ChatRoom.RoomType.TRAVEL_GROUP);
+            testChatRoom.setTravelGroup(travelGroup);
+
+            ChatDto.CreateChatRoomRequest request = new ChatDto.CreateChatRoomRequest();
+            request.setRoomType(ChatRoom.RoomType.TRAVEL_GROUP);
+            request.setTravelGroupId(200L);
+
+            when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+            when(travelGroupRepository.findById(200L)).thenReturn(Optional.of(travelGroup));
+            when(chatRoomRepository.findByTravelGroupId(200L)).thenReturn(Optional.of(testChatRoom));
+            when(chatParticipantRepository.findByChatRoomIdAndUserId(100L, 1L)).thenReturn(Optional.empty());
+
+            // When
+            ChatDto.ChatRoomResponse response = chatService.createChatRoom(1L, request);
+
+            // Then
+            assertThat(response.getId()).isEqualTo(100L);
+            assertThat(response.getTravelGroupId()).isEqualTo(200L);
+            verify(chatRoomRepository, never()).save(any(ChatRoom.class));
+            verify(chatMessageRepository, never()).save(any(ChatMessage.class));
+            verify(chatParticipantRepository).save(any(ChatParticipant.class));
         }
 
         @Test
@@ -239,30 +269,42 @@ class ChatServiceTest {
 
             when(chatMessageRepository.findByChatRoomIdAndIsDeletedFalse(eq(100L), any(PageRequest.class)))
                     .thenReturn(List.of(message));
+            when(chatParticipantRepository.existsByChatRoomIdAndUserId(100L, 1L)).thenReturn(true);
 
             // When
-            List<ChatDto.MessageResponse> result = chatService.getChatMessages(100L, 0, 20);
+            List<ChatDto.MessageResponse> result = chatService.getChatMessages(100L, 1L, 0, 20);
 
             // Then
             assertThat(result).hasSize(1);
             assertThat(result.get(0).getContent()).isEqualTo("안녕하세요");
         }
+
+        @Test
+        @DisplayName("실패 - 참가자가 아닌 사용자의 메시지 조회")
+        void getChatMessages_Unauthorized() {
+            // Given
+            when(chatParticipantRepository.existsByChatRoomIdAndUserId(100L, 999L)).thenReturn(false);
+
+            // When & Then
+            assertThatThrownBy(() -> chatService.getChatMessages(100L, 999L, 0, 20))
+                    .isInstanceOf(ChatException.UnauthorizedChatAccessException.class)
+                    .hasMessageContaining("채팅 참여자가 아닙니다");
+        }
     }
 
     @Nested
-    @DisplayName("processMessage 테스트")
-    class ProcessMessageTest {
+    @DisplayName("sendRestMessage 테스트")
+    class SendRestMessageTest {
 
         @Test
-        @DisplayName("성공 - 메시지 전송")
-        void processMessage_Success() {
+        @DisplayName("성공 - REST 요청은 경로 방 ID와 인증 사용자 ID로 전송")
+        void sendRestMessage_PopulatesRouteAndPrincipalIds() {
             // Given
             ChatDto.MessageRequest request = new ChatDto.MessageRequest();
-            request.setChatRoomId(100L);
-            request.setSenderId(1L);
-            request.setContent("테스트 메시지");
+            request.setContent("모바일 메시지");
             request.setMessageType(ChatMessage.MessageType.TEXT);
 
+            when(chatParticipantRepository.existsByChatRoomIdAndUserId(100L, 1L)).thenReturn(true);
             when(chatRoomRepository.findById(100L)).thenReturn(Optional.of(testChatRoom));
             when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
             when(chatMessageRepository.save(any(ChatMessage.class))).thenAnswer(inv -> {
@@ -273,12 +315,54 @@ class ChatServiceTest {
             });
 
             // When
-            chatService.processMessage(request);
+            ChatDto.MessageResponse response = chatService.sendRestMessage(100L, 1L, request);
 
             // Then
+            assertThat(request.getChatRoomId()).isEqualTo(100L);
+            assertThat(request.getSenderId()).isEqualTo(1L);
+            assertThat(response.getContent()).isEqualTo("모바일 메시지");
+
+            ArgumentCaptor<ChatMessage> messageCaptor = ArgumentCaptor.forClass(ChatMessage.class);
+            verify(chatMessageRepository).save(messageCaptor.capture());
+            assertThat(messageCaptor.getValue().getChatRoom().getId()).isEqualTo(100L);
+            assertThat(messageCaptor.getValue().getSender().getId()).isEqualTo(1L);
+        }
+    }
+
+    @Nested
+    @DisplayName("processMessage 테스트")
+    class ProcessMessageTest {
+
+        @Test
+        @DisplayName("성공 - STOMP 메시지는 인증 사용자 ID로 전송")
+        void processMessage_Success() {
+            // Given
+            ChatDto.MessageRequest request = new ChatDto.MessageRequest();
+            request.setChatRoomId(100L);
+            request.setSenderId(999L);
+            request.setContent("테스트 메시지");
+            request.setMessageType(ChatMessage.MessageType.TEXT);
+
+            when(chatParticipantRepository.existsByChatRoomIdAndUserId(100L, 1L)).thenReturn(true);
+            when(chatRoomRepository.findById(100L)).thenReturn(Optional.of(testChatRoom));
+            when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+            when(chatMessageRepository.save(any(ChatMessage.class))).thenAnswer(inv -> {
+                ChatMessage msg = inv.getArgument(0);
+                msg.setId(1L);
+                msg.setSentAt(LocalDateTime.now());
+                return msg;
+            });
+
+            // When
+            ChatDto.MessageResponse response = chatService.processMessage(1L, request);
+
+            // Then
+            assertThat(request.getSenderId()).isEqualTo(1L);
+            assertThat(response.getContent()).isEqualTo("테스트 메시지");
             verify(chatMessageRepository).save(any(ChatMessage.class));
             verify(chatRoomRepository).save(testChatRoom);
             verify(messagingTemplate).convertAndSend(eq("/topic/chat/100"), any(ChatDto.MessageResponse.class));
+            verify(userRepository, never()).findById(999L);
 
             assertThat(testChatRoom.getLastMessage()).isEqualTo("테스트 메시지");
         }
@@ -289,13 +373,14 @@ class ChatServiceTest {
             // Given
             ChatDto.MessageRequest request = new ChatDto.MessageRequest();
             request.setChatRoomId(100L);
-            request.setSenderId(1L);
+            request.setSenderId(999L);
             request.setContent("현재 위치");
             request.setMessageType(ChatMessage.MessageType.LOCATION);
             request.setLocationLatitude(37.5665);
             request.setLocationLongitude(126.9780);
             request.setLocationName("서울역");
 
+            when(chatParticipantRepository.existsByChatRoomIdAndUserId(100L, 1L)).thenReturn(true);
             when(chatRoomRepository.findById(100L)).thenReturn(Optional.of(testChatRoom));
             when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
             when(chatMessageRepository.save(any(ChatMessage.class))).thenAnswer(inv -> {
@@ -306,16 +391,39 @@ class ChatServiceTest {
             });
 
             // When
-            chatService.processMessage(request);
+            chatService.processMessage(1L, request);
 
             // Then
             ArgumentCaptor<ChatMessage> messageCaptor = ArgumentCaptor.forClass(ChatMessage.class);
             verify(chatMessageRepository).save(messageCaptor.capture());
 
             ChatMessage saved = messageCaptor.getValue();
+            assertThat(saved.getSender().getId()).isEqualTo(1L);
             assertThat(saved.getMessageType()).isEqualTo(ChatMessage.MessageType.LOCATION);
             assertThat(saved.getLocationLatitude()).isEqualTo(37.5665);
             assertThat(saved.getLocationName()).isEqualTo("서울역");
+        }
+
+        @Test
+        @DisplayName("실패 - 참가자가 아닌 사용자는 STOMP 메시지 전송 불가")
+        void processMessage_UnauthorizedParticipant() {
+            // Given
+            ChatDto.MessageRequest request = new ChatDto.MessageRequest();
+            request.setChatRoomId(100L);
+            request.setSenderId(999L);
+            request.setContent("권한 없는 메시지");
+            request.setMessageType(ChatMessage.MessageType.TEXT);
+
+            when(chatParticipantRepository.existsByChatRoomIdAndUserId(100L, 1L)).thenReturn(false);
+
+            // When & Then
+            assertThatThrownBy(() -> chatService.processMessage(1L, request))
+                    .isInstanceOf(ChatException.UnauthorizedChatAccessException.class)
+                    .hasMessageContaining("채팅 참여자가 아닙니다");
+
+            verify(chatMessageRepository, never()).save(any(ChatMessage.class));
+            verify(chatRoomRepository, never()).findById(anyLong());
+            verify(userRepository, never()).findById(anyLong());
         }
     }
 
@@ -324,12 +432,12 @@ class ChatServiceTest {
     class JoinChatRoomTest {
 
         @Test
-        @DisplayName("성공 - 채팅방 참가")
+        @DisplayName("성공 - STOMP 참가 요청은 인증 사용자 ID로 참가")
         void joinChatRoom_Success() {
             // Given
             ChatDto.JoinRequest request = new ChatDto.JoinRequest();
             request.setChatRoomId(100L);
-            request.setUserId(2L);
+            request.setUserId(999L);
 
             when(chatRoomRepository.findById(100L)).thenReturn(Optional.of(testChatRoom));
             when(userRepository.findById(2L)).thenReturn(Optional.of(otherUser));
@@ -341,11 +449,13 @@ class ChatServiceTest {
             });
 
             // When
-            chatService.joinChatRoom(request);
+            chatService.joinChatRoom(2L, request);
 
             // Then
+            assertThat(request.getUserId()).isEqualTo(2L);
             verify(chatParticipantRepository).save(any(ChatParticipant.class));
             verify(messagingTemplate).convertAndSendToUser(eq("2"), eq("/queue/chat/joined"), anyString());
+            verify(userRepository, never()).findById(999L);
         }
 
         @Test
@@ -373,12 +483,12 @@ class ChatServiceTest {
     class LeaveChatRoomTest {
 
         @Test
-        @DisplayName("성공 - 채팅방 퇴장")
+        @DisplayName("성공 - STOMP 퇴장 요청은 인증 사용자 ID로 퇴장")
         void leaveChatRoom_Success() {
             // Given
             ChatDto.LeaveRequest request = new ChatDto.LeaveRequest();
             request.setChatRoomId(100L);
-            request.setUserId(1L);
+            request.setUserId(999L);
 
             when(chatParticipantRepository.findByChatRoomIdAndUserId(100L, 1L))
                     .thenReturn(Optional.of(testParticipant));
@@ -392,9 +502,10 @@ class ChatServiceTest {
             });
 
             // When
-            chatService.leaveChatRoom(request);
+            chatService.leaveChatRoom(1L, request);
 
             // Then
+            assertThat(request.getUserId()).isEqualTo(1L);
             assertThat(testParticipant.getIsActive()).isFalse();
             verify(chatParticipantRepository).save(testParticipant);
         }
@@ -503,8 +614,11 @@ class ChatServiceTest {
     class UpdateTypingStatusTest {
 
         @Test
-        @DisplayName("타이핑 시작 - 상태 브로드캐스트")
+        @DisplayName("타이핑 시작 - 참가자만 상태 브로드캐스트")
         void updateTypingStatus_StartTyping() {
+            // Given
+            when(chatParticipantRepository.existsByChatRoomIdAndUserId(100L, 1L)).thenReturn(true);
+
             // When
             chatService.updateTypingStatus(100L, 1L, true);
 
@@ -515,7 +629,8 @@ class ChatServiceTest {
         @Test
         @DisplayName("타이핑 종료")
         void updateTypingStatus_StopTyping() {
-            // Given - 먼저 타이핑 시작
+            // Given
+            when(chatParticipantRepository.existsByChatRoomIdAndUserId(100L, 1L)).thenReturn(true);
             chatService.updateTypingStatus(100L, 1L, true);
 
             // When - 타이핑 종료
@@ -523,6 +638,19 @@ class ChatServiceTest {
 
             // Then
             verify(messagingTemplate, times(2)).convertAndSend(eq("/topic/chat/100/typing"), anyList());
+        }
+
+        @Test
+        @DisplayName("실패 - 참가자가 아닌 사용자는 타이핑 상태 전송 불가")
+        void updateTypingStatus_UnauthorizedParticipant() {
+            // Given
+            when(chatParticipantRepository.existsByChatRoomIdAndUserId(100L, 999L)).thenReturn(false);
+
+            // When & Then
+            assertThatThrownBy(() -> chatService.updateTypingStatus(100L, 999L, true))
+                    .isInstanceOf(ChatException.UnauthorizedChatAccessException.class)
+                    .hasMessageContaining("채팅 참여자가 아닙니다");
+            verify(messagingTemplate, never()).convertAndSend(anyString(), anyList());
         }
     }
 
@@ -542,6 +670,7 @@ class ChatServiceTest {
             message.setIsDeleted(false);
 
             when(chatMessageRepository.findById(1L)).thenReturn(Optional.of(message));
+            when(chatParticipantRepository.existsByChatRoomIdAndUserId(100L, 1L)).thenReturn(true);
 
             // When
             chatService.deleteMessage(1L, 1L);
@@ -564,6 +693,7 @@ class ChatServiceTest {
             message.setContent("다른 사람 메시지");
 
             when(chatMessageRepository.findById(1L)).thenReturn(Optional.of(message));
+            when(chatParticipantRepository.existsByChatRoomIdAndUserId(100L, 1L)).thenReturn(true);
 
             // When & Then
             assertThatThrownBy(() -> chatService.deleteMessage(1L, 1L))
@@ -572,7 +702,7 @@ class ChatServiceTest {
         }
 
         @Test
-        @DisplayName("성공 - 시스템 메시지는 누구나 삭제 가능")
+        @DisplayName("성공 - 참가자는 시스템 메시지 삭제 가능")
         void deleteMessage_SystemMessage() {
             // Given
             ChatMessage systemMessage = new ChatMessage();
@@ -583,12 +713,83 @@ class ChatServiceTest {
             systemMessage.setIsDeleted(false);
 
             when(chatMessageRepository.findById(1L)).thenReturn(Optional.of(systemMessage));
+            when(chatParticipantRepository.existsByChatRoomIdAndUserId(100L, 1L)).thenReturn(true);
 
             // When
-            chatService.deleteMessage(1L, 999L);
+            chatService.deleteMessage(1L, 1L);
 
             // Then
             assertThat(systemMessage.getIsDeleted()).isTrue();
+        }
+
+        @Test
+        @DisplayName("실패 - 참가자가 아닌 사용자의 시스템 메시지 삭제")
+        void deleteMessage_SystemMessage_UnauthorizedParticipant() {
+            // Given
+            ChatMessage systemMessage = new ChatMessage();
+            systemMessage.setId(1L);
+            systemMessage.setChatRoom(testChatRoom);
+            systemMessage.setSender(null);
+            systemMessage.setContent("시스템 메시지");
+
+            when(chatMessageRepository.findById(1L)).thenReturn(Optional.of(systemMessage));
+            when(chatParticipantRepository.existsByChatRoomIdAndUserId(100L, 999L)).thenReturn(false);
+
+            // When & Then
+            assertThatThrownBy(() -> chatService.deleteMessage(1L, 999L))
+                    .isInstanceOf(ChatException.UnauthorizedChatAccessException.class)
+                    .hasMessageContaining("채팅 참여자가 아닙니다");
+        }
+    }
+
+    @Nested
+    @DisplayName("getUnreadMessageCount 테스트")
+    class GetUnreadMessageCountTest {
+
+        @Test
+        @DisplayName("성공 - 읽은 메시지가 없으면 전체 메시지 수 반환")
+        void getUnreadMessageCount_NoReadMessage() {
+            // Given
+            testParticipant.setLastReadMessageId(null);
+            when(chatParticipantRepository.findByChatRoomIdAndUserId(100L, 1L))
+                    .thenReturn(Optional.of(testParticipant));
+            when(chatMessageRepository.countByChatRoomIdAndIsDeletedFalse(100L)).thenReturn(3);
+
+            // When
+            Integer count = chatService.getUnreadMessageCount(100L, 1L);
+
+            // Then
+            assertThat(count).isEqualTo(3);
+        }
+
+        @Test
+        @DisplayName("성공 - 마지막 읽은 메시지 이후 개수 반환")
+        void getUnreadMessageCount_AfterLastReadMessage() {
+            // Given
+            testParticipant.setLastReadMessageId(10L);
+            when(chatParticipantRepository.findByChatRoomIdAndUserId(100L, 1L))
+                    .thenReturn(Optional.of(testParticipant));
+            when(chatMessageRepository.countByChatRoomIdAndIdGreaterThanAndIsDeletedFalse(100L, 10L))
+                    .thenReturn(2);
+
+            // When
+            Integer count = chatService.getUnreadMessageCount(100L, 1L);
+
+            // Then
+            assertThat(count).isEqualTo(2);
+        }
+
+        @Test
+        @DisplayName("실패 - 참가자가 아닌 사용자의 unread count 조회")
+        void getUnreadMessageCount_Unauthorized() {
+            // Given
+            when(chatParticipantRepository.findByChatRoomIdAndUserId(100L, 999L))
+                    .thenReturn(Optional.empty());
+
+            // When & Then
+            assertThatThrownBy(() -> chatService.getUnreadMessageCount(100L, 999L))
+                    .isInstanceOf(ChatException.UnauthorizedChatAccessException.class)
+                    .hasMessageContaining("채팅 참여자가 아닙니다");
         }
     }
 

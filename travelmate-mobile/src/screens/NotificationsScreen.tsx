@@ -3,7 +3,7 @@
  * Displays user notifications list
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -21,6 +21,31 @@ import {
   PushNotification,
   NotificationType,
 } from '../services/notificationService';
+import { ThemePalette, fonts, type, spacing, radii } from '../theme';
+import { useTheme } from '../contexts/ThemeContext';
+import Icon, { IconName } from '../components/icons/Icon';
+
+/** Visual mapping: notification type -> icon + tinted tile colors (design system). */
+const notificationVisualsFor = (
+  palette: ThemePalette,
+  isDark: boolean
+): Partial<Record<NotificationType, { icon: IconName; bg: string; fg: string }>> => {
+  const epicTile = isDark ? 'rgba(166,108,245,0.16)' : '#F1EAFC';
+  return {
+    FOLLOW: { icon: 'user', bg: palette.primarySoft, fg: palette.primary },
+    LIKE: { icon: 'heart', bg: palette.primarySoft, fg: palette.primary },
+    COMMENT: { icon: 'chat', bg: palette.primarySoft, fg: palette.primary },
+    MENTION: { icon: 'chat', bg: palette.primarySoft, fg: palette.primary },
+    GROUP_INVITE: { icon: 'users', bg: palette.primarySoft, fg: palette.primary },
+    GROUP_MESSAGE: { icon: 'send', bg: palette.primarySoft, fg: palette.primary },
+    NEW_MESSAGE: { icon: 'send', bg: palette.primarySoft, fg: palette.primary },
+    NFT_COLLECTED: { icon: 'stamp', bg: palette.warningBg, fg: palette.rarityLegendary },
+    ACHIEVEMENT: { icon: 'crown', bg: palette.warningBg, fg: palette.rarityLegendary },
+    NFT_MINTED: { icon: 'spark', bg: epicTile, fg: palette.rarityEpic },
+    REVIEW: { icon: 'star', bg: epicTile, fg: palette.rarityEpic },
+    NEARBY_LOCATION: { icon: 'pin', bg: palette.primarySoft, fg: palette.primary },
+  };
+};
 
 type NotificationsScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -32,6 +57,16 @@ interface Props {
 }
 
 const NotificationsScreen: React.FC<Props> = ({ navigation }) => {
+  const { palette, isDark } = useTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
+  const notificationVisuals = useMemo(
+    () => notificationVisualsFor(palette, isDark),
+    [palette, isDark]
+  );
+  const defaultVisual = useMemo(
+    () => ({ icon: 'bell' as IconName, bg: palette.primarySoft, fg: palette.primary }),
+    [palette]
+  );
   const [notifications, setNotifications] = useState<PushNotification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -136,8 +171,7 @@ const NotificationsScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const renderNotification = ({ item }: { item: PushNotification }) => {
-    const icon = notificationService.getNotificationIcon(item.type);
-    const color = notificationService.getNotificationColor(item.type);
+    const visual = notificationVisuals[item.type] || defaultVisual;
 
     return (
       <TouchableOpacity
@@ -146,8 +180,8 @@ const NotificationsScreen: React.FC<Props> = ({ navigation }) => {
         onLongPress={() => handleDelete(item.id)}
         activeOpacity={0.7}
       >
-        <View style={[styles.iconContainer, { backgroundColor: `${color}20` }]}>
-          <Text style={styles.icon}>{icon}</Text>
+        <View style={[styles.iconContainer, { backgroundColor: visual.bg }]}>
+          <Icon name={visual.icon} size={20} color={visual.fg} />
         </View>
 
         <View style={styles.contentContainer}>
@@ -167,7 +201,9 @@ const NotificationsScreen: React.FC<Props> = ({ navigation }) => {
 
   const renderEmptyList = () => (
     <View style={styles.emptyContainer}>
-      <Text style={styles.emptyIcon}>🔔</Text>
+      <View style={styles.emptyIconTile}>
+        <Icon name="bell" size={26} color={palette.textMuted} />
+      </View>
       <Text style={styles.emptyText}>알림이 없습니다</Text>
       <Text style={styles.emptySubtext}>새로운 활동이 있으면 알려드릴게요</Text>
     </View>
@@ -177,7 +213,7 @@ const NotificationsScreen: React.FC<Props> = ({ navigation }) => {
     if (!hasMore) return null;
     return (
       <View style={styles.footerLoader}>
-        <ActivityIndicator size="small" color="#3B82F6" />
+        <ActivityIndicator size="small" color={palette.primary} />
       </View>
     );
   };
@@ -185,7 +221,7 @@ const NotificationsScreen: React.FC<Props> = ({ navigation }) => {
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#3B82F6" />
+        <ActivityIndicator size="large" color={palette.primary} />
       </View>
     );
   }
@@ -223,101 +259,91 @@ const NotificationsScreen: React.FC<Props> = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (palette: ThemePalette) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: palette.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: palette.background,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: spacing.screenH,
     paddingTop: 60,
-    paddingBottom: 16,
-    backgroundColor: '#FFFFFF',
+    paddingBottom: spacing.lg,
+    backgroundColor: palette.background,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: palette.hairline,
   },
   headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#111827',
+    ...type.title,
+    color: palette.ink,
   },
   markAllButton: {
-    paddingHorizontal: 12,
+    paddingHorizontal: spacing.md,
     paddingVertical: 6,
   },
   markAllText: {
-    color: '#3B82F6',
-    fontSize: 14,
-    fontWeight: '600',
+    fontFamily: fonts.bold,
+    fontSize: 13,
+    color: palette.primary,
   },
   listContainer: {
-    padding: 16,
+    paddingVertical: spacing.sm,
   },
   notificationItem: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    backgroundColor: palette.background,
+    paddingVertical: 13,
+    paddingHorizontal: spacing.screenH,
   },
   unreadItem: {
-    backgroundColor: '#EFF6FF',
+    backgroundColor: palette.tintIndigo,
   },
   iconContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 40,
+    height: 40,
+    borderRadius: radii.iconButton,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
-  },
-  icon: {
-    fontSize: 20,
+    marginRight: spacing.md,
   },
   contentContainer: {
     flex: 1,
   },
   title: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: '#374151',
-    marginBottom: 4,
+    fontFamily: fonts.bold,
+    fontSize: 14,
+    color: palette.textSecondary,
+    marginBottom: spacing.xs,
   },
   unreadText: {
-    fontWeight: '600',
-    color: '#111827',
+    fontFamily: fonts.extrabold,
+    color: palette.ink,
   },
   body: {
-    fontSize: 14,
-    color: '#6B7280',
-    lineHeight: 20,
+    ...type.bodySmall,
+    color: palette.textTertiary,
     marginBottom: 6,
   },
   time: {
-    fontSize: 12,
-    color: '#9CA3AF',
+    ...type.caption,
+    color: palette.textMuted,
   },
   unreadDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#3B82F6',
-    marginLeft: 8,
-    marginTop: 4,
+    backgroundColor: palette.primary,
+    marginLeft: spacing.sm,
+    marginTop: spacing.xs,
   },
   emptyContainer: {
     flex: 1,
@@ -325,22 +351,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 80,
   },
-  emptyIcon: {
-    fontSize: 48,
-    marginBottom: 16,
+  emptyIconTile: {
+    width: 56,
+    height: 56,
+    borderRadius: radii.card,
+    backgroundColor: palette.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: spacing.lg,
   },
   emptyText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 8,
+    ...type.heading,
+    color: palette.ink,
+    marginBottom: spacing.sm,
   },
   emptySubtext: {
-    fontSize: 14,
-    color: '#9CA3AF',
+    ...type.bodySmall,
+    color: palette.textMuted,
   },
   footerLoader: {
-    paddingVertical: 20,
+    paddingVertical: spacing.xl,
     alignItems: 'center',
   },
 });

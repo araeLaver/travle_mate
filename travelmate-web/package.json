@@ -44,6 +44,7 @@
     "start": "craco start",
     "build": "NODE_ENV=production BABEL_ENV=production craco build",
     "test": "craco test",
+    "test:ci": "craco test --watchAll=false --coverage --passWithNoTests",
     "test:coverage": "craco test --coverage --watchAll=false",
     "eject": "react-scripts eject",
     "lint": "eslint src --ext .ts,.tsx --max-warnings 100",

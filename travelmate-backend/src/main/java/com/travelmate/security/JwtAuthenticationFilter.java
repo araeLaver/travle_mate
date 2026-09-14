@@ -1,6 +1,7 @@
 package com.travelmate.security;
 
 import com.travelmate.service.JwtService;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,6 +20,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @Slf4j
@@ -40,16 +42,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         
         try {
             String jwt = getJwtFromRequest(request);
-            if (StringUtils.hasText(jwt) && jwtService.validateToken(jwt)) {
-                Long userId = jwtService.getUserIdFromToken(jwt);
+            // 토큰은 요청당 한 번만 파싱·서명검증한다. userId/email/권한을 각각 뽑겠다고
+            // 다시 파싱하면 HS512 검증이 요청당 네 번 돌아 CPU가 좁은 환경에서 응답이 초 단위로 늘어난다.
+            Optional<Claims> parsed = StringUtils.hasText(jwt)
+                ? jwtService.parseClaims(jwt)
+                : Optional.empty();
+            if (parsed.isPresent()) {
+                Claims claims = parsed.get();
+                Long userId = jwtService.getUserId(claims);
                 if (userId == null) {
                     log.warn("JWT에서 사용자 ID 추출 실패");
                     SecurityContextHolder.clearContext();
                     // 사용자 ID가 없는 경우 인증을 설정하지 않고 계속 진행
                 }
                 else {
-                    String email = jwtService.getEmailFromToken(jwt);
-                    List<String> authorities = jwtService.getAuthoritiesFromToken(jwt);
+                    String email = jwtService.getEmail(claims);
+                    List<String> authorities = jwtService.getAuthorities(claims);
                     if (authorities == null || authorities.isEmpty()) {
                         authorities = Collections.singletonList("ROLE_USER");
                     }

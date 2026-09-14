@@ -2,7 +2,7 @@
  * Home Screen for TravelMate Mobile
  */
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,6 @@ import {
   TouchableOpacity,
   RefreshControl,
   Image,
-  Dimensions,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { CompositeNavigationProp } from '@react-navigation/native';
@@ -21,6 +20,9 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNotifications } from '../contexts/NotificationContext';
 import { nftService, NearbyLocation } from '../services/nftService';
 import * as Location from 'expo-location';
+import { useTheme } from '../contexts/ThemeContext';
+import { ThemePalette, fonts, type, spacing, radii, rarityColorFor } from '../theme';
+import Icon, { IconName } from '../components/icons/Icon';
 
 type HomeScreenNavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<MainTabParamList, 'Home'>,
@@ -31,10 +33,21 @@ interface Props {
   navigation: HomeScreenNavigationProp;
 }
 
-const { width } = Dimensions.get('window');
-const CARD_WIDTH = width - 48;
+const NEARBY_CARD_WIDTH = 150;
+
+const QuickActionIcon: React.FC<{
+  name: IconName;
+  palette: ThemePalette;
+  styles: ReturnType<typeof createStyles>;
+}> = ({ name, palette, styles }) => (
+  <View style={styles.actionIcon}>
+    <Icon name={name} size={22} color={palette.primary} />
+  </View>
+);
 
 const HomeScreen: React.FC<Props> = ({ navigation }) => {
+  const { palette } = useTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
   const { user } = useAuth();
   const { unreadCount } = useNotifications();
   const [nearbyLocations, setNearbyLocations] = useState<NearbyLocation[]>([]);
@@ -79,7 +92,6 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
   const renderNearbyCard = (item: NearbyLocation) => {
     const { location, distance, isCollected } = item;
-    const rarityColor = nftService.getRarityColor(location.rarity);
 
     return (
       <TouchableOpacity
@@ -87,30 +99,27 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
         style={styles.nearbyCard}
         onPress={() => handleLocationPress(location.id)}
       >
-        {location.imageUrl ? (
-          <Image source={{ uri: location.imageUrl }} style={styles.cardImage} />
-        ) : (
-          <View style={[styles.cardImage, styles.cardImagePlaceholder]}>
-            <Text style={styles.placeholderText}>{location.name[0]}</Text>
+        <View style={styles.cardImageWrap}>
+          {location.imageUrl ? (
+            <Image source={{ uri: location.imageUrl }} style={styles.cardImage} />
+          ) : (
+            <View style={[styles.cardImage, styles.cardImagePlaceholder]}>
+              <Text style={styles.placeholderText}>{location.name[0]}</Text>
+            </View>
+          )}
+          <View
+            style={[styles.rarityBadge, { backgroundColor: rarityColorFor(palette, location.rarity) }]}
+          >
+            <Text style={styles.rarityText}>
+              {nftService.getRarityLabel(location.rarity)}
+            </Text>
           </View>
-        )}
+        </View>
 
         <View style={styles.cardContent}>
-          <View style={styles.cardHeader}>
-            <Text style={styles.cardTitle} numberOfLines={1}>
-              {location.name}
-            </Text>
-            <View style={[styles.rarityBadge, { backgroundColor: rarityColor }]}>
-              <Text style={styles.rarityText}>
-                {nftService.getRarityLabel(location.rarity)}
-              </Text>
-            </View>
-          </View>
-
-          <Text style={styles.cardDescription} numberOfLines={2}>
-            {location.description}
+          <Text style={styles.cardTitle} numberOfLines={1}>
+            {location.name}
           </Text>
-
           <View style={styles.cardFooter}>
             <Text style={styles.distanceText}>
               {distance < 1 ? `${Math.round(distance * 1000)}m` : `${distance.toFixed(1)}km`}
@@ -136,29 +145,51 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
       {/* Welcome Section */}
       <View style={styles.welcomeSection}>
         <View style={styles.welcomeHeader}>
-          <View>
+          <View style={styles.welcomeTextWrap}>
+            <View style={styles.welcomeCaptionRow}>
+              <Icon name="nav" size={13} color={palette.textMuted} />
+              <Text style={styles.welcomeSubtext}>
+                오늘은 어떤 장소를 수집해볼까요?
+              </Text>
+            </View>
             <Text style={styles.welcomeText}>
               안녕하세요, {user?.nickname || '여행자'}님!
             </Text>
-            <Text style={styles.welcomeSubtext}>
-              오늘은 어떤 장소를 수집해볼까요?
-            </Text>
           </View>
-          <TouchableOpacity
-            style={styles.notificationButton}
-            onPress={() => navigation.navigate('Notifications')}
-          >
-            <Text style={styles.notificationIcon}>🔔</Text>
-            {unreadCount > 0 && (
-              <View style={styles.notificationBadge}>
-                <Text style={styles.notificationBadgeText}>
-                  {unreadCount > 99 ? '99+' : unreadCount}
-                </Text>
+          <View style={styles.welcomeRight}>
+            <TouchableOpacity
+              style={styles.notificationButton}
+              onPress={() => navigation.navigate('Notifications')}
+            >
+              <Icon name="bell" size={20} color={palette.ink} />
+              {unreadCount > 0 && (
+                <View style={styles.notificationBadge}>
+                  <Text style={styles.notificationBadgeText}>
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
+            {user?.profileImageUrl ? (
+              <Image source={{ uri: user.profileImageUrl }} style={styles.avatar} />
+            ) : (
+              <View style={[styles.avatar, styles.avatarPlaceholder]}>
+                <Icon name="user" size={18} color={palette.textMuted} />
               </View>
             )}
-          </TouchableOpacity>
+          </View>
         </View>
       </View>
+
+      {/* Search Bar */}
+      <TouchableOpacity
+        style={styles.searchBar}
+        onPress={() => navigation.navigate('UserSearch')}
+        activeOpacity={0.7}
+      >
+        <Icon name="search" size={18} color={palette.placeholder} />
+        <Text style={styles.searchPlaceholder}>장소, 사람, 그룹 검색</Text>
+      </TouchableOpacity>
 
       {/* Stats Section */}
       <View style={styles.statsSection}>
@@ -187,9 +218,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
             style={styles.actionButton}
             onPress={() => navigation.navigate('Map' as any)}
           >
-            <View style={[styles.actionIcon, { backgroundColor: '#DBEAFE' }]}>
-              <Text style={styles.actionEmoji}>🗺️</Text>
-            </View>
+            <QuickActionIcon name="pin" palette={palette} styles={styles} />
             <Text style={styles.actionText}>지도 보기</Text>
           </TouchableOpacity>
 
@@ -197,9 +226,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
             style={styles.actionButton}
             onPress={() => navigation.navigate('Collection' as any)}
           >
-            <View style={[styles.actionIcon, { backgroundColor: '#FEF3C7' }]}>
-              <Text style={styles.actionEmoji}>🏆</Text>
-            </View>
+            <QuickActionIcon name="grid" palette={palette} styles={styles} />
             <Text style={styles.actionText}>내 컬렉션</Text>
           </TouchableOpacity>
 
@@ -207,9 +234,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
             style={styles.actionButton}
             onPress={() => navigation.navigate('UserSearch')}
           >
-            <View style={[styles.actionIcon, { backgroundColor: '#E0E7FF' }]}>
-              <Text style={styles.actionEmoji}>🔍</Text>
-            </View>
+            <QuickActionIcon name="search" palette={palette} styles={styles} />
             <Text style={styles.actionText}>동행자 찾기</Text>
           </TouchableOpacity>
 
@@ -217,9 +242,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
             style={styles.actionButton}
             onPress={() => navigation.navigate('Matching')}
           >
-            <View style={[styles.actionIcon, { backgroundColor: '#FCE7F3' }]}>
-              <Text style={styles.actionEmoji}>🤝</Text>
-            </View>
+            <QuickActionIcon name="users" palette={palette} styles={styles} />
             <Text style={styles.actionText}>매칭 관리</Text>
           </TouchableOpacity>
 
@@ -227,9 +250,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
             style={styles.actionButton}
             onPress={() => navigation.navigate('Settings')}
           >
-            <View style={[styles.actionIcon, { backgroundColor: '#E5E7EB' }]}>
-              <Text style={styles.actionEmoji}>⚙️</Text>
-            </View>
+            <QuickActionIcon name="gear" palette={palette} styles={styles} />
             <Text style={styles.actionText}>설정</Text>
           </TouchableOpacity>
         </View>
@@ -238,7 +259,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
       {/* Nearby Locations */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>주변 수집 장소</Text>
+          <Text style={styles.sectionTitle}>근처에서 수집 가능</Text>
           <TouchableOpacity onPress={() => navigation.navigate('Map' as any)}>
             <Text style={styles.seeAllText}>전체 보기</Text>
           </TouchableOpacity>
@@ -258,11 +279,11 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
             contentContainerStyle={styles.nearbyList}
           >
             {[1, 2, 3].map((i) => (
-              <View key={i} style={[styles.nearbyCard, { opacity: 0.5 }]}>
-                <View style={[styles.cardImage, styles.cardImagePlaceholder]} />
+              <View key={i} style={styles.nearbyCard}>
+                <View style={styles.skeletonImage} />
                 <View style={styles.cardContent}>
-                  <View style={{ width: '70%', height: 14, backgroundColor: '#E5E7EB', borderRadius: 4 }} />
-                  <View style={{ width: '90%', height: 12, backgroundColor: '#E5E7EB', borderRadius: 4, marginTop: 6 }} />
+                  <View style={styles.skeletonLineWide} />
+                  <View style={styles.skeletonLineNarrow} />
                 </View>
               </View>
             ))}
@@ -291,194 +312,221 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (palette: ThemePalette) =>
+  StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: palette.background,
   },
   welcomeSection: {
-    backgroundColor: '#3B82F6',
-    paddingHorizontal: 24,
+    backgroundColor: palette.background,
+    paddingHorizontal: spacing.screenH,
     paddingTop: 60,
-    paddingBottom: 24,
+    paddingBottom: spacing.lg,
   },
   welcomeHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
   },
+  welcomeTextWrap: {
+    flex: 1,
+    marginRight: spacing.md,
+  },
+  welcomeCaptionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    marginBottom: spacing.xs,
+  },
+  welcomeRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
   notificationButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    width: 40,
+    height: 40,
+    borderRadius: radii.iconButton,
+    backgroundColor: palette.surface,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  notificationIcon: {
-    fontSize: 22,
   },
   notificationBadge: {
     position: 'absolute',
-    top: 0,
-    right: 0,
-    backgroundColor: '#EF4444',
+    top: -4,
+    right: -4,
+    backgroundColor: palette.primary,
     borderRadius: 10,
-    minWidth: 20,
-    height: 20,
+    minWidth: 18,
+    height: 18,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 4,
+    paddingHorizontal: spacing.xs,
+    borderWidth: 2,
+    borderColor: palette.background,
   },
   notificationBadgeText: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: 'bold',
+    ...type.badge,
+    fontSize: 9,
+    lineHeight: 11,
+    color: palette.onPrimary,
+  },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
+  avatarPlaceholder: {
+    backgroundColor: palette.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   welcomeText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
+    ...type.title,
+    color: palette.ink,
   },
   welcomeSubtext: {
+    ...type.caption,
+    fontFamily: fonts.bold,
+    color: palette.textMuted,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginHorizontal: spacing.screenH,
+    height: 46,
+    borderRadius: radii.input,
+    backgroundColor: palette.surface,
+    paddingHorizontal: spacing.lg - 2,
+  },
+  searchPlaceholder: {
+    ...type.body,
     fontSize: 14,
-    color: '#BFDBFE',
-    marginTop: 4,
+    color: palette.placeholder,
   },
   statsSection: {
     flexDirection: 'row',
-    paddingHorizontal: 24,
-    marginTop: -20,
-    gap: 12,
+    paddingHorizontal: spacing.screenH,
+    marginTop: spacing.xl,
+    gap: spacing.md,
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: palette.surface,
+    borderRadius: radii.card,
+    padding: spacing.lg,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
   },
   statNumber: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#111827',
+    ...type.statNumber,
+    color: palette.ink,
   },
   statLabel: {
-    fontSize: 12,
-    color: '#6B7280',
-    marginTop: 4,
+    ...type.meta,
+    fontFamily: fonts.bold,
+    color: palette.textMuted,
+    marginTop: spacing.xs,
   },
   section: {
-    marginTop: 24,
-    paddingHorizontal: 24,
+    marginTop: spacing.xxl,
+    paddingHorizontal: spacing.screenH,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.lg,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 16,
+    ...type.heading,
+    color: palette.ink,
+    marginBottom: spacing.lg,
   },
   seeAllText: {
-    fontSize: 14,
-    color: '#3B82F6',
-    fontWeight: '500',
+    ...type.caption,
+    fontFamily: fonts.bold,
+    color: palette.primary,
+    marginBottom: spacing.lg,
   },
   quickActions: {
     flexDirection: 'row',
-    gap: 12,
+    gap: spacing.sm,
   },
   actionButton: {
     flex: 1,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: palette.background,
+    borderRadius: radii.card,
+    borderWidth: 1,
+    borderColor: palette.hairline,
+    paddingVertical: spacing.md,
     alignItems: 'center',
   },
   actionIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 40,
+    height: 40,
+    borderRadius: radii.iconButton,
+    backgroundColor: palette.primarySoft,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
-  },
-  actionEmoji: {
-    fontSize: 24,
+    marginBottom: spacing.sm,
   },
   actionText: {
-    fontSize: 12,
-    color: '#374151',
-    fontWeight: '500',
+    ...type.meta,
+    fontFamily: fonts.bold,
+    color: palette.textSecondary,
   },
   nearbyList: {
-    paddingRight: 24,
-    gap: 12,
+    paddingRight: spacing.screenH,
+    gap: spacing.md,
   },
   nearbyCard: {
-    width: CARD_WIDTH * 0.7,
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    width: NEARBY_CARD_WIDTH,
+    backgroundColor: palette.surface,
+    borderRadius: radii.card,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+  },
+  cardImageWrap: {
+    position: 'relative',
   },
   cardImage: {
     width: '100%',
-    height: 120,
+    height: 104,
   },
   cardImagePlaceholder: {
-    backgroundColor: '#E5E7EB',
+    backgroundColor: palette.surfaceAlt,
     justifyContent: 'center',
     alignItems: 'center',
   },
   placeholderText: {
-    fontSize: 32,
-    color: '#9CA3AF',
+    ...type.statNumber,
+    fontSize: 28,
+    lineHeight: 34,
+    color: palette.textMuted,
   },
   cardContent: {
-    padding: 12,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
+    padding: spacing.md,
   },
   cardTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
-    flex: 1,
+    fontFamily: fonts.bold,
+    fontSize: 14,
+    lineHeight: 19,
+    color: palette.ink,
+    marginBottom: spacing.xs,
   },
   rarityBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
-    marginLeft: 8,
+    position: 'absolute',
+    top: spacing.sm,
+    left: spacing.sm,
+    height: 22,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.sm,
+    borderRadius: radii.badge,
   },
   rarityText: {
-    fontSize: 10,
-    color: '#fff',
-    fontWeight: '600',
-  },
-  cardDescription: {
-    fontSize: 12,
-    color: '#6B7280',
-    marginBottom: 8,
+    ...type.badge,
+    color: palette.background,
   },
   cardFooter: {
     flexDirection: 'row',
@@ -486,36 +534,54 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   distanceText: {
-    fontSize: 12,
-    color: '#3B82F6',
-    fontWeight: '500',
+    ...type.meta,
+    color: palette.textMuted,
   },
   collectedBadge: {
-    backgroundColor: '#D1FAE5',
-    paddingHorizontal: 8,
+    backgroundColor: palette.primarySoft,
+    paddingHorizontal: spacing.sm,
     paddingVertical: 2,
-    borderRadius: 4,
+    borderRadius: radii.badge,
   },
   collectedText: {
-    fontSize: 10,
-    color: '#059669',
-    fontWeight: '500',
+    ...type.badge,
+    color: palette.primary,
   },
   emptyState: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 24,
+    backgroundColor: palette.background,
+    borderRadius: radii.card,
+    borderWidth: 1.5,
+    borderColor: palette.dashed,
+    borderStyle: 'dashed',
+    padding: spacing.xxl,
     alignItems: 'center',
   },
   emptyText: {
-    fontSize: 14,
-    color: '#6B7280',
+    ...type.bodySmall,
+    color: palette.textTertiary,
     textAlign: 'center',
-    lineHeight: 20,
+  },
+  skeletonImage: {
+    width: '100%',
+    height: 104,
+    backgroundColor: palette.surfaceAlt,
+  },
+  skeletonLineWide: {
+    width: '70%',
+    height: 14,
+    backgroundColor: palette.surfaceAlt,
+    borderRadius: radii.badge - 3,
+  },
+  skeletonLineNarrow: {
+    width: '45%',
+    height: 11,
+    backgroundColor: palette.surfaceAlt,
+    borderRadius: radii.badge - 3,
+    marginTop: spacing.sm - 2,
   },
   bottomPadding: {
-    height: 24,
+    height: spacing.xxl,
   },
-});
+  });
 
 export default HomeScreen;

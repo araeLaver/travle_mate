@@ -16,10 +16,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.ArgumentCaptor;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
@@ -46,6 +52,9 @@ class AuthServiceTest {
 
     @Mock
     private UserTrustScoreRepository trustScoreRepository;
+
+    @Mock
+    private RestTemplate restTemplate;
 
     @InjectMocks
     private AuthService authService;
@@ -77,6 +86,7 @@ class AuthServiceTest {
         // JWT 만료 시간 설정
         ReflectionTestUtils.setField(authService, "jwtExpiration", 3600000L);
         ReflectionTestUtils.setField(authService, "refreshExpiration", 604800000L);
+        ReflectionTestUtils.setField(authService, "googleClientIds", "");
     }
 
     @Nested
@@ -212,6 +222,28 @@ class AuthServiceTest {
                     .isInstanceOf(UserException.class)
                     .hasMessageContaining("취소");
         }
+
+        @Test
+        @DisplayName("실패 - 리프레시 토큰의 기기 정보가 다름")
+        void refreshToken_Fail_DeviceMismatch() {
+            // Given
+            String refreshTokenStr = "validRefreshToken";
+            RefreshToken storedToken = RefreshToken.builder()
+                    .token(refreshTokenStr)
+                    .user(testUser)
+                    .deviceId(DEVICE_ID)
+                    .expiresAt(LocalDateTime.now().plusDays(7))
+                    .isRevoked(false)
+                    .build();
+
+            when(refreshTokenRepository.findByToken(refreshTokenStr)).thenReturn(Optional.of(storedToken));
+
+            // When & Then
+            assertThatThrownBy(() -> authService.refreshToken(refreshTokenStr, "other-device-id"))
+                    .isInstanceOf(UserException.class)
+                    .hasMessageContaining("기기");
+            verify(jwtService, never()).generateToken(anyLong(), anyString());
+        }
     }
 
     @Nested
@@ -264,6 +296,211 @@ class AuthServiceTest {
             assertThatThrownBy(() -> authService.logout(999L, "token", false))
                     .isInstanceOf(UserException.class)
                     .hasMessageContaining("찾을 수 없습니다");
+        }
+    }
+
+    @Nested
+    @DisplayName("OAuth 로그인 테스트")
+    class OAuthLoginTest {
+
+        @Test
+        @DisplayName("성공 - 신규 Google 사용자는 provider와 providerId를 저장한다")
+        void oauthLogin_NewGoogleUser_StoresProviderIdentity() {
+            mockGoogleOAuth("google-123", "oauth@example.com", "OAuth User");
+            when(userRepository.findByProviderAndProviderId(User.AuthProvider.GOOGLE, "google-123"))
+                    .thenReturn(Optional.empty());
+            when(userRepository.findByEmail("oauth@example.com")).thenReturn(Optional.empty());
+            when(userRepository.existsByNickname("OAuthUser")).thenReturn(false);
+            when(passwordEncoder.encode(anyString())).thenReturn("encoded-random-password");
+            when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
+                User saved = invocation.getArgument(0);
+                saved.setId(10L);
+                return saved;
+            });
+            when(jwtService.generateToken(10L, "oauth@example.com")).thenReturn("access-token");
+
+            AuthDto.LoginResponse response = authService.oauthLogin(
+                    oauthRequest("google-token"), IP_ADDRESS, USER_AGENT);
+
+            ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+            verify(userRepository).save(userCaptor.capture());
+            User savedUser = userCaptor.getValue();
+            assertThat(savedUser.getProvider()).isEqualTo(User.AuthProvider.GOOGLE);
+            assertThat(savedUser.getProviderId()).isEqualTo("google-123");
+            assertThat(savedUser.getIsEmailVerified()).isTrue();
+            assertThat(response.getAccessToken()).isEqualTo("access-token");
+            verify(refreshTokenRepository).save(any(RefreshToken.class));
+        }
+
+        @Test
+        @DisplayName("성공 - provider/providerId가 일치하는 기존 OAuth 사용자를 우선 조회한다")
+        void oauthLogin_ExistingProviderIdentity_DoesNotFallbackToEmail() {
+            testUser.setProvider(User.AuthProvider.GOOGLE);
+            testUser.setProviderId("google-123");
+            mockGoogleOAuth("google-123", "oauth@example.com", "OAuth User");
+            when(userRepository.findByProviderAndProviderId(User.AuthProvider.GOOGLE, "google-123"))
+                    .thenReturn(Optional.of(testUser));
+            when(jwtService.generateToken(1L, "test@example.com")).thenReturn("access-token");
+
+            AuthDto.LoginResponse response = authService.oauthLogin(
+                    oauthRequest("google-token"), IP_ADDRESS, USER_AGENT);
+
+            assertThat(response.getAccessToken()).isEqualTo("access-token");
+            verify(userRepository, never()).findByEmail(anyString());
+            verify(refreshTokenRepository).save(any(RefreshToken.class));
+        }
+
+        @Test
+        @DisplayName("성공 - 기존 로컬 이메일은 검증된 OAuth 식별자를 연결한다")
+        void oauthLogin_ExistingLocalEmail_AttachesProviderIdentity() {
+            testUser.setProvider(User.AuthProvider.LOCAL);
+            testUser.setProviderId(null);
+            testUser.setEmail("oauth@example.com");
+            mockGoogleOAuth("google-123", "oauth@example.com", "OAuth User");
+            when(userRepository.findByProviderAndProviderId(User.AuthProvider.GOOGLE, "google-123"))
+                    .thenReturn(Optional.empty());
+            when(userRepository.findByEmail("oauth@example.com")).thenReturn(Optional.of(testUser));
+            when(userRepository.save(testUser)).thenReturn(testUser);
+            when(jwtService.generateToken(1L, "oauth@example.com")).thenReturn("access-token");
+
+            authService.oauthLogin(oauthRequest("google-token"), IP_ADDRESS, USER_AGENT);
+
+            assertThat(testUser.getProvider()).isEqualTo(User.AuthProvider.GOOGLE);
+            assertThat(testUser.getProviderId()).isEqualTo("google-123");
+            verify(userRepository).save(testUser);
+        }
+
+        @Test
+        @DisplayName("실패 - 다른 OAuth 제공자로 이미 연결된 이메일은 자동 전환하지 않는다")
+        void oauthLogin_DifferentExistingProvider_Throws() {
+            testUser.setProvider(User.AuthProvider.KAKAO);
+            testUser.setProviderId("kakao-999");
+            testUser.setEmail("oauth@example.com");
+            mockGoogleOAuth("google-123", "oauth@example.com", "OAuth User");
+            when(userRepository.findByProviderAndProviderId(User.AuthProvider.GOOGLE, "google-123"))
+                    .thenReturn(Optional.empty());
+            when(userRepository.findByEmail("oauth@example.com")).thenReturn(Optional.of(testUser));
+
+            assertThatThrownBy(() -> authService.oauthLogin(oauthRequest("google-token"), IP_ADDRESS, USER_AGENT))
+                    .isInstanceOf(UserException.class)
+                    .hasMessageContaining("다른 OAuth 제공자");
+        }
+
+        @Test
+        @DisplayName("실패 - 설정된 Google client id와 토큰 audience가 다르면 거부한다")
+        void oauthLogin_GoogleAudienceMismatch_Throws() {
+            ReflectionTestUtils.setField(authService, "googleClientIds", "expected-client-id");
+            when(restTemplate.getForEntity(
+                    org.mockito.ArgumentMatchers.contains("https://oauth2.googleapis.com/tokeninfo"),
+                    eq(Map.class)))
+                    .thenReturn(ResponseEntity.ok(Map.of(
+                            "expires_in", 3600,
+                            "email", "oauth@example.com",
+                            "audience", "different-client-id"
+                    )));
+
+            assertThatThrownBy(() -> authService.oauthLogin(oauthRequest("google-token"), IP_ADDRESS, USER_AGENT))
+                    .isInstanceOf(UserException.class)
+                    .hasMessageContaining("audience");
+        }
+
+        @Test
+        @DisplayName("실패 - Google 이메일이 미검증이면 거부한다")
+        void oauthLogin_GoogleUnverifiedEmail_Throws() {
+            when(restTemplate.getForEntity(
+                    org.mockito.ArgumentMatchers.contains("https://oauth2.googleapis.com/tokeninfo"),
+                    eq(Map.class)))
+                    .thenReturn(ResponseEntity.ok(Map.of(
+                            "expires_in", 3600,
+                            "email", "oauth@example.com",
+                            "verified_email", false
+                    )));
+
+            assertThatThrownBy(() -> authService.oauthLogin(oauthRequest("google-token"), IP_ADDRESS, USER_AGENT))
+                    .isInstanceOf(UserException.class)
+                    .hasMessageContaining("이메일");
+        }
+
+        @Test
+        @DisplayName("실패 - Google 사용자 정보의 이메일이 미검증이면 거부한다")
+        void oauthLogin_GoogleUserInfoUnverifiedEmail_Throws() {
+            when(restTemplate.getForEntity(
+                    org.mockito.ArgumentMatchers.contains("https://oauth2.googleapis.com/tokeninfo"),
+                    eq(Map.class)))
+                    .thenReturn(ResponseEntity.ok(Map.of(
+                            "expires_in", 3600,
+                            "email", "oauth@example.com"
+                    )));
+            when(restTemplate.exchange(
+                    eq("https://www.googleapis.com/oauth2/v2/userinfo"),
+                    eq(HttpMethod.GET),
+                    any(HttpEntity.class),
+                    eq(Map.class)))
+                    .thenReturn(ResponseEntity.ok(Map.of(
+                            "id", "google-123",
+                            "email", "oauth@example.com",
+                            "verified_email", false
+                    )));
+
+            assertThatThrownBy(() -> authService.oauthLogin(oauthRequest("google-token"), IP_ADDRESS, USER_AGENT))
+                    .isInstanceOf(UserException.class)
+                    .hasMessageContaining("이메일");
+        }
+
+        @Test
+        @DisplayName("실패 - Google 토큰 정보와 사용자 정보가 다르면 거부한다")
+        void oauthLogin_GoogleTokenAndUserInfoMismatch_Throws() {
+            when(restTemplate.getForEntity(
+                    org.mockito.ArgumentMatchers.contains("https://oauth2.googleapis.com/tokeninfo"),
+                    eq(Map.class)))
+                    .thenReturn(ResponseEntity.ok(Map.of(
+                            "expires_in", 3600,
+                            "email", "token@example.com",
+                            "user_id", "google-token-user"
+                    )));
+            when(restTemplate.exchange(
+                    eq("https://www.googleapis.com/oauth2/v2/userinfo"),
+                    eq(HttpMethod.GET),
+                    any(HttpEntity.class),
+                    eq(Map.class)))
+                    .thenReturn(ResponseEntity.ok(Map.of(
+                            "id", "google-userinfo-user",
+                            "email", "userinfo@example.com"
+                    )));
+
+            assertThatThrownBy(() -> authService.oauthLogin(oauthRequest("google-token"), IP_ADDRESS, USER_AGENT))
+                    .isInstanceOf(UserException.class)
+                    .hasMessageContaining("일치하지 않습니다");
+        }
+
+        private AuthDto.OAuthLoginRequest oauthRequest(String accessToken) {
+            AuthDto.OAuthLoginRequest request = new AuthDto.OAuthLoginRequest();
+            request.setProvider("google");
+            request.setAccessToken(accessToken);
+            request.setDeviceId(DEVICE_ID);
+            request.setDeviceName(DEVICE_NAME);
+            return request;
+        }
+
+        private void mockGoogleOAuth(String providerId, String email, String name) {
+            when(restTemplate.getForEntity(
+                    org.mockito.ArgumentMatchers.contains("https://oauth2.googleapis.com/tokeninfo"),
+                    eq(Map.class)))
+                    .thenReturn(ResponseEntity.ok(Map.of(
+                            "expires_in", 3600,
+                            "email", email
+                    )));
+            when(restTemplate.exchange(
+                    eq("https://www.googleapis.com/oauth2/v2/userinfo"),
+                    eq(HttpMethod.GET),
+                    any(HttpEntity.class),
+                    eq(Map.class)))
+                    .thenReturn(ResponseEntity.ok(Map.of(
+                            "id", providerId,
+                            "email", email,
+                            "name", name,
+                            "picture", "https://example.com/profile.png"
+                    )));
         }
     }
 }

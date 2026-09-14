@@ -3,6 +3,7 @@ package com.travelmate.service.nft;
 import com.travelmate.dto.NftDto;
 import com.travelmate.entity.User;
 import com.travelmate.entity.nft.*;
+import com.travelmate.exception.BusinessException;
 import com.travelmate.repository.UserRepository;
 import com.travelmate.repository.nft.PointTransactionRepository;
 import com.travelmate.repository.nft.UserPointRepository;
@@ -54,7 +55,7 @@ public class PointService {
             String referenceType) {
 
         if (amount <= 0) {
-            throw new IllegalArgumentException("포인트는 양수여야 합니다");
+            throw BusinessException.badRequest("포인트는 양수여야 합니다");
         }
 
         // 중복 지급 방지
@@ -62,7 +63,7 @@ public class PointService {
             boolean exists = pointTransactionRepository.existsByUserIdAndReferenceIdAndReferenceType(
                     userId, referenceId, referenceType);
             if (exists) {
-                throw new IllegalStateException("이미 포인트가 지급된 항목입니다");
+                throw BusinessException.conflict("이미 포인트가 지급된 항목입니다");
             }
         }
 
@@ -74,7 +75,7 @@ public class PointService {
 
         // 거래 내역 생성
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다"));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         PointTransaction transaction = PointTransaction.builder()
                 .user(user)
@@ -108,14 +109,14 @@ public class PointService {
             String referenceType) {
 
         if (amount <= 0) {
-            throw new IllegalArgumentException("포인트는 양수여야 합니다");
+            throw BusinessException.badRequest("포인트는 양수여야 합니다");
         }
 
         UserPoint userPoint = getUserPointOrCreate(userId);
 
         // 잔액 확인
         if (userPoint.getTotalPoints() < amount) {
-            throw new IllegalStateException("포인트가 부족합니다. 잔액: " + userPoint.getTotalPoints());
+            throw BusinessException.badRequest("포인트가 부족합니다. 잔액: " + userPoint.getTotalPoints());
         }
 
         // 포인트 차감
@@ -124,7 +125,7 @@ public class PointService {
 
         // 거래 내역 생성
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다"));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         PointTransaction transaction = PointTransaction.builder()
                 .user(user)
@@ -151,17 +152,17 @@ public class PointService {
     @Transactional
     public void transferPoints(Long senderId, Long receiverId, Long amount, String message) {
         if (senderId.equals(receiverId)) {
-            throw new IllegalArgumentException("자신에게 포인트를 전송할 수 없습니다");
+            throw BusinessException.badRequest("자신에게 포인트를 전송할 수 없습니다");
         }
 
         if (amount <= 0) {
-            throw new IllegalArgumentException("전송 포인트는 양수여야 합니다");
+            throw BusinessException.badRequest("전송 포인트는 양수여야 합니다");
         }
 
         // 송신자 포인트 차감
         UserPoint senderPoint = getUserPointOrCreate(senderId);
         if (senderPoint.getTotalPoints() < amount) {
-            throw new IllegalStateException("포인트가 부족합니다. 잔액: " + senderPoint.getTotalPoints());
+            throw BusinessException.badRequest("포인트가 부족합니다. 잔액: " + senderPoint.getTotalPoints());
         }
 
         senderPoint.spendPoints(amount);
@@ -174,9 +175,9 @@ public class PointService {
 
         // 송신자 거래 내역
         User sender = userRepository.findById(senderId)
-                .orElseThrow(() -> new RuntimeException("송신자를 찾을 수 없습니다"));
+                .orElseThrow(() -> BusinessException.userNotFound(senderId));
         User receiver = userRepository.findById(receiverId)
-                .orElseThrow(() -> new RuntimeException("수신자를 찾을 수 없습니다"));
+                .orElseThrow(() -> BusinessException.userNotFound(receiverId));
 
         String description = String.format("%s님에게 전송", receiver.getNickname());
         if (message != null && !message.isBlank()) {
@@ -322,7 +323,7 @@ public class PointService {
         return userPointRepository.findByUserId(userId)
                 .orElseGet(() -> {
                     User user = userRepository.findById(userId)
-                            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다"));
+                            .orElseThrow(() -> BusinessException.userNotFound(userId));
                     return userPointRepository.findOrCreateByUserId(userId, user);
                 });
     }

@@ -127,4 +127,19 @@ public class PushNotificationDto {
         private boolean email;
         private boolean push;
     }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UpdateNotificationPreferencesRequest {
+        private Boolean follow;
+        private Boolean message;
+        private Boolean nftCollected;
+        private Boolean mintingComplete;
+        private Boolean groupInvite;
+        private Boolean reviewHelpful;
+        private Boolean email;
+        private Boolean push;
+    }
 }

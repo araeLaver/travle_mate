@@ -4,10 +4,21 @@ import { authService } from './authService';
 global.fetch = jest.fn();
 
 const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
+type AuthServiceTestState = {
+  accessToken: string | null;
+  tokenExpiresAt: number | null;
+  clearTokens: () => void;
+};
+const authServiceState = authService as unknown as AuthServiceTestState;
+
+const resetAuthService = () => {
+  authServiceState.clearTokens();
+};
 
 describe('AuthService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    resetAuthService();
     localStorage.clear();
   });
 
@@ -175,6 +186,125 @@ describe('AuthService', () => {
       expect(authService.getToken()).toBeNull();
       // Legacy localStorage cleanup also runs
       expect(localStorage.getItem('accessToken')).toBeNull();
+    });
+  });
+
+  describe('refresh session state', () => {
+    it('keeps route auth state for an expired access token while refresh is possible', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          accessToken: 'soon-expired-token',
+          refreshToken: 'refresh-token',
+          expiresIn: 60,
+          tokenType: 'Bearer',
+          user: {
+            id: 1,
+            email: 'test@example.com',
+            nickname: 'test',
+            rating: 4.5,
+            reviewCount: 10,
+            isEmailVerified: true,
+            createdAt: '2024-01-01T00:00:00Z',
+          },
+        }),
+      } as Response);
+      await authService.login({ email: 'test@example.com', password: 'pass' });
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          accessToken: 'refreshed-token',
+          refreshToken: 'refresh-token',
+          expiresIn: 3600,
+          tokenType: 'Bearer',
+        }),
+      } as Response);
+
+      expect(authService.isTokenExpired()).toBe(true);
+      expect(authService.isAuthenticated()).toBe(true);
+      await expect(authService.getValidToken()).resolves.toBe('refreshed-token');
+      expect(authService.getToken()).toBe('refreshed-token');
+    });
+
+    it('clears local auth state immediately when token refresh fails', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          accessToken: 'soon-expired-token',
+          refreshToken: 'refresh-token',
+          expiresIn: 60,
+          tokenType: 'Bearer',
+          user: {
+            id: 1,
+            email: 'test@example.com',
+            nickname: 'test',
+            rating: 4.5,
+            reviewCount: 10,
+            isEmailVerified: true,
+            createdAt: '2024-01-01T00:00:00Z',
+          },
+        }),
+      } as Response);
+      await authService.login({ email: 'test@example.com', password: 'pass' });
+
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        json: async () => ({}),
+      } as Response);
+
+      await expect(authService.getValidToken()).resolves.toBeNull();
+      expect(authService.getToken()).toBeNull();
+      expect(authService.getUser()).toBeNull();
+      expect(authService.isAuthenticated()).toBe(false);
+      expect(localStorage.getItem('currentUserId')).toBeNull();
+    });
+
+    it('refreshes when a restored session has user state but no access token', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          accessToken: 'initial-token',
+          refreshToken: 'refresh-token',
+          expiresIn: 3600,
+          tokenType: 'Bearer',
+          user: {
+            id: 1,
+            email: 'test@example.com',
+            nickname: 'test',
+            rating: 4.5,
+            reviewCount: 10,
+            isEmailVerified: true,
+            createdAt: '2024-01-01T00:00:00Z',
+          },
+        }),
+      } as Response);
+      await authService.login({ email: 'test@example.com', password: 'pass' });
+
+      authServiceState.accessToken = null;
+      authServiceState.tokenExpiresAt = null;
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          accessToken: 'restored-token',
+          refreshToken: 'refresh-token',
+          expiresIn: 3600,
+          tokenType: 'Bearer',
+        }),
+      } as Response);
+
+      expect(authService.isAuthenticated()).toBe(true);
+      await expect(authService.getValidToken()).resolves.toBe('restored-token');
+      expect(authService.getToken()).toBe('restored-token');
+      expect(mockFetch).toHaveBeenLastCalledWith(
+        expect.stringContaining('/auth/refresh'),
+        expect.objectContaining({
+          credentials: 'include',
+          method: 'POST',
+        })
+      );
     });
   });
 

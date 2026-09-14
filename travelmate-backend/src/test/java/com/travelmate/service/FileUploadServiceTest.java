@@ -2,6 +2,7 @@ package com.travelmate.service;
 
 import com.travelmate.entity.UploadedFile;
 import com.travelmate.entity.User;
+import com.travelmate.exception.BusinessException;
 import com.travelmate.repository.UploadedFileRepository;
 import com.travelmate.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -252,6 +253,23 @@ class FileUploadServiceTest {
             assertThat(result).startsWith("/uploads/profiles/");
             assertThat(result).contains("profile_1_");
         }
+
+        @Test
+        @DisplayName("실패 - 프로필 이미지 업로드 사용자 없음")
+        void uploadProfileImage_UserNotFound() {
+            // Given
+            byte[] jpegHeader = new byte[]{(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE0};
+            MockMultipartFile file = new MockMultipartFile(
+                    "file", "profile.jpg", "image/jpeg", jpegHeader);
+
+            when(userRepository.findById(999L)).thenReturn(Optional.empty());
+
+            // When & Then
+            assertThatThrownBy(() -> fileUploadService.uploadProfileImage(file, 999L))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(ex -> assertBusinessException(ex, 404, "USER_NOT_FOUND"));
+            verify(uploadedFileRepository, never()).save(any(UploadedFile.class));
+        }
     }
 
     @Nested
@@ -453,5 +471,11 @@ class FileUploadServiceTest {
             // Then
             assertThat(result).isFalse();
         }
+    }
+
+    private void assertBusinessException(Throwable throwable, int status, String errorCode) {
+        BusinessException exception = (BusinessException) throwable;
+        assertThat(exception.getStatus().value()).isEqualTo(status);
+        assertThat(exception.getErrorCodeStr()).isEqualTo(errorCode);
     }
 }

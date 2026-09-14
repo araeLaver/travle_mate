@@ -1,0 +1,10 @@
+# 두리메이트 (Doorimate)
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /settings
+Disallow: /wallet
+Disallow: /payment
+Disallow: /auth/callback
+
+Sitemap: https://fryndo-web.vercel.app/sitemap.xml

@@ -33,20 +33,20 @@ public class UserReviewService {
     @Transactional
     public UserReviewDto.Response createReview(Long reviewerId, Long revieweeId, UserReviewDto.CreateRequest request) {
         if (reviewerId.equals(revieweeId)) {
-            throw new BusinessException("본인을 평가할 수 없습니다.");
+            throw BusinessException.badRequest("본인을 평가할 수 없습니다.");
         }
 
         User reviewer = userRepository.findById(reviewerId)
-                .orElseThrow(() -> new BusinessException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.userNotFound(reviewerId));
 
         User reviewee = userRepository.findById(revieweeId)
-                .orElseThrow(() -> new BusinessException("평가 대상 사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.userNotFound(revieweeId));
 
         TravelGroup travelGroup = travelGroupRepository.findById(request.getTravelGroupId())
-                .orElseThrow(() -> new BusinessException("여행 그룹을 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.groupNotFound(request.getTravelGroupId()));
 
         if (userReviewRepository.existsByReviewerIdAndRevieweeId(reviewerId, revieweeId)) {
-            throw new BusinessException("이미 해당 사용자를 평가했습니다.");
+            throw BusinessException.conflict("이미 해당 사용자를 평가했습니다.");
         }
 
         UserReview review = new UserReview(
@@ -72,7 +72,7 @@ public class UserReviewService {
     @Transactional(readOnly = true)
     public List<UserReviewDto.Response> getReviewsForUser(Long revieweeId) {
         userRepository.findById(revieweeId)
-                .orElseThrow(() -> new BusinessException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.userNotFound(revieweeId));
 
         return userReviewRepository.findByRevieweeIdWithReviewer(revieweeId)
                 .stream()
@@ -86,7 +86,7 @@ public class UserReviewService {
     @Transactional(readOnly = true)
     public UserReviewDto.UserReviewStats getReviewStats(Long userId) {
         userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         Double avg = userReviewRepository.getAverageRatingByUserId(userId);
         Integer count = userReviewRepository.getReviewCountByUserId(userId);
@@ -104,10 +104,10 @@ public class UserReviewService {
     @Transactional
     public void deleteReview(Long reviewerId, Long reviewId) {
         UserReview review = userReviewRepository.findById(reviewId)
-                .orElseThrow(() -> new BusinessException("평가를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.notFound("평가를 찾을 수 없습니다."));
 
         if (!review.getReviewer().getId().equals(reviewerId)) {
-            throw new BusinessException("본인이 작성한 평가만 삭제할 수 있습니다.");
+            throw BusinessException.forbidden("본인이 작성한 평가만 삭제할 수 있습니다.");
         }
 
         userReviewRepository.delete(review);

@@ -2,6 +2,7 @@ package com.travelmate.service.nft;
 
 import com.travelmate.entity.User;
 import com.travelmate.entity.nft.*;
+import com.travelmate.exception.BusinessException;
 import com.travelmate.repository.UserRepository;
 import com.travelmate.repository.nft.AuctionBidRepository;
 import com.travelmate.repository.nft.NftAuctionRepository;
@@ -83,8 +84,9 @@ class AuctionServiceTest {
             when(nftCollectionRepository.findById(10L)).thenReturn(Optional.of(nft));
 
             assertThatThrownBy(() -> auctionService.createAuction(1L, 10L, 1000L, 5000L, 24))
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessageContaining("본인 소유");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("본인 소유")
+                    .satisfies(ex -> assertBusinessException(ex, 403, "FORBIDDEN"));
         }
 
         @Test
@@ -95,8 +97,9 @@ class AuctionServiceTest {
             when(auctionRepository.existsByNftCollectionIdAndStatus(10L, NftAuction.AuctionStatus.ACTIVE)).thenReturn(true);
 
             assertThatThrownBy(() -> auctionService.createAuction(1L, 10L, 1000L, 5000L, 24))
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessageContaining("이미 경매 중");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("이미 경매 중")
+                    .satisfies(ex -> assertBusinessException(ex, 409, "CONFLICT"));
         }
 
         @Test
@@ -105,7 +108,8 @@ class AuctionServiceTest {
             when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> auctionService.createAuction(1L, 10L, 1000L, 5000L, 24))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(ex -> assertBusinessException(ex, 404, "USER_NOT_FOUND"));
         }
 
         @Test
@@ -115,7 +119,8 @@ class AuctionServiceTest {
             when(nftCollectionRepository.findById(10L)).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> auctionService.createAuction(1L, 10L, 1000L, 5000L, 24))
-                    .isInstanceOf(IllegalArgumentException.class);
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(ex -> assertBusinessException(ex, 404, "NOT_FOUND"));
         }
     }
 
@@ -164,8 +169,9 @@ class AuctionServiceTest {
             when(auctionRepository.findById(100L)).thenReturn(Optional.of(activeAuction));
 
             assertThatThrownBy(() -> auctionService.placeBid(100L, 1L, 1200L))
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessageContaining("본인 경매");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("본인 경매")
+                    .satisfies(ex -> assertBusinessException(ex, 403, "FORBIDDEN"));
         }
 
         @Test
@@ -174,8 +180,9 @@ class AuctionServiceTest {
             when(auctionRepository.findById(100L)).thenReturn(Optional.of(activeAuction));
 
             assertThatThrownBy(() -> auctionService.placeBid(100L, 2L, 900L))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("현재가");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("현재가")
+                    .satisfies(ex -> assertBusinessException(ex, 400, "BAD_REQUEST"));
         }
 
         @Test
@@ -184,8 +191,9 @@ class AuctionServiceTest {
             when(auctionRepository.findById(100L)).thenReturn(Optional.of(activeAuction));
 
             assertThatThrownBy(() -> auctionService.placeBid(100L, 2L, 1050L))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("최소 입찰 단위");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("최소 입찰 단위")
+                    .satisfies(ex -> assertBusinessException(ex, 400, "BAD_REQUEST"));
         }
 
         @Test
@@ -201,8 +209,9 @@ class AuctionServiceTest {
             when(auctionRepository.findById(100L)).thenReturn(Optional.of(activeAuction));
 
             assertThatThrownBy(() -> auctionService.placeBid(100L, 2L, 1200L))
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessageContaining("종료된");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("종료된")
+                    .satisfies(ex -> assertBusinessException(ex, 409, "CONFLICT"));
         }
 
         @Test
@@ -249,8 +258,9 @@ class AuctionServiceTest {
             when(auctionRepository.findById(100L)).thenReturn(Optional.of(auction));
 
             assertThatThrownBy(() -> auctionService.cancelAuction(100L, 2L))
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessageContaining("본인 경매만");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("본인 경매만")
+                    .satisfies(ex -> assertBusinessException(ex, 403, "FORBIDDEN"));
         }
 
         @Test
@@ -262,8 +272,9 @@ class AuctionServiceTest {
             when(auctionRepository.findById(100L)).thenReturn(Optional.of(auction));
 
             assertThatThrownBy(() -> auctionService.cancelAuction(100L, 1L))
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessageContaining("입찰이 있는");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("입찰이 있는")
+                    .satisfies(ex -> assertBusinessException(ex, 409, "CONFLICT"));
         }
     }
 
@@ -346,5 +357,11 @@ class AuctionServiceTest {
             f.setAccessible(true);
             f.set(auction, id);
         } catch (Exception e) { throw new RuntimeException(e); }
+    }
+
+    private void assertBusinessException(Throwable throwable, int status, String errorCode) {
+        BusinessException exception = (BusinessException) throwable;
+        assertThat(exception.getStatus().value()).isEqualTo(status);
+        assertThat(exception.getErrorCodeStr()).isEqualTo(errorCode);
     }
 }

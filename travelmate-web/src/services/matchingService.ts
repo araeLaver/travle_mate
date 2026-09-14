@@ -35,6 +35,10 @@ export const cancelMatchRequest = async (requestId: number): Promise<void> => {
   await apiClient.delete(`/matching/requests/${requestId}`);
 };
 
+export const completeMatchRequest = async (requestId: number): Promise<MatchRequestResponse> => {
+  return apiClient.put<MatchRequestResponse>(`/matching/requests/${requestId}/complete`);
+};
+
 // ===== 요청 목록 =====
 
 export const getReceivedRequests = async (

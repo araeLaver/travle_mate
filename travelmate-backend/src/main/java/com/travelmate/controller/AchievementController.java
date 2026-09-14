@@ -1,5 +1,6 @@
 package com.travelmate.controller;
 
+import com.travelmate.security.AuthenticatedUserId;
 import com.travelmate.dto.NftDto;
 import com.travelmate.entity.nft.AchievementType;
 import com.travelmate.service.nft.AchievementService;
@@ -24,7 +25,7 @@ public class AchievementController {
     @GetMapping
     public ResponseEntity<List<NftDto.AchievementResponse>> getAllAchievements(
             @AuthenticationPrincipal String userId) {
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         List<NftDto.AchievementResponse> achievements = achievementService.getAllAchievements(userIdLong);
         return ResponseEntity.ok(achievements);
     }
@@ -36,7 +37,7 @@ public class AchievementController {
     public ResponseEntity<List<NftDto.AchievementResponse>> getAchievementsByType(
             @AuthenticationPrincipal String userId,
             @PathVariable AchievementType type) {
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         List<NftDto.AchievementResponse> achievements = achievementService.getAchievementsByType(userIdLong, type);
         return ResponseEntity.ok(achievements);
     }
@@ -47,7 +48,7 @@ public class AchievementController {
     @GetMapping("/my")
     public ResponseEntity<List<NftDto.AchievementResponse>> getMyAchievements(
             @AuthenticationPrincipal String userId) {
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         List<NftDto.AchievementResponse> achievements = achievementService.getMyAchievements(userIdLong);
         return ResponseEntity.ok(achievements);
     }
@@ -58,7 +59,7 @@ public class AchievementController {
     @GetMapping("/my/completed")
     public ResponseEntity<List<NftDto.AchievementResponse>> getCompletedAchievements(
             @AuthenticationPrincipal String userId) {
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         List<NftDto.AchievementResponse> achievements = achievementService.getCompletedAchievements(userIdLong);
         return ResponseEntity.ok(achievements);
     }
@@ -69,7 +70,7 @@ public class AchievementController {
     @GetMapping("/stats")
     public ResponseEntity<NftDto.AchievementStatsResponse> getAchievementStats(
             @AuthenticationPrincipal String userId) {
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         NftDto.AchievementStatsResponse stats = achievementService.getAchievementStats(userIdLong);
         return ResponseEntity.ok(stats);
     }

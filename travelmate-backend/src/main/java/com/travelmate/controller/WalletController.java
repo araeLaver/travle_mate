@@ -1,7 +1,7 @@
 package com.travelmate.controller;
 
+import com.travelmate.security.AuthenticatedUserId;
 import com.travelmate.dto.WalletDto;
-import com.travelmate.entity.User;
 import com.travelmate.service.nft.WalletService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -32,23 +32,23 @@ public class WalletController {
     @Operation(summary = "서명 검증 및 지갑 연결", description = "서명을 검증하고 지갑을 계정에 연결합니다")
     @PostMapping("/verify")
     public ResponseEntity<WalletDto.WalletConnectionResponse> verifyAndConnect(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal String userId,
             @Valid @RequestBody WalletDto.VerifySignatureRequest request) {
-        WalletDto.WalletConnectionResponse response = walletService.verifyAndConnect(user.getId(), request);
+        WalletDto.WalletConnectionResponse response = walletService.verifyAndConnect(AuthenticatedUserId.parse(userId), request);
         return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "지갑 상태 조회", description = "현재 연결된 지갑 상태를 조회합니다")
     @GetMapping("/status")
-    public ResponseEntity<WalletDto.WalletStatusResponse> getWalletStatus(@AuthenticationPrincipal User user) {
-        WalletDto.WalletStatusResponse response = walletService.getWalletStatus(user.getId());
+    public ResponseEntity<WalletDto.WalletStatusResponse> getWalletStatus(@AuthenticationPrincipal String userId) {
+        WalletDto.WalletStatusResponse response = walletService.getWalletStatus(AuthenticatedUserId.parse(userId));
         return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "지갑 연결 해제", description = "연결된 지갑을 해제합니다")
     @DeleteMapping("/disconnect")
-    public ResponseEntity<WalletDto.DisconnectResponse> disconnectWallet(@AuthenticationPrincipal User user) {
-        WalletDto.DisconnectResponse response = walletService.disconnectWallet(user.getId());
+    public ResponseEntity<WalletDto.DisconnectResponse> disconnectWallet(@AuthenticationPrincipal String userId) {
+        WalletDto.DisconnectResponse response = walletService.disconnectWallet(AuthenticatedUserId.parse(userId));
         return ResponseEntity.ok(response);
     }
 

@@ -2,6 +2,7 @@ package com.travelmate.controller;
 
 import com.travelmate.dto.RecommendationDto;
 import com.travelmate.dto.UserDto;
+import com.travelmate.security.AuthenticatedUserId;
 import com.travelmate.service.LocationService;
 import com.travelmate.service.RecommendationService;
 import com.travelmate.service.AdvancedRecommendationService;
@@ -27,7 +28,7 @@ public class RecommendationController {
             @AuthenticationPrincipal String userId,
             @RequestParam Double latitude,
             @RequestParam Double longitude) {
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         List<UserDto.Response> recommendations = locationService.getSmartRecommendations(userIdLong, latitude, longitude);
         return ResponseEntity.ok(recommendations);
     }
@@ -35,7 +36,7 @@ public class RecommendationController {
     @GetMapping("/personalized")
     public ResponseEntity<List<UserDto.Response>> getPersonalizedRecommendations(
             @AuthenticationPrincipal String userId) {
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         List<UserDto.Response> recommendations = advancedRecommendationService
             .getPersonalizedRecommendations(userIdLong);
         return ResponseEntity.ok(recommendations);
@@ -45,7 +46,7 @@ public class RecommendationController {
     public ResponseEntity<List<UserDto.Response>> getActivityBasedRecommendations(
             @AuthenticationPrincipal String userId,
             @RequestParam String activity) {
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         List<UserDto.Response> recommendations = advancedRecommendationService
             .getActivityBasedRecommendations(userIdLong, activity);
         return ResponseEntity.ok(recommendations);
@@ -54,7 +55,7 @@ public class RecommendationController {
     @PostMapping("/intelligent-matching")
     public ResponseEntity<Void> performIntelligentMatching(
             @AuthenticationPrincipal String userId) {
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         advancedRecommendationService.performIntelligentMatching(userIdLong);
         return ResponseEntity.ok().build();
     }
@@ -78,8 +79,9 @@ public class RecommendationController {
     
     @PostMapping("/feedback")
     public ResponseEntity<Void> submitFeedback(
+            @AuthenticationPrincipal String userId,
             @RequestBody Map<String, Object> feedback) {
-        recommendationService.processFeedback(feedback);
+        recommendationService.processFeedback(AuthenticatedUserId.parse(userId), feedback);
         return ResponseEntity.ok().build();
     }
 
@@ -95,7 +97,7 @@ public class RecommendationController {
             @RequestParam(defaultValue = "10") int limit) {
 
         List<RecommendationDto.GroupRecommendation> recommendations =
-                recommendationService.recommendGroups(Long.parseLong(userId), limit);
+                recommendationService.recommendGroups(AuthenticatedUserId.parse(userId), limit);
 
         return ResponseEntity.ok(recommendations);
     }
@@ -110,7 +112,7 @@ public class RecommendationController {
             @RequestParam(defaultValue = "10") int limit) {
 
         List<RecommendationDto.UserRecommendation> recommendations =
-                recommendationService.recommendTravelMates(Long.parseLong(userId), limit);
+                recommendationService.recommendTravelMates(AuthenticatedUserId.parse(userId), limit);
 
         return ResponseEntity.ok(recommendations);
     }
