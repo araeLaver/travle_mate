@@ -1,6 +1,7 @@
 package com.travelmate.security;
 
 import com.travelmate.service.JwtService;
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
@@ -33,12 +34,16 @@ public class StompJwtChannelInterceptor implements ChannelInterceptor {
         }
 
         String token = extractBearerToken(accessor.getFirstNativeHeader("Authorization"));
-        if (!StringUtils.hasText(token) || !jwtService.validateToken(token)) {
+        // CONNECT 한 번에 토큰도 한 번만 파싱한다.
+        Claims claims = StringUtils.hasText(token)
+            ? jwtService.parseClaims(token).orElse(null)
+            : null;
+        if (claims == null) {
             throw new AccessDeniedException("Valid STOMP authorization is required");
         }
 
-        Long userId = jwtService.getUserIdFromToken(token);
-        List<String> authorities = jwtService.getAuthoritiesFromToken(token);
+        Long userId = jwtService.getUserId(claims);
+        List<String> authorities = jwtService.getAuthorities(claims);
         if (authorities == null || authorities.isEmpty()) {
             authorities = Collections.singletonList("ROLE_USER");
         }

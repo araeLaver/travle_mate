@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.net.SocketTimeoutException;
 import java.time.LocalDateTime;
@@ -204,6 +205,20 @@ public class GlobalExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(errorResponse);
+    }
+
+    /**
+     * 매핑되지 않은 경로는 404다. 이것이 없으면 아래 generic 핸들러가 500 + 전체 스택트레이스를 남기는데,
+     * 오타 URL이나 스캐너 한 번에 로그가 수만 줄로 불어나 CPU가 좁은 인스턴스에서는 그 자체가 장애가 된다.
+     */
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNoResourceFound(NoResourceFoundException ex, WebRequest request) {
+        log.warn("No handler for {} {}", ex.getHttpMethod(), ex.getResourcePath());
+
+        ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.RESOURCE_NOT_FOUND, getPath(request));
+        errorResponse.setTraceId(getTraceId());
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
     @ExceptionHandler(RuntimeException.class)

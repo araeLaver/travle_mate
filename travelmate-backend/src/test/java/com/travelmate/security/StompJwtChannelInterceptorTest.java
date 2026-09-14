@@ -1,6 +1,8 @@
 package com.travelmate.security;
 
 import com.travelmate.service.JwtService;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.impl.DefaultClaims;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,6 +18,8 @@ import org.springframework.security.access.AccessDeniedException;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -41,9 +45,10 @@ class StompJwtChannelInterceptorTest {
     @DisplayName("CONNECT - 유효한 Bearer 토큰이면 STOMP principal 설정")
     void preSend_ConnectWithValidToken_SetsPrincipal() {
         // Given
-        when(jwtService.validateToken("fresh-token")).thenReturn(true);
-        when(jwtService.getUserIdFromToken("fresh-token")).thenReturn(42L);
-        when(jwtService.getAuthoritiesFromToken("fresh-token")).thenReturn(List.of("ROLE_USER"));
+        Claims claims = claimsFor(42L);
+        when(jwtService.parseClaims("fresh-token")).thenReturn(Optional.of(claims));
+        when(jwtService.getUserId(claims)).thenReturn(42L);
+        when(jwtService.getAuthorities(claims)).thenReturn(List.of("ROLE_USER"));
 
         Message<byte[]> message = stompMessage(StompCommand.CONNECT, "Bearer fresh-token");
 
@@ -55,9 +60,10 @@ class StompJwtChannelInterceptorTest {
         assertThat(principal).isNotNull();
         assertThat(principal.getName()).isEqualTo("42");
 
-        verify(jwtService).validateToken("fresh-token");
-        verify(jwtService).getUserIdFromToken("fresh-token");
-        verify(jwtService).getAuthoritiesFromToken("fresh-token");
+        // 토큰은 CONNECT 한 번에 한 번만 파싱되어야 한다
+        verify(jwtService).parseClaims("fresh-token");
+        verify(jwtService).getUserId(claims);
+        verify(jwtService).getAuthorities(claims);
     }
 
     @Test
@@ -71,14 +77,14 @@ class StompJwtChannelInterceptorTest {
                 .isInstanceOf(AccessDeniedException.class)
                 .hasMessageContaining("Valid STOMP authorization is required");
 
-        verify(jwtService, never()).validateToken(org.mockito.ArgumentMatchers.anyString());
+        verify(jwtService, never()).parseClaims(org.mockito.ArgumentMatchers.anyString());
     }
 
     @Test
     @DisplayName("CONNECT - 유효하지 않은 토큰이면 차단")
     void preSend_ConnectWithInvalidToken_ThrowsAccessDenied() {
         // Given
-        when(jwtService.validateToken("expired-token")).thenReturn(false);
+        when(jwtService.parseClaims("expired-token")).thenReturn(Optional.empty());
         Message<byte[]> message = stompMessage(StompCommand.CONNECT, "Bearer expired-token");
 
         // When & Then
@@ -86,8 +92,8 @@ class StompJwtChannelInterceptorTest {
                 .isInstanceOf(AccessDeniedException.class)
                 .hasMessageContaining("Valid STOMP authorization is required");
 
-        verify(jwtService).validateToken("expired-token");
-        verify(jwtService, never()).getUserIdFromToken("expired-token");
+        verify(jwtService).parseClaims("expired-token");
+        verify(jwtService, never()).getUserId(org.mockito.ArgumentMatchers.any());
     }
 
     @Test
@@ -102,6 +108,10 @@ class StompJwtChannelInterceptorTest {
         // Then
         assertThat(result).isSameAs(message);
         verifyNoInteractions(jwtService);
+    }
+
+    private Claims claimsFor(Long userId) {
+        return new DefaultClaims(Map.of("sub", userId.toString(), "role", "USER"));
     }
 
     private Message<byte[]> stompMessage(StompCommand command, String authorizationHeader) {

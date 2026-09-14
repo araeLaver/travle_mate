@@ -409,6 +409,9 @@ logging:
   level:
     root: WARN
     com.travelmate: INFO
+    # 요청마다 헤더·파라미터·본문·응답헤더를 INFO로 찍는 필터. 무료 인스턴스(0.1 vCPU)에서는
+    # 이 로깅 자체가 응답시간에 잡히므로 운영에서는 끈다. 문제 추적이 필요하면 이 줄만 INFO로 되돌릴 것.
+    com.travelmate.security.RequestLoggingFilter: WARN
     org.springframework: WARN
     org.hibernate: ERROR
     org.apache: ERROR
