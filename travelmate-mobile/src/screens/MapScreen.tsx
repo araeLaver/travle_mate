@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import MapView, { Marker, Circle, Region } from 'react-native-maps';
 import * as Location from 'expo-location';
+import { getDeviceLocation } from '../lib/deviceLocation';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { CompositeNavigationProp } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
@@ -69,7 +70,11 @@ const MapScreen: React.FC<Props> = ({ navigation }) => {
           return;
         }
 
-        const location = await Location.getCurrentPositionAsync({});
+        const location = await getDeviceLocation();
+        if (!location) {
+          setIsLoading(false);
+          return;
+        }
         const { latitude, longitude } = location.coords;
         setUserLocation({ latitude, longitude });
         await fetchLocations(latitude, longitude);

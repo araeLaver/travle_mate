@@ -685,6 +685,7 @@ public class AuthService {
             .createdAt(user.getCreatedAt())
             // 로그인 응답의 user가 클라이언트 스토어에 그대로 올라가 홈·프로필 통계로 쓰인다.
             // 여기서 빼면 /users/me를 다시 부르기 전까지 수집 NFT·포인트가 0으로 보인다.
+            .isMatchingEnabled(Boolean.TRUE.equals(user.getIsMatchingEnabled()))
             .totalNftsCollected(user.getTotalNftsCollected() != null ? user.getTotalNftsCollected() : 0)
             .totalPoints(userPointRepository.findByUserId(user.getId())
                 .map(com.travelmate.entity.nft.UserPoint::getTotalPoints)

@@ -13,6 +13,7 @@ import {
   Image,
   ActivityIndicator,
   RefreshControl,
+  Alert,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
@@ -66,15 +67,36 @@ const UserSearchScreen: React.FC<Props> = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [searchMode, setSearchMode] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
+  // 매칭은 사용자가 켜야 동작한다. 꺼져 있으면 서버가 MATCHING_NOT_ENABLED로 거절하는데,
+  // 그걸 빈 목록으로 보여주면 "추천이 없다"로 오해하게 된다.
+  const [matchingDisabled, setMatchingDisabled] = useState(false);
+  const [enabling, setEnabling] = useState(false);
 
   const loadRecommendations = useCallback(async () => {
     try {
       const data = await apiClient.get<MatchRecommendation[]>('/matching/recommendations?limit=20');
       setRecommended(data.map(toUserProfile));
-    } catch (error) {
+      setMatchingDisabled(false);
+    } catch (error: any) {
+      if (error?.response?.data?.code === 'MATCHING_NOT_ENABLED') {
+        setMatchingDisabled(true);
+        return;
+      }
       console.log('Failed to load recommendations:', error);
     }
   }, []);
+
+  const enableMatching = useCallback(async () => {
+    setEnabling(true);
+    try {
+      await apiClient.put('/users/profile', { isMatchingEnabled: true });
+      await loadRecommendations();
+    } catch (error) {
+      Alert.alert('오류', '매칭 참여 설정에 실패했습니다. 잠시 후 다시 시도해주세요.');
+    } finally {
+      setEnabling(false);
+    }
+  }, [loadRecommendations]);
 
   useEffect(() => {
     loadRecommendations();
@@ -227,7 +249,26 @@ const UserSearchScreen: React.FC<Props> = ({ navigation }) => {
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
           ListEmptyComponent={
-            <Text style={styles.emptyText}>{emptyText}</Text>
+            matchingDisabled && !searchMode ? (
+              <View style={styles.matchingOffBox}>
+                <Text style={styles.matchingOffTitle}>동행 매칭에 참여하고 있지 않아요</Text>
+                <Text style={styles.matchingOffBody}>
+                  참여하면 여행 스타일과 일정이 맞는 동행을 추천받고,
+                  다른 여행자에게도 내 프로필이 추천됩니다. 설정에서 언제든 끌 수 있어요.
+                </Text>
+                <TouchableOpacity
+                  style={[styles.matchingOffButton, enabling && styles.matchingOffButtonDisabled]}
+                  onPress={enableMatching}
+                  disabled={enabling}
+                >
+                  <Text style={styles.matchingOffButtonText}>
+                    {enabling ? '설정하는 중...' : '매칭 참여하기'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <Text style={styles.emptyText}>{emptyText}</Text>
+            )
           }
         />
       )}
@@ -236,6 +277,42 @@ const UserSearchScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 const createStyles = (palette: ThemePalette) => StyleSheet.create({
+  matchingOffBox: {
+    marginTop: spacing.xl,
+    marginHorizontal: spacing.lg,
+    padding: spacing.lg,
+    borderRadius: radii.card,
+    backgroundColor: palette.surfaceAlt,
+    alignItems: 'center',
+  },
+  matchingOffTitle: {
+    ...type.body,
+    fontFamily: fonts.bold,
+    color: palette.ink,
+    marginBottom: spacing.sm,
+    textAlign: 'center',
+  },
+  matchingOffBody: {
+    ...type.bodySmall,
+    fontFamily: fonts.medium,
+    color: palette.textSecondary,
+    textAlign: 'center',
+    marginBottom: spacing.lg,
+  },
+  matchingOffButton: {
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xl,
+    borderRadius: radii.button,
+    backgroundColor: palette.primary,
+  },
+  matchingOffButtonDisabled: {
+    opacity: 0.6,
+  },
+  matchingOffButtonText: {
+    ...type.bodySmall,
+    fontFamily: fonts.bold,
+    color: palette.onPrimary,
+  },
   container: {
     flex: 1,
     backgroundColor: palette.background,

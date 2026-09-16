@@ -20,6 +20,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNotifications } from '../contexts/NotificationContext';
 import { nftService, NearbyLocation } from '../services/nftService';
 import * as Location from 'expo-location';
+import { getDeviceLocation } from '../lib/deviceLocation';
 import { useTheme } from '../contexts/ThemeContext';
 import { ThemePalette, fonts, type, spacing, radii, rarityColorFor } from '../theme';
 import Icon, { IconName } from '../components/icons/Icon';
@@ -64,7 +65,8 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
       }
       setLocationPermission(true);
 
-      const location = await Location.getCurrentPositionAsync({});
+      const location = await getDeviceLocation();
+      if (!location) return;
       const { latitude, longitude } = location.coords;
 
       const locations = await nftService.getNearbyLocations(latitude, longitude, 10);

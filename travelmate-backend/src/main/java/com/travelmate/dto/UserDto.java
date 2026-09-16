@@ -91,6 +91,7 @@ public class UserDto {
         private LocalDateTime createdAt;
         private Integer totalNftsCollected;
         private Long totalPoints;
+        private Boolean isMatchingEnabled;
     }
     
     @Data
@@ -155,6 +156,9 @@ public class UserDto {
 
         @Size(max = 20, message = "언어는 최대 20개까지 설정할 수 있습니다")
         private List<String> languages;
+
+        /** 동행 매칭 후보로 노출될지 여부. null이면 기존 설정을 유지한다. */
+        private Boolean isMatchingEnabled;
     }
     
     @Data

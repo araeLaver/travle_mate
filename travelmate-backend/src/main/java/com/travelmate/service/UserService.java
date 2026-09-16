@@ -254,6 +254,7 @@ public class UserService {
             .trustScore(getTrustScoreForUser(user.getId()))
             .lastActivityAt(user.getLastActivityAt())
             .createdAt(user.getCreatedAt())
+            .isMatchingEnabled(Boolean.TRUE.equals(user.getIsMatchingEnabled()))
             .totalNftsCollected(user.getTotalNftsCollected() != null ? user.getTotalNftsCollected() : 0)
             .totalPoints(userPointRepository.findByUserId(user.getId())
                 .map(com.travelmate.entity.nft.UserPoint::getTotalPoints)
@@ -287,7 +288,10 @@ public class UserService {
     
     @Caching(evict = {
         @CacheEvict(value = CacheConfig.USER_PROFILES, key = "#userId"),
-        @CacheEvict(value = CacheConfig.USERS, key = "#userId")
+        @CacheEvict(value = CacheConfig.USERS, key = "#userId"),
+        // 매칭 참여 여부나 프로필(여행 스타일·나이 등)이 바뀌면 후보군과 점수가 달라진다.
+        // 추천은 @Cacheable이라 비우지 않으면 매칭을 껐는데도 캐시된 추천이 계속 나간다.
+        @CacheEvict(value = "matchRecommendations", allEntries = true)
     })
     public UserDto.Response updateUserProfile(Long userId, UserDto.UpdateProfileRequest request) {
         User user = userRepository.findById(userId)
@@ -326,6 +330,10 @@ public class UserService {
         
         if (request.getTravelStyle() != null) {
             user.setTravelStyle(request.getTravelStyle());
+        }
+
+        if (request.getIsMatchingEnabled() != null) {
+            user.setIsMatchingEnabled(request.getIsMatchingEnabled());
         }
 
         if (request.getInterests() != null) {

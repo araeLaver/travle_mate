@@ -24,6 +24,7 @@ import { RootStackParamList } from '../navigation/AppNavigator';
 import { useAuth } from '../contexts/AuthContext';
 import { chatService, ChatMessage, GroupMember } from '../services/chatService';
 import * as Location from 'expo-location';
+import { getDeviceLocation } from '../lib/deviceLocation';
 import Icon from '../components/icons/Icon';
 import { useTheme } from '../contexts/ThemeContext';
 import { ThemePalette, fonts, type, spacing, radii } from '../theme';
@@ -128,7 +129,11 @@ const ChatRoomScreen: React.FC<Props> = ({ navigation, route }) => {
         return;
       }
 
-      const location = await Location.getCurrentPositionAsync({});
+      const location = await getDeviceLocation();
+      if (!location) {
+        Alert.alert('위치 확인 실패', '현재 위치를 가져오지 못했습니다. 잠시 후 다시 시도해주세요.');
+        return;
+      }
       const { latitude, longitude } = location.coords;
 
       // Reverse geocoding to get location name

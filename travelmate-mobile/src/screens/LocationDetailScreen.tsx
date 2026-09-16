@@ -20,6 +20,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { nftService, CollectibleLocation } from '../services/nftService';
 import * as Location from 'expo-location';
+import { getDeviceLocation } from '../lib/deviceLocation';
 import { useTheme } from '../contexts/ThemeContext';
 import { ThemePalette, fonts, type, spacing, radii, rarityColorFor } from '../theme';
 import Icon from '../components/icons/Icon';
@@ -75,17 +76,19 @@ const LocationDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         // Get user location for distance calculation
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status === 'granted') {
-          const currentLocation = await Location.getCurrentPositionAsync({});
-          const { latitude, longitude } = currentLocation.coords;
-          setUserLocation({ latitude, longitude });
+          const currentLocation = await getDeviceLocation();
+          if (currentLocation) {
+            const { latitude, longitude } = currentLocation.coords;
+            setUserLocation({ latitude, longitude });
 
-          const dist = calculateDistance(
-            latitude,
-            longitude,
-            locationData.latitude,
-            locationData.longitude
-          );
-          setDistance(dist);
+            const dist = calculateDistance(
+              latitude,
+              longitude,
+              locationData.latitude,
+              locationData.longitude
+            );
+            setDistance(dist);
+          }
         }
       } catch (error: any) {
         Alert.alert('오류', error.message || '장소 정보를 불러오는데 실패했습니다.');
