@@ -373,6 +373,7 @@ class ChatService {
       locationName: message.locationName,
       createdAt: message.sentAt,
       isRead: false,
+      // 백엔드가 소유 여부를 내려주지 않는다. 화면에서 senderId를 로그인 사용자와 비교할 것.
       isMine: false,
     };
   }

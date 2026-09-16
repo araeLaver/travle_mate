@@ -54,6 +54,9 @@ class AuthServiceTest {
     private UserTrustScoreRepository trustScoreRepository;
 
     @Mock
+    private com.travelmate.repository.nft.UserPointRepository userPointRepository;
+
+    @Mock
     private RestTemplate restTemplate;
 
     @InjectMocks

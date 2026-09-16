@@ -186,11 +186,15 @@ class NftService {
   }
 
   getMintStatusLabel(status: string): string {
+    // 백엔드 MintStatus enum과 1:1로 맞춘다. 빠진 값은 라벨 대신 'PENDING' 같은
+    // 원시 코드가 화면에 그대로 노출된다.
     const labels: Record<string, string> = {
-      NOT_MINTED: '미민팅',
+      PENDING: '민팅 대기',
       MINTING: '민팅 중',
+      CONFIRMING: '확인 중',
       MINTED: '민팅 완료',
       FAILED: '민팅 실패',
+      NOT_MINTED: '미민팅',
     };
     return labels[status] || status;
   }

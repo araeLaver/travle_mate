@@ -58,6 +58,7 @@ const mintStatusChip = (
     case 'MINTED':
       return { backgroundColor: palette.primarySoft, color: palette.primary };
     case 'MINTING':
+    case 'CONFIRMING':
       return { backgroundColor: palette.warningBg, color: palette.warningText };
     case 'FAILED':
       return { backgroundColor: palette.errorBg, color: palette.error };

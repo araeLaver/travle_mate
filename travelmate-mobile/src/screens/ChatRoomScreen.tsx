@@ -166,7 +166,9 @@ const ChatRoomScreen: React.FC<Props> = ({ navigation, route }) => {
   };
 
   const renderMessage = ({ item, index }: { item: ChatMessage; index: number }) => {
-    const isMyMessage = item.isMine;
+    // 백엔드 메시지 응답에는 소유 여부가 없어서 chatService가 isMine을 채우지 못한다.
+    // 그걸 그대로 믿으면 내가 보낸 메시지까지 상대 메시지처럼 왼쪽에 붙는다.
+    const isMyMessage = item.senderId !== 0 && item.senderId === user?.id;
     const showAvatar = !isMyMessage && (index === 0 || messages[index - 1]?.senderId !== item.senderId);
     const showName = showAvatar;
 

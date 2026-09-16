@@ -65,7 +65,11 @@
       "phone": [
         "./store/screenshots/android/phone/01_login_light.png",
         "./store/screenshots/android/phone/02_login_dark.png",
-        "./store/screenshots/android/phone/03_register.png"
+        "./store/screenshots/android/phone/03_register.png",
+        "./store/screenshots/android/phone/05_collection.png",
+        "./store/screenshots/android/phone/06_chat_list.png",
+        "./store/screenshots/android/phone/07_chat_room.png",
+        "./store/screenshots/android/phone/08_profile.png"
       ],
       "tablet7": [],
       "tablet10": []
