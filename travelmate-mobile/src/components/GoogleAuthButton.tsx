@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { Text, TouchableOpacity, StyleSheet, StyleProp, ViewStyle, TextStyle } from 'react-native';
 import * as Google from 'expo-auth-session/providers/google';
 import { socialAuthService } from '../services/socialAuthService';
@@ -24,14 +24,22 @@ const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
 }) => {
   const { palette } = useTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
+  const lastHandledAuthKeyRef = useRef<string | null>(null);
   const [request, response, promptAsync] = Google.useAuthRequest(
     socialAuthService.getGoogleAuthConfig()
   );
 
   useEffect(() => {
-    if (response?.type === 'success') {
-      onAuthenticated(response.authentication?.idToken, response.authentication?.accessToken);
-    }
+    if (response?.type !== 'success') return;
+
+    const idToken = response.authentication?.idToken;
+    const accessToken = response.authentication?.accessToken;
+    const authKey = idToken || accessToken;
+
+    if (!authKey || lastHandledAuthKeyRef.current === authKey) return;
+
+    lastHandledAuthKeyRef.current = authKey;
+    void onAuthenticated(idToken, accessToken);
   }, [onAuthenticated, response]);
 
   return (
