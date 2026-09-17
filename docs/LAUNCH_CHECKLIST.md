@@ -44,6 +44,43 @@
 
 
 
+## 2026-09-17 진행 (앱 전 화면 실사용 점검 — 결함 9건 수정)
+
+깨끗한 전용 AVD(`doorimate_qa`)를 만들어 로컬 백엔드 + 시드 DB로 전 화면을 실제로 조작하며 점검했다.
+**정적 분석으로는 안 나오고 돌려봐야 나오는 것들만 9건 나왔다.**
+
+**기능이 아예 닿지 않던 것 2건**
+1. **AI 동행 매칭을 아무도 쓸 수 없었다.** `user.isMatchingEnabled`가 기본 false이고 가입 경로 두 곳이 명시적으로
+   false를 넣는데, **앱·웹·API 어디에도 켤 수단이 없었다.** 모든 계정이 400 `MATCHING_NOT_ENABLED`를 받았고
+   화면은 그걸 "추천 동행자가 없습니다"로 그려서 꺼진 게 아니라 비어 보였다. 스토어 설명의 1번 기능이다.
+   → 프로필 수정 API에 필드 추가 + 화면에서 설명과 함께 켜는 버튼 제공(가입 기본값은 그대로 두었다).
+2. **프로필 편집 화면이 없었다.** 메뉴는 `onPress={() => {/* 프로필 편집 페이지 */}}` 빈 스텁이고 화면 자체가 없었다.
+   사용자가 여행 스타일·나이·자기소개를 넣을 방법이 없는데 매칭은 바로 그 값으로 점수를 낸다 —
+   즉 **모든 추천이 빈 프로필끼리 비교**였다. `EditProfileScreen` 신설.
+
+**출시 빌드에서 깨졌을 것 3건**
+3. 프로덕션 프로파일이 등록도 안 된 `api.doorimate.com`을 호출 → **앱이 서버에 못 붙는다.**
+4. 지도 탭이 Google Maps 키 없이는 회색 빈 화면 → **Leaflet + OpenStreetMap으로 교체**(키·결제 불필요).
+   `react-native-maps`와 플레이스홀더 키 제거.
+5. 웹 canonical·og:url이 제3자 도메인 `fryndo.com`을 가리킴.
+
+**실사용에서 바로 보이던 것 4건**
+6. 홈·프로필 통계가 항상 0 (`AuthService.convertToDto`가 `totalNftsCollected`/`totalPoints` 누락).
+7. 내가 보낸 채팅도 왼쪽 정렬 (`chatService`가 `isMine: false` 하드코딩).
+8. 회원가입 비밀번호 힌트가 "8자 이상"인데 서버는 대소문자·숫자·특수문자 요구 → 힌트대로 하면 거절.
+   그 거절이 `Request failed with status code 400`으로 노출(서버는 한국어 설명을 보냈는데 axios 메시지가 표시됨).
+   → 같은 규칙으로 클라이언트 검증 + `apiClient`가 서버 메시지를 에러에 실어 **모든 화면의 알림이 같이 개선**.
+9. `그룹 찾기`가 이미 가입한 그룹을 나열하고, 누르면 다시 "참여하시겠습니까?" (`isJoinedByCurrentUser`가
+   `DetailResponse`에만 있어 목록 응답에서 누락). 오프라인 배너가 `position:absolute`로 각 화면 헤더를 덮던 것도 수정.
+
+**검증 완료(앱에서 직접)**: 회원가입→자동로그인, 프로필 저장(DB 반영 확인), 그룹 생성→채팅방 자동생성→메시지 전송,
+매칭 옵트인→추천 노출(호환도 75%/65%), 지도 마커 탭→수집 시트, 다크모드.
+스크린샷 8장 확보(홈·컬렉션·채팅목록·채팅방·프로필·매칭·지도 + 인증 3종).
+
+**에뮬레이터 주의**: `DOW963_API36_QA`에는 다른 프로젝트 앱(대본·입주해)이 깔려 있어 포그라운드를 계속 뺏는다.
+이 앱 작업은 `doorimate_qa`(포트 5560)를 쓸 것. adb `input text`는 한글을 못 넣으므로 폼 입력은 영문으로 하거나
+필드 이동은 `keyevent 61`(TAB)을 쓴다.
+
 ## 2026-09-13 진행 (웹 출시 준비 — 브랜드/SEO 표면 정리)
 
 리브랜딩 커밋이 React 앱은 바꿨지만 `travelmate-web/public/`은 건드리지 않아서, **크롤러가 보는 표면 전체가 아직 Fryndo였고
@@ -162,7 +199,7 @@ Vercel 프로젝트(`prj_PdEZ…`)에 현재 붙은 도메인은 자동 발급 `
 | 1 | Apple 제출 계정 ($99/년) | `eas.json` → `submit.production.ios` | placeholder |
 | 2 | Google Play 서비스 계정 키 ($25) | `eas.json` → `submit.production.android` | 파일 없음 |
 | 3 | FCM V1 서비스 계정 키 | Firebase 콘솔 → 서비스 계정 → 새 비공개 키 → expo.dev Credentials 업로드 | 미등록 (푸시 테스트 전까지 불필요; 자동 다운로드 차단으로 수동 발급 필요) |
-| 4 | Google Maps Android API 키 | `app.json` → `android.config.googleMaps.apiKey` | **보류** — Maps SDK는 결제 계정 필수라 사용자 결정으로 스킵. 활성화하려면 GCP 결제 연결 후 키 발급 |
+| 4 | ~~Google Maps Android API 키~~ | — | **불필요** — 2026-09-17에 지도를 Leaflet + OpenStreetMap으로 교체해 키·결제 없이 동작한다 |
 | 5 | Sentry DSN (모바일) | `app.json` → `extra.sentryDsn` + EAS secret `SENTRY_AUTH_TOKEN` | 계정 미생성. 계정 생성은 운영자 직접 (빌드는 `SENTRY_DISABLE_AUTO_UPLOAD=true`로 우회 중) |
 | 7 | Sentry DSN (모바일) | `app.json` → `extra.sentryDsn` | placeholder — 미설정 시 초기화를 건너뛰도록 가드됨 (`src/lib/sentry.ts`) |
 
