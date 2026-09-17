@@ -14,7 +14,7 @@ import {
   Modal,
   Dimensions,
 } from 'react-native';
-import MapView, { Marker, Circle, Region } from 'react-native-maps';
+import OsmMap, { OsmMapHandle, OsmMarker } from '../components/OsmMap';
 import * as Location from 'expo-location';
 import { getDeviceLocation } from '../lib/deviceLocation';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -40,7 +40,7 @@ const { width, height } = Dimensions.get('window');
 const MapScreen: React.FC<Props> = ({ navigation }) => {
   const { palette } = useTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
-  const mapRef = useRef<MapView>(null);
+  const mapRef = useRef<OsmMapHandle>(null);
   const [userLocation, setUserLocation] = useState<{
     latitude: number;
     longitude: number;
@@ -122,17 +122,13 @@ const MapScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  const handleRegionChange = async (region: Region) => {
+  const handleRegionChange = async (region: { latitude: number; longitude: number }) => {
     await fetchLocations(region.latitude, region.longitude);
   };
 
   const centerOnUser = () => {
-    if (userLocation && mapRef.current) {
-      mapRef.current.animateToRegion({
-        ...userLocation,
-        latitudeDelta: 0.02,
-        longitudeDelta: 0.02,
-      });
+    if (userLocation) {
+      mapRef.current?.centerOn(userLocation.latitude, userLocation.longitude);
     }
   };
 
@@ -146,6 +142,20 @@ const MapScreen: React.FC<Props> = ({ navigation }) => {
     };
     return colors[rarity] || palette.rarityCommon;
   };
+
+  const markers: OsmMarker[] = useMemo(
+    () =>
+      nearbyLocations.map(item => ({
+        id: item.location.id,
+        latitude: item.location.latitude,
+        longitude: item.location.longitude,
+        color: item.isCollected ? palette.disabled : getMarkerColor(item.location.rarity),
+        radius: item.isCollected ? undefined : item.location.collectRadius,
+        dimmed: item.isCollected,
+      })),
+    [nearbyLocations, palette]
+  );
+
 
   if (isLoading) {
     return (
@@ -169,43 +179,18 @@ const MapScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <MapView
+      <OsmMap
         ref={mapRef}
         style={styles.map}
-        initialRegion={{
-          ...userLocation,
-          latitudeDelta: 0.02,
-          longitudeDelta: 0.02,
+        latitude={userLocation.latitude}
+        longitude={userLocation.longitude}
+        markers={markers}
+        onMarkerPress={id => {
+          const found = nearbyLocations.find(item => item.location.id === id);
+          if (found) handleMarkerPress(found);
         }}
-        onRegionChangeComplete={handleRegionChange}
-        showsUserLocation
-        showsMyLocationButton={false}
-      >
-        {nearbyLocations.map((item) => (
-          <React.Fragment key={item.location.id}>
-            <Marker
-              coordinate={{
-                latitude: item.location.latitude,
-                longitude: item.location.longitude,
-              }}
-              onPress={() => handleMarkerPress(item)}
-              pinColor={item.isCollected ? palette.disabled : getMarkerColor(item.location.rarity)}
-            />
-            {!item.isCollected && (
-              <Circle
-                center={{
-                  latitude: item.location.latitude,
-                  longitude: item.location.longitude,
-                }}
-                radius={item.location.collectRadius}
-                fillColor="rgba(74, 58, 255, 0.08)"
-                strokeColor="rgba(74, 58, 255, 0.3)"
-                strokeWidth={1}
-              />
-            )}
-          </React.Fragment>
-        ))}
-      </MapView>
+        onRegionChange={handleRegionChange}
+      />
 
       {/* My Location Button */}
       <TouchableOpacity style={styles.myLocationButton} onPress={centerOnUser}>
