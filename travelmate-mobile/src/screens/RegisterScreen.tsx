@@ -32,6 +32,8 @@ interface Props {
   navigation: RegisterScreenNavigationProp;
 }
 
+const PASSWORD_PATTERN = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$/;
+
 const RegisterScreen: React.FC<Props> = ({ navigation }) => {
   const { palette } = useTheme();
   const styles = useMemo(() => createStyles(palette), [palette]);
@@ -91,8 +93,13 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
       return;
     }
 
-    if (password.length < 8) {
-      Alert.alert('오류', '비밀번호는 8자 이상이어야 합니다.');
+    // 서버(UserDto.RegisterRequest)의 정규식과 같은 규칙. 여기서 안 막으면
+    // 힌트대로 입력한 사용자가 서버에서 거절당한다.
+    if (!PASSWORD_PATTERN.test(password)) {
+      Alert.alert(
+        '오류',
+        '비밀번호는 8~20자이며 대문자, 소문자, 숫자, 특수문자(@$!%*?&)를 각각 하나 이상 포함해야 합니다.'
+      );
       return;
     }
 
@@ -203,7 +210,7 @@ const RegisterScreen: React.FC<Props> = ({ navigation }) => {
               <Text style={styles.label}>비밀번호</Text>
               <TextInput
                 style={styles.input}
-                placeholder="8자 이상"
+                placeholder="8~20자, 대소문자·숫자·특수문자 포함"
                 placeholderTextColor={palette.placeholder}
                 value={password}
                 onChangeText={setPassword}

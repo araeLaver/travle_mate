@@ -34,6 +34,7 @@ import NotificationsScreen from '../screens/NotificationsScreen';
 import PremiumScreen from '../screens/PremiumScreen';
 import UserSearchScreen from '../screens/UserSearchScreen';
 import UserProfileScreen from '../screens/UserProfileScreen';
+import EditProfileScreen from '../screens/EditProfileScreen';
 import ReviewScreen from '../screens/ReviewScreen';
 import MatchingScreen from '../screens/MatchingScreen';
 
@@ -53,6 +54,7 @@ export type RootStackParamList = {
   Premium: undefined;
   UserSearch: undefined;
   UserProfile: { userId: number };
+  EditProfile: undefined;
   Review: { matchId: number | string; targetUserId?: number | string; targetUserNickname?: string };
   Matching: undefined;
 };
@@ -276,6 +278,11 @@ const AppNavigator = () => {
                 headerTitle: '프로필',
                 headerBackTitle: '뒤로',
               }}
+            />
+            <Stack.Screen
+              name="EditProfile"
+              component={EditProfileScreen}
+              options={{ headerShown: true, title: '프로필 편집' }}
             />
             <Stack.Screen
               name="Review"

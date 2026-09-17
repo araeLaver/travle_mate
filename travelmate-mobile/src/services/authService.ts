@@ -21,12 +21,26 @@ export interface AuthResponse {
   user: User;
 }
 
+export type TravelStyle =
+  | 'ADVENTURE'
+  | 'CULTURE'
+  | 'FOOD'
+  | 'RELAXATION'
+  | 'NATURE'
+  | 'SHOPPING';
+
+export type Gender = 'MALE' | 'FEMALE' | 'OTHER';
+
 export interface User {
   id: number;
   email: string;
   nickname: string;
   profileImageUrl?: string;
   bio?: string;
+  age?: number;
+  gender?: Gender;
+  travelStyle?: TravelStyle;
+  isMatchingEnabled?: boolean;
   role: string;
   totalPoints: number;
   totalNftsCollected: number;
@@ -36,6 +50,10 @@ export interface User {
 export interface UpdateProfileRequest {
   nickname?: string;
   bio?: string;
+  age?: number;
+  gender?: Gender;
+  travelStyle?: TravelStyle;
+  isMatchingEnabled?: boolean;
 }
 
 class AuthService {

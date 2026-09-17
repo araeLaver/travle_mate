@@ -13,6 +13,25 @@ const normalizeApiBaseUrl = (url: string): string => {
   return trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`;
 };
 
+
+/**
+ * 백엔드는 "비밀번호는 8-20자리며…" 같은 사람이 읽을 메시지를 내려주는데,
+ * axios 에러의 message는 "Request failed with status code 400"이다.
+ * 화면들은 error.message를 그대로 Alert에 띄우므로 여기서 바꿔 끼운다.
+ */
+const withServerMessage = (error: any) => {
+  const data = error?.response?.data;
+  const serverMessage =
+    (typeof data === 'string' && data.trim()) ||
+    data?.message ||
+    data?.error ||
+    (Array.isArray(data?.errors) && data.errors[0]?.message);
+  if (serverMessage) {
+    error.message = serverMessage;
+  }
+  return error;
+};
+
 const getNonEmptyString = (value: unknown): string | undefined => {
   return typeof value === 'string' && value.trim() ? value.trim() : undefined;
 };
@@ -148,7 +167,7 @@ class ApiClient {
           }
         }
 
-        return Promise.reject(error);
+        return Promise.reject(withServerMessage(error));
       }
     );
   }

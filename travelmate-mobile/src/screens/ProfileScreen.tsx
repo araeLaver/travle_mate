@@ -244,7 +244,7 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
           styles={styles}
           icon="user"
           label="프로필 편집"
-          onPress={() => {/* 프로필 편집 페이지 */}}
+          onPress={() => navigation.navigate('EditProfile')}
         />
 
         <MenuRow
