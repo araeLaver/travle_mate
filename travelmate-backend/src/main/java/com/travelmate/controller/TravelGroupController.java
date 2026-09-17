@@ -32,11 +32,14 @@ public class TravelGroupController {
     
     @GetMapping
     public ResponseEntity<List<TravelGroupDto.Response>> getGroups(
+            @AuthenticationPrincipal String userId,
             @RequestParam(required = false) TravelGroup.Purpose purpose,
             @RequestParam(required = false) Double latitude,
             @RequestParam(required = false) Double longitude,
             @RequestParam(defaultValue = "10.0") Double radiusKm) {
-        List<TravelGroupDto.Response> groups = travelGroupService.getGroups(purpose, latitude, longitude, radiusKm);
+        Long currentUserId = userId != null ? AuthenticatedUserId.parse(userId) : null;
+        List<TravelGroupDto.Response> groups =
+            travelGroupService.getGroups(purpose, latitude, longitude, radiusKm, currentUserId);
         return ResponseEntity.ok(groups);
     }
     

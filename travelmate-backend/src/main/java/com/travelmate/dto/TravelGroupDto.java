@@ -3,6 +3,7 @@ package com.travelmate.dto;
 import com.travelmate.entity.TravelGroup;
 import com.travelmate.entity.User;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import jakarta.validation.constraints.*;
 import org.hibernate.validator.constraints.Length;
 
@@ -88,12 +89,14 @@ public class TravelGroupDto {
         private LocalDateTime scheduledTime;
         private TravelGroup.Status status;
         private LocalDateTime createdAt;
+        /** 목록에서도 필요하다. 없으면 클라이언트가 이미 참여한 그룹을 다시 "참여" 시킨다. */
+        private Boolean isJoinedByCurrentUser;
     }
     
     @Data
+    @EqualsAndHashCode(callSuper = true)
     public static class DetailResponse extends Response {
         private List<MemberDto> members;
-        private Boolean isJoinedByCurrentUser;
         private Boolean canJoin;
     }
     

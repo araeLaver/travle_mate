@@ -13,6 +13,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useOffline } from '../contexts/OfflineContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemePalette, fonts, spacing, radii } from '../theme';
 import { useTheme } from '../contexts/ThemeContext';
 import Icon, { IconName } from './icons/Icon';
@@ -26,6 +27,7 @@ const OfflineBanner: React.FC<Props> = ({ showPendingCount = true, onSyncPress }
   const { palette, isDark } = useTheme();
   const styles = useMemo(() => createStyles(palette, isDark), [palette, isDark]);
   const { isOnline, pendingActionsCount, syncPendingActions } = useOffline();
+  const insets = useSafeAreaInsets();
   const slideAnim = useRef(new Animated.Value(-60)).current;
   const [isSyncing, setIsSyncing] = React.useState(false);
 
@@ -84,7 +86,11 @@ const OfflineBanner: React.FC<Props> = ({ showPendingCount = true, onSyncPress }
 
   return (
     <Animated.View
-      style={[styles.container, { transform: [{ translateY: slideAnim }] }]}
+      style={[
+        styles.container,
+        { paddingTop: Math.max(insets.top, spacing.sm) },
+        { transform: [{ translateY: slideAnim }] },
+      ]}
     >
       <View style={styles.contentWrapper}>
         <View style={styles.icon}>
@@ -115,13 +121,8 @@ const OfflineBanner: React.FC<Props> = ({ showPendingCount = true, onSyncPress }
 
 const createStyles = (palette: ThemePalette, isDark: boolean) => StyleSheet.create({
   container: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 1000,
+    // 레이아웃 흐름에 포함시킨다. absolute로 띄우면 각 화면의 헤더(인사말·알림 버튼)를 덮어버린다.
     backgroundColor: isDark ? palette.surfaceAlt : palette.ink,
-    paddingTop: 44, // Safe area top
     paddingBottom: spacing.sm,
     paddingHorizontal: spacing.lg,
   },

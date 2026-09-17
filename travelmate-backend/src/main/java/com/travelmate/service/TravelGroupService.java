@@ -72,12 +72,28 @@ public class TravelGroupService {
     @Transactional(readOnly = true)
     public List<TravelGroupDto.Response> getGroups(TravelGroup.Purpose purpose, 
                                                   Double latitude, Double longitude, Double radiusKm) {
+        return getGroups(purpose, latitude, longitude, radiusKm, null);
+    }
+
+    /**
+     * 그룹 목록. currentUserId를 주면 각 그룹에 가입 여부를 채운다.
+     * 이게 비어 있으면 클라이언트가 이미 참여한 그룹도 "참여하시겠습니까?"로 물어보게 된다.
+     */
+    @Transactional(readOnly = true)
+    public List<TravelGroupDto.Response> getGroups(TravelGroup.Purpose purpose,
+                                                  Double latitude, Double longitude, Double radiusKm,
+                                                  Long currentUserId) {
         List<TravelGroup> groups = (latitude != null && longitude != null && radiusKm != null)
             ? travelGroupRepository.findAvailableGroupsNear(purpose, latitude, longitude, radiusKm)
             : travelGroupRepository.findAvailableGroups(purpose);
         
         return groups.stream()
-            .map(this::convertToDto)
+            .map(group -> {
+                TravelGroupDto.Response dto = convertToDto(group);
+                dto.setIsJoinedByCurrentUser(currentUserId != null
+                    && groupMemberRepository.existsByTravelGroupIdAndUserId(group.getId(), currentUserId));
+                return dto;
+            })
             .collect(Collectors.toList());
     }
     

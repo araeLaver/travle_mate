@@ -195,13 +195,13 @@ const GroupsScreen: React.FC<Props> = ({ navigation }) => {
       <Text style={styles.emptyText}>
         {activeTab === 'my'
           ? '참여 중인 그룹이 없습니다'
-          : '검색 결과가 없습니다'}
+          : searchQuery.trim()
+            ? '검색 결과가 없습니다'
+            : '참여할 수 있는 그룹이 없습니다'}
       </Text>
-      {activeTab === 'my' && (
-        <TouchableOpacity style={styles.createButton} onPress={handleCreateGroup}>
-          <Text style={styles.createButtonText}>그룹 만들기</Text>
-        </TouchableOpacity>
-      )}
+      <TouchableOpacity style={styles.createButton} onPress={handleCreateGroup}>
+        <Text style={styles.createButtonText}>그룹 만들기</Text>
+      </TouchableOpacity>
     </View>
   );
 

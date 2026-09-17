@@ -152,7 +152,9 @@ class ChatService {
    * Get public groups with optional search
    */
   async getPublicGroups(search?: string, page: number = 0): Promise<PaginatedResponse<TravelGroup>> {
-    const groups = await apiClient.get<BackendTravelGroup[]>('/groups');
+    const all = await apiClient.get<BackendTravelGroup[]>('/groups');
+    // '그룹 찾기'는 참여할 그룹을 고르는 화면이다. 이미 속한 그룹은 '내 그룹'에 있으므로 제외한다.
+    const groups = all.filter(group => !group.isJoinedByCurrentUser);
     const normalizedSearch = search?.trim().toLowerCase();
     const filtered = normalizedSearch
       ? groups.filter(group =>
