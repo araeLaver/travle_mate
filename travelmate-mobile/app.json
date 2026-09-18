@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "\ub450\ub9ac\uba54\uc774\ud2b8",
+    "name": "두리메이트",
     "slug": "fryndo",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -27,10 +27,10 @@
         "applinks:doorimate.com"
       ],
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "\ub450\ub9ac\uba54\uc774\ud2b8\ub294 \uc8fc\ubcc0 NFT \uc218\uc9d1 \uc7a5\uc18c\ub97c \ucc3e\uae30 \uc704\ud574 \uc704\uce58 \uc815\ubcf4\uac00 \ud544\uc694\ud569\ub2c8\ub2e4.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "\ub450\ub9ac\uba54\uc774\ud2b8\ub294 \ubc31\uadf8\ub77c\uc6b4\ub4dc\uc5d0\uc11c\ub3c4 \uc8fc\ubcc0 \uc7a5\uc18c \uc54c\ub9bc\uc744 \ubc1b\uae30 \uc704\ud574 \uc704\uce58 \uc815\ubcf4\uac00 \ud544\uc694\ud569\ub2c8\ub2e4.",
-        "NSCameraUsageDescription": "\ub450\ub9ac\uba54\uc774\ud2b8\ub294 \ud504\ub85c\ud544 \uc0ac\uc9c4\uc744 \ucd2c\uc601\ud558\uae30 \uc704\ud574 \uce74\uba54\ub77c \uc811\uadfc\uc774 \ud544\uc694\ud569\ub2c8\ub2e4.",
-        "NSPhotoLibraryUsageDescription": "\ub450\ub9ac\uba54\uc774\ud2b8\ub294 \ud504\ub85c\ud544 \uc0ac\uc9c4\uc744 \uc120\ud0dd\ud558\uae30 \uc704\ud574 \uc0ac\uc9c4 \ub77c\uc774\ube0c\ub7ec\ub9ac \uc811\uadfc\uc774 \ud544\uc694\ud569\ub2c8\ub2e4.",
+        "NSLocationWhenInUseUsageDescription": "두리메이트는 주변 NFT 수집 장소를 찾기 위해 위치 정보가 필요합니다.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "두리메이트는 백그라운드에서도 주변 장소 알림을 받기 위해 위치 정보가 필요합니다.",
+        "NSCameraUsageDescription": "두리메이트는 프로필 사진을 촬영하기 위해 카메라 접근이 필요합니다.",
+        "NSPhotoLibraryUsageDescription": "두리메이트는 프로필 사진을 선택하기 위해 사진 라이브러리 접근이 필요합니다.",
         "UIBackgroundModes": [
           "location",
           "remote-notification"
@@ -50,7 +50,7 @@
         "backgroundColor": "#F5F4F1"
       },
       "package": "com.doorimate.app",
-      "versionCode": 5,
+      "versionCode": 6,
       "permissions": [
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION",
@@ -94,7 +94,7 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "\ub450\ub9ac\uba54\uc774\ud2b8\uac00 \ubc31\uadf8\ub77c\uc6b4\ub4dc\uc5d0\uc11c\ub3c4 \uc8fc\ubcc0 \uc7a5\uc18c \uc54c\ub9bc\uc744 \ubc1b\uc744 \uc218 \uc788\ub3c4\ub85d \uc704\uce58 \uc815\ubcf4 \uc811\uadfc\uc744 \ud5c8\uc6a9\ud574\uc8fc\uc138\uc694.",
+          "locationAlwaysAndWhenInUsePermission": "두리메이트가 백그라운드에서도 주변 장소 알림을 받을 수 있도록 위치 정보 접근을 허용해주세요.",
           "isIosBackgroundLocationEnabled": true,
           "isAndroidBackgroundLocationEnabled": true
         }
@@ -113,20 +113,20 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "\ub450\ub9ac\uba54\uc774\ud2b8\ub294 \ud504\ub85c\ud544 \uc0ac\uc9c4 \ucd2c\uc601 \ubc0f \uc7a5\uc18c \uc778\uc99d\uc744 \uc704\ud574 \uce74\uba54\ub77c \uc811\uadfc\uc774 \ud544\uc694\ud569\ub2c8\ub2e4."
+          "cameraPermission": "두리메이트는 프로필 사진 촬영 및 장소 인증을 위해 카메라 접근이 필요합니다."
         }
       ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "\ub450\ub9ac\uba54\uc774\ud2b8\ub294 \ud504\ub85c\ud544 \uc0ac\uc9c4\uc744 \uac24\ub7ec\ub9ac\uc5d0\uc11c \uc120\ud0dd\ud558\uae30 \uc704\ud574 \uc0ac\uc9c4 \uc811\uadfc\uc774 \ud544\uc694\ud569\ub2c8\ub2e4.",
-          "cameraPermission": "\ub450\ub9ac\uba54\uc774\ud2b8\ub294 \ud504\ub85c\ud544 \uc0ac\uc9c4\uc744 \ucd2c\uc601\ud558\uae30 \uc704\ud574 \uce74\uba54\ub77c \uc811\uadfc\uc774 \ud544\uc694\ud569\ub2c8\ub2e4."
+          "photosPermission": "두리메이트는 프로필 사진을 갤러리에서 선택하기 위해 사진 접근이 필요합니다.",
+          "cameraPermission": "두리메이트는 프로필 사진을 촬영하기 위해 카메라 접근이 필요합니다."
         }
       ],
       [
         "expo-local-authentication",
         {
-          "faceIDPermission": "\ub450\ub9ac\uba54\uc774\ud2b8\ub294 \ube60\ub978 \ub85c\uadf8\uc778\uc744 \uc704\ud574 Face ID\ub97c \uc0ac\uc6a9\ud569\ub2c8\ub2e4."
+          "faceIDPermission": "두리메이트는 빠른 로그인을 위해 Face ID를 사용합니다."
         }
       ],
       [
