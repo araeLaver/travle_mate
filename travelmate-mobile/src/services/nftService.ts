@@ -188,13 +188,17 @@ class NftService {
   getMintStatusLabel(status: string): string {
     // 백엔드 MintStatus enum과 1:1로 맞춘다. 빠진 값은 라벨 대신 'PENDING' 같은
     // 원시 코드가 화면에 그대로 노출된다.
+    //
+    // 온체인 민팅은 프로덕션에서 꺼져 있어(blockchain.require-in-prod=false) 수집물은
+    // PENDING에 머문다. 사용자에게 '민팅 대기'라고 보여줄 이유가 없고, 동작하지도 않는
+    // 토큰 기능을 광고하는 셈이라 수집 상태로 읽히는 표현을 쓴다.
     const labels: Record<string, string> = {
-      PENDING: '민팅 대기',
-      MINTING: '민팅 중',
+      PENDING: '수집됨',
+      MINTING: '처리 중',
       CONFIRMING: '확인 중',
-      MINTED: '민팅 완료',
-      FAILED: '민팅 실패',
-      NOT_MINTED: '미민팅',
+      MINTED: '등록 완료',
+      FAILED: '처리 실패',
+      NOT_MINTED: '수집됨',
     };
     return labels[status] || status;
   }

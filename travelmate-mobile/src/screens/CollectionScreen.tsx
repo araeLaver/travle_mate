@@ -1,6 +1,6 @@
 /**
  * Collection Screen for TravelMate Mobile
- * Displays user's NFT collection
+ * Displays the user's place collection
  */
 
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
@@ -169,7 +169,7 @@ const CollectionScreen: React.FC<Props> = ({ navigation }) => {
     <View style={styles.header}>
       <Text style={styles.headerTitle}>내 컬렉션</Text>
       <Text style={styles.headerSubtitle}>
-        총 {totalElements}개의 NFT를 수집했어요
+        총 {totalElements}곳을 수집했어요
       </Text>
 
       {/* Stats */}
@@ -194,9 +194,9 @@ const CollectionScreen: React.FC<Props> = ({ navigation }) => {
       <View style={styles.emptyIconWrap}>
         <Icon name="pin" size={30} color={palette.textMuted} />
       </View>
-      <Text style={styles.emptyTitle}>아직 수집한 NFT가 없어요</Text>
+      <Text style={styles.emptyTitle}>아직 수집한 장소가 없어요</Text>
       <Text style={styles.emptySubtitle}>
-        지도에서 주변 장소를 찾아{'\n'}NFT를 수집해보세요!
+        지도에서 주변 장소를 찾아{'\n'}컬렉션을 채워보세요!
       </Text>
       <TouchableOpacity
         style={styles.emptyButton}

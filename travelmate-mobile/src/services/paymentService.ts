@@ -488,7 +488,7 @@ class PaymentService {
       {
         id: 'unlimited_collections',
         title: '무제한 컬렉션',
-        description: '수집할 수 있는 NFT 개수 제한 없음',
+        description: '수집할 수 있는 장소 개수 제한 없음',
         icon: '🎨',
       },
       {
@@ -505,8 +505,8 @@ class PaymentService {
       },
       {
         id: 'priority_minting',
-        title: '우선 민팅',
-        description: 'NFT 민팅 대기열 우선 처리',
+        title: '우선 처리',
+        description: '수집 처리 대기열 우선 적용',
         icon: '⚡',
       },
       {

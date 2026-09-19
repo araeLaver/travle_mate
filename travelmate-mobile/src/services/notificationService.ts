@@ -245,7 +245,7 @@ class NotificationService {
     });
 
     await Notifications.setNotificationChannelAsync('nft', {
-      name: 'NFT 알림',
+      name: '수집 알림',
       importance: Notifications.AndroidImportance.HIGH,
       vibrationPattern: [0, 500, 200, 500],
       lightColor: '#F59E0B',

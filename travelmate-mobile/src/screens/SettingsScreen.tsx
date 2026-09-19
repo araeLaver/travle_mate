@@ -188,7 +188,7 @@ const SettingsScreen: React.FC<Props> = ({ navigation }) => {
             <View style={styles.settingInfo}>
               <Text style={styles.settingTitle}>수집 완료 알림</Text>
               <Text style={styles.settingDescription}>
-                NFT 수집 완료 시 알림
+                장소 수집 완료 시 알림
               </Text>
             </View>
             <Switch

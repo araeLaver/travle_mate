@@ -197,7 +197,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
       <View style={styles.statsSection}>
         <View style={styles.statCard}>
           <Text style={styles.statNumber}>{user?.totalNftsCollected || 0}</Text>
-          <Text style={styles.statLabel}>수집 NFT</Text>
+          <Text style={styles.statLabel}>수집 장소</Text>
         </View>
         <View style={styles.statCard}>
           <Text style={styles.statNumber}>{user?.totalPoints || 0}</Text>

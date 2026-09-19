@@ -187,7 +187,7 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
         <View style={styles.statsRow}>
           <View style={styles.statItem}>
             <Text style={styles.statValue}>{user.totalNftsCollected}</Text>
-            <Text style={styles.statLabel}>수집 NFT</Text>
+            <Text style={styles.statLabel}>수집 장소</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
@@ -213,7 +213,7 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
           styles={styles}
           icon="crown"
           label="내 컬렉션"
-          subtext={`${user.totalNftsCollected}개의 NFT`}
+          subtext={`${user.totalNftsCollected}곳 수집`}
           onPress={() => navigation.navigate('Collection' as any)}
         />
 

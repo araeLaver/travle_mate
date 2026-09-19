@@ -1,6 +1,6 @@
 /**
  * Map Screen for TravelMate Mobile
- * NFT Collection Map with nearby locations
+ * Collection map with nearby collectible places
  */
 
 import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
