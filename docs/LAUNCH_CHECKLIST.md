@@ -25,22 +25,29 @@
 후보 선정 시 WHOIS로 미등록을 직접 확인하고 동명 앱·서비스 부재까지 검증했다. 1순위였던 "함께"는
 브랜드명이 앱 카피의 일반명사와 충돌해서(→ "함께와 함께 여행을 시작하세요") 탈락시켰다.
 
-**남은 콘솔 작업 (코드는 커밋 `78e72a1`로 완료)**
+**남은 콘솔 작업 (2026-09-19 기준 — 대부분 완료)**
 
-1. `doorimate.com` 구매 — **사용자 작업**. Gabia 권장(기존에 쓰는 등록기관)
-2. Play Console: `com.doorimate.app`으로 앱 신규 생성 → 스토어 등록정보·앱 콘텐츠 선언 재입력, 기존 Fryndo 앱(임시) 삭제
-3. Play 서비스 계정 `fryndo-play-publisher@…`에 **새 앱 권한 부여** (계정 단위라 계정 자체는 재사용)
-4. ~~Firebase: `com.doorimate.app` Android 앱 추가 → `google-services.json` 교체~~ **완료** (커밋 `eed4aee`)
-5. Google OAuth: 새 패키지+SHA-1로 Android 클라이언트 재발급 → `app.json` 반영
-   — **미완. `google-services.json`의 `com.doorimate.app` 블록에 `client_type: 1`(SHA-1 Android 클라이언트)이 없고
-   `app.json`의 `googleAndroidClientId`도 옛 패키지 것 그대로다 → 지금 빌드하면 안드로이드 구글 로그인이 깨진다.**
+1. `doorimate.com` 구매 — **보류(비용)**. 웹·앱 모두 살아있는 vercel/koyeb 주소로 동작하게 맞춰놨으므로 출시에 지장 없음
+2. ~~Play Console 앱 신규 생성~~ **이미 되어 있었음** — `두리메이트 - 여행 동행 매칭` / `com.doorimate.app`, 앱 ID `4973108778878021518` (09-07 생성)
+3. ~~Play 서비스 계정에 새 앱 권한 부여~~ **완료** (09-19). Fryndo 앱과 동일한 7개 권한
+4. ~~Firebase: `google-services.json` 교체~~ **완료** (커밋 `eed4aee`)
+5. ~~Google OAuth Android 클라이언트 재발급~~ **완료** (09-19).
+   GCP `fryndo-23e4a`에 **"Doorimate Android"** 생성 — 패키지 `com.doorimate.app` + Play 앱 서명 SHA-1 `02:8F:DC:7D:3D:23:8E:4A:46:3E:9C:24:43:51:F7:F0:4F:9B:7D:06`.
+   클라이언트 ID `383693754351-pcpbb3uk259m6s6a84rua71cjnrrpguq...`를 `app.json`에 반영(커밋 `da6e6a8`)
 6. ~~expo.dev 프로젝트 slug 변경~~ **불필요** — EAS slug는 `fryndo`로 유지하기로 결정(커밋 `7499686`). slug는 외부 노출이 아니고 projectId가 정본.
 7. 워드마크 에셋·스토어 스크린샷 재생성
    — 웹 정적 에셋·OG 이미지는 **완료**(커밋 `fa21560`), 인증 화면 3장은 **완료**(커밋 `c6c6901`).
    **마퀴 5장(홈/컬렉션/채팅목록/채팅방/프로필)은 옛 브랜드 노출로 삭제된 상태 → 재촬영 필요.** 지도는 Maps 키 보류로 여전히 미확보.
 8. Vercel 프로젝트/Koyeb 커스텀 도메인 새 도메인으로 재설정
    — Koyeb에 `api.fryndo.com` 커스텀 도메인이 ERROR 상태로 **남아 있다(우리 도메인이 아니므로 삭제 대상)**.
-9. 재빌드 → 내부 테스트 재출시
+9. ~~재빌드 → 내부 테스트 재출시~~ **완료** (09-19). `1.0.0 (versionCode 6)` 빌드 `e4734ec8`를
+   `eas submit`으로 내부 테스트 트랙에 올려 "내부 테스터에게 제공됨" 상태.
+
+**남은 것 = 앱 콘텐츠 선언 + 스토어 등록정보.** 새 앱이라 Fryndo 앱에 해둔 선언이 이월되지 않는다.
+⚠️ **Play Console의 "앱 콘텐츠" 페이지는 브라우저 자동화로 접근 불가** — 좌측 `모니터링 및 개선 > 정책 및 프로그램 > 앱 콘텐츠`가
+클릭해도 라우팅되지 않고, `/app-content`·`/policy/app-content` 직접 URL은 앱 목록으로 리다이렉트된다(Fryndo 앱도 동일). 사람이 눌러야 한다.
+알고 있는 답변: **광고 = 없음**(`.aab`에 `AD_ID` 권한·광고 SDK 없음), **개인정보처리방침 URL = `https://fryndo-web.vercel.app/legal`**.
+데이터 보안·콘텐츠 등급·타겟 연령층은 **앱 동작에 대한 법적 진술**이라 개발자 본인이 답해야 한다.
 
 
 
