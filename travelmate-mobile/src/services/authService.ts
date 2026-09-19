@@ -108,6 +108,15 @@ class AuthService {
     });
   }
 
+  /**
+   * 계정 삭제. Google Play는 계정을 만들 수 있는 앱에 앱 내 삭제 경로를 의무화한다.
+   * 서버가 사용자 데이터를 지우므로 되돌릴 수 없다.
+   */
+  async deleteAccount(): Promise<void> {
+    await apiClient.delete<void>('/users/account');
+    await apiClient.clearTokens();
+  }
+
   async isAuthenticated(): Promise<boolean> {
     const [token, refreshToken] = await Promise.all([
       apiClient.getToken(),

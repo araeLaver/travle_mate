@@ -19,6 +19,7 @@ import { CompositeNavigationProp, useFocusEffect } from '@react-navigation/nativ
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { RootStackParamList, MainTabParamList } from '../navigation/AppNavigator';
 import { useAuth } from '../contexts/AuthContext';
+import { authService } from '../services/authService';
 import { takePhoto, pickImage, showImageSourcePicker } from '../services/cameraService';
 import apiClient from '../services/apiClient';
 import Icon, { IconName } from '../components/icons/Icon';
@@ -122,6 +123,37 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
               console.log('Logout error:', error);
             }
           },
+        },
+      ]
+    );
+  };
+
+  const handleDeleteAccount = () => {
+    // Google Play는 계정 생성이 가능한 앱에 앱 내 계정 삭제 경로를 요구한다.
+    Alert.alert(
+      '계정 삭제',
+      '계정과 수집 기록, 그룹·채팅 내역이 영구적으로 삭제됩니다. 되돌릴 수 없습니다.',
+      [
+        { text: '취소', style: 'cancel' },
+        {
+          text: '삭제',
+          style: 'destructive',
+          onPress: () =>
+            Alert.alert('정말 삭제할까요?', '이 작업은 취소할 수 없습니다.', [
+              { text: '취소', style: 'cancel' },
+              {
+                text: '계정 삭제',
+                style: 'destructive',
+                onPress: async () => {
+                  try {
+                    await authService.deleteAccount();
+                    await logout();
+                  } catch (error: any) {
+                    Alert.alert('삭제 실패', error.message || '계정 삭제에 실패했습니다.');
+                  }
+                },
+              },
+            ]),
         },
       ]
     );
@@ -265,6 +297,14 @@ const ProfileScreen: React.FC<Props> = ({ navigation }) => {
         <MenuRow palette={palette} styles={styles} icon="stamp" label="이용약관" />
 
         <MenuRow palette={palette} styles={styles} icon="lock" label="개인정보처리방침" />
+
+        <MenuRow
+          palette={palette}
+          styles={styles}
+          icon="user"
+          label="계정 삭제"
+          onPress={handleDeleteAccount}
+        />
       </View>
 
       {/* Logout Button */}
