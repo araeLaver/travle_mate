@@ -50,7 +50,7 @@
         "backgroundColor": "#F5F4F1"
       },
       "package": "com.doorimate.app",
-      "versionCode": 6,
+      "versionCode": 7,
       "permissions": [
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION",
