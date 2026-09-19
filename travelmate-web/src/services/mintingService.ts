@@ -1,6 +1,5 @@
-import { authService } from './authService';
-
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+import { apiClient } from './apiClient';
+import { appendQuery, withServiceError } from './apiRequestUtils';
 
 // ===== Types =====
 
@@ -66,14 +65,6 @@ export interface PageResponse<T> {
 
 // ===== API Methods =====
 
-const getAuthHeaders = () => {
-  const token = authService.getToken();
-  return {
-    'Content-Type': 'application/json',
-    ...(token && { Authorization: `Bearer ${token}` }),
-  };
-};
-
 /**
  * NFT 민팅 요청
  */
@@ -81,34 +72,22 @@ export const requestMinting = async (
   collectionId: number,
   walletAddress: string
 ): Promise<MintingResponse> => {
-  const response = await fetch(`${API_BASE_URL}/nft/mint/${collectionId}`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify({ walletAddress } as MintingRequest),
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || '민팅 요청에 실패했습니다.');
-  }
-
-  return response.json();
+  return withServiceError(
+    apiClient.post<MintingResponse, MintingRequest>(`/nft/mint/${collectionId}`, {
+      walletAddress,
+    }),
+    '민팅 요청에 실패했습니다.'
+  );
 };
 
 /**
  * 민팅 상태 조회
  */
 export const getMintingStatus = async (collectionId: number): Promise<MintingStatusResponse> => {
-  const response = await fetch(`${API_BASE_URL}/nft/mint/status/${collectionId}`, {
-    headers: getAuthHeaders(),
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || '민팅 상태 조회에 실패했습니다.');
-  }
-
-  return response.json();
+  return withServiceError(
+    apiClient.get<MintingStatusResponse>(`/nft/mint/status/${collectionId}`),
+    '민팅 상태 조회에 실패했습니다.'
+  );
 };
 
 /**
@@ -118,47 +97,32 @@ export const getMintableNfts = async (
   page: number = 0,
   size: number = 20
 ): Promise<PageResponse<MintableNftResponse>> => {
-  const response = await fetch(`${API_BASE_URL}/nft/mint/mintable?page=${page}&size=${size}`, {
-    headers: getAuthHeaders(),
-  });
-
-  if (!response.ok) {
-    throw new Error('민팅 가능한 NFT 목록을 불러오는데 실패했습니다.');
-  }
-
-  return response.json();
+  return withServiceError(
+    apiClient.get<PageResponse<MintableNftResponse>>(
+      appendQuery('/nft/mint/mintable', { page, size })
+    ),
+    '민팅 가능한 NFT 목록을 불러오는데 실패했습니다.'
+  );
 };
 
 /**
  * 민팅 재시도
  */
 export const retryMinting = async (collectionId: number): Promise<MintingResponse> => {
-  const response = await fetch(`${API_BASE_URL}/nft/mint/${collectionId}/retry`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || '민팅 재시도에 실패했습니다.');
-  }
-
-  return response.json();
+  return withServiceError(
+    apiClient.post<MintingResponse>(`/nft/mint/${collectionId}/retry`),
+    '민팅 재시도에 실패했습니다.'
+  );
 };
 
 /**
  * 민팅 통계 조회
  */
 export const getMintingStats = async (): Promise<MintingStatsResponse> => {
-  const response = await fetch(`${API_BASE_URL}/nft/mint/stats`, {
-    headers: getAuthHeaders(),
-  });
-
-  if (!response.ok) {
-    throw new Error('민팅 통계를 불러오는데 실패했습니다.');
-  }
-
-  return response.json();
+  return withServiceError(
+    apiClient.get<MintingStatsResponse>('/nft/mint/stats'),
+    '민팅 통계를 불러오는데 실패했습니다.'
+  );
 };
 
 /**

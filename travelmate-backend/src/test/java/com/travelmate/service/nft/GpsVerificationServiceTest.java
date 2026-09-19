@@ -4,17 +4,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.*;
 
-@ExtendWith(MockitoExtension.class)
 @DisplayName("GpsVerificationService 테스트")
 class GpsVerificationServiceTest {
 
-    @InjectMocks
     private GpsVerificationService gpsVerificationService;
 
     // 서울타워 좌표
@@ -23,7 +18,8 @@ class GpsVerificationServiceTest {
 
     @BeforeEach
     void setUp() {
-        // 각 테스트 전 사용자 히스토리 초기화
+        // 각 테스트마다 격리된 인메모리 위치 이력 저장소로 서비스 생성
+        gpsVerificationService = new GpsVerificationService(new InMemoryLocationHistoryStore());
         gpsVerificationService.clearUserHistory(1L);
     }
 

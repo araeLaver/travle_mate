@@ -1,11 +1,16 @@
 package com.travelmate.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.travelmate.dto.RecommendationDto;
 import com.travelmate.dto.UserDto;
 import com.travelmate.dto.UserPreferenceDto;
+import com.travelmate.entity.RecommendationFeedback;
 import com.travelmate.entity.TravelGroup;
 import com.travelmate.entity.User;
 import com.travelmate.entity.UserGroupMembership;
+import com.travelmate.exception.BusinessException;
+import com.travelmate.repository.RecommendationFeedbackRepository;
 import com.travelmate.repository.TravelGroupRepository;
 import com.travelmate.repository.UserGroupMembershipRepository;
 import com.travelmate.repository.UserRepository;
@@ -26,11 +31,15 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class RecommendationService {
+    private static final int FEEDBACK_COMMENT_MAX_LENGTH = 1000;
+    private static final int FEEDBACK_TYPE_MAX_LENGTH = 50;
 
     private final UserRepository userRepository;
     private final TravelGroupRepository travelGroupRepository;
     private final UserGroupMembershipRepository membershipRepository;
     private final UserTrustScoreRepository trustScoreRepository;
+    private final RecommendationFeedbackRepository recommendationFeedbackRepository;
+    private final ObjectMapper objectMapper;
 
     // 가중치 설정
     private static final double TRAVEL_STYLE_WEIGHT = 0.25;
@@ -45,7 +54,7 @@ public class RecommendationService {
     public List<UserDto.Response> getRecommendedUsers(Long userId) {
         // 현재 사용자 조회
         User currentUser = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+            .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         if (currentUser.getCurrentLatitude() == null || currentUser.getCurrentLongitude() == null) {
             return Collections.emptyList();
@@ -71,7 +80,7 @@ public class RecommendationService {
         double radius = radiusKm != null ? radiusKm.doubleValue() : 10.0;
 
         User currentUser = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+            .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         if (currentUser.getCurrentLatitude() == null || currentUser.getCurrentLongitude() == null) {
             return Collections.emptyList();
@@ -192,26 +201,120 @@ public class RecommendationService {
         return attraction;
     }
 
-    public void processFeedback(Map<String, Object> feedbackData) {
-        // 피드백 처리 로직 (실제로는 DB 저장 필요)
-        log.info("Processing feedback: {}", feedbackData);
+    @Transactional
+    public RecommendationFeedback processFeedback(Long userId, Map<String, Object> feedbackData) {
+        if (userId == null) {
+            throw BusinessException.badRequest("사용자 ID가 필요합니다.");
+        }
 
         // 피드백 데이터 검증
         if (feedbackData == null || feedbackData.isEmpty()) {
-            throw new IllegalArgumentException("피드백 데이터가 비어있습니다.");
+            throw BusinessException.badRequest("피드백 데이터가 비어있습니다.");
         }
 
         // 필수 필드 확인
-        if (!feedbackData.containsKey("userId") || !feedbackData.containsKey("rating")) {
-            throw new IllegalArgumentException("필수 필드가 누락되었습니다.");
+        if (!feedbackData.containsKey("rating")) {
+            throw BusinessException.badRequest("필수 필드가 누락되었습니다.");
         }
 
-        // 피드백 저장 로직 (추후 구현)
-        Long userId = Long.valueOf(feedbackData.get("userId").toString());
-        Integer rating = Integer.valueOf(feedbackData.get("rating").toString());
-        String comment = feedbackData.getOrDefault("comment", "").toString();
+        log.info("Processing recommendation feedback for user {}", userId);
 
-        log.info("Feedback received from user {}: rating={}, comment={}", userId, rating, comment);
+        Integer rating = parseRequiredInteger(feedbackData.get("rating"), "rating");
+        if (rating < 1 || rating > 5) {
+            throw BusinessException.badRequest("rating은 1부터 5 사이여야 합니다.");
+        }
+        String comment = getOptionalString(feedbackData, "comment");
+        String feedbackType = getOptionalString(feedbackData, "feedbackType");
+        if (feedbackType == null) {
+            feedbackType = getOptionalString(feedbackData, "type");
+        }
+        String targetType = getOptionalString(feedbackData, "targetType");
+        Long targetId = getOptionalLong(feedbackData, "targetId");
+
+        validateMaxLength(comment, "comment", FEEDBACK_COMMENT_MAX_LENGTH);
+        validateMaxLength(feedbackType, "feedbackType", FEEDBACK_TYPE_MAX_LENGTH);
+        validateMaxLength(targetType, "targetType", FEEDBACK_TYPE_MAX_LENGTH);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
+
+        RecommendationFeedback feedback = RecommendationFeedback.builder()
+                .user(user)
+                .rating(rating)
+                .comment(comment)
+                .feedbackType(feedbackType)
+                .targetType(targetType)
+                .targetId(targetId)
+                .metadata(buildFeedbackMetadata(feedbackData))
+                .build();
+
+        RecommendationFeedback savedFeedback = recommendationFeedbackRepository.save(feedback);
+
+        log.info("Feedback received from user {}: rating={}, feedbackType={}, targetType={}, targetId={}",
+                userId, rating, feedbackType, targetType, targetId);
+        return savedFeedback;
+    }
+
+    private Integer parseRequiredInteger(Object value, String fieldName) {
+        try {
+            if (value instanceof Number number) {
+                return number.intValue();
+            }
+            return Integer.valueOf(value.toString());
+        } catch (RuntimeException ex) {
+            throw BusinessException.badRequest(fieldName + "은 숫자여야 합니다.");
+        }
+    }
+
+    private Long getOptionalLong(Map<String, Object> feedbackData, String key) {
+        Object value = feedbackData.get(key);
+        if (value == null || value.toString().isBlank()) {
+            return null;
+        }
+        try {
+            if (value instanceof Number number) {
+                return number.longValue();
+            }
+            return Long.valueOf(value.toString());
+        } catch (RuntimeException ex) {
+            throw BusinessException.badRequest(key + "은 숫자여야 합니다.");
+        }
+    }
+
+    private String getOptionalString(Map<String, Object> feedbackData, String key) {
+        Object value = feedbackData.get(key);
+        if (value == null) {
+            return null;
+        }
+        String stringValue = value.toString().trim();
+        return stringValue.isEmpty() ? null : stringValue;
+    }
+
+    private void validateMaxLength(String value, String fieldName, int maxLength) {
+        if (value != null && value.length() > maxLength) {
+            throw BusinessException.badRequest(fieldName + "은 " + maxLength + "자 이하여야 합니다.");
+        }
+    }
+
+    private String buildFeedbackMetadata(Map<String, Object> feedbackData) {
+        Map<String, Object> metadata = new LinkedHashMap<>(feedbackData);
+        metadata.remove("userId");
+        metadata.remove("rating");
+        metadata.remove("comment");
+        metadata.remove("feedbackType");
+        metadata.remove("type");
+        metadata.remove("targetType");
+        metadata.remove("targetId");
+
+        if (metadata.isEmpty()) {
+            return null;
+        }
+
+        try {
+            return objectMapper.writeValueAsString(metadata);
+        } catch (JsonProcessingException ex) {
+            throw BusinessException.badRequest("피드백 메타데이터를 저장할 수 없습니다.");
+        }
     }
 
     // ===== 고급 추천 알고리즘 =====
@@ -224,7 +327,7 @@ public class RecommendationService {
     @Cacheable(value = "groupRecommendations", key = "#userId + '_' + #limit")
     public List<RecommendationDto.GroupRecommendation> recommendGroups(Long userId, int limit) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         // 사용자의 선호도 추출
         UserPreferenceDto userPreference = extractUserPreferences(user);
@@ -318,7 +421,7 @@ public class RecommendationService {
     @Cacheable(value = "userRecommendations", key = "#userId + '_' + #limit")
     public List<RecommendationDto.UserRecommendation> recommendTravelMates(Long userId, int limit) {
         User currentUser = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         UserPreferenceDto currentUserPref = extractUserPreferences(currentUser);
 

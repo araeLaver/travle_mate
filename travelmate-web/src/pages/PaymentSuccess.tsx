@@ -46,9 +46,9 @@ const PaymentSuccess: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#fafafa] dark:bg-[#0a0a0b]">
+      <div className="min-h-screen flex items-center justify-center bg-sand-100 dark:bg-[#0a0a0b]">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-green-200 dark:border-green-800 border-t-green-600 rounded-full animate-spin mx-auto mb-4" />
+          <div className="w-16 h-16 border-4 border-primary-100 dark:border-primary-800 border-t-primary-500 rounded-full animate-spin mx-auto mb-4" />
           <p className="text-lg text-gray-600 dark:text-gray-400">결제를 확인하고 있습니다...</p>
         </div>
       </div>
@@ -57,23 +57,25 @@ const PaymentSuccess: React.FC = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#fafafa] dark:bg-[#0a0a0b] px-4">
+      <div className="min-h-screen flex items-center justify-center bg-sand-100 dark:bg-[#0a0a0b] px-4">
         <div className="max-w-md w-full bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-8 text-center">
           <div className="w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
             <span className="text-4xl">!</span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">결제 확인 실패</h1>
+          <h1 className="text-2xl font-extrabold tracking-tight text-ink dark:text-white mb-2">
+            결제 확인 실패
+          </h1>
           <p className="text-gray-500 dark:text-gray-400 mb-6">{error}</p>
           <div className="flex gap-3 justify-center">
             <button
               onClick={() => navigate('/payment')}
-              className="px-6 py-3 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition-colors"
+              className="px-6 py-3 bg-primary-500 text-white rounded-xl font-bold hover:bg-primary-700 transition-colors"
             >
               다시 시도
             </button>
             <button
               onClick={() => navigate('/dashboard')}
-              className="px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+              className="px-6 py-3 bg-sand-200 dark:bg-gray-700 text-ink dark:text-gray-300 rounded-xl font-bold hover:bg-sand-300 dark:hover:bg-gray-600 transition-colors"
             >
               대시보드
             </button>
@@ -84,12 +86,14 @@ const PaymentSuccess: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#fafafa] dark:bg-[#0a0a0b] px-4">
+    <div className="min-h-screen flex items-center justify-center bg-sand-100 dark:bg-[#0a0a0b] px-4">
       <div className="max-w-md w-full bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-8 text-center">
         <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
           <span className="text-4xl">&#10003;</span>
         </div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">결제 완료</h1>
+        <h1 className="text-2xl font-extrabold tracking-tight text-ink dark:text-white mb-2">
+          결제 완료
+        </h1>
         <p className="text-gray-500 dark:text-gray-400 mb-6">
           {result?.message || '결제가 성공적으로 완료되었습니다.'}
         </p>
@@ -108,7 +112,7 @@ const PaymentSuccess: React.FC = () => {
             )}
             <div className="flex justify-between text-sm">
               <span className="text-gray-500 dark:text-gray-400">결제금액</span>
-              <span className="font-bold text-green-600 dark:text-green-400">
+              <span className="font-bold text-success dark:text-green-400">
                 {paymentService.formatCurrency(result.amount)}
               </span>
             </div>
@@ -128,7 +132,7 @@ const PaymentSuccess: React.FC = () => {
             href={result.receiptUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="block mb-4 text-sm text-blue-600 dark:text-blue-400 hover:underline"
+            className="block mb-4 text-sm text-primary-500 dark:text-primary-400 hover:underline"
           >
             영수증 보기
           </a>
@@ -136,7 +140,7 @@ const PaymentSuccess: React.FC = () => {
 
         <button
           onClick={() => navigate('/dashboard')}
-          className="w-full px-6 py-3 bg-gradient-to-r from-green-600 to-blue-600 text-white rounded-xl font-medium hover:opacity-90 transition-opacity"
+          className="w-full px-6 py-3 bg-primary-500 hover:bg-primary-700 text-white rounded-xl font-bold transition-colors"
         >
           대시보드로 이동
         </button>

@@ -33,7 +33,7 @@ public class BookmarkService {
     @Transactional
     public BookmarkDto.Response createBookmark(Long userId, BookmarkDto.CreateRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new BusinessException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         // 대상 존재 여부 확인
         validateTargetExists(request.getTargetType(), request.getTargetId());
@@ -41,7 +41,7 @@ public class BookmarkService {
         // 이미 북마크 여부 확인
         if (bookmarkRepository.existsByUserIdAndTargetTypeAndTargetId(
                 userId, request.getTargetType(), request.getTargetId())) {
-            throw new BusinessException("이미 북마크한 항목입니다.");
+            throw BusinessException.conflict("이미 북마크한 항목입니다.");
         }
 
         Bookmark bookmark = Bookmark.builder()
@@ -76,7 +76,7 @@ public class BookmarkService {
             validateTargetExists(targetType, targetId);
 
             User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new BusinessException("사용자를 찾을 수 없습니다."));
+                    .orElseThrow(() -> BusinessException.userNotFound(userId));
 
             Bookmark bookmark = Bookmark.builder()
                     .user(user)
@@ -100,10 +100,10 @@ public class BookmarkService {
     @Transactional
     public BookmarkDto.Response updateBookmark(Long userId, Long bookmarkId, BookmarkDto.UpdateRequest request) {
         Bookmark bookmark = bookmarkRepository.findById(bookmarkId)
-                .orElseThrow(() -> new BusinessException("북마크를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.notFound("북마크를 찾을 수 없습니다."));
 
         if (!bookmark.getUser().getId().equals(userId)) {
-            throw new BusinessException("북마크를 수정할 권한이 없습니다.");
+            throw BusinessException.forbidden("북마크를 수정할 권한이 없습니다.");
         }
 
         if (request.getFolderName() != null) {
@@ -123,10 +123,10 @@ public class BookmarkService {
     @Transactional
     public void deleteBookmark(Long userId, Long bookmarkId) {
         Bookmark bookmark = bookmarkRepository.findById(bookmarkId)
-                .orElseThrow(() -> new BusinessException("북마크를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.notFound("북마크를 찾을 수 없습니다."));
 
         if (!bookmark.getUser().getId().equals(userId)) {
-            throw new BusinessException("북마크를 삭제할 권한이 없습니다.");
+            throw BusinessException.forbidden("북마크를 삭제할 권한이 없습니다.");
         }
 
         bookmarkRepository.delete(bookmark);
@@ -265,12 +265,12 @@ public class BookmarkService {
         switch (targetType) {
             case POST:
                 if (!postRepository.existsById(targetId)) {
-                    throw new BusinessException("게시글을 찾을 수 없습니다.");
+                    throw BusinessException.notFound("게시글을 찾을 수 없습니다.");
                 }
                 break;
             case USER:
                 if (!userRepository.existsById(targetId)) {
-                    throw new BusinessException("사용자를 찾을 수 없습니다.");
+                    throw BusinessException.userNotFound(targetId);
                 }
                 break;
             // 다른 타입들은 해당 Repository에서 검증

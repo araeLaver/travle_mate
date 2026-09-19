@@ -1,7 +1,7 @@
 package com.travelmate.controller;
 
+import com.travelmate.security.AuthenticatedUserId;
 import com.travelmate.dto.nft.MintingDto;
-import com.travelmate.service.UserService;
 import com.travelmate.service.nft.NftMintingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -15,7 +15,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -26,7 +25,6 @@ import org.springframework.web.bind.annotation.*;
 public class NftMintingController {
 
     private final NftMintingService nftMintingService;
-    private final UserService userService;
 
     /**
      * NFT 민팅 요청
@@ -46,12 +44,12 @@ public class NftMintingController {
     public ResponseEntity<MintingDto.MintingResponse> requestMinting(
             @PathVariable Long collectionId,
             @RequestBody(required = false) MintingDto.MintingRequest request,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal String userId) {
 
-        Long userId = getCurrentUserId(userDetails);
+        Long userIdLong = parseUserId(userId);
         String walletAddress = request != null ? request.getWalletAddress() : null;
 
-        MintingDto.MintingResponse response = nftMintingService.requestMinting(userId, collectionId, walletAddress);
+        MintingDto.MintingResponse response = nftMintingService.requestMinting(userIdLong, collectionId, walletAddress);
         return ResponseEntity.ok(response);
     }
 
@@ -64,10 +62,10 @@ public class NftMintingController {
     @GetMapping("/status/{collectionId}")
     public ResponseEntity<MintingDto.MintingStatusResponse> getMintingStatus(
             @PathVariable Long collectionId,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal String userId) {
 
-        Long userId = getCurrentUserId(userDetails);
-        MintingDto.MintingStatusResponse response = nftMintingService.getMintingStatus(userId, collectionId);
+        Long userIdLong = parseUserId(userId);
+        MintingDto.MintingStatusResponse response = nftMintingService.getMintingStatus(userIdLong, collectionId);
         return ResponseEntity.ok(response);
     }
 
@@ -79,11 +77,11 @@ public class NftMintingController {
     @ApiResponse(responseCode = "200", description = "조회 성공")
     @GetMapping("/mintable")
     public ResponseEntity<Page<MintingDto.MintableNftResponse>> getMintableNfts(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal String userId,
             @PageableDefault(size = 20) Pageable pageable) {
 
-        Long userId = getCurrentUserId(userDetails);
-        Page<MintingDto.MintableNftResponse> response = nftMintingService.getMintableNfts(userId, pageable);
+        Long userIdLong = parseUserId(userId);
+        Page<MintingDto.MintableNftResponse> response = nftMintingService.getMintableNfts(userIdLong, pageable);
         return ResponseEntity.ok(response);
     }
 
@@ -94,10 +92,10 @@ public class NftMintingController {
     @PostMapping("/{collectionId}/retry")
     public ResponseEntity<MintingDto.MintingResponse> retryMinting(
             @PathVariable Long collectionId,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal String userId) {
 
-        Long userId = getCurrentUserId(userDetails);
-        MintingDto.MintingResponse response = nftMintingService.retryMinting(userId, collectionId);
+        Long userIdLong = parseUserId(userId);
+        MintingDto.MintingResponse response = nftMintingService.retryMinting(userIdLong, collectionId);
         return ResponseEntity.ok(response);
     }
 
@@ -107,15 +105,14 @@ public class NftMintingController {
      */
     @GetMapping("/stats")
     public ResponseEntity<MintingDto.MintingStatsResponse> getMintingStats(
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal String userId) {
 
-        Long userId = getCurrentUserId(userDetails);
-        MintingDto.MintingStatsResponse response = nftMintingService.getMintingStats(userId);
+        Long userIdLong = parseUserId(userId);
+        MintingDto.MintingStatsResponse response = nftMintingService.getMintingStats(userIdLong);
         return ResponseEntity.ok(response);
     }
 
-    private Long getCurrentUserId(UserDetails userDetails) {
-        String email = userDetails.getUsername();
-        return userService.findByEmail(email).getId();
+    private Long parseUserId(String userId) {
+        return AuthenticatedUserId.parse(userId);
     }
 }

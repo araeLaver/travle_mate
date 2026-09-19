@@ -81,7 +81,7 @@ public class ActivityService {
     public void recordActivitySync(Long actorId, Activity.ActivityType type,
                                    String targetType, Long targetId, Map<String, Object> metadata) {
         User actor = userRepository.findById(actorId)
-                .orElseThrow(() -> new BusinessException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.userNotFound(actorId));
 
         Activity activity = Activity.builder()
                 .actor(actor)

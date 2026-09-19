@@ -449,11 +449,7 @@ class CompatibilityScoreServiceTest {
         @Test
         @DisplayName("예산 등급 차이 2단계 — 8점 (또는 재분배 후 확장)")
         void budgetDistance2_rawScore8() {
-            userB.setBudgetPreference(BudgetPreference.LUXURY); // A=MEDIUM, B=LUXURY -> distance=2
-            when(travelItineraryRepository.findByOwnerOrderByStartDateDesc(userB))
-                    .thenReturn(Collections.emptyList());
-
-            // 직접 ItemResult 테스트
+            // scoreBudget 을 직접 호출하므로 저장소 스텁이 불필요하다.
             var result = service.scoreBudget(BudgetPreference.MEDIUM, BudgetPreference.LUXURY);
             assertThat(result.rawScore()).isEqualTo(8.0);
         }

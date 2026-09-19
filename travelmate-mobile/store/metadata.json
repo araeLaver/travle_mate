@@ -1,19 +1,37 @@
 {
   "appName": {
-    "ko": "Fryndo - 여행 NFT 컬렉션",
-    "en": "Fryndo - Travel NFT Collection"
+    "ko": "두리메이트 - 여행 동행 매칭",
+    "en": "Doorimate - Travel Companion Matching"
   },
   "shortDescription": {
-    "ko": "AI 기반 여행 동반자 앱. 특별한 장소를 NFT로 수집하고 친구들과 공유하세요.",
-    "en": "AI-powered travel companion app. Collect special locations as NFTs and share with friends."
+    "ko": "여행 동행을 매칭하고, 특별한 장소를 나만의 컬렉션으로 모으는 여행 앱",
+    "en": "Match travel companions and collect the special places you visit."
   },
   "fullDescription": {
-    "ko": "Fryndo와 함께 여행을 더욱 특별하게 만들어보세요!\n\n주요 기능:\n- 위치 기반 NFT 수집: 특별한 장소를 방문하고 디지털 NFT로 수집하세요\n- 다양한 희귀도: 커먼부터 레전더리까지 다양한 등급의 NFT를 찾아보세요\n- 그룹 여행: 친구들과 그룹을 만들어 함께 여행하고 채팅하세요\n- 실시간 지도: 주변의 수집 가능한 장소를 실시간으로 확인하세요\n- NFT 민팅: 수집한 NFT를 블록체인에 영구 보관하세요\n- 오프라인 모드: 인터넷 없이도 앱을 사용할 수 있어요\n\n프리미엄 혜택:\n- 무제한 NFT 수집\n- 광고 제거\n- 프리미엄 전용 장소 접근\n- 우선 민팅 대기열\n- 상세 여행 분석\n\n지금 Fryndo를 다운로드하고 여행을 수집하세요!",
-    "en": "Make your travels more special with Fryndo!\n\nKey Features:\n- Location-based NFT Collection: Visit special places and collect them as digital NFTs\n- Various Rarities: Find NFTs ranging from Common to Legendary\n- Group Travel: Create groups with friends to travel and chat together\n- Real-time Map: Check collectible locations around you in real-time\n- NFT Minting: Permanently store your collected NFTs on the blockchain\n- Offline Mode: Use the app even without internet connection\n\nPremium Benefits:\n- Unlimited NFT collection\n- Ad-free experience\n- Access to premium-only locations\n- Priority minting queue\n- Detailed travel analytics\n\nDownload Fryndo now and start collecting your travels!"
+    "ko": "두리메이트와 함께 여행을 더 특별하게.\n\n두리메이트는 여행 동행 매칭 앱입니다. 여행 스타일과 일정이 잘 맞는 동행을 추천받고, 함께 여행할 친구를 찾고, 특별한 장소를 나만의 컬렉션으로 모아보세요.\n\n■ 주요 기능\n· 동행 매칭 — 여행 스타일·일정·관심사를 바탕으로 잘 맞는 동행을 추천합니다\n· 그룹 여행 — 친구들과 그룹을 만들어 함께 계획하고 실시간으로 채팅하세요\n· 지도 — 주변의 특별한 장소를 지도에서 바로 확인하세요\n· 장소 컬렉션 — 방문한 장소를 모으고 희귀도별로 컬렉션을 완성해 보세요\n· 오프라인 모드 — 인터넷 연결이 없어도 핵심 기능을 이용할 수 있어요\n\n안전한 동행 문화를 위해 첫 만남은 공개된 장소를 권장하며, 신고·차단 기능을 제공합니다.\n\n지금 두리메이트와 함께 여행을 시작하세요!",
+    "en": "Make your travels more special with Doorimate.\n\nDoorimate matches you with travel companions. Get recommendations based on travel style and dates, find friends to travel with, and gather the places you visit into a collection of your own.\n\n■ Features\n· Companion matching — recommendations based on travel style, dates and interests\n· Group travel — create a group with friends to plan together and chat in real time\n· Map — see the collectible places around you\n· Place collection — collect the places you visit and complete them by rarity\n· Offline mode — core features keep working without a connection\n\nFor safety we recommend meeting in public places first, and reporting and blocking are always available.\n\nStart travelling with Doorimate today!"
   },
   "keywords": {
-    "ko": ["여행", "NFT", "블록체인", "컬렉션", "지도", "위치기반", "소셜", "그룹여행"],
-    "en": ["travel", "NFT", "blockchain", "collection", "map", "location-based", "social", "group travel"]
+    "ko": [
+      "여행",
+      "동행",
+      "여행친구",
+      "컬렉션",
+      "지도",
+      "위치기반",
+      "소셜",
+      "그룹여행"
+    ],
+    "en": [
+      "travel",
+      "companion",
+      "travel buddy",
+      "collection",
+      "map",
+      "location-based",
+      "social",
+      "group travel"
+    ]
   },
   "categories": {
     "ios": {
@@ -29,56 +47,41 @@
     "ios": "4+",
     "android": "Everyone"
   },
-  "supportUrl": "https://travelmate.app/support",
-  "privacyPolicyUrl": "https://travelmate.app/privacy",
-  "termsOfServiceUrl": "https://travelmate.app/terms",
-  "marketingUrl": "https://travelmate.app",
+  "supportUrl": "https://fryndo-web.vercel.app/legal",
+  "privacyPolicyUrl": "https://fryndo-web.vercel.app/legal",
+  "termsOfServiceUrl": "https://fryndo-web.vercel.app/legal",
+  "marketingUrl": "https://fryndo-web.vercel.app",
+  "graphics": {
+    "icon512": "./store/graphics/icon-512.png",
+    "featureGraphic": "./store/graphics/feature-1024x500.png"
+  },
   "screenshots": {
     "ios": {
-      "iPhone6.5": [
-        "./store/screenshots/ios/6.5/1_home.png",
-        "./store/screenshots/ios/6.5/2_map.png",
-        "./store/screenshots/ios/6.5/3_collection.png",
-        "./store/screenshots/ios/6.5/4_chat.png",
-        "./store/screenshots/ios/6.5/5_profile.png"
-      ],
-      "iPhone5.5": [
-        "./store/screenshots/ios/5.5/1_home.png",
-        "./store/screenshots/ios/5.5/2_map.png",
-        "./store/screenshots/ios/5.5/3_collection.png",
-        "./store/screenshots/ios/5.5/4_chat.png",
-        "./store/screenshots/ios/5.5/5_profile.png"
-      ],
-      "iPad12.9": [
-        "./store/screenshots/ios/ipad/1_home.png",
-        "./store/screenshots/ios/ipad/2_map.png",
-        "./store/screenshots/ios/ipad/3_collection.png"
-      ]
+      "iPhone6.5": [],
+      "iPhone5.5": [],
+      "iPad12.9": []
     },
     "android": {
       "phone": [
-        "./store/screenshots/android/phone/1_home.png",
-        "./store/screenshots/android/phone/2_map.png",
-        "./store/screenshots/android/phone/3_collection.png",
-        "./store/screenshots/android/phone/4_chat.png",
-        "./store/screenshots/android/phone/5_profile.png"
+        "./store/screenshots/android/phone/01_login_light.png",
+        "./store/screenshots/android/phone/02_login_dark.png",
+        "./store/screenshots/android/phone/03_register.png",
+        "./store/screenshots/android/phone/04_home.png",
+        "./store/screenshots/android/phone/05_collection.png",
+        "./store/screenshots/android/phone/06_chat_list.png",
+        "./store/screenshots/android/phone/07_chat_room.png",
+        "./store/screenshots/android/phone/08_profile.png",
+        "./store/screenshots/android/phone/09_matching.png",
+        "./store/screenshots/android/phone/10_map.png"
       ],
-      "tablet7": [
-        "./store/screenshots/android/tablet7/1_home.png",
-        "./store/screenshots/android/tablet7/2_map.png",
-        "./store/screenshots/android/tablet7/3_collection.png"
-      ],
-      "tablet10": [
-        "./store/screenshots/android/tablet10/1_home.png",
-        "./store/screenshots/android/tablet10/2_map.png",
-        "./store/screenshots/android/tablet10/3_collection.png"
-      ]
+      "tablet7": [],
+      "tablet10": []
     }
   },
   "releaseNotes": {
     "1.0.0": {
-      "ko": "Fryndo 첫 출시!\n- 위치 기반 NFT 수집 기능\n- 그룹 채팅 기능\n- 실시간 지도\n- 오프라인 모드\n- 프리미엄 구독",
-      "en": "Fryndo Initial Release!\n- Location-based NFT collection\n- Group chat feature\n- Real-time map\n- Offline mode\n- Premium subscription"
+      "ko": "두리메이트 첫 내부 테스트 버전입니다.\n\n- AI 동행 매칭, 그룹 여행, 실시간 채팅\n- 방문한 장소를 모으는 컬렉션\n- 라이트/다크 모드 지원",
+      "en": "The first internal test build of Doorimate.\n\n- AI companion matching, group travel, real-time chat\n- A collection of the places you visit\n- Light and dark mode"
     }
   }
 }

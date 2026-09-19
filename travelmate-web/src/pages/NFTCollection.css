@@ -1,6 +1,6 @@
 .nft-collection {
   min-height: 100vh;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  background: linear-gradient(135deg, #101014 0%, #101014 100%);
   color: #fff;
 }
 
@@ -55,7 +55,7 @@
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
-  color: #94a3b8;
+  color: #8a8a95;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
@@ -67,8 +67,8 @@
 }
 
 .tab-item.active {
-  color: #3b82f6;
-  border-bottom-color: #3b82f6;
+  color: #4a3aff;
+  border-bottom-color: #4a3aff;
 }
 
 .tab-item svg {
@@ -93,7 +93,7 @@
 
 .filter-label {
   font-size: 0.875rem;
-  color: #94a3b8;
+  color: #8a8a95;
   white-space: nowrap;
 }
 
@@ -120,7 +120,7 @@
 }
 
 .filter-btn.active {
-  background: #3b82f6;
+  background: #4a3aff;
 }
 
 /* Collection Grid */
@@ -152,7 +152,7 @@
 .nft-image {
   position: relative;
   aspect-ratio: 1;
-  background: linear-gradient(135deg, #2d2d44 0%, #1a1a2e 100%);
+  background: linear-gradient(135deg, #1b1b22 0%, #101014 100%);
 }
 
 .nft-image img {
@@ -167,7 +167,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #64748b;
+  color: #74747f;
 }
 
 .image-placeholder svg {
@@ -201,7 +201,7 @@
 
 .nft-location {
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: #8a8a95;
   margin: 0 0 0.5rem;
 }
 
@@ -216,7 +216,7 @@
   align-items: center;
   gap: 0.25rem;
   font-size: 0.75rem;
-  color: #f59e0b;
+  color: #e0952a;
 }
 
 .nft-meta .points svg {
@@ -226,12 +226,12 @@
 
 .nft-meta .date {
   font-size: 0.625rem;
-  color: #64748b;
+  color: #74747f;
 }
 
 .token-id {
   font-size: 0.625rem;
-  color: #64748b;
+  color: #74747f;
   margin: 0.25rem 0 0;
   font-family: monospace;
 }
@@ -248,7 +248,7 @@
 .stats-card h2 {
   font-size: 1rem;
   margin: 0 0 1rem;
-  color: #94a3b8;
+  color: #8a8a95;
 }
 
 .progress-circle {
@@ -270,7 +270,7 @@
 
 .progress-fill {
   fill: none;
-  stroke: #3b82f6;
+  stroke: #4a3aff;
   stroke-width: 8;
   stroke-linecap: round;
   transition: stroke-dasharray 0.5s;
@@ -293,7 +293,7 @@
 
 .progress-label {
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: #8a8a95;
 }
 
 .stats-row {
@@ -315,12 +315,12 @@
 
 .stat-label {
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: #8a8a95;
 }
 
 .stat-divider {
   font-size: 1.5rem;
-  color: #64748b;
+  color: #74747f;
 }
 
 /* Rarity Stats */
@@ -334,7 +334,7 @@
 .rarity-stats h3 {
   font-size: 0.875rem;
   margin: 0 0 1rem;
-  color: #94a3b8;
+  color: #8a8a95;
 }
 
 .rarity-grid {
@@ -359,7 +359,7 @@
 
 .rarity-label {
   font-size: 0.625rem;
-  color: #94a3b8;
+  color: #8a8a95;
 }
 
 /* Region Progress */
@@ -372,7 +372,7 @@
 .region-progress h3 {
   font-size: 0.875rem;
   margin: 0 0 1rem;
-  color: #94a3b8;
+  color: #8a8a95;
 }
 
 .progress-item {
@@ -395,7 +395,7 @@
 
 .progress-count {
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: #8a8a95;
 }
 
 .progress-bar {
@@ -407,7 +407,7 @@
 
 .progress-bar .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+  background: linear-gradient(90deg, #4a3aff 0%, #4a3aff 100%);
   border-radius: 999px;
   transition: width 0.3s;
 }
@@ -430,7 +430,7 @@
 }
 
 .achievement-card.completed {
-  border: 1px solid #22c55e;
+  border: 1px solid #3f8f5f;
 }
 
 .achievement-icon {
@@ -452,7 +452,7 @@
 .achievement-icon svg {
   width: 24px;
   height: 24px;
-  color: #f59e0b;
+  color: #e0952a;
 }
 
 .achievement-info {
@@ -468,7 +468,7 @@
 
 .achievement-info p {
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: #8a8a95;
   margin: 0 0 0.5rem;
 }
 
@@ -485,7 +485,7 @@
 
 .achievement-progress .progress-text {
   font-size: 0.625rem;
-  color: #64748b;
+  color: #74747f;
 }
 
 .achievement-reward {
@@ -493,7 +493,7 @@
   flex-direction: column;
   align-items: center;
   gap: 0.25rem;
-  color: #f59e0b;
+  color: #e0952a;
 }
 
 .achievement-reward svg {
@@ -512,7 +512,7 @@
   right: -8px;
   width: 24px;
   height: 24px;
-  background: #22c55e;
+  background: #3f8f5f;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -539,7 +539,7 @@
 .empty-state svg {
   width: 64px;
   height: 64px;
-  color: #64748b;
+  color: #74747f;
   margin-bottom: 1rem;
 }
 
@@ -549,14 +549,14 @@
 }
 
 .empty-state p {
-  color: #94a3b8;
+  color: #8a8a95;
   margin: 0 0 1rem;
   font-size: 0.875rem;
 }
 
 .btn-primary {
   padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  background: linear-gradient(135deg, #4a3aff 0%, #2a1bc7 100%);
   border: none;
   border-radius: 12px;
   color: #fff;
@@ -583,7 +583,7 @@
   width: 32px;
   height: 32px;
   border: 3px solid rgba(255, 255, 255, 0.1);
-  border-top-color: #3b82f6;
+  border-top-color: #4a3aff;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -635,17 +635,17 @@
 }
 
 .mint-status-badge.minted {
-  background: #10b981;
+  background: #3f8f5f;
 }
 
 .mint-status-badge.minting,
 .mint-status-badge.confirming {
-  background: #3b82f6;
+  background: #4a3aff;
   animation: pulse 2s infinite;
 }
 
 .mint-status-badge.failed {
-  background: #ef4444;
+  background: #b4453b;
 }
 
 @keyframes pulse {
@@ -673,7 +673,7 @@
   gap: 6px;
   width: 100%;
   padding: 0.5rem 1rem;
-  background: linear-gradient(135deg, #8b5cf6, #a855f7);
+  background: linear-gradient(135deg, #4a3aff, #8e7bff);
   border: none;
   border-radius: 8px;
   color: white;
@@ -689,9 +689,9 @@
 }
 
 .btn-mint:hover:not(:disabled) {
-  background: linear-gradient(135deg, #7c3aed, #9333ea);
+  background: linear-gradient(135deg, #2a1bc7, #2a1bc7);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+  box-shadow: 0 4px 12px rgba(74, 58, 255, 0.4);
 }
 
 .btn-mint:disabled {
@@ -701,11 +701,11 @@
 
 .btn-mint.minting,
 .btn-mint.confirming {
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  background: linear-gradient(135deg, #4a3aff, #2a1bc7);
 }
 
 .btn-mint.failed {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
+  background: linear-gradient(135deg, #e0952a, #c87f1f);
 }
 
 /* View Chain Button */
@@ -716,10 +716,10 @@
   gap: 6px;
   width: 100%;
   padding: 0.5rem 1rem;
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: rgba(63, 143, 95, 0.1);
+  border: 1px solid rgba(63, 143, 95, 0.3);
   border-radius: 8px;
-  color: #10b981;
+  color: #3f8f5f;
   font-size: 0.8125rem;
   font-weight: 600;
   text-decoration: none;
@@ -732,6 +732,6 @@
 }
 
 .btn-view-chain:hover {
-  background: rgba(16, 185, 129, 0.2);
-  border-color: rgba(16, 185, 129, 0.5);
+  background: rgba(63, 143, 95, 0.2);
+  border-color: rgba(63, 143, 95, 0.5);
 }

@@ -41,24 +41,61 @@ public class ChatService {
         User creator = userRepository.findById(creatorId)
             .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
         
-        ChatRoom chatRoom = new ChatRoom();
-        chatRoom.setRoomName(request.getRoomName());
-        chatRoom.setRoomType(request.getRoomType());
-        chatRoom.setIsActive(true);
-        
         // 여행 그룹 채팅인 경우
         if (request.getTravelGroupId() != null) {
             TravelGroup travelGroup = travelGroupRepository.findById(request.getTravelGroupId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.GROUP_NOT_FOUND));
-            chatRoom.setTravelGroup(travelGroup);
-            chatRoom.setRoomName(travelGroup.getTitle() + " 채팅");
+
+            return chatRoomRepository.findByTravelGroupId(request.getTravelGroupId())
+                .map(existingRoom -> {
+                    addParticipantToRoom(existingRoom, creator);
+                    return convertChatRoomToDto(existingRoom);
+                })
+                .orElseGet(() -> createTravelGroupChatRoom(request, creator, travelGroup));
         }
-        
+
+        ChatRoom chatRoom = new ChatRoom();
+        chatRoom.setRoomName(request.getRoomName());
+        chatRoom.setRoomType(request.getRoomType());
+        chatRoom.setIsActive(true);
+
         ChatRoom savedRoom = chatRoomRepository.save(chatRoom);
-        
+
         // 참가자 추가
         addParticipantToRoom(savedRoom, creator);
-        
+
+        if (request.getParticipantIds() != null) {
+            for (Long participantId : request.getParticipantIds()) {
+                User participant = userRepository.findById(participantId)
+                    .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+                addParticipantToRoom(savedRoom, participant);
+            }
+        }
+
+        // 시스템 메시지 전송
+        sendSystemMessage(savedRoom.getId(), String.format("%s님이 채팅방을 생성했습니다.", creator.getNickname()));
+
+        log.info("새 채팅방 생성: {} (타입: {})", savedRoom.getId(), savedRoom.getRoomType());
+
+        return convertChatRoomToDto(savedRoom);
+    }
+
+    private ChatDto.ChatRoomResponse createTravelGroupChatRoom(
+            ChatDto.CreateChatRoomRequest request,
+            User creator,
+            TravelGroup travelGroup) {
+        ChatRoom chatRoom = new ChatRoom();
+        chatRoom.setRoomName(request.getRoomName());
+        chatRoom.setRoomType(request.getRoomType());
+        chatRoom.setIsActive(true);
+        chatRoom.setTravelGroup(travelGroup);
+        chatRoom.setRoomName(travelGroup.getTitle() + " 채팅");
+
+        ChatRoom savedRoom = chatRoomRepository.save(chatRoom);
+
+        // 참가자 추가
+        addParticipantToRoom(savedRoom, creator);
+
         if (request.getParticipantIds() != null) {
             for (Long participantId : request.getParticipantIds()) {
                 User participant = userRepository.findById(participantId)
@@ -106,7 +143,12 @@ public class ChatService {
     }
     
     @Transactional(readOnly = true)
-    public List<ChatDto.MessageResponse> getChatMessages(Long roomId, int page, int size) {
+    public List<ChatDto.MessageResponse> getChatMessages(Long roomId, Long userId, int page, int size) {
+        ensureParticipant(roomId, userId);
+        return getChatMessages(roomId, page, size);
+    }
+
+    private List<ChatDto.MessageResponse> getChatMessages(Long roomId, int page, int size) {
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by("sentAt").descending());
         List<ChatMessage> messages = chatMessageRepository.findByChatRoomIdAndIsDeletedFalse(roomId, pageRequest);
         
@@ -115,7 +157,20 @@ public class ChatService {
             .collect(Collectors.toList());
     }
     
-    public void processMessage(ChatDto.MessageRequest request) {
+    public ChatDto.MessageResponse processMessage(Long senderId, ChatDto.MessageRequest request) {
+        ensureParticipant(request.getChatRoomId(), senderId);
+        request.setSenderId(senderId);
+        return saveAndBroadcastMessage(request);
+    }
+
+    public ChatDto.MessageResponse sendRestMessage(Long roomId, Long senderId, ChatDto.MessageRequest request) {
+        ensureParticipant(roomId, senderId);
+        request.setChatRoomId(roomId);
+        request.setSenderId(senderId);
+        return saveAndBroadcastMessage(request);
+    }
+
+    private ChatDto.MessageResponse saveAndBroadcastMessage(ChatDto.MessageRequest request) {
         ChatRoom chatRoom = chatRoomRepository.findById(request.getChatRoomId())
             .orElseThrow(() -> new ChatException.ChatRoomNotFoundException());
 
@@ -145,6 +200,7 @@ public class ChatService {
         messagingTemplate.convertAndSend("/topic/chat/" + request.getChatRoomId(), messageDto);
         
         log.debug("메시지 전송: 방 {} - 발신자 {}", request.getChatRoomId(), sender.getNickname());
+        return messageDto;
     }
     
     public void joinChatRoom(ChatDto.JoinRequest request) {
@@ -169,6 +225,11 @@ public class ChatService {
         
         log.info("채팅방 참가: 방 {} - 사용자 {}", request.getChatRoomId(), user.getNickname());
     }
+
+    public void joinChatRoom(Long userId, ChatDto.JoinRequest request) {
+        request.setUserId(userId);
+        joinChatRoom(request);
+    }
     
     public void leaveChatRoom(ChatDto.LeaveRequest request) {
         ChatParticipant participant = chatParticipantRepository.findByChatRoomIdAndUserId(
@@ -182,6 +243,11 @@ public class ChatService {
         sendSystemMessage(request.getChatRoomId(), String.format("%s님이 퇴장했습니다.", user.getNickname()));
         
         log.info("채팅방 퇴장: 방 {} - 사용자 {}", request.getChatRoomId(), user.getNickname());
+    }
+
+    public void leaveChatRoom(Long userId, ChatDto.LeaveRequest request) {
+        request.setUserId(userId);
+        leaveChatRoom(request);
     }
     
     public void markAsRead(Long roomId, Long userId) {
@@ -200,13 +266,19 @@ public class ChatService {
     }
     
     private void addParticipantToRoom(ChatRoom chatRoom, User user) {
-        if (!chatParticipantRepository.existsByChatRoomIdAndUserId(chatRoom.getId(), user.getId())) {
-            ChatParticipant participant = new ChatParticipant();
-            participant.setChatRoom(chatRoom);
-            participant.setUser(user);
+        ChatParticipant participant = chatParticipantRepository
+                .findByChatRoomIdAndUserId(chatRoom.getId(), user.getId())
+                .orElseGet(() -> {
+                    ChatParticipant newParticipant = new ChatParticipant();
+                    newParticipant.setChatRoom(chatRoom);
+                    newParticipant.setUser(user);
+                    return newParticipant;
+                });
+
+        if (!Boolean.TRUE.equals(participant.getIsActive())) {
             participant.setIsActive(true);
-            chatParticipantRepository.save(participant);
         }
+        chatParticipantRepository.save(participant);
     }
     
     private void sendSystemMessage(Long roomId, String content) {
@@ -222,11 +294,12 @@ public class ChatService {
         messagingTemplate.convertAndSend("/topic/chat/" + roomId, messageDto);
     }
     
-    private Integer getUnreadMessageCount(Long roomId, Long userId) {
+    @Transactional(readOnly = true)
+    public Integer getUnreadMessageCount(Long roomId, Long userId) {
         ChatParticipant participant = chatParticipantRepository.findByChatRoomIdAndUserId(roomId, userId)
-            .orElse(null);
+            .orElseThrow(() -> new ChatException.UnauthorizedChatAccessException());
         
-        if (participant == null || participant.getLastReadMessageId() == null) {
+        if (participant.getLastReadMessageId() == null) {
             return chatMessageRepository.countByChatRoomIdAndIsDeletedFalse(roomId);
         }
         
@@ -331,6 +404,7 @@ public class ChatService {
     }
     
     public void updateTypingStatus(Long roomId, Long userId, boolean isTyping) {
+        ensureParticipant(roomId, userId);
         String roomKey = "room_" + roomId;
         
         if (isTyping) {
@@ -375,8 +449,9 @@ public class ChatService {
     public void deleteMessage(Long messageId, Long userId) {
         ChatMessage message = chatMessageRepository.findById(messageId)
             .orElseThrow(() -> new ChatException.MessageNotFoundException());
+        ensureParticipant(message.getChatRoom().getId(), userId);
 
-        // 메시지 작성자 또는 시스템 메시지만 삭제 가능
+        // 참가자는 본인 메시지 또는 시스템 메시지만 삭제 가능
         if (message.getSender() == null || message.getSender().getId().equals(userId)) {
             message.setIsDeleted(true);
             message.setContent("[삭제된 메시지입니다]");
@@ -388,6 +463,12 @@ public class ChatService {
 
             log.info("메시지 삭제: {} by {}", messageId, userId);
         } else {
+            throw new ChatException.UnauthorizedChatAccessException();
+        }
+    }
+
+    private void ensureParticipant(Long roomId, Long userId) {
+        if (!chatParticipantRepository.existsByChatRoomIdAndUserId(roomId, userId)) {
             throw new ChatException.UnauthorizedChatAccessException();
         }
     }

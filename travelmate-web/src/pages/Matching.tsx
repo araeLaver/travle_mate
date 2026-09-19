@@ -13,6 +13,7 @@ import {
   useSendMatchRequest,
   useRespondToMatchRequest,
   useCancelMatchRequest,
+  useCompleteMatchRequest,
   useReceivedMatchRequests,
   useSentMatchRequests,
   useMatchHistory,
@@ -40,6 +41,7 @@ const Matching: React.FC = () => {
   const sendRequest = useSendMatchRequest();
   const respondRequest = useRespondToMatchRequest();
   const cancelRequest = useCancelMatchRequest();
+  const completeRequest = useCompleteMatchRequest();
 
   useEffect(() => {
     if (!loadingRecs && recommendations && recommendations.length > 0) {
@@ -65,6 +67,10 @@ const Matching: React.FC = () => {
     cancelRequest.mutate(requestId);
   };
 
+  const handleComplete = (requestId: number) => {
+    completeRequest.mutate(requestId);
+  };
+
   const pendingBadge = pendingCount?.count ? pendingCount.count : 0;
 
   const tabs: { id: TabType; label: string; badge?: number }[] = [
@@ -73,8 +79,30 @@ const Matching: React.FC = () => {
     { id: 'history', label: '히스토리' },
   ];
 
+  const getHistoryStatus = (status?: string) => {
+    switch (status) {
+      case 'COMPLETED':
+        return {
+          label: '완료',
+          className:
+            'bg-sand-200 dark:bg-white/10 text-[#74747F] dark:text-white/70 border-sand-400 dark:border-white/15',
+        };
+      case 'ACCEPTED':
+      case 'MATCHED':
+      default:
+        return {
+          label: '진행 중',
+          className:
+            'bg-success/10 dark:bg-emerald-500/20 text-success dark:text-emerald-300 border-success/20 dark:border-emerald-500/30',
+        };
+    }
+  };
+
+  const canCompleteMatch = (status?: string) =>
+    status == null || status === 'ACCEPTED' || status === 'MATCHED';
+
   return (
-    <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] relative overflow-x-hidden">
+    <div className="min-h-screen bg-sand-100 dark:bg-[#0a0a0b] relative overflow-x-hidden">
       <PageBackground />
 
       <div className="relative z-10 max-w-[1200px] mx-auto px-6 py-8 md:py-10">
@@ -85,10 +113,10 @@ const Matching: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <h1 className="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-violet-300 bg-clip-text text-transparent mb-2">
+          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-ink dark:text-white mb-2">
             동반자 매칭
           </h1>
-          <p className="text-gray-500 dark:text-white/70">나와 잘 맞는 여행 동반자를 찾아보세요</p>
+          <p className="text-[#4A4A55] dark:text-white/70">나와 잘 맞는 여행 동반자를 찾아보세요</p>
         </motion.header>
 
         {/* Tabs */}
@@ -101,16 +129,16 @@ const Matching: React.FC = () => {
           {tabs.map(tab => (
             <button
               key={tab.id}
-              className={`relative px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 ${
+              className={`relative px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${
                 activeTab === tab.id
-                  ? 'bg-violet-100 dark:bg-violet-500/30 border border-violet-300 dark:border-violet-500/60 text-violet-700 dark:text-white'
-                  : 'bg-white/60 dark:bg-white/5 border border-gray-200/50 dark:border-white/15 text-gray-500 dark:text-white/70 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-700 dark:hover:text-white'
+                  ? 'bg-ink dark:bg-white/20 border border-ink dark:border-white/30 text-white'
+                  : 'bg-white dark:bg-white/5 border border-sand-300 dark:border-white/15 text-[#4A4A55] dark:text-white/70 hover:bg-sand-200 dark:hover:bg-white/10 hover:text-ink dark:hover:text-white'
               }`}
               onClick={() => setActiveTab(tab.id)}
             >
               {tab.label}
               {tab.badge != null && tab.badge > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[0.65rem] font-bold rounded-full flex items-center justify-center">
+                <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-primary-500 text-white text-[0.65rem] font-extrabold rounded-[7px] flex items-center justify-center">
                   {tab.badge}
                 </span>
               )}
@@ -159,7 +187,7 @@ const Matching: React.FC = () => {
           {activeTab === 'requests' && (
             <div className="space-y-8">
               <section>
-                <h2 className="text-gray-900 dark:text-white text-xl font-bold mb-4 pb-2 border-b border-gray-200 dark:border-white/10">
+                <h2 className="text-ink dark:text-white text-xl font-extrabold tracking-tight mb-4 pb-2 border-b border-sand-300 dark:border-white/10">
                   받은 요청
                 </h2>
                 {loadingReceived ? (
@@ -178,7 +206,7 @@ const Matching: React.FC = () => {
                         <button
                           disabled={receivedPage === 0}
                           onClick={() => setReceivedPage(p => p - 1)}
-                          className="px-4 py-2 bg-white/60 dark:bg-white/10 text-gray-600 dark:text-white/70 border border-gray-200/50 dark:border-white/15 rounded-lg transition-colors hover:bg-gray-100 dark:hover:bg-white/15 hover:text-gray-900 dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
+                          className="px-4 py-2 bg-white dark:bg-white/10 text-[#4A4A55] dark:text-white/70 border border-sand-400 dark:border-white/15 rounded-lg font-bold transition-colors hover:bg-sand-200 dark:hover:bg-white/15 hover:text-ink dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
                         >
                           이전
                         </button>
@@ -188,7 +216,7 @@ const Matching: React.FC = () => {
                         <button
                           disabled={receivedRequests.last}
                           onClick={() => setReceivedPage(p => p + 1)}
-                          className="px-4 py-2 bg-white/60 dark:bg-white/10 text-gray-600 dark:text-white/70 border border-gray-200/50 dark:border-white/15 rounded-lg transition-colors hover:bg-gray-100 dark:hover:bg-white/15 hover:text-gray-900 dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
+                          className="px-4 py-2 bg-white dark:bg-white/10 text-[#4A4A55] dark:text-white/70 border border-sand-400 dark:border-white/15 rounded-lg font-bold transition-colors hover:bg-sand-200 dark:hover:bg-white/15 hover:text-ink dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
                         >
                           다음
                         </button>
@@ -199,7 +227,7 @@ const Matching: React.FC = () => {
               </section>
 
               <section>
-                <h2 className="text-gray-900 dark:text-white text-xl font-bold mb-4 pb-2 border-b border-gray-200 dark:border-white/10">
+                <h2 className="text-ink dark:text-white text-xl font-extrabold tracking-tight mb-4 pb-2 border-b border-sand-300 dark:border-white/10">
                   보낸 요청
                 </h2>
                 {loadingSent ? (
@@ -217,7 +245,7 @@ const Matching: React.FC = () => {
                         <button
                           disabled={sentPage === 0}
                           onClick={() => setSentPage(p => p - 1)}
-                          className="px-4 py-2 bg-white/60 dark:bg-white/10 text-gray-600 dark:text-white/70 border border-gray-200/50 dark:border-white/15 rounded-lg transition-colors hover:bg-gray-100 dark:hover:bg-white/15 hover:text-gray-900 dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
+                          className="px-4 py-2 bg-white dark:bg-white/10 text-[#4A4A55] dark:text-white/70 border border-sand-400 dark:border-white/15 rounded-lg font-bold transition-colors hover:bg-sand-200 dark:hover:bg-white/15 hover:text-ink dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
                         >
                           이전
                         </button>
@@ -227,7 +255,7 @@ const Matching: React.FC = () => {
                         <button
                           disabled={sentRequests.last}
                           onClick={() => setSentPage(p => p + 1)}
-                          className="px-4 py-2 bg-white/60 dark:bg-white/10 text-gray-600 dark:text-white/70 border border-gray-200/50 dark:border-white/15 rounded-lg transition-colors hover:bg-gray-100 dark:hover:bg-white/15 hover:text-gray-900 dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
+                          className="px-4 py-2 bg-white dark:bg-white/10 text-[#4A4A55] dark:text-white/70 border border-sand-400 dark:border-white/15 rounded-lg font-bold transition-colors hover:bg-sand-200 dark:hover:bg-white/15 hover:text-ink dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
                         >
                           다음
                         </button>
@@ -244,15 +272,27 @@ const Matching: React.FC = () => {
             <div>
               {loadingHistory ? (
                 <div className="flex flex-col items-center py-12">
-                  <div className="w-10 h-10 border-3 border-gray-200 dark:border-white/10 border-t-violet-500 rounded-full animate-spin mb-3" />
+                  <div className="w-10 h-10 border-3 border-sand-300 dark:border-white/10 border-t-primary-500 rounded-full animate-spin mb-3" />
                 </div>
               ) : history && history.length > 0 ? (
                 <div className="flex flex-col gap-4">
                   {history.map(item => (
                     <div
                       key={item.matchRequestId}
-                      className="bg-white/80 dark:bg-white/[0.08] backdrop-blur-xl border border-gray-200/50 dark:border-white/[0.12] rounded-2xl p-5"
+                      className="bg-white dark:bg-white/[0.08] rounded-[18px] shadow-[0_10px_30px_rgba(16,16,20,0.06)] p-5"
                     >
+                      {(() => {
+                        const statusInfo = getHistoryStatus(item.status);
+                        return (
+                          <div className="mb-3 flex justify-end">
+                            <span
+                              className={`inline-flex items-center rounded-lg border px-2.5 py-1 text-xs font-bold ${statusInfo.className}`}
+                            >
+                              {statusInfo.label}
+                            </span>
+                          </div>
+                        );
+                      })()}
                       <div className="flex justify-between items-center mb-2.5">
                         <div className="flex items-center gap-3">
                           <div>
@@ -263,13 +303,13 @@ const Matching: React.FC = () => {
                                 className="w-11 h-11 rounded-full object-cover"
                               />
                             ) : (
-                              <div className="w-11 h-11 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center font-bold text-white">
+                              <div className="w-11 h-11 rounded-full bg-success flex items-center justify-center font-bold text-white">
                                 {item.partner.nickname.charAt(0).toUpperCase()}
                               </div>
                             )}
                           </div>
                           <div>
-                            <h3 className="text-gray-900 dark:text-white font-bold">
+                            <h3 className="text-ink dark:text-white font-bold">
                               {item.partner.nickname}
                             </h3>
                             {item.partner.age && (
@@ -279,7 +319,7 @@ const Matching: React.FC = () => {
                             )}
                           </div>
                         </div>
-                        <div className="bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 px-3.5 py-1.5 rounded-xl font-bold">
+                        <div className="bg-primary-100 dark:bg-primary-500/20 text-primary-500 dark:text-primary-400 px-3.5 py-1.5 rounded-xl font-extrabold">
                           <span>{Math.round(item.totalScore)}점</span>
                         </div>
                       </div>
@@ -287,6 +327,18 @@ const Matching: React.FC = () => {
                         매칭일: {new Date(item.matchedAt).toLocaleDateString('ko-KR')}
                       </div>
                       <MatchScoreBreakdown breakdown={item.scoreBreakdown} />
+                      {canCompleteMatch(item.status) && (
+                        <div className="mt-4 flex justify-end">
+                          <button
+                            type="button"
+                            disabled={completeRequest.isPending}
+                            onClick={() => handleComplete(item.matchRequestId)}
+                            className="rounded-lg bg-success px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-[#357A51] disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            동행 완료
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

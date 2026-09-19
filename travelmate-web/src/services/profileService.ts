@@ -1,4 +1,5 @@
-import { apiClient } from './apiClient';
+import { apiClient, ApiError } from './apiClient';
+import { authService } from './authService';
 import { UserProfileApiResponse, TravelHistoryApiResponse, UserReviewApiResponse } from '../types';
 import { logger } from '../lib/utils';
 
@@ -102,14 +103,39 @@ export interface UpdateProfileRequest {
   socialLinks?: Partial<SocialLinks>;
 }
 
+const getApiErrorStatus = (error: unknown): number | undefined => {
+  if (error && typeof error === 'object' && 'status' in error) {
+    const status = Number((error as ApiError).status);
+    return Number.isFinite(status) ? status : undefined;
+  }
+  return undefined;
+};
+
+const DEFAULT_PROFILE_INTERESTS = ['사진촬영', '음식탐방', '역사문화', '자연관광'];
+const DEFAULT_PROFILE_LANGUAGES = ['한국어', '영어'];
+
+const generateRandomId = (prefix: string): string => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `${prefix}_${crypto.randomUUID()}`;
+  }
+
+  const randomValues = new Uint32Array(3);
+  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    crypto.getRandomValues(randomValues);
+    return `${prefix}_${Array.from(randomValues, value => value.toString(36)).join('')}`;
+  }
+
+  return `${prefix}_${Date.now().toString(36)}`;
+};
+
 class ProfileService {
   private useMock: boolean = false; // Mock 데이터 사용 여부
   private profile: UserProfile | null = null;
-  private currentUserId: string;
+  private mockUserId: string;
 
   constructor() {
-    this.currentUserId = localStorage.getItem('tempUserId') || this.generateUserId();
-    localStorage.setItem('tempUserId', this.currentUserId);
+    this.mockUserId = localStorage.getItem('tempUserId') || this.generateUserId();
+    localStorage.setItem('tempUserId', this.mockUserId);
 
     if (this.useMock) {
       this.loadProfile();
@@ -118,14 +144,21 @@ class ProfileService {
 
   // Mock 모드 설정
   setMockMode(useMock: boolean): void {
+    if (useMock && process.env.NODE_ENV === 'production') {
+      throw new Error('Profile mock mode cannot be enabled in production');
+    }
     this.useMock = useMock;
     if (useMock) {
       this.loadProfile();
     }
   }
 
+  isMockMode(): boolean {
+    return this.useMock;
+  }
+
   private generateUserId(): string {
-    return 'user_' + Math.random().toString(36).substr(2, 9);
+    return generateRandomId('user');
   }
 
   private loadProfile(): void {
@@ -159,27 +192,12 @@ class ProfileService {
   }
 
   private createDefaultProfile(): UserProfile {
-    const interests = [
-      '사진촬영',
-      '음식탐방',
-      '역사문화',
-      '자연관광',
-      '쇼핑',
-      '공연관람',
-      '스포츠',
-      '야경감상',
-      '카페투어',
-      '박물관',
-    ];
-
-    const languages = ['한국어', '영어', '중국어', '일본어', '스페인어', '프랑스어'];
-
     return {
-      id: this.currentUserId,
+      id: this.getCurrentUserId(),
       name: '여행러',
       bio: '새로운 곳을 탐험하고 사람들과 만나는 것을 좋아합니다!',
-      interests: this.getRandomItems(interests, 3, 5),
-      languages: this.getRandomItems(languages, 1, 3),
+      interests: [...DEFAULT_PROFILE_INTERESTS],
+      languages: [...DEFAULT_PROFILE_LANGUAGES],
       travelStyle: 'CULTURE',
       travelHistory: [],
       stats: {
@@ -214,12 +232,6 @@ class ProfileService {
     };
   }
 
-  private getRandomItems<T>(array: T[], min: number, max: number): T[] {
-    const count = Math.floor(Math.random() * (max - min + 1)) + min;
-    const shuffled = [...array].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, count);
-  }
-
   private saveProfile(): void {
     if (this.profile) {
       localStorage.setItem('userProfile', JSON.stringify(this.profile));
@@ -238,7 +250,10 @@ class ProfileService {
       return this.mapToUserProfile(response);
     } catch (error) {
       logger.error('Failed to fetch profile:', error);
-      return null;
+      if (getApiErrorStatus(error) === 404) {
+        return null;
+      }
+      throw error;
     }
   }
 
@@ -298,7 +313,13 @@ class ProfileService {
 
   // 여행 기록 추가
   addTravelHistory(travel: Omit<TravelHistory, 'id'>): void {
-    if (!this.profile) return;
+    if (!this.useMock) {
+      throw new Error('Travel history mutations require profile mock mode');
+    }
+
+    if (!this.profile) {
+      this.profile = this.createDefaultProfile();
+    }
 
     const newTravel: TravelHistory = {
       id: 'trip_' + Date.now(),
@@ -314,6 +335,10 @@ class ProfileService {
 
   // 여행 기록 삭제
   removeTravelHistory(travelId: string): void {
+    if (!this.useMock) {
+      throw new Error('Travel history mutations require profile mock mode');
+    }
+
     if (!this.profile) return;
 
     this.profile.travelHistory = this.profile.travelHistory.filter(trip => trip.id !== travelId);
@@ -377,7 +402,7 @@ class ProfileService {
     }
 
     try {
-      const response = await apiClient.uploadFile('/upload/profile-image', file);
+      const response = await apiClient.uploadFile('/files/upload/profile', file);
       return response.url || response.imageUrl || '';
     } catch (error) {
       logger.error('Failed to upload profile image:', error);
@@ -397,7 +422,7 @@ class ProfileService {
     }
 
     try {
-      const response = await apiClient.uploadFile('/upload/cover-image', file);
+      const response = await apiClient.uploadFile('/files/upload/image', file);
       return response.url || response.imageUrl || '';
     } catch (error) {
       logger.error('Failed to upload cover image:', error);
@@ -424,7 +449,8 @@ class ProfileService {
   }
 
   getCurrentUserId(): string {
-    return this.currentUserId;
+    const userId = authService.getUser()?.id;
+    return userId === undefined || userId === null ? this.mockUserId : userId.toString();
   }
 
   // 사용 가능한 관심사 목록

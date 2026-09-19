@@ -141,7 +141,8 @@ class LocationReviewServiceTest {
             // When & Then
             assertThatThrownBy(() -> locationReviewService.createReview(1L, 1L, request))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("수집한 후에 리뷰를 작성");
+                    .hasMessageContaining("수집한 후에 리뷰를 작성")
+                    .satisfies(ex -> assertBusinessException(ex, 400, "BAD_REQUEST"));
         }
 
         @Test
@@ -160,7 +161,8 @@ class LocationReviewServiceTest {
             // When & Then
             assertThatThrownBy(() -> locationReviewService.createReview(1L, 1L, request))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("이미 리뷰를 작성한 장소");
+                    .hasMessageContaining("이미 리뷰를 작성한 장소")
+                    .satisfies(ex -> assertBusinessException(ex, 409, "CONFLICT"));
         }
 
         @Test
@@ -175,7 +177,25 @@ class LocationReviewServiceTest {
             // When & Then
             assertThatThrownBy(() -> locationReviewService.createReview(1L, 1L, request))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("사용자를 찾을 수 없습니다");
+                    .hasMessageContaining("사용자를 찾을 수 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 404, "USER_NOT_FOUND"));
+        }
+
+        @Test
+        @DisplayName("실패 - 장소 없음")
+        void createReview_Fail_LocationNotFound() {
+            // Given
+            LocationReviewDto.CreateRequest request = new LocationReviewDto.CreateRequest();
+            request.setRating(5);
+
+            when(userRepository.findById(1L)).thenReturn(Optional.of(reviewer));
+            when(locationRepository.findById(1L)).thenReturn(Optional.empty());
+
+            // When & Then
+            assertThatThrownBy(() -> locationReviewService.createReview(1L, 1L, request))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("장소를 찾을 수 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 404, "NOT_FOUND"));
         }
     }
 
@@ -218,7 +238,8 @@ class LocationReviewServiceTest {
             // When & Then
             assertThatThrownBy(() -> locationReviewService.updateReview(2L, 1L, request))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("본인이 작성한 리뷰만 수정");
+                    .hasMessageContaining("본인이 작성한 리뷰만 수정")
+                    .satisfies(ex -> assertBusinessException(ex, 403, "FORBIDDEN"));
         }
 
         @Test
@@ -233,7 +254,8 @@ class LocationReviewServiceTest {
             // When & Then
             assertThatThrownBy(() -> locationReviewService.updateReview(1L, 1L, request))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("리뷰를 찾을 수 없습니다");
+                    .hasMessageContaining("리뷰를 찾을 수 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 404, "NOT_FOUND"));
         }
     }
 
@@ -268,7 +290,8 @@ class LocationReviewServiceTest {
             // When & Then
             assertThatThrownBy(() -> locationReviewService.deleteReview(2L, 1L))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("본인이 작성한 리뷰만 삭제");
+                    .hasMessageContaining("본인이 작성한 리뷰만 삭제")
+                    .satisfies(ex -> assertBusinessException(ex, 403, "FORBIDDEN"));
         }
     }
 
@@ -367,7 +390,8 @@ class LocationReviewServiceTest {
             // When & Then
             assertThatThrownBy(() -> locationReviewService.toggleHelpful(1L, 1L))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("본인의 리뷰에는 도움됨을 표시할 수 없습니다");
+                    .hasMessageContaining("본인의 리뷰에는 도움됨을 표시할 수 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 400, "BAD_REQUEST"));
         }
     }
 
@@ -406,5 +430,11 @@ class LocationReviewServiceTest {
             assertThat(result.getAverageRating()).isEqualTo(0.0);
             assertThat(result.getReviewCount()).isZero();
         }
+    }
+
+    private void assertBusinessException(Throwable throwable, int status, String errorCode) {
+        BusinessException exception = (BusinessException) throwable;
+        assertThat(exception.getStatus().value()).isEqualTo(status);
+        assertThat(exception.getErrorCodeStr()).isEqualTo(errorCode);
     }
 }

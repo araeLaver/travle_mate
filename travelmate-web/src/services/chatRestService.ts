@@ -6,6 +6,8 @@ import {
   PaginatedResponse,
 } from '../types';
 
+type ChatMessagesApiResponse = ChatMessageApiResponse[] | PaginatedResponse<ChatMessageApiResponse>;
+
 export interface ChatRoom {
   id: string;
   name: string;
@@ -86,7 +88,12 @@ class ChatRestService {
   // 채팅방 생성
   async createChatRoom(request: CreateChatRoomRequest): Promise<ChatRoom> {
     try {
-      const response = await apiClient.post<ChatRoomApiResponse>('/chat/rooms', request);
+      const payload = {
+        ...request,
+        participantIds: request.participantIds.map(Number),
+        travelGroupId: request.travelGroupId ? Number(request.travelGroupId) : undefined,
+      };
+      const response = await apiClient.post<ChatRoomApiResponse>('/chat/rooms', payload);
       return this.mapToChatRoom(response);
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -98,16 +105,29 @@ class ChatRestService {
   // 채팅 메시지 조회 (페이지네이션)
   async getMessages(roomId: string, page: number = 0, size: number = 50): Promise<ChatMessage[]> {
     try {
-      const response = await apiClient.get<PaginatedResponse<ChatMessageApiResponse>>(
+      const response = await apiClient.get<ChatMessagesApiResponse>(
         `/chat/rooms/${roomId}/messages?page=${page}&size=${size}`
       );
-
-      // 페이지네이션 응답 처리
-      const messages = response.content || [];
-      return Array.isArray(messages) ? messages.map(msg => this.mapToChatMessage(msg)) : [];
+      const messages = Array.isArray(response) ? response : response.content || [];
+      return messages.map(msg => this.mapToChatMessage(msg));
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Failed to fetch messages:', error);
+      throw error;
+    }
+  }
+
+  // 메시지 전송
+  async sendMessage(roomId: string, request: SendMessageRequest): Promise<ChatMessage> {
+    try {
+      const response = await apiClient.post<ChatMessageApiResponse, SendMessageRequest>(
+        `/chat/rooms/${roomId}/messages`,
+        request
+      );
+      return this.mapToChatMessage(response);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to send message:', error);
       throw error;
     }
   }
@@ -152,18 +172,40 @@ class ChatRestService {
       name: data.roomName || '',
       roomType: data.roomType || 'PRIVATE',
       participants: (data.participants || []).map((p: ChatParticipantApiResponse) => ({
-        id: p.id?.toString() || '',
+        id: p.id?.toString() || p.userId?.toString() || p.user?.id?.toString() || '',
         userId: p.userId?.toString() || p.user?.id?.toString() || '',
-        userName: p.user?.nickname || p.userName || '',
-        profileImage: p.user?.profileImageUrl || p.profileImage,
+        userName: p.user?.nickname || p.nickname || p.userName || '',
+        profileImage: p.user?.profileImageUrl || p.profileImageUrl || p.profileImage,
         isOnline: p.isOnline || false,
         lastSeen: new Date(p.lastSeen || Date.now()),
       })),
-      lastMessage: data.lastMessage ? this.mapToChatMessage(data.lastMessage) : undefined,
+      lastMessage: this.mapLastMessage(data),
       unreadCount: data.unreadCount || 0,
       createdAt: new Date(data.createdAt),
-      isActive: data.isActive !== false,
+      isActive: data.isActive ?? data.canSendMessage ?? true,
     };
+  }
+
+  private mapLastMessage(data: ChatRoomApiResponse): ChatMessage | undefined {
+    if (!data.lastMessage) {
+      return undefined;
+    }
+
+    if (typeof data.lastMessage === 'string') {
+      return {
+        id: '',
+        chatRoomId: data.id?.toString() || '',
+        senderId: '',
+        senderName: '',
+        content: data.lastMessage,
+        messageType: 'TEXT',
+        isDeleted: false,
+        sentAt: new Date(data.lastMessageAt || data.createdAt || Date.now()),
+        isRead: false,
+      };
+    }
+
+    return this.mapToChatMessage(data.lastMessage);
   }
 
   // 백엔드 응답을 ChatMessage로 변환

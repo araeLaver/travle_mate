@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import Payment from './Payment';
 
@@ -69,6 +69,11 @@ jest.mock('../components/Logo', () => () => <div data-testid="logo">Logo</div>);
 jest.mock('../components/ThemeToggle', () => () => (
   <div data-testid="theme-toggle">ThemeToggle</div>
 ));
+
+const mockToast = { success: jest.fn(), error: jest.fn(), info: jest.fn(), warning: jest.fn() };
+jest.mock('../components/Toast', () => ({
+  useToast: () => mockToast,
+}));
 
 // eslint-disable-next-line import/first
 import { paymentService } from '../services/paymentService';
@@ -191,5 +196,19 @@ describe('Payment', () => {
 
     expect(await screen.findByText('결제하기')).toBeInTheDocument();
     expect(screen.getByText('선택한 상품')).toBeInTheDocument();
+  });
+
+  test('shows payment preparation failures through app toast', async () => {
+    (paymentService.preparePayment as jest.Mock).mockRejectedValueOnce({
+      message: '결제 준비 실패',
+    });
+
+    renderPayment();
+    fireEvent.click(await screen.findByText('100 포인트'));
+    fireEvent.click(screen.getByText('결제하기'));
+
+    await waitFor(() => {
+      expect(mockToast.error).toHaveBeenCalledWith('결제 준비 실패');
+    });
   });
 });

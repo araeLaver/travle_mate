@@ -28,12 +28,14 @@ const PaymentFail: React.FC = () => {
   const orderId = searchParams.get('orderId');
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#fafafa] dark:bg-[#0a0a0b] px-4">
+    <div className="min-h-screen flex items-center justify-center bg-sand-100 dark:bg-[#0a0a0b] px-4">
       <div className="max-w-md w-full bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-8 text-center">
         <div className="w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
           <span className="text-4xl">&#10007;</span>
         </div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">결제 실패</h1>
+        <h1 className="text-2xl font-extrabold tracking-tight text-ink dark:text-white mb-2">
+          결제 실패
+        </h1>
         <p className="text-gray-500 dark:text-gray-400 mb-4">{errorMessage}</p>
 
         {orderId && (
@@ -47,13 +49,13 @@ const PaymentFail: React.FC = () => {
         <div className="flex gap-3 justify-center">
           <button
             onClick={() => navigate('/payment')}
-            className="px-6 py-3 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition-colors"
+            className="px-6 py-3 bg-primary-500 text-white rounded-xl font-bold hover:bg-primary-700 transition-colors"
           >
             다시 시도
           </button>
           <button
             onClick={() => navigate('/dashboard')}
-            className="px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+            className="px-6 py-3 bg-sand-200 dark:bg-gray-700 text-ink dark:text-gray-300 rounded-xl font-bold hover:bg-sand-300 dark:hover:bg-gray-600 transition-colors"
           >
             대시보드
           </button>

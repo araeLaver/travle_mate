@@ -1,5 +1,6 @@
 package com.travelmate.controller;
 
+import com.travelmate.security.AuthenticatedUserId;
 import com.travelmate.dto.NftDto;
 import com.travelmate.entity.nft.PointTransactionType;
 import com.travelmate.service.nft.PointService;
@@ -29,7 +30,7 @@ public class PointController {
     @GetMapping("/balance")
     public ResponseEntity<NftDto.PointBalanceResponse> getBalance(
             @AuthenticationPrincipal String userId) {
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         NftDto.PointBalanceResponse balance = pointService.getBalance(userIdLong);
         return ResponseEntity.ok(balance);
     }
@@ -42,7 +43,7 @@ public class PointController {
             @AuthenticationPrincipal String userId,
             @RequestParam(required = false) PointTransactionType type,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
 
         Page<NftDto.PointTransactionResponse> transactions;
         if (type != null) {
@@ -61,7 +62,7 @@ public class PointController {
     public ResponseEntity<Void> transferPoints(
             @AuthenticationPrincipal String userId,
             @Valid @RequestBody NftDto.PointTransferRequest request) {
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         pointService.transferPoints(userIdLong, request.getReceiverId(), request.getAmount(), request.getMessage());
         return ResponseEntity.ok().build();
     }
@@ -91,7 +92,7 @@ public class PointController {
      */
     @GetMapping("/rank")
     public ResponseEntity<Integer> getMyRank(@AuthenticationPrincipal String userId) {
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         int rank = pointService.getUserRank(userIdLong);
         return ResponseEntity.ok(rank);
     }
@@ -102,7 +103,7 @@ public class PointController {
     @GetMapping("/stats")
     public ResponseEntity<NftDto.PointBalanceResponse> getPointStats(
             @AuthenticationPrincipal String userId) {
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         NftDto.PointBalanceResponse stats = pointService.getPointStats(userIdLong);
         return ResponseEntity.ok(stats);
     }

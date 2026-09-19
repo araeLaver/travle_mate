@@ -4,20 +4,36 @@
  */
 
 import * as AuthSession from 'expo-auth-session';
-import * as Google from 'expo-auth-session/providers/google';
-import * as AppleAuthentication from 'expo-apple-authentication';
-import * as Crypto from 'expo-crypto';
-import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 import { apiClient } from './apiClient';
 
-// Google OAuth Config
-const GOOGLE_CLIENT_ID_IOS = 'YOUR_GOOGLE_IOS_CLIENT_ID';
-const GOOGLE_CLIENT_ID_ANDROID = 'YOUR_GOOGLE_ANDROID_CLIENT_ID';
-const GOOGLE_CLIENT_ID_WEB = 'YOUR_GOOGLE_WEB_CLIENT_ID';
+interface GoogleAuthConfig {
+  iosClientId?: string;
+  androidClientId?: string;
+  webClientId?: string;
+  expoClientId?: string;
+  scopes: string[];
+}
+
+const getConfiguredString = (envKey: string, extraKey: string): string | undefined => {
+  const envValue = process.env[envKey];
+  const extra = Constants.expoConfig?.extra as Record<string, unknown> | undefined;
+  const extraValue = extra?.[extraKey];
+  const value = typeof envValue === 'string' && envValue.trim()
+    ? envValue
+    : typeof extraValue === 'string'
+      ? extraValue
+      : undefined;
+
+  if (!value) return undefined;
+
+  const trimmed = value.trim();
+  return trimmed.startsWith('YOUR_') ? undefined : trimmed;
+};
 
 export interface SocialAuthResponse {
   accessToken: string;
-  refreshToken: string;
+  refreshToken?: string | null;
   user: {
     id: number;
     email: string;
@@ -52,23 +68,44 @@ class SocialAuthService {
   /**
    * Get Google auth request config
    */
-  getGoogleAuthConfig() {
+  getGoogleAuthConfig(): GoogleAuthConfig {
     return {
-      iosClientId: GOOGLE_CLIENT_ID_IOS,
-      androidClientId: GOOGLE_CLIENT_ID_ANDROID,
-      webClientId: GOOGLE_CLIENT_ID_WEB,
+      iosClientId: getConfiguredString('EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID', 'googleIosClientId'),
+      androidClientId: getConfiguredString(
+        'EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID',
+        'googleAndroidClientId'
+      ),
+      webClientId: getConfiguredString('EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID', 'googleWebClientId'),
+      expoClientId: getConfiguredString(
+        'EXPO_PUBLIC_GOOGLE_EXPO_CLIENT_ID',
+        'googleExpoClientId'
+      ),
       scopes: ['openid', 'profile', 'email'],
     };
+  }
+
+  isGoogleSignInConfigured(): boolean {
+    const config = this.getGoogleAuthConfig();
+    return Boolean(
+      config.iosClientId ||
+      config.androidClientId ||
+      config.webClientId ||
+      config.expoClientId
+    );
   }
 
   /**
    * Send Google OAuth token to backend for authentication
    */
-  async authenticateWithGoogle(idToken: string): Promise<SocialAuthResponse> {
-    const response = await apiClient.post<SocialAuthResponse>('/auth/oauth/google', {
-      idToken,
+  async authenticateWithGoogle(accessToken: string): Promise<SocialAuthResponse> {
+    const { deviceId, deviceName } = await apiClient.getDeviceContext();
+    const response = await apiClient.post<SocialAuthResponse>('/auth/oauth/login', {
+      accessToken,
       provider: 'google',
+      deviceId,
+      deviceName,
     });
+    this.assertRefreshToken(response);
     await apiClient.setTokens(response.accessToken, response.refreshToken);
     return response;
   }
@@ -87,68 +124,27 @@ class SocialAuthService {
    * Handle Google sign-in with access token (fallback if no idToken)
    */
   async handleGoogleAccessToken(accessToken: string): Promise<SocialAuthResponse> {
-    const userInfo = await this.getGoogleUserInfo(accessToken);
-    const response = await apiClient.post<SocialAuthResponse>('/auth/oauth/google', {
-      accessToken,
-      email: userInfo.email,
-      name: userInfo.name,
-      profileImageUrl: userInfo.picture,
-      provider: 'google',
-    });
-    await apiClient.setTokens(response.accessToken, response.refreshToken);
-    return response;
+    return this.authenticateWithGoogle(accessToken);
   }
 
   /**
    * Apple Sign In
    */
   async signInWithApple(): Promise<SocialAuthResponse> {
-    const nonce = await this.generateNonce();
-    const hashedNonce = await Crypto.digestStringAsync(
-      Crypto.CryptoDigestAlgorithm.SHA256,
-      nonce,
-    );
-
-    const credential = await AppleAuthentication.signInAsync({
-      requestedScopes: [
-        AppleAuthentication.AppleAuthenticationScope.EMAIL,
-        AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
-      ],
-      nonce: hashedNonce,
-    });
-
-    const response = await apiClient.post<SocialAuthResponse>('/auth/oauth/apple', {
-      identityToken: credential.identityToken,
-      authorizationCode: credential.authorizationCode,
-      fullName: credential.fullName
-        ? `${credential.fullName.givenName || ''} ${credential.fullName.familyName || ''}`.trim()
-        : undefined,
-      email: credential.email,
-      nonce,
-      provider: 'apple',
-    });
-
-    await apiClient.setTokens(response.accessToken, response.refreshToken);
-    return response;
+    throw new Error('Apple 로그인은 현재 서버에서 지원되지 않습니다.');
   }
 
   /**
    * Check if Apple Sign In is available
    */
   async isAppleSignInAvailable(): Promise<boolean> {
-    if (Platform.OS !== 'ios') return false;
-    return AppleAuthentication.isAvailableAsync();
+    return false;
   }
 
-  /**
-   * Generate random nonce for Apple Sign In
-   */
-  private async generateNonce(length: number = 32): Promise<string> {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    const randomBytes = await Crypto.getRandomBytesAsync(length);
-    return Array.from(randomBytes)
-      .map(byte => chars[byte % chars.length])
-      .join('');
+  private assertRefreshToken(response: SocialAuthResponse): void {
+    if (!response.refreshToken) {
+      throw new Error('모바일 소셜 로그인 응답에 refresh token이 없습니다.');
+    }
   }
 }
 

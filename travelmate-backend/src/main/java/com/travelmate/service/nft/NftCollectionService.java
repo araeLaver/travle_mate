@@ -4,6 +4,8 @@ import com.travelmate.config.CacheConfig;
 import com.travelmate.dto.NftDto;
 import com.travelmate.entity.User;
 import com.travelmate.entity.nft.*;
+import com.travelmate.exception.BusinessException;
+import com.travelmate.exception.ResourceNotFoundException;
 import com.travelmate.repository.UserRepository;
 import com.travelmate.repository.nft.CollectibleLocationRepository;
 import com.travelmate.repository.nft.UserNftCollectionRepository;
@@ -57,6 +59,19 @@ public class NftCollectionService {
                 : Set.of();
 
         return locations.map(loc -> toCollectibleLocationResponseWithSet(loc, collectedLocationIds, null));
+    }
+
+    /**
+     * 수집 가능 장소 상세 조회
+     */
+    @Transactional(readOnly = true)
+    public NftDto.CollectibleLocationResponse getCollectibleLocation(Long userId, Long locationId) {
+        CollectibleLocation location = collectibleLocationRepository.findById(locationId)
+                .filter(CollectibleLocation::getIsActive)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        String.format("수집 장소를 찾을 수 없습니다. ID: %d", locationId)));
+
+        return toCollectibleLocationResponse(location, userId, null);
     }
 
     /**
@@ -122,17 +137,17 @@ public class NftCollectionService {
                 .orElseThrow(() -> new com.travelmate.exception.BusinessException(com.travelmate.exception.ErrorCode.LOCATION_NOT_FOUND));
 
         if (!location.getIsActive()) {
-            throw new IllegalStateException("현재 수집이 불가능한 장소입니다");
+            throw BusinessException.conflict("현재 수집이 불가능한 장소입니다");
         }
 
         // 2. 시즌 이벤트 확인
         if (location.getIsSeasonalEvent()) {
             LocalDateTime now = LocalDateTime.now();
             if (location.getEventStartAt() != null && now.isBefore(location.getEventStartAt())) {
-                throw new IllegalStateException("이벤트가 아직 시작되지 않았습니다");
+                throw BusinessException.conflict("이벤트가 아직 시작되지 않았습니다");
             }
             if (location.getEventEndAt() != null && now.isAfter(location.getEventEndAt())) {
-                throw new IllegalStateException("이벤트가 종료되었습니다");
+                throw BusinessException.conflict("이벤트가 종료되었습니다");
             }
         }
 
@@ -140,7 +155,7 @@ public class NftCollectionService {
         boolean alreadyCollected = userNftCollectionRepository
                 .existsByUserIdAndLocationId(userId, location.getId());
         if (alreadyCollected) {
-            throw new IllegalStateException("이미 수집한 장소입니다");
+            throw BusinessException.conflict("이미 수집한 장소입니다");
         }
 
         // 4. GPS 검증 (GpsVerificationService 사용)

@@ -52,7 +52,7 @@ class TravelReviewServiceTest {
         matchRequest = MatchRequest.builder()
                 .requester(reviewer)
                 .receiver(reviewee)
-                .status(MatchStatus.MATCHED)
+                .status(MatchStatus.COMPLETED)
                 .build();
         setMatchId(matchRequest, 100L);
     }
@@ -106,11 +106,12 @@ class TravelReviewServiceTest {
             req.setRevieweeId(1L);
 
             assertThatThrownBy(() -> travelReviewService.createReview(1L, req))
-                    .isInstanceOf(BusinessException.class);
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(ex -> assertBusinessException(ex, 400, "CANNOT_REVIEW_SELF"));
         }
 
         @Test
-        @DisplayName("MATCHED가 아닌 매칭에 대해 실패")
+        @DisplayName("COMPLETED가 아닌 매칭에 대해 실패")
         void failNotMatched() {
             matchRequest = MatchRequest.builder()
                     .requester(reviewer).receiver(reviewee).status(MatchStatus.PENDING).build();
@@ -122,7 +123,31 @@ class TravelReviewServiceTest {
 
             assertThatThrownBy(() -> travelReviewService.createReview(1L, req))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("MATCHED");
+                    .hasMessageContaining("COMPLETED")
+                    .satisfies(ex -> assertBusinessException(ex, 400, "BAD_REQUEST"));
+        }
+
+        @Test
+        @DisplayName("레거시 MATCHED 상태 리뷰 작성 허용")
+        void successLegacyMatched() {
+            matchRequest.setStatus(MatchStatus.MATCHED);
+            var req = createRequest();
+            when(userRepository.findById(1L)).thenReturn(Optional.of(reviewer));
+            when(userRepository.findById(2L)).thenReturn(Optional.of(reviewee));
+            when(matchRequestRepository.findById(100L)).thenReturn(Optional.of(matchRequest));
+            when(travelReviewRepository.existsByReviewerIdAndMatchRequestId(1L, 100L)).thenReturn(false);
+            when(travelReviewRepository.save(any())).thenAnswer(i -> {
+                TravelReview r = i.getArgument(0);
+                setReviewId(r, 1L);
+                return r;
+            });
+            when(travelReviewRepository.getAverageScoreByRevieweeId(2L)).thenReturn(4.33);
+            when(travelReviewRepository.getReviewCountByRevieweeId(2L)).thenReturn(1);
+            when(userRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+            var result = travelReviewService.createReview(1L, req);
+
+            assertThat(result).isNotNull();
         }
 
         @Test
@@ -137,7 +162,8 @@ class TravelReviewServiceTest {
 
             assertThatThrownBy(() -> travelReviewService.createReview(99L, req))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("참여자");
+                    .hasMessageContaining("참여자")
+                    .satisfies(ex -> assertBusinessException(ex, 403, "FORBIDDEN"));
         }
 
         @Test
@@ -152,7 +178,8 @@ class TravelReviewServiceTest {
             when(matchRequestRepository.findById(100L)).thenReturn(Optional.of(matchRequest));
 
             assertThatThrownBy(() -> travelReviewService.createReview(1L, req))
-                    .isInstanceOf(BusinessException.class);
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(ex -> assertBusinessException(ex, 400, "BAD_REQUEST"));
         }
 
         @Test
@@ -165,7 +192,8 @@ class TravelReviewServiceTest {
             when(travelReviewRepository.existsByReviewerIdAndMatchRequestId(1L, 100L)).thenReturn(true);
 
             assertThatThrownBy(() -> travelReviewService.createReview(1L, req))
-                    .isInstanceOf(BusinessException.class);
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(ex -> assertBusinessException(ex, 409, "REVIEW_ALREADY_EXISTS"));
         }
     }
 
@@ -195,7 +223,8 @@ class TravelReviewServiceTest {
             when(userRepository.findById(999L)).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> travelReviewService.getReviewsForUser(999L))
-                    .isInstanceOf(BusinessException.class);
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(ex -> assertBusinessException(ex, 404, "USER_NOT_FOUND"));
         }
     }
 
@@ -220,7 +249,8 @@ class TravelReviewServiceTest {
             when(matchRequestRepository.findById(999L)).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> travelReviewService.getReviewsForMatch(999L))
-                    .isInstanceOf(BusinessException.class);
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(ex -> assertBusinessException(ex, 404, "NOT_FOUND"));
         }
     }
 
@@ -236,5 +266,11 @@ class TravelReviewServiceTest {
     private void setReviewId(TravelReview r, Long id) {
         try { var f = TravelReview.class.getDeclaredField("id"); f.setAccessible(true); f.set(r, id); }
         catch (Exception e) { throw new RuntimeException(e); }
+    }
+
+    private void assertBusinessException(Throwable throwable, int status, String errorCode) {
+        BusinessException exception = (BusinessException) throwable;
+        assertThat(exception.getStatus().value()).isEqualTo(status);
+        assertThat(exception.getErrorCodeStr()).isEqualTo(errorCode);
     }
 }

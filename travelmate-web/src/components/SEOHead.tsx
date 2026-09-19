@@ -10,7 +10,7 @@ interface SEOHeadProps {
 
 const SEOHead: React.FC<SEOHeadProps> = ({ title, description, canonical, noIndex, jsonLd }) => {
   React.useEffect(() => {
-    document.title = title ? `${title} | Fryndo` : 'Fryndo';
+    document.title = title ? `${title} | Doorimate` : 'Doorimate';
 
     const setMeta = (name: string, content: string) => {
       let el = document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement | null;

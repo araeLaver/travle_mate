@@ -293,8 +293,9 @@ class MarketplaceServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> marketplaceService.createListing(1L, request))
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessage("이미 판매 중인 NFT입니다");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessage("이미 판매 중인 NFT입니다")
+                    .satisfies(ex -> assertBusinessException(ex, 409, "CONFLICT"));
         }
     }
 
@@ -338,8 +339,9 @@ class MarketplaceServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> marketplaceService.buyNft(2L, 999L))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessage("판매 리스팅을 찾을 수 없습니다");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessage("판매 리스팅을 찾을 수 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 404, "C1002"));
         }
 
         @Test
@@ -351,8 +353,9 @@ class MarketplaceServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> marketplaceService.buyNft(2L, 1L))
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessage("판매 중인 NFT가 아닙니다");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessage("판매 중인 NFT가 아닙니다")
+                    .satisfies(ex -> assertBusinessException(ex, 409, "CONFLICT"));
         }
 
         @Test
@@ -365,8 +368,9 @@ class MarketplaceServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> marketplaceService.buyNft(2L, 1L))
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessage("판매 기간이 만료되었습니다");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessage("판매 기간이 만료되었습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 409, "CONFLICT"));
 
             // 상태가 EXPIRED로 변경되어야 함
             verify(marketplaceListingRepository).save(argThat(listing ->
@@ -381,8 +385,9 @@ class MarketplaceServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> marketplaceService.buyNft(1L, 1L))
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessage("본인의 NFT는 구매할 수 없습니다");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessage("본인의 NFT는 구매할 수 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 403, "FORBIDDEN"));
         }
 
         @Test
@@ -395,8 +400,9 @@ class MarketplaceServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> marketplaceService.buyNft(2L, 1L))
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessage("포인트가 부족합니다");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessage("포인트가 부족합니다")
+                    .satisfies(ex -> assertBusinessException(ex, 400, "BAD_REQUEST"));
         }
 
         @Test
@@ -452,8 +458,9 @@ class MarketplaceServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> marketplaceService.cancelListing(1L, 999L))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessage("판매 리스팅을 찾을 수 없습니다");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessage("판매 리스팅을 찾을 수 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 404, "C1002"));
         }
 
         @Test
@@ -464,8 +471,9 @@ class MarketplaceServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> marketplaceService.cancelListing(999L, 1L))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessage("해당 리스팅의 판매자가 아닙니다");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessage("해당 리스팅의 판매자가 아닙니다")
+                    .satisfies(ex -> assertBusinessException(ex, 403, "N5007"));
         }
 
         @Test
@@ -477,8 +485,9 @@ class MarketplaceServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> marketplaceService.cancelListing(1L, 1L))
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessage("취소할 수 없는 상태입니다");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessage("취소할 수 없는 상태입니다")
+                    .satisfies(ex -> assertBusinessException(ex, 409, "CONFLICT"));
         }
     }
 
@@ -634,5 +643,11 @@ class MarketplaceServiceTest {
             // 판매자: 10 - 1 = 9
             assertThat(savedUsers.get(1).getTotalNftsCollected()).isEqualTo(9);
         }
+    }
+
+    private void assertBusinessException(Throwable throwable, int status, String errorCode) {
+        BusinessException exception = (BusinessException) throwable;
+        assertThat(exception.getStatus().value()).isEqualTo(status);
+        assertThat(exception.getErrorCodeStr()).isEqualTo(errorCode);
     }
 }

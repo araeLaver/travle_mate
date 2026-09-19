@@ -1,5 +1,6 @@
 package com.travelmate.controller;
 
+import com.travelmate.security.AuthenticatedUserId;
 import com.travelmate.dto.TravelReviewDto;
 import com.travelmate.service.TravelReviewService;
 import jakarta.validation.Valid;
@@ -22,7 +23,7 @@ import java.util.List;
  * </ul>
  */
 @RestController
-@RequestMapping("/api/reviews")
+@RequestMapping("/reviews")
 @RequiredArgsConstructor
 @Slf4j
 public class TravelReviewController {
@@ -38,7 +39,7 @@ public class TravelReviewController {
             @Valid @RequestBody TravelReviewDto.CreateReviewRequest request,
             @AuthenticationPrincipal String userId) {
 
-        Long reviewerId = Long.parseLong(userId);
+        Long reviewerId = AuthenticatedUserId.parse(userId);
         TravelReviewDto.ReviewResponse response = travelReviewService.createReview(reviewerId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

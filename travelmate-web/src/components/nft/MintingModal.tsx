@@ -197,15 +197,15 @@ const MintingModal: React.FC<MintingModalProps> = ({
   const getRarityColor = (rarityName: string): string => {
     switch (rarityName.toUpperCase()) {
       case 'COMMON':
-        return '#9ca3af';
+        return '#8A8A95';
       case 'RARE':
-        return '#3b82f6';
+        return '#2E7DF6';
       case 'EPIC':
-        return '#8b5cf6';
+        return '#8B45E8';
       case 'LEGENDARY':
-        return '#f59e0b';
+        return '#E0952A';
       default:
-        return '#9ca3af';
+        return '#8A8A95';
     }
   };
 

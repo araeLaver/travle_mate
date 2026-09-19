@@ -1,6 +1,6 @@
 .leaderboard-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  background: linear-gradient(135deg, #101014 0%, #101014 100%);
   color: #fff;
   padding-bottom: 2rem;
 }
@@ -48,7 +48,7 @@
 .balance-card {
   margin: 1rem;
   padding: 1.5rem;
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  background: linear-gradient(135deg, #e0952a 0%, #c87f1f 100%);
   border-radius: 16px;
 }
 
@@ -128,7 +128,7 @@
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
-  color: #94a3b8;
+  color: #8a8a95;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
@@ -140,8 +140,8 @@
 }
 
 .tab-item.active {
-  color: #3b82f6;
-  border-bottom-color: #3b82f6;
+  color: #4a3aff;
+  border-bottom-color: #4a3aff;
 }
 
 .tab-item svg {
@@ -170,7 +170,7 @@
   background: transparent;
   border: none;
   border-radius: 10px;
-  color: #94a3b8;
+  color: #8a8a95;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
@@ -182,7 +182,7 @@
 }
 
 .toggle-btn.active {
-  background: #3b82f6;
+  background: #4a3aff;
   color: #fff;
 }
 
@@ -234,7 +234,7 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  background: linear-gradient(135deg, #4a3aff 0%, #4a3aff 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -271,14 +271,14 @@
 .user-nfts {
   display: block;
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: #8a8a95;
 }
 
 .user-points {
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  color: #f59e0b;
+  color: #e0952a;
   font-weight: 600;
   flex-shrink: 0;
 }
@@ -347,7 +347,7 @@
 
 .tx-date {
   font-size: 0.75rem;
-  color: #64748b;
+  color: #74747f;
 }
 
 .tx-amount {
@@ -357,11 +357,11 @@
 }
 
 .tx-amount.positive {
-  color: #22c55e;
+  color: #3f8f5f;
 }
 
 .tx-amount.negative {
-  color: #ef4444;
+  color: #b4453b;
 }
 
 /* Transfer Form */
@@ -380,7 +380,7 @@
 .form-group label {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #94a3b8;
+  color: #8a8a95;
 }
 
 .form-group input {
@@ -395,12 +395,12 @@
 
 .form-group input:focus {
   outline: none;
-  border-color: #3b82f6;
+  border-color: #4a3aff;
   background: rgba(255, 255, 255, 0.08);
 }
 
 .form-group input::placeholder {
-  color: #64748b;
+  color: #74747f;
 }
 
 .amount-input {
@@ -417,19 +417,19 @@
 .amount-input .unit {
   position: absolute;
   right: 1rem;
-  color: #94a3b8;
+  color: #8a8a95;
   font-weight: 500;
 }
 
 .balance-hint {
   font-size: 0.75rem;
-  color: #64748b;
+  color: #74747f;
 }
 
 .btn-send {
   margin-top: 0.5rem;
   padding: 1rem;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  background: linear-gradient(135deg, #4a3aff 0%, #2a1bc7 100%);
   border: none;
   border-radius: 12px;
   color: #fff;
@@ -445,7 +445,7 @@
 
 .btn-send:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+  box-shadow: 0 4px 15px rgba(74, 58, 255, 0.4);
 }
 
 .btn-send:disabled {
@@ -481,7 +481,7 @@
 .empty-state svg {
   width: 48px;
   height: 48px;
-  color: #64748b;
+  color: #74747f;
   margin-bottom: 1rem;
 }
 
@@ -491,7 +491,7 @@
 }
 
 .empty-state p {
-  color: #94a3b8;
+  color: #8a8a95;
   margin: 0;
   font-size: 0.875rem;
 }
@@ -507,7 +507,7 @@
   width: 32px;
   height: 32px;
   border: 3px solid rgba(255, 255, 255, 0.1);
-  border-top-color: #3b82f6;
+  border-top-color: #4a3aff;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }

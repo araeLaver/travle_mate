@@ -83,7 +83,20 @@ class UserBlockServiceTest {
 
             assertThatThrownBy(() -> userBlockService.blockUser(1L, req))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("자기 자신");
+                    .hasMessageContaining("자기 자신")
+                    .satisfies(ex -> assertBusinessException(ex, 400, "BAD_REQUEST"));
+        }
+
+        @Test
+        @DisplayName("차단자 없음은 404")
+        void failBlockerNotFound() {
+            var req = new UserBlockDto.BlockRequest();
+            req.setUserId(2L);
+            when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> userBlockService.blockUser(1L, req))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(ex -> assertBusinessException(ex, 404, "USER_NOT_FOUND"));
         }
 
         @Test
@@ -97,7 +110,8 @@ class UserBlockServiceTest {
 
             assertThatThrownBy(() -> userBlockService.blockUser(1L, req))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("이미 차단");
+                    .hasMessageContaining("이미 차단")
+                    .satisfies(ex -> assertBusinessException(ex, 409, "CONFLICT"));
         }
     }
 
@@ -122,7 +136,8 @@ class UserBlockServiceTest {
 
             assertThatThrownBy(() -> userBlockService.unblockUser(1L, 2L))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("차단하지 않은");
+                    .hasMessageContaining("차단하지 않은")
+                    .satisfies(ex -> assertBusinessException(ex, 404, "NOT_FOUND"));
         }
     }
 
@@ -158,7 +173,8 @@ class UserBlockServiceTest {
         @DisplayName("자기 토글 불가")
         void failSelf() {
             assertThatThrownBy(() -> userBlockService.toggleBlock(1L, 1L))
-                    .isInstanceOf(BusinessException.class);
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(ex -> assertBusinessException(ex, 400, "BAD_REQUEST"));
         }
     }
 
@@ -238,5 +254,11 @@ class UserBlockServiceTest {
     private void setBlockId(UserBlock b, Long id) {
         try { var f = UserBlock.class.getDeclaredField("id"); f.setAccessible(true); f.set(b, id); }
         catch (Exception e) { throw new RuntimeException(e); }
+    }
+
+    private void assertBusinessException(Throwable throwable, int status, String errorCode) {
+        BusinessException exception = (BusinessException) throwable;
+        assertThat(exception.getStatus().value()).isEqualTo(status);
+        assertThat(exception.getErrorCodeStr()).isEqualTo(errorCode);
     }
 }

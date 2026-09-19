@@ -16,18 +16,19 @@ public class RootController {
     @GetMapping("/")
     public Map<String, Object> root() {
         Map<String, Object> response = new HashMap<>();
-        response.put("service", "Fryndo API Server");
+        response.put("service", "Doorimate API Server");
         response.put("version", "1.0.0");
         response.put("status", "running");
         response.put("documentation", "/api/swagger-ui/index.html");
-        response.put("health", "/api/management/health");
+        response.put("health", "/api/health");
+        response.put("actuatorHealth", "/api/actuator/health");
         return response;
     }
 
     @GetMapping("/api")
     public Map<String, Object> apiRoot() {
         Map<String, Object> response = new HashMap<>();
-        response.put("service", "Fryndo API");
+        response.put("service", "Doorimate API");
         response.put("version", "1.0.0");
         response.put("documentation", "/api/swagger-ui/index.html");
         response.put("endpoints", Map.of(
@@ -35,7 +36,8 @@ public class RootController {
             "users", "/api/users",
             "trips", "/api/trips",
             "posts", "/api/posts",
-            "health", "/api/management/health"
+            "health", "/api/health",
+            "actuatorHealth", "/api/actuator/health"
         ));
         return response;
     }

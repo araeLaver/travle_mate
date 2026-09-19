@@ -41,7 +41,7 @@ public class ConversationService {
 
     /**
      * 대화 시작 (매칭된 pair만 가능, 중복 방지)
-     * - ACCEPTED 매칭이 존재해야 함
+     * - 수락되었거나 완료된 매칭이 존재해야 함
      * - 이미 대화가 있으면 기존 대화 반환
      */
     public ConversationDto.ConversationResponse startConversation(
@@ -54,8 +54,8 @@ public class ConversationService {
             throw new BusinessException(ErrorCode.INVALID_INPUT);
         }
 
-        // 매칭 확인: 두 사용자 간 ACCEPTED 매칭이 있어야 대화 시작 가능
-        boolean isMatched = matchRequestRepository.findAcceptedMatches(myUserId).stream()
+        // 매칭 확인: 두 사용자 간 수락/완료된 매칭이 있어야 대화 시작 가능
+        boolean isMatched = matchRequestRepository.findMatchHistory(myUserId).stream()
                 .anyMatch(mr -> {
                     Long otherId = mr.getRequester().getId().equals(myUserId)
                             ? mr.getReceiver().getId()

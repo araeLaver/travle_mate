@@ -1,5 +1,6 @@
 package com.travelmate.controller;
 
+import com.travelmate.security.AuthenticatedUserId;
 import com.travelmate.dto.NftDto;
 import com.travelmate.entity.nft.LocationCategory;
 import com.travelmate.entity.nft.Rarity;
@@ -32,10 +33,23 @@ public class NftController {
     public ResponseEntity<Page<NftDto.CollectibleLocationResponse>> getCollectibleLocations(
             @AuthenticationPrincipal String userId,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        Long userIdLong = userId != null ? Long.parseLong(userId) : null;
+        Long userIdLong = userId != null ? AuthenticatedUserId.parse(userId) : null;
         Page<NftDto.CollectibleLocationResponse> locations =
                 nftCollectionService.getCollectibleLocations(userIdLong, pageable);
         return ResponseEntity.ok(locations);
+    }
+
+    /**
+     * 수집 가능 장소 상세 조회
+     */
+    @GetMapping("/collectible-locations/{locationId}")
+    public ResponseEntity<NftDto.CollectibleLocationResponse> getCollectibleLocation(
+            @AuthenticationPrincipal String userId,
+            @PathVariable Long locationId) {
+        Long userIdLong = userId != null ? AuthenticatedUserId.parse(userId) : null;
+        NftDto.CollectibleLocationResponse location =
+                nftCollectionService.getCollectibleLocation(userIdLong, locationId);
+        return ResponseEntity.ok(location);
     }
 
     /**
@@ -47,7 +61,7 @@ public class NftController {
             @RequestParam Double latitude,
             @RequestParam Double longitude,
             @RequestParam(defaultValue = "5.0") Double radiusKm) {
-        Long userIdLong = userId != null ? Long.parseLong(userId) : null;
+        Long userIdLong = userId != null ? AuthenticatedUserId.parse(userId) : null;
         List<NftDto.CollectibleLocationResponse> locations =
                 nftCollectionService.getNearbyLocations(userIdLong, latitude, longitude, radiusKm);
         return ResponseEntity.ok(locations);
@@ -61,7 +75,7 @@ public class NftController {
             @AuthenticationPrincipal String userId,
             @PathVariable LocationCategory category,
             @PageableDefault(size = 20) Pageable pageable) {
-        Long userIdLong = userId != null ? Long.parseLong(userId) : null;
+        Long userIdLong = userId != null ? AuthenticatedUserId.parse(userId) : null;
         Page<NftDto.CollectibleLocationResponse> locations =
                 nftCollectionService.getLocationsByCategory(userIdLong, category, pageable);
         return ResponseEntity.ok(locations);
@@ -74,7 +88,7 @@ public class NftController {
     public ResponseEntity<NftDto.CollectNftResponse> collectNft(
             @AuthenticationPrincipal String userId,
             @Valid @RequestBody NftDto.CollectNftRequest request) {
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         NftDto.CollectNftResponse response = nftCollectionService.collectNft(userIdLong, request);
 
         if (response.getSuccess()) {
@@ -91,7 +105,7 @@ public class NftController {
     public ResponseEntity<Page<NftDto.UserNftCollectionResponse>> getMyCollection(
             @AuthenticationPrincipal String userId,
             @PageableDefault(size = 20, sort = "collectedAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         Page<NftDto.UserNftCollectionResponse> collection =
                 nftCollectionService.getMyCollection(userIdLong, pageable);
         return ResponseEntity.ok(collection);
@@ -105,7 +119,7 @@ public class NftController {
             @AuthenticationPrincipal String userId,
             @PathVariable Rarity rarity,
             @PageableDefault(size = 20) Pageable pageable) {
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         Page<NftDto.UserNftCollectionResponse> collection =
                 nftCollectionService.getMyCollectionByRarity(userIdLong, rarity, pageable);
         return ResponseEntity.ok(collection);
@@ -118,7 +132,7 @@ public class NftController {
     public ResponseEntity<NftDto.UserNftCollectionResponse> getNftDetail(
             @AuthenticationPrincipal String userId,
             @PathVariable Long collectionId) {
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         NftDto.UserNftCollectionResponse nft = nftCollectionService.getNftDetail(userIdLong, collectionId);
         return ResponseEntity.ok(nft);
     }
@@ -129,7 +143,7 @@ public class NftController {
     @GetMapping("/collection-book")
     public ResponseEntity<NftDto.CollectionBookResponse> getCollectionBook(
             @AuthenticationPrincipal String userId) {
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         NftDto.CollectionBookResponse collectionBook = nftCollectionService.getCollectionBook(userIdLong);
         return ResponseEntity.ok(collectionBook);
     }
@@ -140,7 +154,7 @@ public class NftController {
     @GetMapping("/stats")
     public ResponseEntity<NftDto.UserNftStatsResponse> getUserNftStats(
             @AuthenticationPrincipal String userId) {
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         NftDto.UserNftStatsResponse stats = nftCollectionService.getUserNftStats(userIdLong);
         return ResponseEntity.ok(stats);
     }

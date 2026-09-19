@@ -18,6 +18,8 @@ import java.util.Set;
  *   PENDING  → REJECTED
  *   PENDING  → CANCELLED
  *   ACCEPTED → CANCELLED
+ *   ACCEPTED → COMPLETED
+ *   MATCHED  → COMPLETED
  *   그 외    → IllegalStateException
  * </pre>
  *
@@ -31,8 +33,9 @@ public class MatchingStateGuard {
      *
      * <ul>
      *   <li>PENDING: ACCEPTED, REJECTED, CANCELLED 로 전이 가능</li>
-     *   <li>ACCEPTED: CANCELLED 로만 전이 가능</li>
-     *   <li>REJECTED, CANCELLED, EXPIRED: 종료 상태 — 추가 전이 불가</li>
+     *   <li>ACCEPTED: COMPLETED, CANCELLED 로 전이 가능</li>
+     *   <li>MATCHED: COMPLETED 로 전이 가능 (레거시 상태 호환)</li>
+     *   <li>COMPLETED, REJECTED, CANCELLED, EXPIRED: 종료 상태 — 추가 전이 불가</li>
      * </ul>
      */
     private static final Map<MatchStatus, Set<MatchStatus>> ALLOWED_TRANSITIONS = Map.of(
@@ -41,7 +44,10 @@ public class MatchingStateGuard {
                     MatchStatus.REJECTED,
                     MatchStatus.CANCELLED),
             MatchStatus.ACCEPTED, EnumSet.of(
-                    MatchStatus.CANCELLED)
+                    MatchStatus.COMPLETED,
+                    MatchStatus.CANCELLED),
+            MatchStatus.MATCHED, EnumSet.of(
+                    MatchStatus.COMPLETED)
     );
 
     /**

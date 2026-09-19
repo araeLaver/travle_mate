@@ -26,25 +26,25 @@ const SettingToggle: React.FC<SettingToggleProps> = ({
   return (
     <div className="flex items-center justify-between py-4">
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-gray-900">{label}</p>
-        <p className="text-sm text-gray-500">{description}</p>
+        <p className="text-sm font-bold text-ink">{label}</p>
+        <p className="text-sm text-[#74747F]">{description}</p>
       </div>
       <button
         type="button"
         onClick={() => onChange(!enabled)}
         disabled={disabled}
         className={`
-          ${enabled ? 'bg-indigo-600' : 'bg-gray-200'}
+          ${enabled ? 'bg-primary-500' : 'bg-sand-400'}
           ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-          relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2
+          relative inline-flex h-[29px] w-12 flex-shrink-0 rounded-[15px] border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
         `}
         role="switch"
         aria-checked={enabled}
       >
         <span
           className={`
-            ${enabled ? 'translate-x-5' : 'translate-x-0'}
-            pointer-events-none relative inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out
+            ${enabled ? 'translate-x-[19px]' : 'translate-x-0'}
+            pointer-events-none relative inline-block h-[25px] w-[25px] transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out
           `}
         />
       </button>
@@ -96,10 +96,10 @@ export const NotificationSettings: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Push Notification Toggle */}
-      <div className="bg-white shadow sm:rounded-lg">
+      <div className="bg-white shadow-[0_10px_30px_rgba(16,16,20,0.06)] sm:rounded-[18px]">
         <div className="px-4 py-5 sm:p-6">
-          <h3 className="text-lg font-medium leading-6 text-gray-900">푸시 알림</h3>
-          <div className="mt-2 max-w-xl text-sm text-gray-500">
+          <h3 className="text-lg font-extrabold tracking-tight leading-6 text-ink">푸시 알림</h3>
+          <div className="mt-2 max-w-xl text-sm text-[#74747F]">
             <p>
               {permission === 'granted'
                 ? '브라우저에서 알림 권한이 허용되었습니다.'
@@ -114,7 +114,7 @@ export const NotificationSettings: React.FC = () => {
                 type="button"
                 onClick={disableNotifications}
                 disabled={isLoading}
-                className="inline-flex items-center rounded-md border border-transparent bg-red-100 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
+                className="inline-flex items-center rounded-xl border border-[#F0D6D3] bg-white px-4 py-2 text-sm font-bold text-danger hover:bg-[#FBF0EF] focus:outline-none focus:ring-2 focus:ring-danger focus:ring-offset-2 disabled:opacity-50"
               >
                 {isLoading ? '처리 중...' : '알림 끄기'}
               </button>
@@ -123,7 +123,7 @@ export const NotificationSettings: React.FC = () => {
                 type="button"
                 onClick={enableNotifications}
                 disabled={isLoading || permission === 'denied'}
-                className="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+                className="inline-flex items-center rounded-xl border border-transparent bg-primary-500 px-4 py-2 text-sm font-bold text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50"
               >
                 {isLoading ? '처리 중...' : '알림 켜기'}
               </button>
@@ -134,12 +134,12 @@ export const NotificationSettings: React.FC = () => {
 
       {/* Notification Preferences */}
       {preferences && (
-        <div className="bg-white shadow sm:rounded-lg">
+        <div className="bg-white shadow-[0_10px_30px_rgba(16,16,20,0.06)] sm:rounded-[18px]">
           <div className="px-4 py-5 sm:p-6">
-            <h3 className="text-lg font-medium leading-6 text-gray-900">알림 유형</h3>
-            <p className="mt-1 text-sm text-gray-500">받고 싶은 알림 유형을 선택하세요.</p>
+            <h3 className="text-lg font-extrabold tracking-tight leading-6 text-ink">알림 유형</h3>
+            <p className="mt-1 text-sm text-[#74747F]">받고 싶은 알림 유형을 선택하세요.</p>
 
-            <div className="mt-6 divide-y divide-gray-200">
+            <div className="mt-6 divide-y divide-[#F2F1ED]">
               <SettingToggle
                 label="팔로우"
                 description="새로운 팔로워가 생기면 알림을 받습니다."
@@ -194,10 +194,12 @@ export const NotificationSettings: React.FC = () => {
 
       {/* Email Notifications */}
       {preferences && (
-        <div className="bg-white shadow sm:rounded-lg">
+        <div className="bg-white shadow-[0_10px_30px_rgba(16,16,20,0.06)] sm:rounded-[18px]">
           <div className="px-4 py-5 sm:p-6">
-            <h3 className="text-lg font-medium leading-6 text-gray-900">이메일 알림</h3>
-            <p className="mt-1 text-sm text-gray-500">중요한 알림을 이메일로도 받습니다.</p>
+            <h3 className="text-lg font-extrabold tracking-tight leading-6 text-ink">
+              이메일 알림
+            </h3>
+            <p className="mt-1 text-sm text-[#74747F]">중요한 알림을 이메일로도 받습니다.</p>
 
             <div className="mt-6">
               <SettingToggle

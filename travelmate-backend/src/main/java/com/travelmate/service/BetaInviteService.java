@@ -2,6 +2,7 @@ package com.travelmate.service;
 
 import com.travelmate.entity.BetaConfig;
 import com.travelmate.entity.BetaInvite;
+import com.travelmate.exception.BusinessException;
 import com.travelmate.repository.BetaConfigRepository;
 import com.travelmate.repository.BetaInviteRepository;
 import lombok.RequiredArgsConstructor;
@@ -43,7 +44,7 @@ public class BetaInviteService {
 
     public void consumeInvite(String inviteCode, Long userId) {
         BetaInvite invite = betaInviteRepository.findByInviteCode(inviteCode)
-                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 초대 코드입니다."));
+                .orElseThrow(() -> BusinessException.badRequest("유효하지 않은 초대 코드입니다."));
 
         invite.setStatus(BetaInvite.InviteStatus.USED);
         invite.setUsedByUserId(userId);
@@ -81,10 +82,10 @@ public class BetaInviteService {
 
     public void revokeInvite(String inviteCode) {
         BetaInvite invite = betaInviteRepository.findByInviteCode(inviteCode)
-                .orElseThrow(() -> new IllegalArgumentException("초대 코드를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.notFound("초대 코드를 찾을 수 없습니다."));
 
         if (invite.getStatus() == BetaInvite.InviteStatus.USED) {
-            throw new IllegalStateException("이미 사용된 초대 코드는 취소할 수 없습니다.");
+            throw BusinessException.conflict("이미 사용된 초대 코드는 취소할 수 없습니다.");
         }
 
         invite.setStatus(BetaInvite.InviteStatus.REVOKED);

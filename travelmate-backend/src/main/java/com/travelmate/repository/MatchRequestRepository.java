@@ -30,15 +30,15 @@ public interface MatchRequestRepository extends JpaRepository<MatchRequest, Long
             Long requesterId, MatchStatus status, Pageable pageable);
 
     @Query("SELECT mr FROM MatchRequest mr " +
-           "WHERE mr.status = 'ACCEPTED' " +
+           "WHERE mr.status IN ('ACCEPTED', 'MATCHED', 'COMPLETED') " +
            "AND (mr.requester.id = :userId OR mr.receiver.id = :userId) " +
-           "ORDER BY mr.respondedAt DESC")
-    List<MatchRequest> findAcceptedMatches(@Param("userId") Long userId);
+           "ORDER BY COALESCE(mr.respondedAt, mr.createdAt) DESC")
+    List<MatchRequest> findMatchHistory(@Param("userId") Long userId);
 
     @Query("SELECT CASE WHEN mr.requester.id = :userId THEN mr.receiver.id ELSE mr.requester.id END " +
            "FROM MatchRequest mr " +
            "WHERE (mr.requester.id = :userId OR mr.receiver.id = :userId) " +
-           "AND mr.status IN ('PENDING', 'ACCEPTED')")
+           "AND mr.status IN ('PENDING', 'ACCEPTED', 'MATCHED', 'COMPLETED')")
     List<Long> findMatchedOrRequestedUserIds(@Param("userId") Long userId);
 
     long countByReceiverIdAndStatus(Long receiverId, MatchStatus status);

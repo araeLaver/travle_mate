@@ -3,6 +3,7 @@ package com.travelmate.service.nft;
 import com.travelmate.dto.NftDto;
 import com.travelmate.entity.User;
 import com.travelmate.entity.nft.*;
+import com.travelmate.exception.BusinessException;
 import com.travelmate.repository.UserRepository;
 import com.travelmate.repository.nft.CollectibleLocationRepository;
 import com.travelmate.repository.nft.UserNftCollectionRepository;
@@ -272,8 +273,9 @@ class NftCollectionServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> nftCollectionService.collectNft(1L, request))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessageContaining("찾을 수 없습니다");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("수집 가능한 위치를 찾을 수 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 404, "N5001"));
         }
 
         @Test
@@ -291,8 +293,9 @@ class NftCollectionServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> nftCollectionService.collectNft(1L, request))
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessageContaining("수집이 불가능");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("수집이 불가능")
+                    .satisfies(ex -> assertBusinessException(ex, 409, "CONFLICT"));
         }
 
         @Test
@@ -309,8 +312,9 @@ class NftCollectionServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> nftCollectionService.collectNft(1L, request))
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessageContaining("이미 수집");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("이미 수집")
+                    .satisfies(ex -> assertBusinessException(ex, 409, "CONFLICT"));
         }
 
         @Test
@@ -356,8 +360,9 @@ class NftCollectionServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> nftCollectionService.collectNft(1L, request))
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessageContaining("시작되지 않았습니다");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("시작되지 않았습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 409, "CONFLICT"));
         }
 
         @Test
@@ -377,8 +382,9 @@ class NftCollectionServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> nftCollectionService.collectNft(1L, request))
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessageContaining("종료");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("종료")
+                    .satisfies(ex -> assertBusinessException(ex, 409, "CONFLICT"));
         }
     }
 
@@ -470,8 +476,9 @@ class NftCollectionServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> nftCollectionService.getNftDetail(1L, 999L))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessageContaining("찾을 수 없습니다");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("요청한 리소스를 찾을 수 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 404, "C1002"));
         }
 
         @Test
@@ -482,8 +489,9 @@ class NftCollectionServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> nftCollectionService.getNftDetail(999L, 1L))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessageContaining("접근 권한");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("접근 권한")
+                    .satisfies(ex -> assertBusinessException(ex, 403, "C1004"));
         }
     }
 
@@ -568,8 +576,15 @@ class NftCollectionServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> nftCollectionService.getUserNftStats(999L))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessageContaining("사용자를 찾을 수 없습니다");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("사용자를 찾을 수 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 404, "U2001"));
         }
+    }
+
+    private void assertBusinessException(Throwable throwable, int status, String errorCode) {
+        BusinessException exception = (BusinessException) throwable;
+        assertThat(exception.getStatus().value()).isEqualTo(status);
+        assertThat(exception.getErrorCodeStr()).isEqualTo(errorCode);
     }
 }

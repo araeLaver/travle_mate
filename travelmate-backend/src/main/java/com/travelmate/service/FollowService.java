@@ -4,6 +4,7 @@ import com.travelmate.config.CacheConfig;
 import com.travelmate.dto.FollowDto;
 import com.travelmate.entity.User;
 import com.travelmate.entity.UserFollow;
+import com.travelmate.exception.BusinessException;
 import com.travelmate.repository.UserFollowRepository;
 import com.travelmate.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -40,19 +41,19 @@ public class FollowService {
     public FollowDto.FollowResponse follow(Long followerId, Long followingId) {
         // 자기 자신을 팔로우 불가
         if (followerId.equals(followingId)) {
-            throw new IllegalArgumentException("자기 자신을 팔로우할 수 없습니다.");
+            throw BusinessException.badRequest("자기 자신을 팔로우할 수 없습니다.");
         }
 
         // 이미 팔로우 중인지 확인
         if (userFollowRepository.existsByFollowerIdAndFollowingId(followerId, followingId)) {
-            throw new IllegalStateException("이미 팔로우 중입니다.");
+            throw BusinessException.conflict("이미 팔로우 중입니다.");
         }
 
         // 사용자 조회
         User follower = userRepository.findById(followerId)
-                .orElseThrow(() -> new RuntimeException("팔로워를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.userNotFound(followerId));
         User following = userRepository.findById(followingId)
-                .orElseThrow(() -> new RuntimeException("팔로우할 사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.userNotFound(followingId));
 
         // 팔로우 생성
         UserFollow userFollow = UserFollow.builder()
@@ -93,14 +94,14 @@ public class FollowService {
     public FollowDto.FollowResponse unfollow(Long followerId, Long followingId) {
         // 팔로우 관계 확인
         if (!userFollowRepository.existsByFollowerIdAndFollowingId(followerId, followingId)) {
-            throw new IllegalStateException("팔로우 관계가 존재하지 않습니다.");
+            throw BusinessException.notFound("팔로우 관계가 존재하지 않습니다.");
         }
 
         // 언팔로우
         userFollowRepository.deleteByFollowerIdAndFollowingId(followerId, followingId);
 
         User following = userRepository.findById(followingId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.userNotFound(followingId));
 
         log.info("언팔로우 완료: {} -> {}", followerId, followingId);
 

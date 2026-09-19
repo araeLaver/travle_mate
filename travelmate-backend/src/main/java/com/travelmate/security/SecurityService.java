@@ -2,6 +2,7 @@ package com.travelmate.security;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
@@ -35,7 +36,7 @@ public class SecurityService {
         }
 
         try {
-            Long currentUserId = Long.parseLong(authentication.getName());
+            Long currentUserId = AuthenticatedUserId.parse(authentication);
             
             // 자신의 정보에만 접근 가능
             boolean hasAccess = currentUserId.equals(userId);
@@ -47,7 +48,7 @@ public class SecurityService {
             
             return hasAccess;
             
-        } catch (NumberFormatException e) {
+        } catch (AccessDeniedException e) {
             log.error("Invalid user ID format in authentication: {}", authentication.getName());
             return false;
         }
@@ -258,14 +259,14 @@ public class SecurityService {
         // 여기서는 추가적인 세션 검증 로직 구현
         
         try {
-            Long userId = Long.parseLong(authentication.getName());
+            Long userId = AuthenticatedUserId.parse(authentication);
             
             // 사용자가 활성 상태인지 확인
             // 실제 구현에서는 UserService를 통해 사용자 상태 확인
             
             return true;
             
-        } catch (NumberFormatException e) {
+        } catch (AccessDeniedException e) {
             log.error("Invalid user session format: {}", authentication.getName());
             return false;
         }

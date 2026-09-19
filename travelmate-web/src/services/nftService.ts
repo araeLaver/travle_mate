@@ -47,7 +47,9 @@ class NftService {
     page: number = 0,
     size: number = 20
   ): Promise<PaginatedResponse<CollectibleLocationResponse>> {
-    return apiClient.get(`/nft/locations/category/${category}?page=${page}&size=${size}`);
+    return apiClient.get(
+      `/nft/collectible-locations/category/${category}?page=${page}&size=${size}`
+    );
   }
 
   // ===== NFT 수집 =====

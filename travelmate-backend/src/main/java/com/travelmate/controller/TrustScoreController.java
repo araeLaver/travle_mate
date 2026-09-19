@@ -1,5 +1,6 @@
 package com.travelmate.controller;
 
+import com.travelmate.security.AuthenticatedUserId;
 import com.travelmate.entity.UserTrustScore;
 import com.travelmate.service.TrustScoreService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,7 +23,7 @@ public class TrustScoreController {
     @Operation(summary = "내 신뢰 점수 조회", description = "내 신뢰 점수와 등급을 조회합니다.")
     public ResponseEntity<TrustScoreResponse> getMyTrustScore(
             @AuthenticationPrincipal String userId) {
-        UserTrustScore score = trustScoreService.getTrustScore(Long.parseLong(userId));
+        UserTrustScore score = trustScoreService.getTrustScore(AuthenticatedUserId.parse(userId));
         return ResponseEntity.ok(TrustScoreResponse.from(score));
     }
 
@@ -38,7 +39,7 @@ public class TrustScoreController {
     @Operation(summary = "신뢰 점수 재계산", description = "내 신뢰 점수를 재계산합니다.")
     public ResponseEntity<TrustScoreResponse> recalculate(
             @AuthenticationPrincipal String userId) {
-        UserTrustScore score = trustScoreService.recalculate(Long.parseLong(userId));
+        UserTrustScore score = trustScoreService.recalculate(AuthenticatedUserId.parse(userId));
         return ResponseEntity.ok(TrustScoreResponse.from(score));
     }
 

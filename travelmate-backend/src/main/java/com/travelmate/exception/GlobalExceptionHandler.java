@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.net.SocketTimeoutException;
 import java.time.LocalDateTime;
@@ -34,7 +35,7 @@ public class GlobalExceptionHandler {
         log.error("Business exception: {}", ex.getMessage());
 
         ErrorResponse errorResponse = ErrorResponse.builder()
-                .code(ex.getErrorCode() != null ? ex.getErrorCode().getCode() : ErrorCode.INTERNAL_ERROR.getCode())
+                .code(ex.getErrorCodeStr())
                 .status(ex.getStatus().value())
                 .error(ex.getStatus().getReasonPhrase())
                 .message(ex.getMessage())
@@ -102,6 +103,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex, WebRequest request) {
         log.warn("Invalid argument: {}", ex.getMessage());
+
+        ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.INVALID_INPUT, getPath(request), ex.getMessage());
+        errorResponse.setTraceId(getTraceId());
+
+        return ResponseEntity.badRequest().body(errorResponse);
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalStateException(IllegalStateException ex, WebRequest request) {
+        log.warn("Invalid state: {}", ex.getMessage());
 
         ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.INVALID_INPUT, getPath(request), ex.getMessage());
         errorResponse.setTraceId(getTraceId());
@@ -194,6 +205,20 @@ public class GlobalExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(errorResponse);
+    }
+
+    /**
+     * 매핑되지 않은 경로는 404다. 이것이 없으면 아래 generic 핸들러가 500 + 전체 스택트레이스를 남기는데,
+     * 오타 URL이나 스캐너 한 번에 로그가 수만 줄로 불어나 CPU가 좁은 인스턴스에서는 그 자체가 장애가 된다.
+     */
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNoResourceFound(NoResourceFoundException ex, WebRequest request) {
+        log.warn("No handler for {} {}", ex.getHttpMethod(), ex.getResourcePath());
+
+        ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.RESOURCE_NOT_FOUND, getPath(request));
+        errorResponse.setTraceId(getTraceId());
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
     @ExceptionHandler(RuntimeException.class)

@@ -185,7 +185,7 @@ public class FileUploadService {
 
         // 파일 소유자 정보 저장
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+            .orElseThrow(() -> com.travelmate.exception.BusinessException.userNotFound(userId));
 
         UploadedFile uploadedFile = UploadedFile.builder()
             .user(user)

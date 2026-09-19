@@ -1,18 +1,15 @@
 import { followService } from './followService';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { authService } from './authService';
+import { apiClient } from './apiClient';
 
-// Mock fetch
-global.fetch = jest.fn();
-
-// Mock authService
-jest.mock('./authService', () => ({
-  authService: {
-    getToken: jest.fn(() => 'mock-token'),
+jest.mock('./apiClient', () => ({
+  apiClient: {
+    get: jest.fn(),
+    post: jest.fn(),
+    delete: jest.fn(),
   },
 }));
 
-const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
+const mockApiClient = apiClient as jest.Mocked<typeof apiClient>;
 
 describe('FollowService', () => {
   beforeEach(() => {
@@ -33,26 +30,20 @@ describe('FollowService', () => {
         },
       };
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-      } as Response);
+      mockApiClient.post.mockResolvedValueOnce(mockResponse);
 
       const result = await followService.follow(2);
 
       expect(result.success).toBe(true);
       expect(result.isFollowing).toBe(true);
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/users/2/follow'),
-        expect.objectContaining({ method: 'POST' })
-      );
+      expect(mockApiClient.post).toHaveBeenCalledWith('/users/2/follow');
     });
 
     it('should throw error on follow failure', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        json: async () => ({ message: '이미 팔로우 중입니다.' }),
-      } as Response);
+      mockApiClient.post.mockRejectedValueOnce({
+        message: '이미 팔로우 중입니다.',
+        status: 409,
+      });
 
       await expect(followService.follow(2)).rejects.toThrow('이미 팔로우 중입니다.');
     });
@@ -72,26 +63,20 @@ describe('FollowService', () => {
         },
       };
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-      } as Response);
+      mockApiClient.delete.mockResolvedValueOnce(mockResponse);
 
       const result = await followService.unfollow(2);
 
       expect(result.success).toBe(true);
       expect(result.isFollowing).toBe(false);
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/users/2/follow'),
-        expect.objectContaining({ method: 'DELETE' })
-      );
+      expect(mockApiClient.delete).toHaveBeenCalledWith('/users/2/follow');
     });
 
     it('should throw error on unfollow failure', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        json: async () => ({ message: '팔로우 관계가 존재하지 않습니다.' }),
-      } as Response);
+      mockApiClient.delete.mockRejectedValueOnce({
+        message: '팔로우 관계가 존재하지 않습니다.',
+        status: 404,
+      });
 
       await expect(followService.unfollow(2)).rejects.toThrow('팔로우 관계가 존재하지 않습니다.');
     });
@@ -118,25 +103,17 @@ describe('FollowService', () => {
         last: true,
       };
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-      } as Response);
+      mockApiClient.get.mockResolvedValueOnce(mockResponse);
 
       const result = await followService.getFollowers(2, 0, 20);
 
       expect(result.content).toHaveLength(1);
       expect(result.content[0].nickname).toBe('팔로워1');
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/users/2/followers?page=0&size=20'),
-        expect.any(Object)
-      );
+      expect(mockApiClient.get).toHaveBeenCalledWith('/users/2/followers?page=0&size=20');
     });
 
-    it('should throw error on failure', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-      } as Response);
+    it('should throw fallback error on failure without server message', async () => {
+      mockApiClient.get.mockRejectedValueOnce({ status: 500 });
 
       await expect(followService.getFollowers(2)).rejects.toThrow(
         '팔로워 목록을 불러오는데 실패했습니다.'
@@ -165,15 +142,13 @@ describe('FollowService', () => {
         last: true,
       };
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-      } as Response);
+      mockApiClient.get.mockResolvedValueOnce(mockResponse);
 
       const result = await followService.getFollowing(1, 0, 20);
 
       expect(result.content).toHaveLength(1);
       expect(result.content[0].nickname).toBe('팔로잉1');
+      expect(mockApiClient.get).toHaveBeenCalledWith('/users/1/following?page=0&size=20');
     });
   });
 
@@ -185,21 +160,17 @@ describe('FollowService', () => {
         followingCount: 50,
       };
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-      } as Response);
+      mockApiClient.get.mockResolvedValueOnce(mockResponse);
 
       const result = await followService.getFollowStats(1);
 
       expect(result.followerCount).toBe(100);
       expect(result.followingCount).toBe(50);
+      expect(mockApiClient.get).toHaveBeenCalledWith('/users/1/follow-stats');
     });
 
-    it('should throw error on failure', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-      } as Response);
+    it('should throw fallback error on failure without server message', async () => {
+      mockApiClient.get.mockRejectedValueOnce({ status: 500 });
 
       await expect(followService.getFollowStats(1)).rejects.toThrow(
         '팔로우 통계를 불러오는데 실패했습니다.'
@@ -216,16 +187,14 @@ describe('FollowService', () => {
         isMutual: true,
       };
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-      } as Response);
+      mockApiClient.get.mockResolvedValueOnce(mockResponse);
 
       const result = await followService.getFollowStatus(2);
 
       expect(result.isFollowing).toBe(true);
       expect(result.isFollowedBy).toBe(true);
       expect(result.isMutual).toBe(true);
+      expect(mockApiClient.get).toHaveBeenCalledWith('/users/2/follow-status');
     });
 
     it('should fetch follow status for one-way follow', async () => {
@@ -236,10 +205,7 @@ describe('FollowService', () => {
         isMutual: false,
       };
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-      } as Response);
+      mockApiClient.get.mockResolvedValueOnce(mockResponse);
 
       const result = await followService.getFollowStatus(2);
 
@@ -269,15 +235,13 @@ describe('FollowService', () => {
         last: true,
       };
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-      } as Response);
+      mockApiClient.get.mockResolvedValueOnce(mockResponse);
 
       const result = await followService.getMutualFollowers(1, 0, 20);
 
       expect(result.content).toHaveLength(1);
       expect(result.content[0].isMutual).toBe(true);
+      expect(mockApiClient.get).toHaveBeenCalledWith('/users/1/mutual-followers?page=0&size=20');
     });
   });
 
@@ -293,18 +257,12 @@ describe('FollowService', () => {
         last: true,
       };
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-      } as Response);
+      mockApiClient.get.mockResolvedValueOnce(mockResponse);
 
       const result = await followService.getMyFollowers(0, 20);
 
       expect(result.content).toHaveLength(0);
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/users/me/followers'),
-        expect.any(Object)
-      );
+      expect(mockApiClient.get).toHaveBeenCalledWith('/users/me/followers?page=0&size=20');
     });
   });
 
@@ -320,18 +278,12 @@ describe('FollowService', () => {
         last: true,
       };
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-      } as Response);
+      mockApiClient.get.mockResolvedValueOnce(mockResponse);
 
       const result = await followService.getMyFollowing(0, 20);
 
       expect(result.content).toHaveLength(0);
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/users/me/following'),
-        expect.any(Object)
-      );
+      expect(mockApiClient.get).toHaveBeenCalledWith('/users/me/following?page=0&size=20');
     });
   });
 
@@ -343,18 +295,12 @@ describe('FollowService', () => {
         followingCount: 5,
       };
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-      } as Response);
+      mockApiClient.get.mockResolvedValueOnce(mockResponse);
 
       const result = await followService.getMyFollowStats();
 
       expect(result.followerCount).toBe(10);
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/users/me/follow-stats'),
-        expect.any(Object)
-      );
+      expect(mockApiClient.get).toHaveBeenCalledWith('/users/me/follow-stats');
     });
   });
 
@@ -385,29 +331,20 @@ describe('FollowService', () => {
         },
       ];
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-      } as Response);
+      mockApiClient.post.mockResolvedValueOnce(mockResponse);
 
       const result = await followService.getFollowStatusBatch([2, 3]);
 
       expect(result).toHaveLength(2);
       expect(result[0].isFollowing).toBe(true);
       expect(result[1].isFollowedBy).toBe(true);
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/users/follow-status/batch'),
-        expect.objectContaining({
-          method: 'POST',
-          body: JSON.stringify({ userIds: [2, 3] }),
-        })
-      );
+      expect(mockApiClient.post).toHaveBeenCalledWith('/users/follow-status/batch', {
+        userIds: [2, 3],
+      });
     });
 
-    it('should throw error on failure', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-      } as Response);
+    it('should throw fallback error on failure without server message', async () => {
+      mockApiClient.post.mockRejectedValueOnce({ status: 500 });
 
       await expect(followService.getFollowStatusBatch([2, 3])).rejects.toThrow(
         '팔로우 상태를 확인하는데 실패했습니다.'
