@@ -77,6 +77,11 @@ public class AuthService {
             throw new UserException("비밀번호가 일치하지 않습니다.");
         }
 
+        // 탈퇴 처리된 계정은 자격 증명이 맞더라도 되살아나면 안 된다.
+        if (!Boolean.TRUE.equals(user.getIsActive())) {
+            throw new UserException("탈퇴했거나 사용할 수 없는 계정입니다.");
+        }
+
         // Access Token 생성
         String accessToken = jwtService.generateToken(user.getId(), user.getEmail());
 
@@ -107,6 +112,10 @@ public class AuthService {
         validateRefreshTokenDevice(refreshToken, deviceId);
 
         User user = refreshToken.getUser();
+
+        if (!Boolean.TRUE.equals(user.getIsActive())) {
+            throw new UserException("탈퇴했거나 사용할 수 없는 계정입니다.");
+        }
 
         // 새 Access Token 생성
         String newAccessToken = jwtService.generateToken(user.getId(), user.getEmail());

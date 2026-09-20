@@ -59,6 +59,9 @@ class UserServiceTest {
     @Mock
     private com.travelmate.repository.nft.UserPointRepository userPointRepository;
 
+    @Mock
+    private com.travelmate.repository.RefreshTokenRepository refreshTokenRepository;
+
     @InjectMocks
     private UserService userService;
 
@@ -531,7 +534,7 @@ class UserServiceTest {
     class DeleteUserTest {
 
         @Test
-        @DisplayName("성공 - 사용자 비활성화")
+        @DisplayName("성공 - 개인정보가 지워지고 세션이 끊긴다")
         void deleteUser_Success() {
             // Given
             when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
@@ -541,7 +544,35 @@ class UserServiceTest {
 
             // Then
             assertThat(testUser.getIsActive()).isFalse();
+            assertThat(testUser.getDeletionRequestedAt()).isNotNull();
             verify(userRepository).save(testUser);
+            verify(refreshTokenRepository).revokeAllByUser(testUser);
+        }
+
+        @Test
+        @DisplayName("성공 - 식별 가능한 값이 남지 않는다")
+        void deleteUser_ScrubsIdentifiers() {
+            // Given
+            when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+            String originalEmail = testUser.getEmail();
+            String originalNickname = testUser.getNickname();
+
+            // When
+            userService.deleteUser(1L);
+
+            // Then
+            assertThat(testUser.getEmail()).isNotEqualTo(originalEmail);
+            assertThat(testUser.getNickname()).isNotEqualTo(originalNickname);
+            assertThat(testUser.getFullName()).isNull();
+            assertThat(testUser.getAge()).isNull();
+            assertThat(testUser.getGender()).isNull();
+            assertThat(testUser.getBio()).isNull();
+            assertThat(testUser.getProfileImageUrl()).isNull();
+            assertThat(testUser.getPhoneNumber()).isNull();
+            assertThat(testUser.getFcmToken()).isNull();
+            assertThat(testUser.getProviderId()).isNull();
+            assertThat(testUser.getCurrentLatitude()).isNull();
+            assertThat(testUser.getCurrentLongitude()).isNull();
         }
     }
 

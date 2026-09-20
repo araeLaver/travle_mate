@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import com.travelmate.entity.UserReview;
 import com.travelmate.entity.BetaInvite;
@@ -44,6 +45,7 @@ public class UserService {
     private final BetaInviteService betaInviteService;
     private final UserTrustScoreRepository trustScoreRepository;
     private final com.travelmate.repository.nft.UserPointRepository userPointRepository;
+    private final com.travelmate.repository.RefreshTokenRepository refreshTokenRepository;
 
     public UserDto.Response registerUser(UserDto.RegisterRequest request) {
         // 베타 모드 체크
@@ -359,13 +361,52 @@ public class UserService {
         log.info("FCM 토큰 업데이트: User {}", userId);
     }
     
+    /**
+     * 계정 삭제 요청을 처리한다.
+     *
+     * 행(row) 자체는 남긴다. 그룹 멤버십·채팅 메시지·리뷰가 user_id를 외래키로 잡고 있어
+     * 하드 삭제하면 다른 사용자의 여행 기록까지 깨지기 때문이다. 대신 그 행에서 개인을
+     * 식별할 수 있는 값을 전부 지운다. Play의 계정 삭제 정책이 요구하는 것은 개인정보의
+     * 실제 제거이지 행의 물리적 삭제가 아니다.
+     *
+     * unique 제약이 걸린 email/nickname은 null로 둘 수 없으므로 식별 불가능한
+     * 플레이스홀더로 치환한다. 비밀번호는 복구 불가능한 난수로 덮어 재로그인을 막고,
+     * 발급된 리프레시 토큰은 전부 폐기해 기존 세션을 즉시 끊는다.
+     */
+    @Transactional
     public void deleteUser(Long userId) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new UserException("사용자를 찾을 수 없습니다."));
-        
+
+        String tombstone = "deleted-" + userId;
+
+        user.setEmail(tombstone + "@deleted.doorimate.local");
+        user.setNickname("탈퇴한 사용자 " + userId);
+        user.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
+        user.setFullName(null);
+        user.setAge(null);
+        user.setGender(null);
+        user.setProfileImageUrl(null);
+        user.setBio(null);
+        user.setTravelStyle(null);
+        user.setInterests(new ArrayList<>());
+        user.setLanguages(new ArrayList<>());
+        user.setCurrentLatitude(null);
+        user.setCurrentLongitude(null);
+        user.setPhoneNumber(null);
+        user.setPhoneVerified(false);
+        user.setFcmToken(null);
+        user.setProviderId(null);
+        user.setIsLocationEnabled(false);
+        user.setIsMatchingEnabled(false);
+        user.setIsEmailVerified(false);
         user.setIsActive(false);
+        user.setDeletionRequestedAt(LocalDateTime.now());
+
         userRepository.save(user);
-        log.info("사용자 계정 비활성화: {}", userId);
+        refreshTokenRepository.revokeAllByUser(user);
+
+        log.info("사용자 계정 삭제 처리 완료: {}", userId);
     }
     
     public UserDto.ReportResponse reportUser(Long reporterId, UserDto.ReportRequest request) {
