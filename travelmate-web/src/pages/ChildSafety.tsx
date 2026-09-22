@@ -137,7 +137,10 @@ const ChildSafety: React.FC = () => (
       </section>
 
       <section className="mt-14 rounded-[24px] bg-ink p-7 text-white md:p-10">
-        <h2 className="font-display text-2xl font-black tracking-tight md:text-3xl">운영 책임자</h2>
+        {/* index.css의 h1~h6 기본 색이 상속색을 이기므로 어두운 배경에서는 직접 지정한다 */}
+        <h2 className="font-display text-2xl font-black tracking-tight text-white md:text-3xl">
+          운영 책임자
+        </h2>
         <p className="mt-4 text-base leading-8 text-[#A0A0AC]">
           두리메이트(Doorimate) · 아동 안전 담당 연락처
         </p>

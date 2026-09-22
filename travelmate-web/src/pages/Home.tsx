@@ -23,7 +23,7 @@ const navItems = [
   { label: '테스터 모집', href: '#tester' },
 ];
 
-const trustSignals = ['검증 프로필 우선', '일정 기반 매칭', '대화 전 안전 신호', '공개 베타 운영'];
+const trustSignals = ['검증 프로필 우선', '일정 기반 매칭', '대화 전 안전 신호', '만 18세 이상'];
 
 const featureCards = [
   {
@@ -310,7 +310,9 @@ const Home: React.FC = () => {
                   <div className="mb-5 flex h-9 w-9 items-center justify-center rounded-full bg-primary-400 font-display text-lg font-black text-[#0C0C11]">
                     {index + 1}
                   </div>
-                  <h3 className="font-display text-3xl font-black tracking-tight">{item.title}</h3>
+                  <h3 className="font-display text-3xl font-black tracking-tight text-white">
+                    {item.title}
+                  </h3>
                   <p className="mt-3 text-base leading-7 text-[#A0A0AC]">{item.body}</p>
                 </div>
               ))}
@@ -355,7 +357,8 @@ const Home: React.FC = () => {
                 <p className="text-sm font-extrabold uppercase tracking-[0.32em] text-primary-400">
                   Closed test
                 </p>
-                <h2 className="mt-4 max-w-3xl font-display text-3xl font-black leading-[1.1] tracking-tight md:text-[36px]">
+                {/* index.css의 h1~h6 기본 색이 상속색을 이기므로 어두운 배경에서는 직접 지정한다 */}
+                <h2 className="mt-4 max-w-3xl font-display text-3xl font-black leading-[1.1] tracking-tight text-white md:text-[36px]">
                   정식 출시 전에 먼저 써 주실 분을 찾습니다.
                 </h2>
                 <p className="mt-5 max-w-2xl text-base leading-8 text-[#A0A0AC]">

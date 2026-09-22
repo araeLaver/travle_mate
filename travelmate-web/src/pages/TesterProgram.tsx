@@ -137,7 +137,8 @@ const TesterProgram: React.FC = () => (
         <p className="text-sm font-extrabold uppercase tracking-[0.32em] text-primary-400">
           Join the closed test
         </p>
-        <h2 className="mt-4 font-display text-3xl font-black tracking-tight md:text-4xl">
+        {/* index.css의 h1~h6 기본 색(text-gray-900)이 상속색을 이기므로 어두운 배경에서는 직접 지정한다 */}
+        <h2 className="mt-4 font-display text-3xl font-black tracking-tight text-white md:text-4xl">
           안드로이드 폰에서 이 버튼을 눌러주세요.
         </h2>
         <p className="mt-4 text-base leading-7 text-[#A0A0AC]">
