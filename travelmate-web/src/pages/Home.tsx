@@ -20,6 +20,7 @@ const navItems = [
   { label: '왜 두리메이트인가', href: '#why' },
   { label: '안전 기준', href: '#safety' },
   { label: '사용 방법', href: '#how' },
+  { label: '테스터 모집', href: '#tester' },
 ];
 
 const trustSignals = ['검증 프로필 우선', '일정 기반 매칭', '대화 전 안전 신호', '공개 베타 운영'];
@@ -128,9 +129,11 @@ const Home: React.FC = () => {
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary-500 opacity-60" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-primary-500" />
                 </span>
-                <span className="text-sm font-bold text-primary-600">공개 베타 출시 중</span>
+                <span className="text-sm font-bold text-primary-600">
+                  안드로이드 테스터 모집 중
+                </span>
                 <span className="hidden text-sm font-semibold text-[#4A4A55] sm:inline">
-                  일정 기반 여행 동행 매칭
+                  정식 출시 준비 단계
                 </span>
               </div>
 
@@ -345,23 +348,27 @@ const Home: React.FC = () => {
           </div>
         </section>
 
-        <section className="px-4 pb-20 md:px-8 md:pb-28">
+        <section id="tester" className="px-4 pb-20 md:px-8 md:pb-28">
           <div className="mx-auto max-w-7xl overflow-hidden rounded-[24px] bg-ink p-8 text-white md:p-14">
             <div className="grid gap-10 md:grid-cols-[1fr_auto] md:items-center">
               <div>
                 <p className="text-sm font-extrabold uppercase tracking-[0.32em] text-primary-400">
-                  Launch Beta
+                  Closed test
                 </p>
                 <h2 className="mt-4 max-w-3xl font-display text-3xl font-black leading-[1.1] tracking-tight md:text-[36px]">
-                  지금 공개 베타에서 첫 여행 메이트를 찾아보세요.
+                  정식 출시 전에 먼저 써 주실 분을 찾습니다.
                 </h2>
+                <p className="mt-5 max-w-2xl text-base leading-8 text-[#A0A0AC]">
+                  안드로이드 폰만 있으면 됩니다. 참여 버튼을 누르고 설치한 뒤 2주만 그대로 두시면
+                  되고, 매일 쓰실 필요는 없습니다.
+                </p>
               </div>
               <div className="flex flex-col gap-3 sm:flex-row md:flex-col">
                 <Link
-                  to="/register"
+                  to="/tester"
                   className="inline-flex h-[58px] items-center justify-center gap-3 rounded-[15px] bg-white px-7 font-extrabold text-ink transition hover:bg-sand-100"
                 >
-                  무료로 시작하기
+                  테스터로 참여하기
                   <ArrowRightIcon className="h-5 w-5" />
                 </Link>
                 <Link
@@ -382,18 +389,24 @@ const Home: React.FC = () => {
             <Logo variant="gradient" size="sm" />
             <span className="text-xl font-extrabold tracking-tight text-ink">Doorimate</span>
             <span className="rounded-full bg-sand-100 px-3 py-1 text-xs font-extrabold text-[#74747F]">
-              Public Beta
+              Closed Test
             </span>
           </div>
           <div className="flex flex-wrap gap-5 text-[13px] font-semibold text-[#74747F]">
             <Link to="/about" className="hover:text-ink">
               소개
             </Link>
-            <Link to="/groups" className="hover:text-ink">
-              그룹
+            <Link to="/tester" className="hover:text-ink">
+              테스터 참여
             </Link>
             <Link to="/legal" className="hover:text-ink">
               약관/개인정보
+            </Link>
+            <Link to="/child-safety" className="hover:text-ink">
+              아동 안전 기준
+            </Link>
+            <Link to="/account-deletion" className="hover:text-ink">
+              계정 삭제
             </Link>
           </div>
           <p className="text-[13px] font-semibold text-[#9A9AA4]">

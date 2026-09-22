@@ -23,6 +23,8 @@ const Home = lazy(() => import('./pages/Home'));
 const About = lazy(() => import('./pages/About'));
 const Legal = lazy(() => import('./pages/Legal'));
 const AccountDeletion = lazy(() => import('./pages/AccountDeletion'));
+const TesterProgram = lazy(() => import('./pages/TesterProgram'));
+const ChildSafety = lazy(() => import('./pages/ChildSafety'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const Portfolio = lazy(() => import('./pages/Portfolio'));
 const Login = lazy(() => import('./pages/Login'));
@@ -117,6 +119,8 @@ function App() {
                     <Route path="/about" element={<About />} />
                     <Route path="/legal" element={<Legal />} />
                     <Route path="/account-deletion" element={<AccountDeletion />} />
+                    <Route path="/tester" element={<TesterProgram />} />
+                    <Route path="/child-safety" element={<ChildSafety />} />
                     <Route path="/portfolio" element={<Portfolio />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
