@@ -47,7 +47,7 @@
 
 | 항목 | 상태 | 답변 |
 |---|---|---|
-| 개인정보처리방침 | ✅ | `https://fryndo-web.vercel.app/legal` |
+| 개인정보처리방침 | ✅ | `https://doorimate.co.kr/legal` |
 | 광고 | ✅ | 아니요, 앱에 광고가 없습니다 (`.aab`에 `AD_ID` 권한·광고 SDK 없음) |
 | 정부 앱 | ✅ | 아니요 |
 | 건강 | ◐ | "앱에 건강 기능이 없음" 체크까지 했으나 `다음` 버튼이 반응하지 않아 미완 |
@@ -115,7 +115,7 @@ canonical·og:url이 제3자 서비스인 `fryndo.com`을 가리키고 있었다
 
 **스토어 URL은 일부러 되돌렸다** (커밋 `c99b543`): `store/metadata.json`의 support/privacy/terms/marketing이 리브랜딩 일괄 치환으로
 아직 등록도 안 된 `doorimate.com`을 가리키게 됐는데, **Play는 개인정보처리방침 URL의 접속 가능 여부를 검사**하므로
-도메인이 살아날 때까지 `https://fryndo-web.vercel.app/legal`로 유지한다. `eas.json`의 preview 프로파일도 같은 이유로
+도메인이 살아날 때까지 `https://doorimate.co.kr/legal`로 유지한다. `eas.json`의 preview 프로파일도 같은 이유로
 `staging-api.doorimate.com` 대신 Koyeb 주소를 직접 호출한다(production 프로파일은 `api.doorimate.com` 유지 — 어차피 도메인 대기).
 
 **⚠️ 백엔드 콜드스타트 342초** (2026-09-13 실측, Koyeb 런타임 로그): 딥슬립에서 깨어난 인스턴스가
@@ -130,7 +130,7 @@ Vercel 프로젝트(`prj_PdEZ…`)에 현재 붙은 도메인은 자동 발급 `
 
 ## 2026-09-14 진행 (웹 라이브 배포 + 백엔드 성능 결함 3건 수정)
 
-**웹 라이브 반영 완료** — `fryndo-web.vercel.app`이 두리메이트 브랜드로 서빙된다.
+**웹 라이브 반영 완료** — `doorimate.co.kr`이 두리메이트 브랜드로 서빙된다. 기존 `fryndo-web.vercel.app`도 계속 살아 있다.
 막혔던 원인은 **Vercel Hobby 플랜의 커밋 작성자 규칙**이었다: 비공개 리포는 **커밋 author가 Hobby 팀 소유자
 (`araelaver@gmail.com`)여야** 배포가 돈다. 다른 이메일로 커밋하면 빌드조차 시작되지 않고 `state: BLOCKED`로 떨어진다
 (빌드 로그 0건, errorLink는 troubleshoot-project-collaboration#account-configuration). 09-05 배포가 성공했던 건
@@ -182,7 +182,7 @@ Vercel 프로젝트(`prj_PdEZ…`)에 현재 붙은 도메인은 자동 발급 `
   - 서비스 계정 `fryndo-play-publisher@fryndo-23e4a.iam.gserviceaccount.com`, 키는 `travelmate-mobile/google-play-service-account.json`(gitignore, `eas.json`이 참조)
   - Play Console → 사용자 및 권한에서 위 이메일 초대, Fryndo 앱 권한 7개 부여
   - 업로드: `rtk proxy npx --yes eas-cli@23.2.0 submit --platform android --profile preview --id <buildId> --non-interactive` (preview 프로파일 = internal 트랙)
-- **앱 콘텐츠 선언 10건 전부 완료**. 오늘 마무리한 것: 광고 ID 선언(=아니요. `.aab` 매니페스트에 `AD_ID` 권한도 광고 SDK도 없음을 확인), 개인정보처리방침 URL을 `fryndo.com/privacy`(웹에 라우트 없음 → 파킹 페이지)에서 실제로 살아있는 `https://fryndo-web.vercel.app/legal`로 교정. **DNS 연결 후 `https://fryndo.com/legal`로 다시 바꿀 것.**
+- **앱 콘텐츠 선언 10건 전부 완료**. 오늘 마무리한 것: 광고 ID 선언(=아니요. `.aab` 매니페스트에 `AD_ID` 권한도 광고 SDK도 없음을 확인), 개인정보처리방침 URL을 `fryndo.com/privacy`(웹에 라우트 없음 → 파킹 페이지)에서 실제로 살아있는 `https://doorimate.co.kr/legal`로 교정. **DNS 연결 후 `https://fryndo.com/legal`로 다시 바꿀 것.**
 - **프로덕션까지 남은 관문(시간 소요)**: 개인 개발자 계정은 프로덕션 액세스 신청 전에 **12명 이상 테스터로 14일 이상 비공개 테스트**를 실행해야 한다. 내부 테스트는 이 요건에 산입되지 않는다.
 
 ## 2026-09-05 진행 (마퀴 스크린샷 + 런칭 버그 3건 수정)

@@ -13,7 +13,7 @@
 
 | 항목 | 답변 |
 |---|---|
-| 개인정보처리방침 | `https://fryndo-web.vercel.app/legal` |
+| 개인정보처리방침 | `https://doorimate.co.kr/legal` |
 | 광고 | 아니요, 앱에 광고가 없습니다 |
 | 정부 앱 | 아니요 |
 | 건강 | 앱에 건강 기능이 없음 |
@@ -106,7 +106,7 @@ curl -s -o /dev/null -w "%{http_code}\n" --max-time 120 \
 - **전송 중 암호화 → 예** (모든 API가 HTTPS)
 - **계정 생성 방법 → 사용자 이름 및 비밀번호 + OAuth**
   (`GoogleAuthButton.tsx`, `socialAuthService.ts` — 구글 로그인이 실제로 붙어 있다)
-- **계정 삭제 URL → `https://fryndo-web.vercel.app/account-deletion`**
+- **계정 삭제 URL → `https://doorimate.co.kr/account-deletion`**
 - **계정을 삭제하지 않고 일부 데이터만 삭제 → 아니요** (앱은 전체 삭제만 지원)
 
 ### 수집 항목 (Play 분류 기준으로 실제 입력한 값)

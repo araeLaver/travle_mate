@@ -16,44 +16,51 @@
     @apply bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans antialiased;
   }
 
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
+  /*
+   * :where()로 감싸 특이도를 0으로 만든다.
+   *
+   * 그냥 `h1 { @apply dark:text-gray-100 }`로 두면 `.dark h1`(클래스+요소)로 컴파일돼
+   * `.text-ink`(클래스 하나)보다 특이도가 높아진다. 그 결과 다크 모드에서 제목에 붙인
+   * 색 유틸리티가 전부 무시되고 흰 글씨가 되는데, 랜딩/약관 페이지는 배경을 밝은색으로
+   * 고정해 두기 때문에 흰 배경에 흰 글씨가 됐다.
+   *
+   * 크기도 같이 감싼다. 특이도가 섞이면 `text-[42px]` 같은 임의값도 같은 이유로 진다.
+   */
+  :where(h1, h2, h3, h4, h5, h6) {
     @apply font-bold text-gray-900 dark:text-gray-100;
   }
 
-  h1 {
+  :where(h1) {
     @apply text-4xl md:text-5xl lg:text-6xl;
   }
 
-  h2 {
+  :where(h2) {
     @apply text-3xl md:text-4xl lg:text-5xl;
   }
 
-  h3 {
+  :where(h3) {
     @apply text-2xl md:text-3xl;
   }
 
-  h4 {
+  :where(h4) {
     @apply text-xl md:text-2xl;
   }
 
-  h5 {
+  :where(h5) {
     @apply text-lg md:text-xl;
   }
 
-  h6 {
+  :where(h6) {
     @apply text-base md:text-lg;
   }
 
-  p {
+  /* 제목과 같은 이유로 :where()를 쓴다. 이게 없으면 다크 모드에서 .dark p 가
+     text-[#4A4A55] 같은 유틸리티를 이겨서 본문 색이 통째로 바뀐다. */
+  :where(p) {
     @apply text-gray-600 dark:text-gray-400;
   }
 
-  a {
+  :where(a) {
     @apply text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors;
   }
 }

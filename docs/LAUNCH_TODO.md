@@ -84,7 +84,7 @@
 
 - 제3자와 공유 → **아니요**
 - 전송 중 암호화 → **예**
-- 계정 삭제 URL → `https://fryndo-web.vercel.app/account-deletion` (오늘 만들어 배포했다)
+- 계정 삭제 URL → `https://doorimate.co.kr/account-deletion` (오늘 만들어 배포했다)
 
 ---
 
@@ -164,7 +164,7 @@ travelmate-mobile/store/screenshots/android/phone_play/
 > 같은 이메일로 재로그인 → **404 "사용자를 찾을 수 없습니다"**. 이메일 자체가 지워져서
 > 계정에 다시 닿을 수 없는 상태가 맞다.
 
-**계정 삭제 안내 페이지 제작·배포** — `https://fryndo-web.vercel.app/account-deletion`
+**계정 삭제 안내 페이지 제작·배포** — `https://doorimate.co.kr/account-deletion`
 데이터 보안 선언에 이 URL이 필수라서 만들었다. 앱 내 삭제 절차, 이메일 요청 경로,
 지워지는 항목, 남는 항목과 보관 기간(신고 3년 / 접속 로그 90일)을 적었다.
 

@@ -16,9 +16,9 @@
 | 구성 | 주소 | 상태 |
 |---|---|---|
 | 백엔드 | `https://fryndo-untab-f93a6aa7.koyeb.app/api` | 정상 (Koyeb 무료, fra) |
-| 웹 | `https://fryndo-web.vercel.app` | 정상 (Vercel Hobby) |
-| 계정 삭제 안내 | `https://fryndo-web.vercel.app/account-deletion` | 정상 |
-| 개인정보 안내 | `https://fryndo-web.vercel.app/legal` | 정상 |
+| 웹 | `https://doorimate.co.kr` | 정상 (Vercel Hobby) |
+| 계정 삭제 안내 | `https://doorimate.co.kr/account-deletion` | 정상 |
+| 개인정보 안내 | `https://doorimate.co.kr/legal` | 정상 |
 | 안드로이드 | `com.doorimate.app` vc8 | 내부 테스트 트랙 업로드됨 |
 
 ### 알아둘 제약 — 무료 티어 절전
@@ -47,7 +47,7 @@
 
 | 항목 | 답변 |
 |---|---|
-| 개인정보처리방침 | `https://fryndo-web.vercel.app/legal` |
+| 개인정보처리방침 | `https://doorimate.co.kr/legal` |
 | 광고 | 아니요, 앱에 광고가 없습니다 |
 | 정부 앱 | 아니요 |
 | 건강 | 앱에 건강 기능이 없음 |
@@ -97,7 +97,7 @@
 
 데이터 보안 선언에 **공개 URL이 필수**다. 앱 이름, 앱 내 삭제 절차, 이메일 요청 경로,
 지워지는 항목, 남는 항목과 보관 기간(신고 3년 / 접속 로그 90일)을 적어 만들고 배포했다.
-→ `https://fryndo-web.vercel.app/account-deletion`
+→ `https://doorimate.co.kr/account-deletion`
 
 ### 안 쓰는 권한이 선언 2건을 만들고 있었다
 

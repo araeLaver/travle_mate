@@ -194,9 +194,14 @@ const Home: React.FC = () => {
               transition={{ duration: 0.75, delay: 0.1, ease: 'easeOut' }}
               className="relative"
             >
-              <div className="absolute -left-6 top-14 z-10 hidden rounded-[18px] bg-ink px-6 py-5 text-white shadow-[0_10px_30px_rgba(16,16,20,0.25)] md:block">
+              {/* 카드 위쪽 모서리에 걸치게 둔다. top-14였을 때는 이 뱃지가 카드 제목을 덮어
+                  "서울 → 후쿠오카"가 "후쿠오카"로, 부제가 "행 · 오전형"으로 잘려 보였다. */}
+              <div className="absolute -left-6 -top-10 z-10 hidden rounded-[18px] bg-ink px-6 py-5 text-white shadow-[0_10px_30px_rgba(16,16,20,0.25)] lg:block">
                 <p className="text-sm font-bold text-[#A0A0AC]">오늘의 매칭 기준</p>
-                <p className="mt-1 font-display text-3xl font-black tracking-tight">일정 + 신뢰</p>
+                {/* :where(p) 기본색이 상속색을 이기므로 어두운 배경에서는 직접 지정한다 */}
+                <p className="mt-1 font-display text-3xl font-black tracking-tight text-white">
+                  일정 + 신뢰
+                </p>
               </div>
 
               <div className="rounded-[20px] bg-white p-5 shadow-[0_10px_30px_rgba(16,16,20,0.1)] md:p-7">
