@@ -61,7 +61,7 @@ const reportChannels = [
 ];
 
 const ChildSafety: React.FC = () => (
-  <div className="min-h-screen bg-sand-100 text-ink selection:bg-primary-500 selection:text-white">
+  <div className="light-surface min-h-screen bg-sand-100 text-ink selection:bg-primary-500 selection:text-white">
     <header className="border-b border-[#F2F1ED] bg-white">
       <div className="mx-auto flex h-[76px] max-w-5xl items-center justify-between px-4 md:px-8">
         <Link to="/" className="flex items-center gap-3" aria-label="두리메이트 홈">

@@ -67,6 +67,25 @@
 
 /* Custom Component Styles */
 @layer components {
+  /*
+   * 랜딩·약관·테스터 안내처럼 배경을 밝은색으로 고정한 페이지에 붙인다.
+   *
+   * 이 페이지들은 다크 테마 대응이 없어서 배경이 항상 bg-sand-100/bg-white다.
+   * 그런데 base의 :where(h1…)·:where(p)는 특이도가 0이라도 "상속"은 이기기 때문에,
+   * 색을 명시하지 않은 제목·문단은 다크 모드에서 흰색이 되어 흰 배경에 묻혔다.
+   * 여기서 밝은 배경용 기본색을 되돌려 준다.
+   *
+   * 이 안의 어두운 패널에는 text-white 같은 유틸리티를 직접 붙인다.
+   * 유틸리티 레이어가 뒤에 오므로 같은 특이도에서 유틸리티가 이긴다.
+   */
+  .light-surface :where(h1, h2, h3, h4, h5, h6) {
+    @apply text-ink;
+  }
+
+  .light-surface :where(p) {
+    @apply text-[#4A4A55];
+  }
+
   /* Buttons */
   .btn {
     @apply inline-flex items-center justify-center gap-2 px-6 py-3 font-semibold rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;

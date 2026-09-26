@@ -74,7 +74,7 @@ const Home: React.FC = () => {
   const { startTutorial } = useTutorial();
 
   return (
-    <div className="min-h-screen overflow-hidden bg-sand-100 text-ink selection:bg-primary-500 selection:text-white">
+    <div className="light-surface min-h-screen overflow-hidden bg-sand-100 text-ink selection:bg-primary-500 selection:text-white">
       <nav
         className="fixed inset-x-0 top-0 z-50 border-b border-[#F2F1ED] bg-white"
         aria-label="주요 메뉴"
@@ -196,7 +196,7 @@ const Home: React.FC = () => {
             >
               {/* 카드 위쪽 모서리에 걸치게 둔다. top-14였을 때는 이 뱃지가 카드 제목을 덮어
                   "서울 → 후쿠오카"가 "후쿠오카"로, 부제가 "행 · 오전형"으로 잘려 보였다. */}
-              <div className="absolute -left-6 -top-10 z-10 hidden rounded-[18px] bg-ink px-6 py-5 text-white shadow-[0_10px_30px_rgba(16,16,20,0.25)] lg:block">
+              <div className="absolute -left-10 -top-16 z-10 hidden rounded-[18px] bg-ink px-6 py-5 text-white shadow-[0_10px_30px_rgba(16,16,20,0.25)] lg:block">
                 <p className="text-sm font-bold text-[#A0A0AC]">오늘의 매칭 기준</p>
                 {/* :where(p) 기본색이 상속색을 이기므로 어두운 배경에서는 직접 지정한다 */}
                 <p className="mt-1 font-display text-3xl font-black tracking-tight text-white">

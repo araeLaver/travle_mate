@@ -26,7 +26,7 @@ const sections = [
 ];
 
 const Legal: React.FC = () => (
-  <main className="min-h-screen bg-sand-100 px-4 py-10 text-ink md:px-8">
+  <main className="light-surface min-h-screen bg-sand-100 px-4 py-10 text-ink md:px-8">
     <div className="mx-auto max-w-4xl">
       <Link to="/" className="mb-10 inline-flex items-center gap-3">
         <Logo variant="gradient" size="md" />
