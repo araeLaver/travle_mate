@@ -63,16 +63,16 @@
     },
     "android": {
       "phone": [
-        "./store/screenshots/android/phone/01_login_light.png",
-        "./store/screenshots/android/phone/02_login_dark.png",
-        "./store/screenshots/android/phone/03_register.png",
-        "./store/screenshots/android/phone/04_home.png",
-        "./store/screenshots/android/phone/05_collection.png",
-        "./store/screenshots/android/phone/06_chat_list.png",
-        "./store/screenshots/android/phone/07_chat_room.png",
-        "./store/screenshots/android/phone/08_profile.png",
-        "./store/screenshots/android/phone/09_matching.png",
-        "./store/screenshots/android/phone/10_map.png"
+        "./store/screenshots/android/phone_play/01_login_light.png",
+        "./store/screenshots/android/phone_play/02_login_dark.png",
+        "./store/screenshots/android/phone_play/03_register.png",
+        "./store/screenshots/android/phone_play/04_home.png",
+        "./store/screenshots/android/phone_play/05_collection.png",
+        "./store/screenshots/android/phone_play/06_chat_list.png",
+        "./store/screenshots/android/phone_play/07_chat_room.png",
+        "./store/screenshots/android/phone_play/08_profile.png",
+        "./store/screenshots/android/phone_play/09_matching.png",
+        "./store/screenshots/android/phone_play/10_map.png"
       ],
       "tablet7": [],
       "tablet10": []

@@ -55,6 +55,18 @@ npm install
 npm start
 ```
 
+모바일 앱(Expo) 실행:
+```bash
+cd travelmate-mobile
+npm install
+npx expo start
+```
+
+> Expo/EAS 설정 파일의 정본은 `travelmate-mobile/app.json` 하나뿐입니다. 레포 루트에서 `expo`/`eas`
+> 명령을 실행하지 마세요 — 루트에 빈 `app.json`이 생기면 Expo가 그것을 프로젝트 설정으로 집어가
+> 잘못된 빌드를 만듭니다. (과거에 생겼던 루트 스텁은 `app.json.unused-root-stub`로 이름만 바꿔
+> 비활성화해 두었습니다.)
+
 ### Docker로 실행
 
 ```bash
