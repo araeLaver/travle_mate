@@ -1,8 +1,6 @@
 import { authService } from './authService';
 import { ApiError, FileUploadResponse } from '../types';
-
-// API Base URL 설정
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+import { API_BASE_URL } from './apiConfig';
 
 export type { ApiError };
 
@@ -11,22 +9,6 @@ class ApiClient {
 
   constructor(baseURL: string = API_BASE_URL) {
     this.baseURL = baseURL;
-  }
-
-  // 인증 헤더 가져오기 (동기)
-  private getHeaders(includeAuth: boolean = true): HeadersInit {
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    };
-
-    if (includeAuth) {
-      const token = authService.getToken();
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-    }
-
-    return headers;
   }
 
   // 토큰 갱신 후 헤더 가져오기 (비동기)
@@ -45,14 +27,43 @@ class ApiClient {
     return headers;
   }
 
+  private async fetchWithAuthRetry(
+    endpoint: string,
+    request: RequestInit,
+    includeAuth: boolean = true,
+    getRetryHeaders: () => Promise<HeadersInit> = () => this.getHeadersWithRefresh(includeAuth)
+  ): Promise<Response> {
+    const url = `${this.baseURL}${endpoint}`;
+    const response = await fetch(url, request);
+
+    if (!includeAuth || response.status !== 401) {
+      return response;
+    }
+
+    try {
+      await authService.refreshAccessToken();
+    } catch {
+      return response;
+    }
+
+    return fetch(url, {
+      ...request,
+      headers: await getRetryHeaders(),
+    });
+  }
+
   // GET 요청
   async get<T>(endpoint: string, includeAuth: boolean = true): Promise<T> {
     try {
       const headers = await this.getHeadersWithRefresh(includeAuth);
-      const response = await fetch(`${this.baseURL}${endpoint}`, {
-        method: 'GET',
-        headers,
-      });
+      const response = await this.fetchWithAuthRetry(
+        endpoint,
+        {
+          method: 'GET',
+          headers,
+        },
+        includeAuth
+      );
 
       return this.handleResponse<T>(response);
     } catch (error) {
@@ -64,11 +75,15 @@ class ApiClient {
   async post<T, D = unknown>(endpoint: string, data?: D, includeAuth: boolean = true): Promise<T> {
     try {
       const headers = await this.getHeadersWithRefresh(includeAuth);
-      const response = await fetch(`${this.baseURL}${endpoint}`, {
-        method: 'POST',
-        headers,
-        body: data ? JSON.stringify(data) : undefined,
-      });
+      const response = await this.fetchWithAuthRetry(
+        endpoint,
+        {
+          method: 'POST',
+          headers,
+          body: data ? JSON.stringify(data) : undefined,
+        },
+        includeAuth
+      );
 
       return this.handleResponse<T>(response);
     } catch (error) {
@@ -80,11 +95,15 @@ class ApiClient {
   async put<T, D = unknown>(endpoint: string, data?: D, includeAuth: boolean = true): Promise<T> {
     try {
       const headers = await this.getHeadersWithRefresh(includeAuth);
-      const response = await fetch(`${this.baseURL}${endpoint}`, {
-        method: 'PUT',
-        headers,
-        body: data ? JSON.stringify(data) : undefined,
-      });
+      const response = await this.fetchWithAuthRetry(
+        endpoint,
+        {
+          method: 'PUT',
+          headers,
+          body: data ? JSON.stringify(data) : undefined,
+        },
+        includeAuth
+      );
 
       return this.handleResponse<T>(response);
     } catch (error) {
@@ -96,10 +115,14 @@ class ApiClient {
   async delete<T>(endpoint: string, includeAuth: boolean = true): Promise<T> {
     try {
       const headers = await this.getHeadersWithRefresh(includeAuth);
-      const response = await fetch(`${this.baseURL}${endpoint}`, {
-        method: 'DELETE',
-        headers,
-      });
+      const response = await this.fetchWithAuthRetry(
+        endpoint,
+        {
+          method: 'DELETE',
+          headers,
+        },
+        includeAuth
+      );
 
       return this.handleResponse<T>(response);
     } catch (error) {
@@ -111,11 +134,15 @@ class ApiClient {
   async patch<T, D = unknown>(endpoint: string, data?: D, includeAuth: boolean = true): Promise<T> {
     try {
       const headers = await this.getHeadersWithRefresh(includeAuth);
-      const response = await fetch(`${this.baseURL}${endpoint}`, {
-        method: 'PATCH',
-        headers,
-        body: data ? JSON.stringify(data) : undefined,
-      });
+      const response = await this.fetchWithAuthRetry(
+        endpoint,
+        {
+          method: 'PATCH',
+          headers,
+          body: data ? JSON.stringify(data) : undefined,
+        },
+        includeAuth
+      );
 
       return this.handleResponse<T>(response);
     } catch (error) {
@@ -175,17 +202,25 @@ class ApiClient {
       const formData = new FormData();
       formData.append('file', file);
 
-      const token = authService.getToken();
-      const headers: HeadersInit = {};
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
+      const getUploadHeaders = async (): Promise<HeadersInit> => {
+        const token = await authService.getValidToken();
+        const headers: HeadersInit = {};
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+        return headers;
+      };
 
-      const response = await fetch(`${this.baseURL}${endpoint}`, {
-        method: 'POST',
-        headers,
-        body: formData,
-      });
+      const response = await this.fetchWithAuthRetry(
+        endpoint,
+        {
+          method: 'POST',
+          headers: await getUploadHeaders(),
+          body: formData,
+        },
+        true,
+        getUploadHeaders
+      );
 
       return this.handleResponse<FileUploadResponse>(response);
     } catch (error) {

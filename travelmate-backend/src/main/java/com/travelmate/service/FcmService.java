@@ -4,6 +4,7 @@ import com.google.firebase.messaging.*;
 import com.travelmate.dto.PushNotificationDto;
 import com.travelmate.entity.DeviceToken;
 import com.travelmate.entity.User;
+import com.travelmate.exception.BusinessException;
 import com.travelmate.repository.DeviceTokenRepository;
 import com.travelmate.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -43,7 +44,7 @@ public class FcmService {
     @Transactional
     public PushNotificationDto.TokenResponse registerToken(Long userId, PushNotificationDto.RegisterTokenRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         // Check if token already exists
         Optional<DeviceToken> existingToken = deviceTokenRepository.findByToken(request.getToken());
@@ -95,6 +96,56 @@ public class FcmService {
                 log.info("Unregistered device token for user {}", userId);
             }
         });
+    }
+
+    /**
+     * Get notification preferences.
+     *
+     * The current persistence model stores global email/push switches on User.
+     * Event-specific switches are exposed as the global push state until a
+     * dedicated preferences table is introduced.
+     */
+    @Transactional(readOnly = true)
+    public PushNotificationDto.NotificationPreferences getPreferences(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
+        return toPreferences(user);
+    }
+
+    /**
+     * Update persisted notification preferences.
+     */
+    @Transactional
+    public PushNotificationDto.NotificationPreferences updatePreferences(
+            Long userId,
+            PushNotificationDto.UpdateNotificationPreferencesRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
+
+        if (request.getEmail() != null) {
+            user.setEmailNotificationEnabled(request.getEmail());
+        }
+        if (request.getPush() != null) {
+            user.setPushNotificationEnabled(request.getPush());
+        }
+
+        return toPreferences(userRepository.save(user));
+    }
+
+    private PushNotificationDto.NotificationPreferences toPreferences(User user) {
+        boolean pushEnabled = Boolean.TRUE.equals(user.getPushNotificationEnabled());
+        boolean emailEnabled = Boolean.TRUE.equals(user.getEmailNotificationEnabled());
+
+        return PushNotificationDto.NotificationPreferences.builder()
+                .follow(pushEnabled)
+                .message(pushEnabled)
+                .nftCollected(pushEnabled)
+                .mintingComplete(pushEnabled)
+                .groupInvite(pushEnabled)
+                .reviewHelpful(pushEnabled)
+                .email(emailEnabled)
+                .push(pushEnabled)
+                .build();
     }
 
     /**

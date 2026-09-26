@@ -2,6 +2,7 @@ package com.travelmate.service.nft;
 
 import com.travelmate.entity.User;
 import com.travelmate.entity.nft.*;
+import com.travelmate.exception.BusinessException;
 import com.travelmate.repository.UserRepository;
 import com.travelmate.repository.nft.AuctionBidRepository;
 import com.travelmate.repository.nft.NftAuctionRepository;
@@ -31,17 +32,17 @@ public class AuctionService {
                                      Long startingPrice, Long buyNowPrice,
                                      int durationHours) {
         User seller = userRepository.findById(sellerId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.userNotFound(sellerId));
 
         UserNftCollection nft = nftCollectionRepository.findById(nftCollectionId)
-                .orElseThrow(() -> new IllegalArgumentException("NFT를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.notFound("NFT를 찾을 수 없습니다."));
 
         if (!nft.getUser().getId().equals(sellerId)) {
-            throw new IllegalStateException("본인 소유의 NFT만 경매에 등록할 수 있습니다.");
+            throw BusinessException.forbidden("본인 소유의 NFT만 경매에 등록할 수 있습니다.");
         }
 
         if (auctionRepository.existsByNftCollectionIdAndStatus(nftCollectionId, NftAuction.AuctionStatus.ACTIVE)) {
-            throw new IllegalStateException("이미 경매 중인 NFT입니다.");
+            throw BusinessException.conflict("이미 경매 중인 NFT입니다.");
         }
 
         NftAuction auction = NftAuction.builder()
@@ -61,28 +62,28 @@ public class AuctionService {
 
     public AuctionBid placeBid(Long auctionId, Long bidderId, Long bidAmount) {
         NftAuction auction = auctionRepository.findById(auctionId)
-                .orElseThrow(() -> new IllegalArgumentException("경매를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.notFound("경매를 찾을 수 없습니다."));
 
         if (!auction.isActive()) {
-            throw new IllegalStateException("종료된 경매입니다.");
+            throw BusinessException.conflict("종료된 경매입니다.");
         }
 
         if (auction.getSeller().getId().equals(bidderId)) {
-            throw new IllegalStateException("본인 경매에는 입찰할 수 없습니다.");
+            throw BusinessException.forbidden("본인 경매에는 입찰할 수 없습니다.");
         }
 
         if (bidAmount <= auction.getCurrentPrice()) {
-            throw new IllegalArgumentException(
+            throw BusinessException.badRequest(
                     String.format("입찰가는 현재가(%d)보다 높아야 합니다.", auction.getCurrentPrice()));
         }
 
         if (bidAmount < auction.getCurrentPrice() + auction.getMinBidIncrement()) {
-            throw new IllegalArgumentException(
+            throw BusinessException.badRequest(
                     String.format("최소 입찰 단위는 %d 포인트입니다.", auction.getMinBidIncrement()));
         }
 
         User bidder = userRepository.findById(bidderId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.userNotFound(bidderId));
 
         // 이전 최고 입찰 비활성화
         bidRepository.findTopByAuctionIdOrderByBidAmountDesc(auctionId)
@@ -117,18 +118,18 @@ public class AuctionService {
 
     public NftAuction buyNow(Long auctionId, Long buyerId) {
         NftAuction auction = auctionRepository.findById(auctionId)
-                .orElseThrow(() -> new IllegalArgumentException("경매를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.notFound("경매를 찾을 수 없습니다."));
 
         if (!auction.isActive()) {
-            throw new IllegalStateException("종료된 경매입니다.");
+            throw BusinessException.conflict("종료된 경매입니다.");
         }
 
         if (auction.getBuyNowPrice() == null) {
-            throw new IllegalStateException("즉시 구매가가 설정되지 않은 경매입니다.");
+            throw BusinessException.badRequest("즉시 구매가가 설정되지 않은 경매입니다.");
         }
 
         if (auction.getSeller().getId().equals(buyerId)) {
-            throw new IllegalStateException("본인 경매는 즉시 구매할 수 없습니다.");
+            throw BusinessException.forbidden("본인 경매는 즉시 구매할 수 없습니다.");
         }
 
         // 즉시 구매가로 입찰
@@ -138,7 +139,7 @@ public class AuctionService {
 
     public void settleAuction(Long auctionId) {
         NftAuction auction = auctionRepository.findById(auctionId)
-                .orElseThrow(() -> new IllegalArgumentException("경매를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.notFound("경매를 찾을 수 없습니다."));
 
         if (auction.getHighestBidder() == null) {
             auction.setStatus(NftAuction.AuctionStatus.NO_BIDS);
@@ -162,14 +163,14 @@ public class AuctionService {
 
     public void cancelAuction(Long auctionId, Long sellerId) {
         NftAuction auction = auctionRepository.findById(auctionId)
-                .orElseThrow(() -> new IllegalArgumentException("경매를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.notFound("경매를 찾을 수 없습니다."));
 
         if (!auction.getSeller().getId().equals(sellerId)) {
-            throw new IllegalStateException("본인 경매만 취소할 수 있습니다.");
+            throw BusinessException.forbidden("본인 경매만 취소할 수 있습니다.");
         }
 
         if (auction.getBidCount() > 0) {
-            throw new IllegalStateException("입찰이 있는 경매는 취소할 수 없습니다.");
+            throw BusinessException.conflict("입찰이 있는 경매는 취소할 수 없습니다.");
         }
 
         auction.setStatus(NftAuction.AuctionStatus.CANCELLED);
@@ -195,7 +196,7 @@ public class AuctionService {
     @Transactional(readOnly = true)
     public NftAuction getAuction(Long auctionId) {
         return auctionRepository.findById(auctionId)
-                .orElseThrow(() -> new IllegalArgumentException("경매를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.notFound("경매를 찾을 수 없습니다."));
     }
 
     @Transactional(readOnly = true)

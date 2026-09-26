@@ -10,6 +10,7 @@ import com.travelmate.entity.User;
 import com.travelmate.entity.ItineraryCollaborator.CollaboratorRole;
 import com.travelmate.entity.ItineraryCollaborator.InviteStatus;
 import com.travelmate.entity.TravelItinerary.ItineraryVisibility;
+import com.travelmate.exception.BusinessException;
 import com.travelmate.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +47,7 @@ public class ItineraryService {
     @Transactional
     public ItineraryResponse createItinerary(Long userId, CreateItineraryRequest request) {
         User owner = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         TravelItinerary itinerary = TravelItinerary.builder()
                 .owner(owner)
@@ -109,11 +110,11 @@ public class ItineraryService {
 
     public ItineraryResponse getItinerary(Long itineraryId, Long userId) {
         TravelItinerary itinerary = itineraryRepository.findById(itineraryId)
-                .orElseThrow(() -> new IllegalArgumentException("Itinerary not found"));
+                .orElseThrow(() -> BusinessException.notFound("Itinerary not found"));
 
         // 접근 권한 확인
         if (!canViewItinerary(itinerary, userId)) {
-            throw new IllegalArgumentException("Access denied");
+            throw BusinessException.forbidden("Access denied");
         }
 
         // 조회수 증가 (본인 제외)
@@ -126,7 +127,7 @@ public class ItineraryService {
 
     public ItineraryResponse getItineraryByShareCode(String shareCode, Long userId) {
         TravelItinerary itinerary = itineraryRepository.findByShareCode(shareCode)
-                .orElseThrow(() -> new IllegalArgumentException("Itinerary not found"));
+                .orElseThrow(() -> BusinessException.notFound("Itinerary not found"));
 
         itineraryRepository.incrementViewCount(itinerary.getId());
         return toDetailResponse(itinerary, userId);
@@ -134,7 +135,7 @@ public class ItineraryService {
 
     public Page<ItineraryResponse> getMyItineraries(Long userId, Pageable pageable) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         return itineraryRepository.findByOwnerOrderByStartDateDesc(user, pageable)
                 .map(it -> toResponse(it, userId));
@@ -201,7 +202,7 @@ public class ItineraryService {
     @Transactional
     public ItineraryItemResponse updateItem(Long userId, Long itemId, UpdateItemRequest request) {
         ItineraryItem item = itemRepository.findById(itemId)
-                .orElseThrow(() -> new IllegalArgumentException("Item not found"));
+                .orElseThrow(() -> BusinessException.notFound("Item not found"));
 
         // 편집 권한 확인
         checkEditPermission(item.getItinerary(), userId);
@@ -234,7 +235,7 @@ public class ItineraryService {
     @Transactional
     public void deleteItem(Long userId, Long itemId) {
         ItineraryItem item = itemRepository.findById(itemId)
-                .orElseThrow(() -> new IllegalArgumentException("Item not found"));
+                .orElseThrow(() -> BusinessException.notFound("Item not found"));
 
         checkEditPermission(item.getItinerary(), userId);
         itemRepository.delete(item);
@@ -246,10 +247,10 @@ public class ItineraryService {
 
         for (ReorderItemRequest req : requests) {
             ItineraryItem item = itemRepository.findById(req.getItemId())
-                    .orElseThrow(() -> new IllegalArgumentException("Item not found: " + req.getItemId()));
+                    .orElseThrow(() -> BusinessException.notFound("Item not found: " + req.getItemId()));
 
             if (!item.getItinerary().getId().equals(itineraryId)) {
-                throw new IllegalArgumentException("Item does not belong to this itinerary");
+                throw BusinessException.badRequest("Item does not belong to this itinerary");
             }
 
             item.setDayNumber(req.getDayNumber());
@@ -265,15 +266,15 @@ public class ItineraryService {
         TravelItinerary itinerary = getItineraryWithAdminPermission(itineraryId, userId);
 
         User invitee = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> BusinessException.userNotFound(request.getUserId()));
 
         // 이미 협업자인지 확인
         if (collaboratorRepository.findByItineraryAndUser(itinerary, invitee).isPresent()) {
-            throw new IllegalArgumentException("User is already a collaborator");
+            throw BusinessException.conflict("User is already a collaborator");
         }
 
         User inviter = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Inviter not found"));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         ItineraryCollaborator collaborator = ItineraryCollaborator.builder()
                 .itinerary(itinerary)
@@ -299,14 +300,14 @@ public class ItineraryService {
     @Transactional
     public void respondToInvite(Long userId, Long collaboratorId, boolean accept) {
         ItineraryCollaborator collaborator = collaboratorRepository.findById(collaboratorId)
-                .orElseThrow(() -> new IllegalArgumentException("Invitation not found"));
+                .orElseThrow(() -> BusinessException.notFound("Invitation not found"));
 
         if (!collaborator.getUser().getId().equals(userId)) {
-            throw new IllegalArgumentException("Not your invitation");
+            throw BusinessException.forbidden("Not your invitation");
         }
 
         if (collaborator.getStatus() != InviteStatus.PENDING) {
-            throw new IllegalArgumentException("Invitation already responded");
+            throw BusinessException.conflict("Invitation already responded");
         }
 
         if (accept) {
@@ -334,7 +335,7 @@ public class ItineraryService {
         TravelItinerary itinerary = getItineraryWithAdminPermission(itineraryId, userId);
 
         User collaboratorUser = userRepository.findById(collaboratorUserId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> BusinessException.userNotFound(collaboratorUserId));
 
         collaboratorRepository.deleteByItineraryAndUser(itinerary, collaboratorUser);
         log.info("Collaborator {} removed from itinerary {} by {}", collaboratorUserId, itineraryId, userId);
@@ -345,10 +346,10 @@ public class ItineraryService {
         TravelItinerary itinerary = getItineraryWithAdminPermission(itineraryId, userId);
 
         User collaboratorUser = userRepository.findById(collaboratorUserId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> BusinessException.userNotFound(collaboratorUserId));
 
         ItineraryCollaborator collaborator = collaboratorRepository.findByItineraryAndUser(itinerary, collaboratorUser)
-                .orElseThrow(() -> new IllegalArgumentException("Collaborator not found"));
+                .orElseThrow(() -> BusinessException.notFound("Collaborator not found"));
 
         collaborator.setRole(newRole);
         collaboratorRepository.save(collaborator);
@@ -356,10 +357,10 @@ public class ItineraryService {
 
     public List<CollaboratorResponse> getCollaborators(Long itineraryId, Long userId) {
         TravelItinerary itinerary = itineraryRepository.findById(itineraryId)
-                .orElseThrow(() -> new IllegalArgumentException("Itinerary not found"));
+                .orElseThrow(() -> BusinessException.notFound("Itinerary not found"));
 
         if (!canViewItinerary(itinerary, userId)) {
-            throw new IllegalArgumentException("Access denied");
+            throw BusinessException.forbidden("Access denied");
         }
 
         return collaboratorRepository.findByItinerary(itinerary).stream()
@@ -369,7 +370,7 @@ public class ItineraryService {
 
     public List<CollaboratorResponse> getPendingInvites(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         return collaboratorRepository.findByUserAndStatus(user, InviteStatus.PENDING).stream()
                 .map(this::toCollaboratorResponse)
@@ -381,14 +382,14 @@ public class ItineraryService {
     @Transactional
     public ItineraryResponse copyItinerary(Long userId, Long sourceItineraryId) {
         TravelItinerary source = itineraryRepository.findById(sourceItineraryId)
-                .orElseThrow(() -> new IllegalArgumentException("Itinerary not found"));
+                .orElseThrow(() -> BusinessException.notFound("Itinerary not found"));
 
         if (!canViewItinerary(source, userId)) {
-            throw new IllegalArgumentException("Access denied");
+            throw BusinessException.forbidden("Access denied");
         }
 
         User newOwner = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         // 일정 복사
         TravelItinerary copy = TravelItinerary.builder()
@@ -441,15 +442,15 @@ public class ItineraryService {
     @Transactional
     public boolean toggleLike(Long userId, Long itineraryId) {
         TravelItinerary itinerary = itineraryRepository.findById(itineraryId)
-                .orElseThrow(() -> new IllegalArgumentException("Itinerary not found"));
+                .orElseThrow(() -> BusinessException.notFound("Itinerary not found"));
 
         // 접근 권한 확인
         if (!canViewItinerary(itinerary, userId)) {
-            throw new IllegalArgumentException("Access denied");
+            throw BusinessException.forbidden("Access denied");
         }
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         // 이미 좋아요 했는지 확인
         if (likeRepository.existsByItineraryIdAndUserId(itineraryId, userId)) {
@@ -504,15 +505,15 @@ public class ItineraryService {
     @Transactional
     public CommentResponse addComment(Long userId, Long itineraryId, CreateCommentRequest request) {
         TravelItinerary itinerary = itineraryRepository.findById(itineraryId)
-                .orElseThrow(() -> new IllegalArgumentException("Itinerary not found"));
+                .orElseThrow(() -> BusinessException.notFound("Itinerary not found"));
 
         // 접근 권한 확인
         if (!canViewItinerary(itinerary, userId)) {
-            throw new IllegalArgumentException("Access denied");
+            throw BusinessException.forbidden("Access denied");
         }
 
         User author = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         ItineraryComment comment = ItineraryComment.builder()
                 .itinerary(itinerary)
@@ -523,10 +524,10 @@ public class ItineraryService {
         // 대댓글인 경우
         if (request.getParentId() != null) {
             ItineraryComment parent = commentRepository.findById(request.getParentId())
-                    .orElseThrow(() -> new IllegalArgumentException("Parent comment not found"));
+                    .orElseThrow(() -> BusinessException.notFound("Parent comment not found"));
 
             if (!parent.getItinerary().getId().equals(itineraryId)) {
-                throw new IllegalArgumentException("Parent comment does not belong to this itinerary");
+                throw BusinessException.badRequest("Parent comment does not belong to this itinerary");
             }
 
             comment.setParent(parent);
@@ -566,15 +567,15 @@ public class ItineraryService {
     @Transactional
     public CommentResponse updateComment(Long userId, Long commentId, UpdateCommentRequest request) {
         ItineraryComment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("Comment not found"));
+                .orElseThrow(() -> BusinessException.notFound("Comment not found"));
 
         // 작성자 확인
         if (!comment.getAuthor().getId().equals(userId)) {
-            throw new IllegalArgumentException("Only author can update comment");
+            throw BusinessException.forbidden("Only author can update comment");
         }
 
         if (comment.getIsDeleted()) {
-            throw new IllegalArgumentException("Cannot update deleted comment");
+            throw BusinessException.badRequest("Cannot update deleted comment");
         }
 
         comment.setContent(request.getContent());
@@ -587,14 +588,14 @@ public class ItineraryService {
     @Transactional
     public void deleteComment(Long userId, Long commentId) {
         ItineraryComment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("Comment not found"));
+                .orElseThrow(() -> BusinessException.notFound("Comment not found"));
 
         // 작성자 또는 일정 소유자만 삭제 가능
         boolean isAuthor = comment.getAuthor().getId().equals(userId);
         boolean isOwner = comment.getItinerary().getOwner().getId().equals(userId);
 
         if (!isAuthor && !isOwner) {
-            throw new IllegalArgumentException("Permission denied");
+            throw BusinessException.forbidden("Permission denied");
         }
 
         // 대댓글이 있으면 소프트 삭제, 없으면 하드 삭제
@@ -610,11 +611,11 @@ public class ItineraryService {
 
     public Page<CommentResponse> getComments(Long itineraryId, Long userId, Pageable pageable) {
         TravelItinerary itinerary = itineraryRepository.findById(itineraryId)
-                .orElseThrow(() -> new IllegalArgumentException("Itinerary not found"));
+                .orElseThrow(() -> BusinessException.notFound("Itinerary not found"));
 
         // 접근 권한 확인
         if (!canViewItinerary(itinerary, userId)) {
-            throw new IllegalArgumentException("Access denied");
+            throw BusinessException.forbidden("Access denied");
         }
 
         return commentRepository.findTopLevelCommentsByItineraryId(itineraryId, pageable)
@@ -679,11 +680,6 @@ public class ItineraryService {
             return true;
         }
 
-        // 링크 공유 (shareCode로 접근한 경우는 별도 메서드 사용)
-        if (itinerary.getVisibility() == ItineraryVisibility.LINK_ONLY) {
-            return true;
-        }
-
         // 협업자
         if (userId != null) {
             User user = userRepository.findById(userId).orElse(null);
@@ -701,16 +697,16 @@ public class ItineraryService {
         }
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         if (!collaboratorRepository.hasEditPermission(itinerary, user)) {
-            throw new IllegalArgumentException("Edit permission denied");
+            throw BusinessException.forbidden("Edit permission denied");
         }
     }
 
     private TravelItinerary getItineraryWithEditPermission(Long itineraryId, Long userId) {
         TravelItinerary itinerary = itineraryRepository.findById(itineraryId)
-                .orElseThrow(() -> new IllegalArgumentException("Itinerary not found"));
+                .orElseThrow(() -> BusinessException.notFound("Itinerary not found"));
 
         checkEditPermission(itinerary, userId);
         return itinerary;
@@ -718,10 +714,10 @@ public class ItineraryService {
 
     private TravelItinerary getItineraryWithOwnerPermission(Long itineraryId, Long userId) {
         TravelItinerary itinerary = itineraryRepository.findById(itineraryId)
-                .orElseThrow(() -> new IllegalArgumentException("Itinerary not found"));
+                .orElseThrow(() -> BusinessException.notFound("Itinerary not found"));
 
         if (!itinerary.getOwner().getId().equals(userId)) {
-            throw new IllegalArgumentException("Owner permission required");
+            throw BusinessException.forbidden("Owner permission required");
         }
 
         return itinerary;
@@ -729,17 +725,17 @@ public class ItineraryService {
 
     private TravelItinerary getItineraryWithAdminPermission(Long itineraryId, Long userId) {
         TravelItinerary itinerary = itineraryRepository.findById(itineraryId)
-                .orElseThrow(() -> new IllegalArgumentException("Itinerary not found"));
+                .orElseThrow(() -> BusinessException.notFound("Itinerary not found"));
 
         if (itinerary.getOwner().getId().equals(userId)) {
             return itinerary;
         }
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         if (!collaboratorRepository.hasAdminPermission(itinerary, user)) {
-            throw new IllegalArgumentException("Admin permission required");
+            throw BusinessException.forbidden("Admin permission required");
         }
 
         return itinerary;

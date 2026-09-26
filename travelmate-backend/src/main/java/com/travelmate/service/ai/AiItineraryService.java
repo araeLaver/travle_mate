@@ -2,6 +2,7 @@ package com.travelmate.service.ai;
 
 import com.travelmate.dto.AIRecommendationDto.*;
 import com.travelmate.entity.User;
+import com.travelmate.exception.BusinessException;
 import com.travelmate.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +43,7 @@ public class AiItineraryService {
         log.info("Generating AI itinerary for user {} to {}", userId, request.getDestination());
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         long days = ChronoUnit.DAYS.between(request.getStartDate(), request.getEndDate()) + 1;
 

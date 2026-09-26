@@ -117,7 +117,21 @@ class ReportServiceTest {
             assertThatThrownBy(() -> reportService.createReport(
                     1L, 1L, ReportType.HARASSMENT, "자기 신고", null))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("자기 자신");
+                    .hasMessageContaining("자기 자신")
+                    .satisfies(ex -> assertBusinessException(ex, 400, "BAD_REQUEST"));
+        }
+
+        @Test
+        @DisplayName("실패 - 신고자 없음")
+        void createReport_Fail_ReporterNotFound() {
+            // Given
+            when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+            // When & Then
+            assertThatThrownBy(() -> reportService.createReport(
+                    1L, 2L, ReportType.HARASSMENT, "신고", null))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(ex -> assertBusinessException(ex, 404, "USER_NOT_FOUND"));
         }
 
         @Test
@@ -133,7 +147,8 @@ class ReportServiceTest {
             assertThatThrownBy(() -> reportService.createReport(
                     1L, 2L, ReportType.HARASSMENT, "중복 신고", null))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("24시간");
+                    .hasMessageContaining("24시간")
+                    .satisfies(ex -> assertBusinessException(ex, 409, "CONFLICT"));
         }
 
         @Test
@@ -210,7 +225,21 @@ class ReportServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> reportService.processReport(999L, 100L, ReportStatus.RESOLVED, "처리"))
-                    .isInstanceOf(BusinessException.class);
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(ex -> assertBusinessException(ex, 404, "NOT_FOUND"));
+        }
+
+        @Test
+        @DisplayName("실패 - 관리자 없음")
+        void processReport_Fail_AdminNotFound() {
+            // Given
+            when(reportRepository.findById(1L)).thenReturn(Optional.of(testReport));
+            when(userRepository.findById(100L)).thenReturn(Optional.empty());
+
+            // When & Then
+            assertThatThrownBy(() -> reportService.processReport(1L, 100L, ReportStatus.RESOLVED, "처리"))
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(ex -> assertBusinessException(ex, 404, "USER_NOT_FOUND"));
         }
     }
 
@@ -247,5 +276,11 @@ class ReportServiceTest {
             assertThat(result).hasSize(1);
             assertThat(result.get(0).getReportedUser().getId()).isEqualTo(2L);
         }
+    }
+
+    private void assertBusinessException(Throwable throwable, int status, String errorCode) {
+        BusinessException exception = (BusinessException) throwable;
+        assertThat(exception.getStatus().value()).isEqualTo(status);
+        assertThat(exception.getErrorCodeStr()).isEqualTo(errorCode);
     }
 }

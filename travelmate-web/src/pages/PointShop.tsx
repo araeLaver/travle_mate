@@ -176,29 +176,29 @@ const PointShop: React.FC = () => {
       case 'EARN':
         return {
           icon: '📈',
-          color: 'text-green-500',
+          color: 'text-success',
           bg: 'bg-green-100 dark:bg-green-900/30',
           label: '획득',
         };
       case 'SPEND':
         return {
           icon: '📉',
-          color: 'text-red-500',
+          color: 'text-danger',
           bg: 'bg-red-100 dark:bg-red-900/30',
           label: '사용',
         };
       case 'TRANSFER_IN':
         return {
           icon: '📥',
-          color: 'text-blue-500',
-          bg: 'bg-blue-100 dark:bg-blue-900/30',
+          color: 'text-primary-500',
+          bg: 'bg-primary-100 dark:bg-primary-900/30',
           label: '받음',
         };
       case 'TRANSFER_OUT':
         return {
           icon: '📤',
-          color: 'text-orange-500',
-          bg: 'bg-orange-100 dark:bg-orange-900/30',
+          color: 'text-rarity-legendary',
+          bg: 'bg-[#FDF3E4] dark:bg-amber-900/30',
           label: '보냄',
         };
       default:
@@ -233,12 +233,12 @@ const PointShop: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] relative overflow-hidden">
+    <div className="min-h-screen bg-sand-100 dark:bg-[#0a0a0b] relative overflow-hidden">
       <PageBackground />
 
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 px-4 py-3">
-        <div className="max-w-4xl mx-auto bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-2xl px-6 py-3 border border-gray-200/50 dark:border-gray-800/50 shadow-lg">
+        <div className="max-w-4xl mx-auto bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl rounded-2xl px-6 py-3 border border-transparent dark:border-gray-800/50 shadow-lg">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
@@ -264,42 +264,42 @@ const PointShop: React.FC = () => {
               <span className="text-2xl">💰</span>
               <span className="text-gray-600 dark:text-gray-300 font-medium">포인트 상점</span>
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white">
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-ink dark:text-white">
               포인트 상점
             </h1>
           </motion.header>
 
           {/* Balance Card */}
           <motion.div
-            className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-2xl p-6 mb-6 text-white shadow-xl"
+            className="bg-ink rounded-2xl p-6 mb-6 text-white shadow-[0_10px_30px_rgba(16,16,20,0.1)]"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
             <div className="flex items-center justify-center gap-3 mb-4">
               <span className="text-4xl">💎</span>
-              <span className="text-4xl font-bold">
+              <span className="text-4xl font-bold font-display">
                 {balance?.totalPoints?.toLocaleString() || 0}
               </span>
-              <span className="text-2xl font-medium">P</span>
+              <span className="text-2xl font-medium text-[#A0A0AC]">P</span>
             </div>
 
             <div className="grid grid-cols-2 gap-4 mb-4">
-              <div className="bg-white/20 rounded-xl p-3 text-center">
-                <p className="text-sm opacity-80">누적 획득</p>
+              <div className="bg-white/10 rounded-xl p-3 text-center">
+                <p className="text-sm text-[#A0A0AC]">누적 획득</p>
                 <p className="text-lg font-bold">
                   {balance?.lifetimeEarned?.toLocaleString() || 0}P
                 </p>
               </div>
-              <div className="bg-white/20 rounded-xl p-3 text-center">
-                <p className="text-sm opacity-80">누적 사용</p>
+              <div className="bg-white/10 rounded-xl p-3 text-center">
+                <p className="text-sm text-[#A0A0AC]">누적 사용</p>
                 <p className="text-lg font-bold">
                   {balance?.lifetimeSpent?.toLocaleString() || 0}P
                 </p>
               </div>
             </div>
 
-            <div className="flex justify-between text-sm opacity-80">
+            <div className="flex justify-between text-sm text-[#A0A0AC]">
               <span>시즌 포인트: {balance?.seasonPoints?.toLocaleString() || 0}P</span>
               <span>현재 순위: #{balance?.currentRank || '-'}</span>
             </div>
@@ -307,7 +307,7 @@ const PointShop: React.FC = () => {
 
           {/* Tabs */}
           <motion.div
-            className="flex gap-2 mb-6 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-2 border border-gray-200/50 dark:border-gray-800/50"
+            className="flex gap-2 mb-6 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-2 border border-transparent dark:border-gray-800/50"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
@@ -316,10 +316,10 @@ const PointShop: React.FC = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-medium transition-all ${
+                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold transition-all ${
                   activeTab === tab.id
-                    ? 'bg-gradient-to-r from-violet-600 to-pink-600 text-white'
-                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                    ? 'bg-ink text-white'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-sand-100 dark:hover:bg-gray-800'
                 }`}
               >
                 <span>{tab.icon}</span>
@@ -339,17 +339,16 @@ const PointShop: React.FC = () => {
                 className="space-y-6"
               >
                 {/* Coming Soon Hero */}
-                <div className="relative overflow-hidden bg-gradient-to-br from-violet-600 via-purple-600 to-pink-500 rounded-3xl p-8 text-center text-white shadow-2xl">
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.15),transparent_50%)]" />
-                  <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
-                  <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-white/10 rounded-full blur-2xl" />
+                <div className="relative overflow-hidden bg-ink rounded-3xl p-8 text-center text-white shadow-[0_10px_30px_rgba(16,16,20,0.1)]">
                   <div className="relative z-10">
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/20 backdrop-blur-sm rounded-full text-sm font-medium mb-4">
-                      <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 rounded-full text-sm font-bold mb-4">
+                      <span className="w-2 h-2 bg-primary-400 rounded-full animate-pulse" />
                       개발 진행 중
                     </div>
-                    <h3 className="text-2xl md:text-3xl font-bold mb-3">포인트 상점 곧 오픈</h3>
-                    <p className="text-white/80 max-w-md mx-auto">
+                    <h3 className="text-2xl md:text-3xl font-extrabold tracking-tight mb-3">
+                      포인트 상점 곧 오픈
+                    </h3>
+                    <p className="text-[#A0A0AC] max-w-md mx-auto">
                       포인트로 프로필 꾸미기, 배지, 이벤트 참여 등 다양한 아이템을 만나보세요
                     </p>
                   </div>
@@ -360,11 +359,11 @@ const PointShop: React.FC = () => {
                   {shopItems.map(item => (
                     <div
                       key={item.id}
-                      className="relative group bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-800/50 shadow-lg overflow-hidden"
+                      className="relative group bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-transparent dark:border-gray-800/50 shadow-lg overflow-hidden"
                     >
                       <div className="p-5">
                         <div className="flex items-start gap-4">
-                          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-100 to-pink-100 dark:from-violet-900/40 dark:to-pink-900/40 flex items-center justify-center text-2xl shrink-0">
+                          <div className="w-14 h-14 rounded-2xl bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center text-2xl shrink-0">
                             {item.icon}
                           </div>
                           <div className="flex-1 min-w-0">
@@ -374,7 +373,7 @@ const PointShop: React.FC = () => {
                             <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
                               {item.description}
                             </p>
-                            <div className="flex items-center gap-1.5 text-yellow-600 dark:text-yellow-400 font-bold text-lg">
+                            <div className="flex items-center gap-1.5 text-rarity-legendary font-extrabold text-lg">
                               <span>💰</span>
                               <span>{item.price.toLocaleString()}P</span>
                             </div>
@@ -383,7 +382,7 @@ const PointShop: React.FC = () => {
                       </div>
                       {/* Blur overlay */}
                       <div className="absolute inset-0 bg-white/40 dark:bg-gray-900/50 backdrop-blur-[2px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <div className="px-5 py-2.5 bg-violet-600 text-white rounded-xl font-semibold text-sm shadow-lg shadow-violet-500/25">
+                        <div className="px-5 py-2.5 bg-primary-500 text-white rounded-xl font-bold text-sm shadow-[0_8px_22px_rgba(74,58,255,0.3)]">
                           곧 오픈 예정
                         </div>
                       </div>
@@ -413,10 +412,10 @@ const PointShop: React.FC = () => {
                     <button
                       key={filter.id}
                       onClick={() => setSelectedType(filter.id)}
-                      className={`px-4 py-2 rounded-xl font-medium whitespace-nowrap transition-all ${
+                      className={`px-4 py-2 rounded-[10px] font-bold whitespace-nowrap transition-all ${
                         selectedType === filter.id
-                          ? 'bg-gradient-to-r from-violet-600 to-pink-600 text-white'
-                          : 'bg-white/80 dark:bg-gray-900/80 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                          ? 'bg-ink text-white'
+                          : 'bg-white dark:bg-gray-900/80 text-gray-600 dark:text-gray-300 hover:bg-sand-200 dark:hover:bg-gray-800'
                       }`}
                     >
                       {filter.label}
@@ -425,7 +424,7 @@ const PointShop: React.FC = () => {
                 </div>
 
                 {transactions.length === 0 && !isLoading ? (
-                  <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-8 border border-gray-200/50 dark:border-gray-800/50 text-center">
+                  <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-8 border border-transparent dark:border-gray-800/50 text-center">
                     <span className="text-4xl mb-4 block">📜</span>
                     <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
                       거래 내역이 없습니다
@@ -441,7 +440,7 @@ const PointShop: React.FC = () => {
                       return (
                         <div
                           key={tx.id}
-                          className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-4 border border-gray-200/50 dark:border-gray-800/50 shadow-lg"
+                          className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-4 border border-transparent dark:border-gray-800/50 shadow-lg"
                         >
                           <div className="flex items-center gap-4">
                             <div
@@ -479,7 +478,7 @@ const PointShop: React.FC = () => {
 
                 {isLoading && (
                   <div className="text-center py-8">
-                    <div className="w-10 h-10 border-4 border-violet-200 border-t-violet-600 rounded-full animate-spin mx-auto" />
+                    <div className="w-10 h-10 border-4 border-primary-100 border-t-primary-500 rounded-full animate-spin mx-auto" />
                   </div>
                 )}
               </motion.div>
@@ -495,7 +494,7 @@ const PointShop: React.FC = () => {
               >
                 <form
                   onSubmit={handleTransfer}
-                  className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-800/50 shadow-lg space-y-4"
+                  className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-6 border border-transparent dark:border-gray-800/50 shadow-lg space-y-4"
                 >
                   <div>
                     <label
@@ -510,7 +509,7 @@ const PointShop: React.FC = () => {
                       placeholder="포인트를 받을 사용자 ID"
                       value={receiverId}
                       onChange={e => setReceiverId(e.target.value)}
-                      className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-violet-500/50 transition-all"
+                      className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary-500/50 transition-all"
                       required
                     />
                   </div>
@@ -532,7 +531,7 @@ const PointShop: React.FC = () => {
                         onChange={e => setTransferAmount(e.target.value)}
                         min="1"
                         max={balance?.totalPoints || 0}
-                        className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 pl-12 pr-8 outline-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-violet-500/50 transition-all"
+                        className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 pl-12 pr-8 outline-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary-500/50 transition-all"
                         required
                       />
                       <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">
@@ -558,7 +557,7 @@ const PointShop: React.FC = () => {
                       value={transferMessage}
                       onChange={e => setTransferMessage(e.target.value)}
                       maxLength={100}
-                      className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-violet-500/50 transition-all"
+                      className="w-full bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-3 outline-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary-500/50 transition-all"
                     />
                   </div>
 
@@ -569,14 +568,14 @@ const PointShop: React.FC = () => {
                       !balance ||
                       balance.totalPoints < parseInt(transferAmount || '0')
                     }
-                    className="w-full py-4 bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-violet-500/25 transition-all duration-300 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:transform-none flex items-center justify-center gap-2"
+                    className="w-full py-4 bg-primary-500 hover:bg-primary-700 text-white font-bold rounded-xl shadow-[0_8px_22px_rgba(74,58,255,0.3)] transition-all duration-300 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:transform-none flex items-center justify-center gap-2"
                   >
                     <span>📤</span>
                     {isTransferring ? '전송 중...' : '포인트 전송'}
                   </button>
                 </form>
 
-                <div className="bg-violet-50 dark:bg-violet-900/20 rounded-2xl p-4 border border-violet-200/50 dark:border-violet-800/50">
+                <div className="bg-primary-50 dark:bg-primary-900/20 rounded-2xl p-4 border border-primary-100 dark:border-primary-800/50">
                   <h4 className="font-bold text-gray-800 dark:text-white mb-2">포인트 전송 안내</h4>
                   <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
                     <li>• 전송된 포인트는 취소할 수 없습니다.</li>

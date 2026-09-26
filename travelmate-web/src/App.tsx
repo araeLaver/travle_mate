@@ -21,6 +21,11 @@ const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '';
 // Lazy loaded pages for code splitting
 const Home = lazy(() => import('./pages/Home'));
 const About = lazy(() => import('./pages/About'));
+const Legal = lazy(() => import('./pages/Legal'));
+const AccountDeletion = lazy(() => import('./pages/AccountDeletion'));
+const TesterProgram = lazy(() => import('./pages/TesterProgram'));
+const ChildSafety = lazy(() => import('./pages/ChildSafety'));
+const NotFound = lazy(() => import('./pages/NotFound'));
 const Portfolio = lazy(() => import('./pages/Portfolio'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
@@ -112,6 +117,10 @@ function App() {
                     {/* 인증이 필요 없는 페이지 */}
                     <Route path="/" element={<Home />} />
                     <Route path="/about" element={<About />} />
+                    <Route path="/legal" element={<Legal />} />
+                    <Route path="/account-deletion" element={<AccountDeletion />} />
+                    <Route path="/tester" element={<TesterProgram />} />
+                    <Route path="/child-safety" element={<ChildSafety />} />
                     <Route path="/portfolio" element={<Portfolio />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
@@ -334,6 +343,9 @@ function App() {
                         </Layout>
                       }
                     />
+
+                    {/* 정의되지 않은 모든 경로 → 404 */}
+                    <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>
               </Router>

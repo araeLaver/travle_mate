@@ -41,7 +41,7 @@ export function getBiometricLabel(type: BiometricType): string {
 
 export async function authenticate(promptMessage?: string): Promise<boolean> {
   const result = await LocalAuthentication.authenticateAsync({
-    promptMessage: promptMessage || 'Fryndo 인증',
+    promptMessage: promptMessage || '두리메이트 인증',
     cancelLabel: '취소',
     disableDeviceFallback: false,
     fallbackLabel: '비밀번호 사용',

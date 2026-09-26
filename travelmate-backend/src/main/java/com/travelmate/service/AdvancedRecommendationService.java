@@ -3,6 +3,7 @@ package com.travelmate.service;
 import com.travelmate.dto.UserDto;
 import com.travelmate.entity.User;
 import com.travelmate.entity.TravelGroup;
+import com.travelmate.exception.BusinessException;
 import com.travelmate.repository.UserRepository;
 import com.travelmate.repository.TravelGroupRepository;
 import com.travelmate.repository.UserReviewRepository;
@@ -33,7 +34,7 @@ public class AdvancedRecommendationService {
      */
     public List<UserDto.Response> getPersonalizedRecommendations(Long userId) {
         User currentUser = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+            .orElseThrow(() -> BusinessException.userNotFound(userId));
         
         if (currentUser.getCurrentLatitude() == null || currentUser.getCurrentLongitude() == null) {
             return Collections.emptyList();
@@ -66,7 +67,7 @@ public class AdvancedRecommendationService {
      */
     public List<UserDto.Response> getActivityBasedRecommendations(Long userId, String currentActivity) {
         User currentUser = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+            .orElseThrow(() -> BusinessException.userNotFound(userId));
         
         // 같은 활동을 하고 있는 근처 사용자들 찾기
         List<User> nearbyUsers = userRepository.findNearbyUsers(
@@ -94,7 +95,7 @@ public class AdvancedRecommendationService {
      */
     public void performIntelligentMatching(Long userId) {
         User currentUser = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+            .orElseThrow(() -> BusinessException.userNotFound(userId));
         
         // 1. 즉시 매칭 가능한 사용자들
         List<User> immediateMatches = findImmediateMatches(currentUser);

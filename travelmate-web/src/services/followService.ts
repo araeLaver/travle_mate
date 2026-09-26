@@ -1,6 +1,5 @@
-import { authService } from './authService';
-
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+import { apiClient } from './apiClient';
+import { appendQuery, withServiceError } from './apiRequestUtils';
 
 // ===== Types =====
 
@@ -58,46 +57,24 @@ export interface PageResponse<T> {
 
 // ===== API Methods =====
 
-const getAuthHeaders = () => {
-  const token = authService.getToken();
-  return {
-    'Content-Type': 'application/json',
-    ...(token && { Authorization: `Bearer ${token}` }),
-  };
-};
-
 /**
  * 팔로우하기
  */
 export const follow = async (userId: number): Promise<FollowResponse> => {
-  const response = await fetch(`${API_BASE_URL}/users/${userId}/follow`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || '팔로우에 실패했습니다.');
-  }
-
-  return response.json();
+  return withServiceError(
+    apiClient.post<FollowResponse>(`/users/${userId}/follow`),
+    '팔로우에 실패했습니다.'
+  );
 };
 
 /**
  * 언팔로우하기
  */
 export const unfollow = async (userId: number): Promise<FollowResponse> => {
-  const response = await fetch(`${API_BASE_URL}/users/${userId}/follow`, {
-    method: 'DELETE',
-    headers: getAuthHeaders(),
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || '언팔로우에 실패했습니다.');
-  }
-
-  return response.json();
+  return withServiceError(
+    apiClient.delete<FollowResponse>(`/users/${userId}/follow`),
+    '언팔로우에 실패했습니다.'
+  );
 };
 
 /**
@@ -108,18 +85,12 @@ export const getFollowers = async (
   page: number = 0,
   size: number = 20
 ): Promise<PageResponse<FollowUserResponse>> => {
-  const response = await fetch(
-    `${API_BASE_URL}/users/${userId}/followers?page=${page}&size=${size}`,
-    {
-      headers: getAuthHeaders(),
-    }
+  return withServiceError(
+    apiClient.get<PageResponse<FollowUserResponse>>(
+      appendQuery(`/users/${userId}/followers`, { page, size })
+    ),
+    '팔로워 목록을 불러오는데 실패했습니다.'
   );
-
-  if (!response.ok) {
-    throw new Error('팔로워 목록을 불러오는데 실패했습니다.');
-  }
-
-  return response.json();
 };
 
 /**
@@ -130,48 +101,32 @@ export const getFollowing = async (
   page: number = 0,
   size: number = 20
 ): Promise<PageResponse<FollowUserResponse>> => {
-  const response = await fetch(
-    `${API_BASE_URL}/users/${userId}/following?page=${page}&size=${size}`,
-    {
-      headers: getAuthHeaders(),
-    }
+  return withServiceError(
+    apiClient.get<PageResponse<FollowUserResponse>>(
+      appendQuery(`/users/${userId}/following`, { page, size })
+    ),
+    '팔로잉 목록을 불러오는데 실패했습니다.'
   );
-
-  if (!response.ok) {
-    throw new Error('팔로잉 목록을 불러오는데 실패했습니다.');
-  }
-
-  return response.json();
 };
 
 /**
  * 팔로우 통계 조회
  */
 export const getFollowStats = async (userId: number): Promise<FollowStatsResponse> => {
-  const response = await fetch(`${API_BASE_URL}/users/${userId}/follow-stats`, {
-    headers: getAuthHeaders(),
-  });
-
-  if (!response.ok) {
-    throw new Error('팔로우 통계를 불러오는데 실패했습니다.');
-  }
-
-  return response.json();
+  return withServiceError(
+    apiClient.get<FollowStatsResponse>(`/users/${userId}/follow-stats`),
+    '팔로우 통계를 불러오는데 실패했습니다.'
+  );
 };
 
 /**
  * 팔로우 상태 확인
  */
 export const getFollowStatus = async (userId: number): Promise<FollowStatusResponse> => {
-  const response = await fetch(`${API_BASE_URL}/users/${userId}/follow-status`, {
-    headers: getAuthHeaders(),
-  });
-
-  if (!response.ok) {
-    throw new Error('팔로우 상태를 확인하는데 실패했습니다.');
-  }
-
-  return response.json();
+  return withServiceError(
+    apiClient.get<FollowStatusResponse>(`/users/${userId}/follow-status`),
+    '팔로우 상태를 확인하는데 실패했습니다.'
+  );
 };
 
 /**
@@ -182,18 +137,12 @@ export const getMutualFollowers = async (
   page: number = 0,
   size: number = 20
 ): Promise<PageResponse<FollowUserResponse>> => {
-  const response = await fetch(
-    `${API_BASE_URL}/users/${userId}/mutual-followers?page=${page}&size=${size}`,
-    {
-      headers: getAuthHeaders(),
-    }
+  return withServiceError(
+    apiClient.get<PageResponse<FollowUserResponse>>(
+      appendQuery(`/users/${userId}/mutual-followers`, { page, size })
+    ),
+    '맞팔로우 목록을 불러오는데 실패했습니다.'
   );
-
-  if (!response.ok) {
-    throw new Error('맞팔로우 목록을 불러오는데 실패했습니다.');
-  }
-
-  return response.json();
 };
 
 /**
@@ -203,15 +152,12 @@ export const getMyFollowers = async (
   page: number = 0,
   size: number = 20
 ): Promise<PageResponse<FollowUserResponse>> => {
-  const response = await fetch(`${API_BASE_URL}/users/me/followers?page=${page}&size=${size}`, {
-    headers: getAuthHeaders(),
-  });
-
-  if (!response.ok) {
-    throw new Error('팔로워 목록을 불러오는데 실패했습니다.');
-  }
-
-  return response.json();
+  return withServiceError(
+    apiClient.get<PageResponse<FollowUserResponse>>(
+      appendQuery('/users/me/followers', { page, size })
+    ),
+    '팔로워 목록을 불러오는데 실패했습니다.'
+  );
 };
 
 /**
@@ -221,47 +167,34 @@ export const getMyFollowing = async (
   page: number = 0,
   size: number = 20
 ): Promise<PageResponse<FollowUserResponse>> => {
-  const response = await fetch(`${API_BASE_URL}/users/me/following?page=${page}&size=${size}`, {
-    headers: getAuthHeaders(),
-  });
-
-  if (!response.ok) {
-    throw new Error('팔로잉 목록을 불러오는데 실패했습니다.');
-  }
-
-  return response.json();
+  return withServiceError(
+    apiClient.get<PageResponse<FollowUserResponse>>(
+      appendQuery('/users/me/following', { page, size })
+    ),
+    '팔로잉 목록을 불러오는데 실패했습니다.'
+  );
 };
 
 /**
  * 내 팔로우 통계 조회
  */
 export const getMyFollowStats = async (): Promise<FollowStatsResponse> => {
-  const response = await fetch(`${API_BASE_URL}/users/me/follow-stats`, {
-    headers: getAuthHeaders(),
-  });
-
-  if (!response.ok) {
-    throw new Error('팔로우 통계를 불러오는데 실패했습니다.');
-  }
-
-  return response.json();
+  return withServiceError(
+    apiClient.get<FollowStatsResponse>('/users/me/follow-stats'),
+    '팔로우 통계를 불러오는데 실패했습니다.'
+  );
 };
 
 /**
  * 사용자들의 팔로우 상태 배치 조회
  */
 export const getFollowStatusBatch = async (userIds: number[]): Promise<UserWithFollowStatus[]> => {
-  const response = await fetch(`${API_BASE_URL}/users/follow-status/batch`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify({ userIds }),
-  });
-
-  if (!response.ok) {
-    throw new Error('팔로우 상태를 확인하는데 실패했습니다.');
-  }
-
-  return response.json();
+  return withServiceError(
+    apiClient.post<UserWithFollowStatus[], { userIds: number[] }>('/users/follow-status/batch', {
+      userIds,
+    }),
+    '팔로우 상태를 확인하는데 실패했습니다.'
+  );
 };
 
 export const followService = {

@@ -9,10 +9,10 @@ import { adminService, DashboardStats, SystemHealth } from '../../services/admin
 
 // Chart colors
 const RARITY_COLORS: Record<string, string> = {
-  COMMON: '#9ca3af',
-  RARE: '#3b82f6',
-  EPIC: '#a855f7',
-  LEGENDARY: '#f59e0b',
+  COMMON: '#8A8A95',
+  RARE: '#2E7DF6',
+  EPIC: '#8B45E8',
+  LEGENDARY: '#E0952A',
 };
 
 interface StatCardProps {
@@ -23,14 +23,14 @@ interface StatCardProps {
   color?: string;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ title, value, icon, trend, color = '#6366f1' }) => (
+const StatCard: React.FC<StatCardProps> = ({ title, value, icon, trend, color = '#4A3AFF' }) => (
   <div className="bg-white rounded-lg shadow p-6">
     <div className="flex items-center justify-between">
       <div>
         <p className="text-sm font-medium text-gray-500">{title}</p>
         <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
         {trend && (
-          <p className={`text-sm mt-2 ${trend.value >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+          <p className={`text-sm mt-2 ${trend.value >= 0 ? 'text-success' : 'text-danger'}`}>
             {trend.value >= 0 ? '+' : ''}
             {trend.value} {trend.label}
           </p>
@@ -66,7 +66,7 @@ const SimpleBarChart: React.FC<BarChartProps> = ({ data, title }) => {
                 className="h-full rounded-full transition-all duration-500"
                 style={{
                   width: `${(item.value / maxValue) * 100}%`,
-                  backgroundColor: item.color || '#6366f1',
+                  backgroundColor: item.color || '#4A3AFF',
                 }}
               />
             </div>
@@ -92,12 +92,12 @@ const SimpleLineChart: React.FC<LineChartProps> = ({ data, title, label1, label2
       <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
       <div className="flex items-center gap-4 mb-4">
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-indigo-500" />
+          <div className="w-3 h-3 rounded-full bg-primary-500" />
           <span className="text-sm text-gray-600">{label1}</span>
         </div>
         {label2 && (
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-emerald-500" />
+            <div className="w-3 h-3 rounded-full bg-success" />
             <span className="text-sm text-gray-600">{label2}</span>
           </div>
         )}
@@ -124,7 +124,7 @@ const SimpleLineChart: React.FC<LineChartProps> = ({ data, title, label1, label2
           <path
             d={`M ${data.map((d, i) => `${i * 30 + 15},${100 - (d.value1 / maxValue) * 90}`).join(' L ')}`}
             fill="none"
-            stroke="#6366f1"
+            stroke="#4A3AFF"
             strokeWidth="2"
           />
           {/* Line 2 */}
@@ -132,7 +132,7 @@ const SimpleLineChart: React.FC<LineChartProps> = ({ data, title, label1, label2
             <path
               d={`M ${data.map((d, i) => `${i * 30 + 15},${100 - ((d.value2 || 0) / maxValue) * 90}`).join(' L ')}`}
               fill="none"
-              stroke="#10b981"
+              stroke="#3F8F5F"
               strokeWidth="2"
             />
           )}
@@ -183,7 +183,7 @@ const AdminOverview: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600" />
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500" />
       </div>
     );
   }
@@ -191,10 +191,10 @@ const AdminOverview: React.FC = () => {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-64">
-        <p className="text-red-600 mb-4">{error}</p>
+        <p className="text-danger mb-4">{error}</p>
         <button
           onClick={loadData}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+          className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-700"
         >
           다시 시도
         </button>
@@ -241,7 +241,7 @@ const AdminOverview: React.FC = () => {
             </svg>
           }
           trend={{ value: stats.newUsersToday, label: '오늘' }}
-          color="#6366f1"
+          color="#4A3AFF"
         />
         <StatCard
           title="전체 NFT"
@@ -257,7 +257,7 @@ const AdminOverview: React.FC = () => {
             </svg>
           }
           trend={{ value: stats.collectionsToday, label: '오늘 수집' }}
-          color="#10b981"
+          color="#3F8F5F"
         />
         <StatCard
           title="활성 그룹"
@@ -272,7 +272,7 @@ const AdminOverview: React.FC = () => {
               />
             </svg>
           }
-          color="#f59e0b"
+          color="#E0952A"
         />
         <StatCard
           title="평균 평점"
@@ -287,7 +287,7 @@ const AdminOverview: React.FC = () => {
               />
             </svg>
           }
-          color="#ec4899"
+          color="#8B45E8"
         />
       </div>
 
@@ -317,7 +317,7 @@ const AdminOverview: React.FC = () => {
               />
             </svg>
           }
-          color="#8b5cf6"
+          color="#2E7DF6"
         />
         <StatCard
           title="주간 신규 사용자"
@@ -332,7 +332,7 @@ const AdminOverview: React.FC = () => {
               />
             </svg>
           }
-          color="#06b6d4"
+          color="#4A3AFF"
         />
         <StatCard
           title="전체 리뷰"
@@ -347,7 +347,7 @@ const AdminOverview: React.FC = () => {
               />
             </svg>
           }
-          color="#f97316"
+          color="#E0952A"
         />
       </div>
 
@@ -358,7 +358,7 @@ const AdminOverview: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="flex items-center gap-4">
               <div
-                className={`w-3 h-3 rounded-full ${health.status === 'UP' ? 'bg-green-500' : 'bg-red-500'}`}
+                className={`w-3 h-3 rounded-full ${health.status === 'UP' ? 'bg-success' : 'bg-danger'}`}
               />
               <div>
                 <p className="text-sm text-gray-500">상태</p>
@@ -374,7 +374,7 @@ const AdminOverview: React.FC = () => {
               <div className="flex items-center gap-2">
                 <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-indigo-500 rounded-full"
+                    className="h-full bg-primary-500 rounded-full"
                     style={{ width: `${health.memoryUsage}%` }}
                   />
                 </div>
@@ -392,7 +392,7 @@ const AdminOverview: React.FC = () => {
               >
                 <div className="flex items-center gap-3">
                   <div
-                    className={`w-2 h-2 rounded-full ${service.status === 'UP' ? 'bg-green-500' : 'bg-red-500'}`}
+                    className={`w-2 h-2 rounded-full ${service.status === 'UP' ? 'bg-success' : 'bg-danger'}`}
                   />
                   <span className="font-medium text-gray-900">{service.name}</span>
                 </div>

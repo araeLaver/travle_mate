@@ -1,11 +1,15 @@
 package com.travelmate.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.travelmate.dto.RecommendationDto;
 import com.travelmate.dto.UserDto;
+import com.travelmate.entity.RecommendationFeedback;
 import com.travelmate.entity.TravelGroup;
 import com.travelmate.entity.User;
 import com.travelmate.entity.User.TravelStyle;
 import com.travelmate.entity.UserGroupMembership;
+import com.travelmate.exception.BusinessException;
+import com.travelmate.repository.RecommendationFeedbackRepository;
 import com.travelmate.repository.TravelGroupRepository;
 import com.travelmate.repository.UserGroupMembershipRepository;
 import com.travelmate.repository.UserRepository;
@@ -15,8 +19,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
@@ -41,6 +47,12 @@ class RecommendationServiceTest {
 
     @Mock
     private UserTrustScoreRepository trustScoreRepository;
+
+    @Mock
+    private RecommendationFeedbackRepository recommendationFeedbackRepository;
+
+    @Spy
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     @InjectMocks
     private RecommendationService recommendationService;
@@ -125,8 +137,9 @@ class RecommendationServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> recommendationService.getRecommendedUsers(1L))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessageContaining("사용자를 찾을 수 없습니다");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("사용자를 찾을 수 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 404, "USER_NOT_FOUND"));
         }
     }
 
@@ -363,5 +376,158 @@ class RecommendationServiceTest {
             assertThat(tips.get(0)).containsKey("category");
             assertThat(tips.get(0)).containsKey("content");
         }
+    }
+
+    @Nested
+    @DisplayName("processFeedback 테스트")
+    class ProcessFeedbackTest {
+
+        @Test
+        @DisplayName("성공 - 인증 사용자 ID로 피드백 저장하고 본문 userId는 무시")
+        void processFeedback_UsesAuthenticatedUserId() {
+            // Given
+            Map<String, Object> feedback = new HashMap<>();
+            feedback.put("userId", 999L);
+            feedback.put("rating", 5);
+            feedback.put("comment", "좋은 추천입니다");
+            feedback.put("feedbackType", "GROUP_RECOMMENDATION");
+            feedback.put("targetType", "GROUP");
+            feedback.put("targetId", 100L);
+            feedback.put("modelVersion", "v2");
+
+            when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+            when(recommendationFeedbackRepository.save(any(RecommendationFeedback.class))).thenAnswer(inv -> {
+                RecommendationFeedback saved = inv.getArgument(0);
+                saved.setId(10L);
+                return saved;
+            });
+
+            // When
+            RecommendationFeedback saved = recommendationService.processFeedback(1L, feedback);
+
+            // Then
+            assertThat(saved.getId()).isEqualTo(10L);
+
+            ArgumentCaptor<RecommendationFeedback> feedbackCaptor =
+                    ArgumentCaptor.forClass(RecommendationFeedback.class);
+            verify(recommendationFeedbackRepository).save(feedbackCaptor.capture());
+
+            RecommendationFeedback persisted = feedbackCaptor.getValue();
+            assertThat(persisted.getUser().getId()).isEqualTo(1L);
+            assertThat(persisted.getRating()).isEqualTo(5);
+            assertThat(persisted.getComment()).isEqualTo("좋은 추천입니다");
+            assertThat(persisted.getFeedbackType()).isEqualTo("GROUP_RECOMMENDATION");
+            assertThat(persisted.getTargetType()).isEqualTo("GROUP");
+            assertThat(persisted.getTargetId()).isEqualTo(100L);
+            assertThat(persisted.getMetadata()).contains("\"modelVersion\":\"v2\"");
+            assertThat(persisted.getMetadata()).doesNotContain("userId");
+        }
+
+        @Test
+        @DisplayName("실패 - 인증 사용자 ID 없음")
+        void processFeedback_MissingUserId() {
+            // Given
+            Map<String, Object> feedback = Map.of("rating", 5);
+
+            // When & Then
+            assertThatThrownBy(() -> recommendationService.processFeedback(null, feedback))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("사용자 ID가 필요합니다")
+                    .satisfies(ex -> assertBusinessException(ex, 400, "BAD_REQUEST"));
+            verify(recommendationFeedbackRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("실패 - 피드백 데이터 없음")
+        void processFeedback_EmptyFeedback() {
+            // When & Then
+            assertThatThrownBy(() -> recommendationService.processFeedback(1L, Map.of()))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("피드백 데이터가 비어있습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 400, "BAD_REQUEST"));
+            verify(recommendationFeedbackRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("실패 - 평점 누락")
+        void processFeedback_MissingRating() {
+            // Given
+            Map<String, Object> feedback = Map.of("comment", "평점 누락");
+
+            // When & Then
+            assertThatThrownBy(() -> recommendationService.processFeedback(1L, feedback))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("필수 필드가 누락되었습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 400, "BAD_REQUEST"));
+            verify(recommendationFeedbackRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("실패 - 평점 숫자 아님")
+        void processFeedback_InvalidRatingType() {
+            // Given
+            Map<String, Object> feedback = Map.of("rating", "bad");
+
+            // When & Then
+            assertThatThrownBy(() -> recommendationService.processFeedback(1L, feedback))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("rating은 숫자여야 합니다")
+                    .satisfies(ex -> assertBusinessException(ex, 400, "BAD_REQUEST"));
+            verify(recommendationFeedbackRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("실패 - 평점 범위 초과")
+        void processFeedback_InvalidRatingRange() {
+            // Given
+            Map<String, Object> feedback = Map.of("rating", 6);
+
+            // When & Then
+            assertThatThrownBy(() -> recommendationService.processFeedback(1L, feedback))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("rating은 1부터 5 사이여야 합니다")
+                    .satisfies(ex -> assertBusinessException(ex, 400, "BAD_REQUEST"));
+            verify(recommendationFeedbackRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("실패 - 코멘트 길이 제한 초과")
+        void processFeedback_RejectsTooLongComment() {
+            // Given
+            Map<String, Object> feedback = Map.of(
+                    "rating", 5,
+                    "comment", "a".repeat(1001)
+            );
+
+            // When & Then
+            assertThatThrownBy(() -> recommendationService.processFeedback(1L, feedback))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("comment은 1000자 이하여야 합니다")
+                    .satisfies(ex -> assertBusinessException(ex, 400, "BAD_REQUEST"));
+            verify(recommendationFeedbackRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("실패 - 피드백 타입 길이 제한 초과")
+        void processFeedback_RejectsTooLongFeedbackType() {
+            // Given
+            Map<String, Object> feedback = Map.of(
+                    "rating", 5,
+                    "feedbackType", "a".repeat(51)
+            );
+
+            // When & Then
+            assertThatThrownBy(() -> recommendationService.processFeedback(1L, feedback))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("feedbackType은 50자 이하여야 합니다")
+                    .satisfies(ex -> assertBusinessException(ex, 400, "BAD_REQUEST"));
+            verify(recommendationFeedbackRepository, never()).save(any());
+        }
+    }
+
+    private void assertBusinessException(Throwable throwable, int status, String errorCode) {
+        BusinessException exception = (BusinessException) throwable;
+        assertThat(exception.getStatus().value()).isEqualTo(status);
+        assertThat(exception.getErrorCodeStr()).isEqualTo(errorCode);
     }
 }

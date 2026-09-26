@@ -1,5 +1,6 @@
 package com.travelmate.controller;
 
+import com.travelmate.security.AuthenticatedUserId;
 import com.travelmate.dto.AuthDto;
 import com.travelmate.dto.UserDto;
 import com.travelmate.service.AuthService;
@@ -37,6 +38,8 @@ public class AuthController {
     private Long refreshTokenExpiration;
 
     private static final String REFRESH_TOKEN_COOKIE_NAME = "refreshToken";
+    private static final String CLIENT_TYPE_HEADER = "X-Client-Type";
+    private static final String MOBILE_CLIENT_TYPE = "mobile";
 
     /**
      * 로그인 - Access Token + Refresh Token 발급
@@ -56,6 +59,7 @@ public class AuthController {
             @Valid @RequestBody UserDto.LoginRequest request,
             @RequestHeader(value = "X-Device-Id", required = false) String deviceId,
             @RequestHeader(value = "X-Device-Name", required = false) String deviceName,
+            @RequestHeader(value = CLIENT_TYPE_HEADER, required = false) String clientType,
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse) {
 
@@ -67,8 +71,7 @@ public class AuthController {
         // Refresh Token을 httpOnly 쿠키로 설정
         setRefreshTokenCookie(httpResponse, response.getRefreshToken());
 
-        // 응답에서 refresh token 제거 (쿠키로만 전송)
-        response.setRefreshToken(null);
+        stripRefreshTokenForCookieClients(response, clientType);
 
         return ResponseEntity.ok(response);
     }
@@ -89,14 +92,17 @@ public class AuthController {
     public ResponseEntity<AuthDto.TokenResponse> refreshToken(
             @CookieValue(value = REFRESH_TOKEN_COOKIE_NAME, required = false) String cookieRefreshToken,
             @RequestBody(required = false) AuthDto.RefreshTokenRequest request,
+            @RequestHeader(value = CLIENT_TYPE_HEADER, required = false) String clientType,
             HttpServletResponse httpResponse) {
 
         // 쿠키에서 우선 읽고, 없으면 요청 본문에서 읽음 (하위 호환성)
         String refreshToken = cookieRefreshToken;
         String deviceId = null;
 
-        if (refreshToken == null && request != null) {
-            refreshToken = request.getRefreshToken();
+        if (request != null) {
+            if (refreshToken == null) {
+                refreshToken = request.getRefreshToken();
+            }
             deviceId = request.getDeviceId();
         }
 
@@ -109,7 +115,7 @@ public class AuthController {
         // 새로운 refresh token이 발급되었다면 쿠키 갱신
         if (response.getRefreshToken() != null) {
             setRefreshTokenCookie(httpResponse, response.getRefreshToken());
-            response.setRefreshToken(null);
+            stripRefreshTokenForCookieClients(response, clientType);
         }
 
         return ResponseEntity.ok(response);
@@ -133,7 +139,7 @@ public class AuthController {
             @RequestBody(required = false) AuthDto.LogoutRequest request,
             HttpServletResponse httpResponse) {
 
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
 
         // 쿠키에서 우선 읽고, 없으면 요청 본문에서 읽음
         String refreshToken = cookieRefreshToken;
@@ -158,6 +164,7 @@ public class AuthController {
     @PostMapping("/oauth/login")
     public ResponseEntity<AuthDto.LoginResponse> oauthLogin(
             @Valid @RequestBody AuthDto.OAuthLoginRequest request,
+            @RequestHeader(value = CLIENT_TYPE_HEADER, required = false) String clientType,
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse) {
 
@@ -169,8 +176,7 @@ public class AuthController {
         // Refresh Token을 httpOnly 쿠키로 설정
         setRefreshTokenCookie(httpResponse, response.getRefreshToken());
 
-        // 응답에서 refresh token 제거
-        response.setRefreshToken(null);
+        stripRefreshTokenForCookieClients(response, clientType);
 
         return ResponseEntity.ok(response);
     }
@@ -182,6 +188,7 @@ public class AuthController {
     @PostMapping("/oauth/code-login")
     public ResponseEntity<AuthDto.LoginResponse> oauthCodeLogin(
             @Valid @RequestBody AuthDto.OAuthCodeLoginRequest request,
+            @RequestHeader(value = CLIENT_TYPE_HEADER, required = false) String clientType,
             HttpServletRequest httpRequest,
             HttpServletResponse httpResponse) {
 
@@ -191,7 +198,7 @@ public class AuthController {
         AuthDto.LoginResponse response = authService.oauthCodeLogin(request, ipAddress, userAgent);
 
         setRefreshTokenCookie(httpResponse, response.getRefreshToken());
-        response.setRefreshToken(null);
+        stripRefreshTokenForCookieClients(response, clientType);
 
         return ResponseEntity.ok(response);
     }
@@ -204,7 +211,7 @@ public class AuthController {
             @AuthenticationPrincipal String userId) {
 
         return ResponseEntity.ok(Map.of(
-            "userId", Long.parseLong(userId),
+            "userId", AuthenticatedUserId.parse(userId),
             "authenticated", true
         ));
     }
@@ -243,6 +250,22 @@ public class AuthController {
         }
         // IPv4 또는 IPv6 기본 형식 검증
         return ip.matches("^[0-9a-fA-F.:]+$") && ip.length() <= 45;
+    }
+
+    private void stripRefreshTokenForCookieClients(AuthDto.LoginResponse response, String clientType) {
+        if (!isMobileClient(clientType)) {
+            response.setRefreshToken(null);
+        }
+    }
+
+    private void stripRefreshTokenForCookieClients(AuthDto.TokenResponse response, String clientType) {
+        if (!isMobileClient(clientType)) {
+            response.setRefreshToken(null);
+        }
+    }
+
+    private boolean isMobileClient(String clientType) {
+        return MOBILE_CLIENT_TYPE.equalsIgnoreCase(clientType);
     }
 
     /**

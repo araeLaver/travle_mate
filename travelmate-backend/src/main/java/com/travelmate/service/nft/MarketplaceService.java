@@ -3,6 +3,8 @@ package com.travelmate.service.nft;
 import com.travelmate.dto.NftDto;
 import com.travelmate.entity.User;
 import com.travelmate.entity.nft.*;
+import com.travelmate.exception.BusinessException;
+import com.travelmate.exception.ErrorCode;
 import com.travelmate.repository.UserRepository;
 import com.travelmate.repository.nft.NftMarketplaceListingRepository;
 import com.travelmate.repository.nft.UserNftCollectionRepository;
@@ -76,12 +78,12 @@ public class MarketplaceService {
         // 3. 이미 판매 중인지 확인
         boolean isListed = marketplaceListingRepository.isNftListed(request.getNftCollectionId());
         if (isListed) {
-            throw new IllegalStateException("이미 판매 중인 NFT입니다");
+            throw BusinessException.conflict("이미 판매 중인 NFT입니다");
         }
 
         // 4. 판매자 조회
         User seller = userRepository.findById(sellerId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다"));
+                .orElseThrow(() -> BusinessException.userNotFound(sellerId));
 
         // 5. 리스팅 기간 설정
         int durationDays = request.getDurationDays() != null
@@ -115,33 +117,33 @@ public class MarketplaceService {
     public NftDto.BuyNftResponse buyNft(Long buyerId, Long listingId) {
         // 1. 리스팅 조회
         NftMarketplaceListing listing = marketplaceListingRepository.findById(listingId)
-                .orElseThrow(() -> new RuntimeException("판매 리스팅을 찾을 수 없습니다"));
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND, "판매 리스팅을 찾을 수 없습니다"));
 
         // 2. 상태 확인
         if (listing.getStatus() != ListingStatus.ACTIVE) {
-            throw new IllegalStateException("판매 중인 NFT가 아닙니다");
+            throw BusinessException.conflict("판매 중인 NFT가 아닙니다");
         }
 
         // 3. 만료 확인
         if (listing.getExpiresAt() != null && listing.getExpiresAt().isBefore(LocalDateTime.now())) {
             listing.setStatus(ListingStatus.EXPIRED);
             marketplaceListingRepository.save(listing);
-            throw new IllegalStateException("판매 기간이 만료되었습니다");
+            throw BusinessException.conflict("판매 기간이 만료되었습니다");
         }
 
         // 4. 자기 자신 구매 방지
         if (listing.getSeller().getId().equals(buyerId)) {
-            throw new IllegalStateException("본인의 NFT는 구매할 수 없습니다");
+            throw BusinessException.forbidden("본인의 NFT는 구매할 수 없습니다");
         }
 
         // 5. 구매자 조회
         User buyer = userRepository.findById(buyerId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다"));
+                .orElseThrow(() -> BusinessException.userNotFound(buyerId));
 
         // 6. 포인트 잔액 확인
         Long price = listing.getPriceInPoints();
         if (!pointService.hasEnoughPoints(buyerId, price)) {
-            throw new IllegalStateException("포인트가 부족합니다");
+            throw BusinessException.badRequest("포인트가 부족합니다");
         }
 
         // 7. 포인트 차감 (구매자)
@@ -221,14 +223,14 @@ public class MarketplaceService {
     @Transactional
     public void cancelListing(Long sellerId, Long listingId) {
         NftMarketplaceListing listing = marketplaceListingRepository.findById(listingId)
-                .orElseThrow(() -> new RuntimeException("판매 리스팅을 찾을 수 없습니다"));
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESOURCE_NOT_FOUND, "판매 리스팅을 찾을 수 없습니다"));
 
         if (!listing.getSeller().getId().equals(sellerId)) {
-            throw new RuntimeException("해당 리스팅의 판매자가 아닙니다");
+            throw new BusinessException(ErrorCode.NFT_NOT_OWNER, "해당 리스팅의 판매자가 아닙니다");
         }
 
         if (listing.getStatus() != ListingStatus.ACTIVE) {
-            throw new IllegalStateException("취소할 수 없는 상태입니다");
+            throw BusinessException.conflict("취소할 수 없는 상태입니다");
         }
 
         listing.setStatus(ListingStatus.CANCELLED);

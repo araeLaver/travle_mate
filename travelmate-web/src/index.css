@@ -3,8 +3,8 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+/* Google Fonts — 두리메이트 design system */
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:wght@500;600&family=Noto+Sans+KR:wght@400;500;700&display=swap');
 
 /* Custom Base Styles */
 @layer base {
@@ -16,61 +16,87 @@
     @apply bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans antialiased;
   }
 
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
+  /*
+   * :where()로 감싸 특이도를 0으로 만든다.
+   *
+   * 그냥 `h1 { @apply dark:text-gray-100 }`로 두면 `.dark h1`(클래스+요소)로 컴파일돼
+   * `.text-ink`(클래스 하나)보다 특이도가 높아진다. 그 결과 다크 모드에서 제목에 붙인
+   * 색 유틸리티가 전부 무시되고 흰 글씨가 되는데, 랜딩/약관 페이지는 배경을 밝은색으로
+   * 고정해 두기 때문에 흰 배경에 흰 글씨가 됐다.
+   *
+   * 크기도 같이 감싼다. 특이도가 섞이면 `text-[42px]` 같은 임의값도 같은 이유로 진다.
+   */
+  :where(h1, h2, h3, h4, h5, h6) {
     @apply font-bold text-gray-900 dark:text-gray-100;
   }
 
-  h1 {
+  :where(h1) {
     @apply text-4xl md:text-5xl lg:text-6xl;
   }
 
-  h2 {
+  :where(h2) {
     @apply text-3xl md:text-4xl lg:text-5xl;
   }
 
-  h3 {
+  :where(h3) {
     @apply text-2xl md:text-3xl;
   }
 
-  h4 {
+  :where(h4) {
     @apply text-xl md:text-2xl;
   }
 
-  h5 {
+  :where(h5) {
     @apply text-lg md:text-xl;
   }
 
-  h6 {
+  :where(h6) {
     @apply text-base md:text-lg;
   }
 
-  p {
+  /* 제목과 같은 이유로 :where()를 쓴다. 이게 없으면 다크 모드에서 .dark p 가
+     text-[#4A4A55] 같은 유틸리티를 이겨서 본문 색이 통째로 바뀐다. */
+  :where(p) {
     @apply text-gray-600 dark:text-gray-400;
   }
 
-  a {
+  :where(a) {
     @apply text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 transition-colors;
   }
 }
 
 /* Custom Component Styles */
 @layer components {
+  /*
+   * 랜딩·약관·테스터 안내처럼 배경을 밝은색으로 고정한 페이지에 붙인다.
+   *
+   * 이 페이지들은 다크 테마 대응이 없어서 배경이 항상 bg-sand-100/bg-white다.
+   * 그런데 base의 :where(h1…)·:where(p)는 특이도가 0이라도 "상속"은 이기기 때문에,
+   * 색을 명시하지 않은 제목·문단은 다크 모드에서 흰색이 되어 흰 배경에 묻혔다.
+   * 여기서 밝은 배경용 기본색을 되돌려 준다.
+   *
+   * 이 안의 어두운 패널에는 text-white 같은 유틸리티를 직접 붙인다.
+   * 유틸리티 레이어가 뒤에 오므로 같은 특이도에서 유틸리티가 이긴다.
+   */
+  .light-surface :where(h1, h2, h3, h4, h5, h6) {
+    @apply text-ink;
+  }
+
+  .light-surface :where(p) {
+    @apply text-[#4A4A55];
+  }
+
   /* Buttons */
   .btn {
     @apply inline-flex items-center justify-center gap-2 px-6 py-3 font-semibold rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .btn-primary {
-    @apply bg-gradient-to-r from-primary-600 to-primary-700 text-white hover:from-primary-700 hover:to-primary-800 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0;
+    @apply bg-primary-500 text-white hover:bg-primary-700 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0;
   }
 
   .btn-secondary {
-    @apply bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 border-2 border-primary-200 dark:border-primary-800 hover:bg-primary-50 dark:hover:bg-gray-900 hover:border-primary-300 dark:hover:border-primary-700 hover:shadow-md;
+    @apply bg-sand-200 dark:bg-gray-800 text-ink dark:text-gray-100 hover:bg-sand-300 dark:hover:bg-gray-700 hover:shadow-md;
   }
 
   .btn-ghost {
@@ -171,21 +197,21 @@
     animation: gentle-float 6s ease-in-out infinite;
   }
 
-  /* Soft Gradient Backgrounds */
+  /* Soft Gradient Backgrounds — 두리메이트 photo-placeholder palette */
   .gradient-soft-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(150deg, #c7cee6 0%, #9aa6c9 100%);
   }
 
   .gradient-soft-warm {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    background: linear-gradient(150deg, #e3d3c2 0%, #c0a288 100%);
   }
 
   .gradient-soft-cool {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    background: linear-gradient(150deg, #bfd0ce 0%, #8fa6ae 100%);
   }
 
   .gradient-soft-nature {
-    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    background: linear-gradient(150deg, #d6dcc9 0%, #a3b392 100%);
   }
 
   .gradient-mesh {
@@ -239,12 +265,12 @@
 
   /* Gradient Text */
   .gradient-text {
-    @apply bg-gradient-to-r from-primary-600 via-purple-600 to-pink-600 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-primary-500 via-primary-400 to-rarity-epic bg-clip-text text-transparent;
   }
 
   /* Gradient Background */
   .gradient-bg {
-    @apply bg-gradient-to-br from-primary-600 via-purple-600 to-pink-600;
+    @apply bg-gradient-to-br from-primary-500 via-primary-400 to-rarity-epic;
   }
 }
 
@@ -347,4 +373,29 @@
   .no-print {
     @apply hidden;
   }
+}
+
+:root {
+  /* 두리메이트 design system tokens (claude.ai/design brief) */
+  --doorimate-ink: #101014;
+  --doorimate-primary: #4a3aff;
+  --doorimate-primary-soft: #ecebff;
+  --doorimate-sand: #f5f4f1;
+  --doorimate-sand-alt: #f0efeb;
+  --doorimate-cloud: #fafaf8;
+  --doorimate-hairline: #f2f1ed;
+  --doorimate-outline: #e1e0db;
+  --doorimate-legendary: #e0952a;
+  /* Legacy aliases (kept for gradual migration) */
+  --doorimate-route: #4a3aff;
+  --doorimate-mint: #2e7df6;
+}
+
+body {
+  font-family: 'Manrope', 'Noto Sans KR', ui-sans-serif, system-ui, sans-serif;
+  background: var(--doorimate-sand);
+}
+
+.font-display {
+  font-family: 'Playfair Display', 'Noto Sans KR', serif;
 }

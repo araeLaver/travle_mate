@@ -17,9 +17,19 @@ export interface RegisterRequest {
 
 export interface AuthResponse {
   accessToken: string;
-  refreshToken: string;
+  refreshToken?: string | null;
   user: User;
 }
+
+export type TravelStyle =
+  | 'ADVENTURE'
+  | 'CULTURE'
+  | 'FOOD'
+  | 'RELAXATION'
+  | 'NATURE'
+  | 'SHOPPING';
+
+export type Gender = 'MALE' | 'FEMALE' | 'OTHER';
 
 export interface User {
   id: number;
@@ -27,6 +37,10 @@ export interface User {
   nickname: string;
   profileImageUrl?: string;
   bio?: string;
+  age?: number;
+  gender?: Gender;
+  travelStyle?: TravelStyle;
+  isMatchingEnabled?: boolean;
   role: string;
   totalPoints: number;
   totalNftsCollected: number;
@@ -36,31 +50,50 @@ export interface User {
 export interface UpdateProfileRequest {
   nickname?: string;
   bio?: string;
+  age?: number;
+  gender?: Gender;
+  travelStyle?: TravelStyle;
+  isMatchingEnabled?: boolean;
 }
 
 class AuthService {
   async login(request: LoginRequest): Promise<AuthResponse> {
-    const response = await apiClient.post<AuthResponse>('/auth/login', request);
+    const response = await apiClient.post<AuthResponse>(
+      '/auth/login',
+      request,
+      await apiClient.withDeviceHeaders()
+    );
+    this.assertRefreshToken(response);
     await apiClient.setTokens(response.accessToken, response.refreshToken);
     return response;
   }
 
   async register(request: RegisterRequest): Promise<AuthResponse> {
-    const response = await apiClient.post<AuthResponse>('/auth/register', request);
-    await apiClient.setTokens(response.accessToken, response.refreshToken);
-    return response;
+    await apiClient.post<User>('/users/register', request);
+    return this.login({
+      email: request.email,
+      password: request.password,
+    });
   }
 
   async logout(): Promise<void> {
     try {
-      await apiClient.post('/auth/logout');
+      const [refreshToken, { deviceId }] = await Promise.all([
+        apiClient.getRefreshToken(),
+        apiClient.getDeviceContext(),
+      ]);
+
+      await apiClient.post('/auth/logout', {
+        refreshToken,
+        deviceId,
+      });
     } finally {
       await apiClient.clearTokens();
     }
   }
 
   async getCurrentUser(): Promise<User> {
-    return apiClient.get<User>('/auth/me');
+    return apiClient.get<User>('/users/me');
   }
 
   async updateProfile(request: UpdateProfileRequest): Promise<User> {
@@ -68,16 +101,34 @@ class AuthService {
   }
 
   async uploadProfileImage(uri: string): Promise<{ url: string }> {
-    return apiClient.uploadFile('/users/profile/image', {
+    return apiClient.uploadFile('/files/upload/profile', {
       uri,
       name: 'profile.jpg',
       type: 'image/jpeg',
     });
   }
 
+  /**
+   * 계정 삭제. Google Play는 계정을 만들 수 있는 앱에 앱 내 삭제 경로를 의무화한다.
+   * 서버가 사용자 데이터를 지우므로 되돌릴 수 없다.
+   */
+  async deleteAccount(): Promise<void> {
+    await apiClient.delete<void>('/users/account');
+    await apiClient.clearTokens();
+  }
+
   async isAuthenticated(): Promise<boolean> {
-    const token = await apiClient.getToken();
-    return !!token;
+    const [token, refreshToken] = await Promise.all([
+      apiClient.getToken(),
+      apiClient.getRefreshToken(),
+    ]);
+    return !!token || !!refreshToken;
+  }
+
+  private assertRefreshToken(response: AuthResponse): void {
+    if (!response.refreshToken) {
+      throw new Error('모바일 로그인 응답에 refresh token이 없습니다.');
+    }
   }
 }
 

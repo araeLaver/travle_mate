@@ -3,6 +3,7 @@ package com.travelmate.service;
 import com.travelmate.dto.UserDto;
 import com.travelmate.entity.User;
 import com.travelmate.entity.User.TravelStyle;
+import com.travelmate.exception.BusinessException;
 import com.travelmate.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -238,8 +239,13 @@ class LocationServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> locationService.getSmartRecommendations(1L, 37.5665, 126.9780))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessageContaining("사용자를 찾을 수 없습니다");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("사용자를 찾을 수 없습니다")
+                    .satisfies(ex -> {
+                        BusinessException businessException = (BusinessException) ex;
+                        assertThat(businessException.getStatus().value()).isEqualTo(404);
+                        assertThat(businessException.getErrorCodeStr()).isEqualTo("USER_NOT_FOUND");
+                    });
         }
     }
 

@@ -1,5 +1,6 @@
 package com.travelmate.controller;
 
+import com.travelmate.security.AuthenticatedUserId;
 import com.travelmate.dto.ConversationDto;
 import com.travelmate.service.ConversationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,7 +24,7 @@ import java.util.List;
  * PUT    /api/messages/{conversationId}/read    — 읽음 처리
  */
 @RestController
-@RequestMapping("/api")
+@RequestMapping
 @RequiredArgsConstructor
 @Tag(name = "채팅 MVP", description = "1:1 대화 및 메시지 API")
 public class ConversationController {
@@ -40,7 +41,7 @@ public class ConversationController {
             @AuthenticationPrincipal String userId,
             @Valid @RequestBody ConversationDto.StartConversationRequest request) {
 
-        Long myUserId = Long.parseLong(userId);
+        Long myUserId = AuthenticatedUserId.parse(userId);
         ConversationDto.ConversationResponse response =
                 conversationService.startConversation(myUserId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -51,7 +52,7 @@ public class ConversationController {
     public ResponseEntity<List<ConversationDto.ConversationSummary>> getMyConversations(
             @AuthenticationPrincipal String userId) {
 
-        Long myUserId = Long.parseLong(userId);
+        Long myUserId = AuthenticatedUserId.parse(userId);
         List<ConversationDto.ConversationSummary> list =
                 conversationService.getMyConversations(myUserId);
         return ResponseEntity.ok(list);
@@ -69,7 +70,7 @@ public class ConversationController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
-        Long myUserId = Long.parseLong(userId);
+        Long myUserId = AuthenticatedUserId.parse(userId);
         ConversationDto.MessagePageResponse response =
                 conversationService.getMessages(myUserId, conversationId, page, size);
         return ResponseEntity.ok(response);
@@ -81,7 +82,7 @@ public class ConversationController {
             @AuthenticationPrincipal String userId,
             @Valid @RequestBody ConversationDto.SendMessageRequest request) {
 
-        Long myUserId = Long.parseLong(userId);
+        Long myUserId = AuthenticatedUserId.parse(userId);
         ConversationDto.MessageResponse response =
                 conversationService.sendMessage(myUserId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -93,7 +94,7 @@ public class ConversationController {
             @AuthenticationPrincipal String userId,
             @PathVariable Long conversationId) {
 
-        Long myUserId = Long.parseLong(userId);
+        Long myUserId = AuthenticatedUserId.parse(userId);
         conversationService.markAsRead(myUserId, conversationId);
         return ResponseEntity.noContent().build();
     }

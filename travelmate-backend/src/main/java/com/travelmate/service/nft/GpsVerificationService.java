@@ -6,8 +6,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * GPS 위조 방지를 위한 다층 검증 서비스
@@ -23,8 +21,8 @@ public class GpsVerificationService {
     private static final double TELEPORT_THRESHOLD_METERS = 10000; // 10km 이상 순간이동 의심
     private static final int RISK_SCORE_THRESHOLD = 70; // 70점 이상이면 거부
 
-    // 사용자별 마지막 위치 정보 캐시 (실제 운영에서는 Redis 사용 권장)
-    private final Map<Long, LocationHistory> userLocationHistory = new ConcurrentHashMap<>();
+    // 위치 이력 저장소 (운영: Redis 분산 캐시 / 폴백: 인메모리) — 다중 인스턴스 우회 방지
+    private final LocationHistoryStore historyStore;
 
     /**
      * GPS 검증 수행
@@ -60,14 +58,14 @@ public class GpsVerificationService {
         }
 
         // 4. 이동 속도 검사 (순간이동 방지)
-        LocationHistory lastLocation = userLocationHistory.get(request.getUserId());
+        LocationHistoryStore.LocationRecord lastLocation = historyStore.get(request.getUserId()).orElse(null);
         if (lastLocation != null) {
             double distanceFromLast = calculateDistance(
-                    lastLocation.latitude, lastLocation.longitude,
+                    lastLocation.latitude(), lastLocation.longitude(),
                     request.getUserLatitude(), request.getUserLongitude()
             );
 
-            Duration timeDiff = Duration.between(lastLocation.timestamp, LocalDateTime.now());
+            Duration timeDiff = Duration.between(lastLocation.timestamp(), LocalDateTime.now());
             double timeSec = timeDiff.toMillis() / 1000.0;
 
             if (timeSec > 0) {
@@ -92,22 +90,22 @@ public class GpsVerificationService {
 
         // 5. 디바이스 ID 검사 (동일 사용자 다른 디바이스 전환)
         if (lastLocation != null && request.getDeviceId() != null &&
-                !request.getDeviceId().equals(lastLocation.deviceId)) {
+                !request.getDeviceId().equals(lastLocation.deviceId())) {
             riskScore += 15;
             riskDetails.append("디바이스 변경; ");
         }
 
         // 6. 연속 수집 패턴 검사 (너무 빠른 수집)
         if (lastLocation != null) {
-            Duration timeSinceLastCollect = Duration.between(lastLocation.timestamp, LocalDateTime.now());
+            Duration timeSinceLastCollect = Duration.between(lastLocation.timestamp(), LocalDateTime.now());
             if (timeSinceLastCollect.toSeconds() < 30) {
                 riskScore += 20;
                 riskDetails.append("연속 수집 시도(").append(timeSinceLastCollect.toSeconds()).append("초); ");
             }
         }
 
-        // 위치 히스토리 업데이트
-        userLocationHistory.put(request.getUserId(), new LocationHistory(
+        // 위치 히스토리 업데이트 (분산 저장소)
+        historyStore.put(request.getUserId(), new LocationHistoryStore.LocationRecord(
                 request.getUserLatitude(),
                 request.getUserLongitude(),
                 LocalDateTime.now(),
@@ -150,7 +148,7 @@ public class GpsVerificationService {
      * 사용자 위치 히스토리 초기화 (테스트용)
      */
     public void clearUserHistory(Long userId) {
-        userLocationHistory.remove(userId);
+        historyStore.remove(userId);
     }
 
     // ===== Inner Classes =====
@@ -196,11 +194,4 @@ public class GpsVerificationService {
         public double getDistance() { return distance; }
         public int getRiskScore() { return riskScore; }
     }
-
-    private record LocationHistory(
-            double latitude,
-            double longitude,
-            LocalDateTime timestamp,
-            String deviceId
-    ) {}
 }

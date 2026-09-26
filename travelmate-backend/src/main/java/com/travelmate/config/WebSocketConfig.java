@@ -1,9 +1,11 @@
 package com.travelmate.config;
 
+import com.travelmate.security.StompJwtChannelInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
@@ -17,6 +19,7 @@ import java.util.Arrays;
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final Environment environment;
+    private final StompJwtChannelInterceptor stompJwtChannelInterceptor;
 
     @Value("${app.cors.allowed-origins:http://localhost:3000}")
     private String allowedOrigins;
@@ -26,6 +29,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         config.enableSimpleBroker("/topic", "/queue");
         config.setApplicationDestinationPrefixes("/app");
         config.setUserDestinationPrefix("/user");
+    }
+
+    @Override
+    public void configureClientInboundChannel(ChannelRegistration registration) {
+        registration.interceptors(stompJwtChannelInterceptor);
     }
 
     @Override

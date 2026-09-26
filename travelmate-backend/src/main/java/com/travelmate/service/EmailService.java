@@ -39,11 +39,17 @@ public class EmailService {
     public String sendVerificationEmail(String email, String fullName) {
         String token = UUID.randomUUID().toString();
 
-        tokenStorageService.saveEmailVerificationToken(token, email);
+        // 인증 토큰 저장 실패(Redis 장애 등)가 가입 자체를 롤백시키면 안 된다 — 인증 메일은 재발송 가능
+        try {
+            tokenStorageService.saveEmailVerificationToken(token, email);
+        } catch (Exception e) {
+            log.warn("이메일 인증 토큰 저장 실패 — 가입은 계속 진행: {}", e.getMessage());
+            return null;
+        }
         String verificationLink = frontendUrl + "/verify-email?token=" + token;
 
         if (mailEnabled && mailSender.isPresent() && !mailFrom.isEmpty()) {
-            sendEmailAsync(email, "Fryndo 이메일 인증", buildVerificationEmailHtml(fullName, verificationLink));
+            sendEmailAsync(email, "두리메이트 이메일 인증", buildVerificationEmailHtml(fullName, verificationLink));
         } else {
             log.info("=================================================");
             log.info("[DEV] 이메일 인증 링크:");
@@ -62,7 +68,7 @@ public class EmailService {
         String resetLink = frontendUrl + "/reset-password?token=" + token;
 
         if (mailEnabled && mailSender.isPresent() && !mailFrom.isEmpty()) {
-            sendEmailAsync(email, "Fryndo 비밀번호 재설정", buildPasswordResetEmailHtml(resetLink));
+            sendEmailAsync(email, "두리메이트 비밀번호 재설정", buildPasswordResetEmailHtml(resetLink));
         } else {
             log.info("=================================================");
             log.info("[DEV] 비밀번호 재설정 링크:");
@@ -150,11 +156,11 @@ public class EmailService {
             <body>
                 <div class="container">
                     <div class="header">
-                        <h1>Fryndo</h1>
+                        <h1>Doorimate</h1>
                     </div>
                     <div class="content">
                         <p>안녕하세요, %s님!</p>
-                        <p>Fryndo에 가입해 주셔서 감사합니다.</p>
+                        <p>두리메이트에 가입해 주셔서 감사합니다.</p>
                         <p>아래 버튼을 클릭하여 이메일 인증을 완료해 주세요.</p>
                         <p style="text-align: center;">
                             <a href="%s" class="button">이메일 인증하기</a>
@@ -163,7 +169,7 @@ public class EmailService {
                     </div>
                     <div class="footer">
                         <p>본 메일은 발신 전용입니다.</p>
-                        <p>&copy; 2024 Fryndo. All rights reserved.</p>
+                        <p>&copy; 2024 Doorimate. All rights reserved.</p>
                     </div>
                 </div>
             </body>
@@ -191,7 +197,7 @@ public class EmailService {
             <body>
                 <div class="container">
                     <div class="header">
-                        <h1>Fryndo</h1>
+                        <h1>Doorimate</h1>
                     </div>
                     <div class="content">
                         <p>비밀번호 재설정 요청을 받았습니다.</p>
@@ -204,7 +210,7 @@ public class EmailService {
                     </div>
                     <div class="footer">
                         <p>본 메일은 발신 전용입니다.</p>
-                        <p>&copy; 2024 Fryndo. All rights reserved.</p>
+                        <p>&copy; 2024 Doorimate. All rights reserved.</p>
                     </div>
                 </div>
             </body>

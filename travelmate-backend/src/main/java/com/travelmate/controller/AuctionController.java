@@ -1,5 +1,6 @@
 package com.travelmate.controller;
 
+import com.travelmate.security.AuthenticatedUserId;
 import com.travelmate.entity.nft.AuctionBid;
 import com.travelmate.entity.nft.NftAuction;
 import com.travelmate.service.nft.AuctionService;
@@ -40,7 +41,7 @@ public class AuctionController {
 
     @PostMapping
     public ResponseEntity<?> createAuction(@RequestBody CreateAuctionRequest request, Authentication auth) {
-        Long userId = Long.parseLong(auth.getName());
+        Long userId = AuthenticatedUserId.parse(auth);
         NftAuction auction = auctionService.createAuction(
                 userId,
                 request.getNftCollectionId(),
@@ -58,7 +59,7 @@ public class AuctionController {
     public ResponseEntity<?> placeBid(@PathVariable Long auctionId,
                                        @RequestBody BidRequest request,
                                        Authentication auth) {
-        Long userId = Long.parseLong(auth.getName());
+        Long userId = AuthenticatedUserId.parse(auth);
         AuctionBid bid = auctionService.placeBid(auctionId, userId, request.getAmount());
         return ResponseEntity.ok(Map.of(
                 "bidId", bid.getId(),
@@ -69,7 +70,7 @@ public class AuctionController {
 
     @PostMapping("/{auctionId}/buy-now")
     public ResponseEntity<?> buyNow(@PathVariable Long auctionId, Authentication auth) {
-        Long userId = Long.parseLong(auth.getName());
+        Long userId = AuthenticatedUserId.parse(auth);
         NftAuction auction = auctionService.buyNow(auctionId, userId);
         return ResponseEntity.ok(Map.of(
                 "message", "즉시 구매 완료",
@@ -79,20 +80,20 @@ public class AuctionController {
 
     @DeleteMapping("/{auctionId}")
     public ResponseEntity<?> cancelAuction(@PathVariable Long auctionId, Authentication auth) {
-        Long userId = Long.parseLong(auth.getName());
+        Long userId = AuthenticatedUserId.parse(auth);
         auctionService.cancelAuction(auctionId, userId);
         return ResponseEntity.ok(Map.of("message", "경매가 취소되었습니다."));
     }
 
     @GetMapping("/my-auctions")
     public ResponseEntity<?> getMyAuctions(Authentication auth) {
-        Long userId = Long.parseLong(auth.getName());
+        Long userId = AuthenticatedUserId.parse(auth);
         return ResponseEntity.ok(auctionService.getMyAuctions(userId));
     }
 
     @GetMapping("/my-bids")
     public ResponseEntity<?> getMyBids(Authentication auth) {
-        Long userId = Long.parseLong(auth.getName());
+        Long userId = AuthenticatedUserId.parse(auth);
         return ResponseEntity.ok(auctionService.getMyBids(userId));
     }
 

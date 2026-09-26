@@ -1,5 +1,6 @@
 package com.travelmate.controller;
 
+import com.travelmate.security.AuthenticatedUserId;
 import com.travelmate.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -28,7 +29,7 @@ public class NotificationController {
             @PageableDefault(size = 20) Pageable pageable) {
 
         Page<NotificationService.NotificationDto> notifications =
-                notificationService.getNotifications(Long.parseLong(userId), pageable);
+                notificationService.getNotifications(AuthenticatedUserId.parse(userId), pageable);
 
         return ResponseEntity.ok(notifications);
     }
@@ -41,7 +42,7 @@ public class NotificationController {
             @AuthenticationPrincipal String userId) {
 
         List<NotificationService.NotificationDto> notifications =
-                notificationService.getUnreadNotifications(Long.parseLong(userId));
+                notificationService.getUnreadNotifications(AuthenticatedUserId.parse(userId));
 
         return ResponseEntity.ok(notifications);
     }
@@ -53,7 +54,7 @@ public class NotificationController {
     public ResponseEntity<Map<String, Long>> getUnreadCount(
             @AuthenticationPrincipal String userId) {
 
-        long count = notificationService.getUnreadCount(Long.parseLong(userId));
+        long count = notificationService.getUnreadCount(AuthenticatedUserId.parse(userId));
         return ResponseEntity.ok(Map.of("count", count));
     }
 
@@ -65,7 +66,7 @@ public class NotificationController {
             @AuthenticationPrincipal String userId,
             @RequestBody List<Long> notificationIds) {
 
-        notificationService.markAsRead(notificationIds, Long.parseLong(userId));
+        notificationService.markAsRead(notificationIds, AuthenticatedUserId.parse(userId));
         return ResponseEntity.ok().build();
     }
 
@@ -76,7 +77,7 @@ public class NotificationController {
     public ResponseEntity<Void> markAllAsRead(
             @AuthenticationPrincipal String userId) {
 
-        notificationService.markAllAsRead(Long.parseLong(userId));
+        notificationService.markAllAsRead(AuthenticatedUserId.parse(userId));
         return ResponseEntity.ok().build();
     }
 
@@ -88,7 +89,7 @@ public class NotificationController {
             @AuthenticationPrincipal String userId,
             @PathVariable Long id) {
 
-        notificationService.deleteNotification(id, Long.parseLong(userId));
+        notificationService.deleteNotification(id, AuthenticatedUserId.parse(userId));
         return ResponseEntity.ok().build();
     }
 }

@@ -3,6 +3,7 @@ package com.travelmate.service.nft;
 import com.travelmate.config.BlockchainConfig;
 import com.travelmate.dto.WalletDto;
 import com.travelmate.entity.User;
+import com.travelmate.exception.BusinessException;
 import com.travelmate.repository.UserRepository;
 import com.travelmate.repository.nft.UserNftCollectionRepository;
 import jakarta.annotation.PostConstruct;
@@ -36,11 +37,11 @@ public class WalletService {
 
     private static final long NONCE_EXPIRY_SECONDS = 300; // 5분
     private static final String SIGN_MESSAGE_TEMPLATE =
-            "Fryndo 지갑 연결 인증\n\n" +
+            "두리메이트 지갑 연결 인증\n\n" +
             "지갑 주소: %s\n" +
             "Nonce: %s\n" +
             "Timestamp: %d\n\n" +
-            "이 메시지에 서명하면 지갑이 Fryndo 계정에 연결됩니다.";
+            "이 메시지에 서명하면 지갑이 두리메이트 계정에 연결됩니다.";
 
     /**
      * 서명용 메시지 생성
@@ -107,7 +108,7 @@ public class WalletService {
 
         // 사용자 지갑 정보 업데이트
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         user.setPolygonWalletAddress(request.getWalletAddress());
         user.setIsWalletVerified(true);
@@ -133,7 +134,7 @@ public class WalletService {
     @Transactional(readOnly = true)
     public WalletDto.WalletStatusResponse getWalletStatus(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         if (user.getPolygonWalletAddress() == null) {
             return WalletDto.WalletStatusResponse.builder()
@@ -158,7 +159,7 @@ public class WalletService {
     @Transactional
     public WalletDto.DisconnectResponse disconnectWallet(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         user.setPolygonWalletAddress(null);
         user.setIsWalletVerified(false);

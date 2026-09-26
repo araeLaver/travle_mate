@@ -5,6 +5,7 @@ import com.travelmate.entity.*;
 import com.travelmate.entity.ItineraryCollaborator.CollaboratorRole;
 import com.travelmate.entity.ItineraryCollaborator.InviteStatus;
 import com.travelmate.entity.TravelItinerary.ItineraryVisibility;
+import com.travelmate.exception.BusinessException;
 import com.travelmate.repository.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -194,8 +195,9 @@ class ItineraryServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> itineraryService.createItinerary(999L, request))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("User not found");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("사용자를 찾을 수 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 404, "USER_NOT_FOUND"));
         }
 
         @Test
@@ -264,8 +266,9 @@ class ItineraryServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> itineraryService.deleteItinerary(2L, 1L))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("Owner permission required");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessage("Owner permission required")
+                    .satisfies(ex -> assertBusinessException(ex, 403, "FORBIDDEN"));
         }
 
         @Test
@@ -315,8 +318,9 @@ class ItineraryServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> itineraryService.getItinerary(1L, 2L))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("Access denied");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessage("Access denied")
+                    .satisfies(ex -> assertBusinessException(ex, 403, "FORBIDDEN"));
         }
 
         @Test
@@ -527,7 +531,7 @@ class ItineraryServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> itineraryService.updateItem(2L, 1L, request))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(BusinessException.class)
                     .hasMessage("Edit permission denied");
         }
 
@@ -598,7 +602,7 @@ class ItineraryServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> itineraryService.reorderItems(1L, 1L, requests))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(BusinessException.class)
                     .hasMessage("Item does not belong to this itinerary");
         }
     }
@@ -646,7 +650,7 @@ class ItineraryServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> itineraryService.inviteCollaborator(1L, 1L, request))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(BusinessException.class)
                     .hasMessage("User is already a collaborator");
         }
 
@@ -713,7 +717,7 @@ class ItineraryServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> itineraryService.respondToInvite(999L, 1L, true))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(BusinessException.class)
                     .hasMessage("Not your invitation");
         }
 
@@ -725,7 +729,7 @@ class ItineraryServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> itineraryService.respondToInvite(2L, 1L, true))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(BusinessException.class)
                     .hasMessage("Invitation already responded");
         }
 
@@ -843,7 +847,7 @@ class ItineraryServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> itineraryService.copyItinerary(2L, 1L))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(BusinessException.class)
                     .hasMessage("Access denied");
         }
 
@@ -895,21 +899,37 @@ class ItineraryServiceTest {
         }
 
         @Test
-        @DisplayName("성공 - LINK_ONLY 일정 접근")
-        void canViewItinerary_LinkOnlyAccess() {
+        @DisplayName("실패 - LINK_ONLY 일정은 ID 직접 조회 불가")
+        void canViewItinerary_LinkOnlyDirectAccessDenied() {
             // Given
             testItinerary.setVisibility(ItineraryVisibility.LINK_ONLY);
             when(itineraryRepository.findById(1L)).thenReturn(Optional.of(testItinerary));
+            when(userRepository.findById(999L)).thenReturn(Optional.empty());
+
+            // When & Then
+            assertThatThrownBy(() -> itineraryService.getItinerary(1L, 999L))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessage("Access denied");
+        }
+
+        @Test
+        @DisplayName("성공 - LINK_ONLY 일정은 공유 코드로 접근 가능")
+        void getItineraryByShareCode_LinkOnlyAccess() {
+            // Given
+            testItinerary.setVisibility(ItineraryVisibility.LINK_ONLY);
+            testItinerary.setShareCode("ABCD1234");
+            when(itineraryRepository.findByShareCode("ABCD1234")).thenReturn(Optional.of(testItinerary));
             when(itemRepository.findByItineraryOrderByDayNumberAscOrderIndexAsc(testItinerary))
                     .thenReturn(List.of());
             when(collaboratorRepository.findByItineraryAndStatus(testItinerary, InviteStatus.ACCEPTED))
                     .thenReturn(List.of());
 
             // When
-            ItineraryResponse result = itineraryService.getItinerary(1L, 999L);
+            ItineraryResponse result = itineraryService.getItineraryByShareCode("ABCD1234", null);
 
             // Then
             assertThat(result).isNotNull();
+            verify(itineraryRepository).incrementViewCount(1L);
         }
 
         @Test
@@ -947,8 +967,14 @@ class ItineraryServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> itineraryService.inviteCollaborator(2L, 1L, request))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(BusinessException.class)
                     .hasMessage("Admin permission required");
         }
+    }
+
+    private void assertBusinessException(Throwable throwable, int status, String errorCode) {
+        BusinessException exception = (BusinessException) throwable;
+        assertThat(exception.getStatus().value()).isEqualTo(status);
+        assertThat(exception.getErrorCodeStr()).isEqualTo(errorCode);
     }
 }

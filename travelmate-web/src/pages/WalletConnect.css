@@ -13,7 +13,7 @@
 .wallet-header h1 {
   font-size: 28px;
   font-weight: 700;
-  color: #1a1a2e;
+  color: #101014;
   margin-bottom: 8px;
 }
 
@@ -35,7 +35,7 @@
   width: 80px;
   height: 80px;
   margin: 0 auto 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #4a3aff 0%, #2a1bc7 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -51,7 +51,7 @@
 .wallet-intro h2 {
   font-size: 22px;
   font-weight: 600;
-  color: #1a1a2e;
+  color: #101014;
   margin-bottom: 12px;
 }
 
@@ -101,7 +101,7 @@
 .install-btn {
   display: inline-block;
   padding: 12px 24px;
-  background: #f6851b;
+  background: #4a3aff;
   color: white;
   font-size: 14px;
   font-weight: 600;
@@ -111,7 +111,7 @@
 }
 
 .install-btn:hover {
-  background: #e2761b;
+  background: #2a1bc7;
 }
 
 /* 연결 버튼 */
@@ -123,7 +123,7 @@
   width: 100%;
   max-width: 300px;
   padding: 16px 24px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #4a3aff 0%, #2a1bc7 100%);
   color: white;
   font-size: 16px;
   font-weight: 600;
@@ -137,7 +137,7 @@
 
 .connect-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 8px 25px rgba(74, 58, 255, 0.4);
 }
 
 .connect-btn:disabled {
@@ -260,7 +260,7 @@
 .wallet-address-section .address {
   font-size: 16px;
   font-weight: 600;
-  color: #1a1a2e;
+  color: #101014;
   font-family: 'Monaco', 'Menlo', monospace;
 }
 
@@ -287,7 +287,7 @@
 .detail-value {
   font-size: 14px;
   font-weight: 600;
-  color: #1a1a2e;
+  color: #101014;
 }
 
 .contract-address {
@@ -312,7 +312,7 @@
 .explorer-link {
   display: inline-block;
   margin-top: 12px;
-  color: #667eea;
+  color: #4a3aff;
   font-size: 14px;
   text-decoration: none;
 }
@@ -344,13 +344,13 @@
 }
 
 .action-btn.primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #4a3aff 0%, #2a1bc7 100%);
   color: white;
 }
 
 .action-btn.primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 6px 20px rgba(74, 58, 255, 0.4);
 }
 
 .action-btn.secondary {
@@ -384,7 +384,7 @@
 .info-section h3 {
   font-size: 16px;
   font-weight: 600;
-  color: #1a1a2e;
+  color: #101014;
   margin-bottom: 8px;
   margin-top: 20px;
 }
@@ -400,7 +400,7 @@
 }
 
 .info-section a {
-  color: #667eea;
+  color: #4a3aff;
   text-decoration: none;
   margin-left: 4px;
 }

@@ -1,8 +1,7 @@
 package com.travelmate.controller;
 
+import com.travelmate.security.AuthenticatedUserId;
 import com.travelmate.dto.CommentDto;
-import com.travelmate.security.CurrentUser;
-import com.travelmate.security.UserPrincipal;
 import com.travelmate.service.CommentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -14,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,12 +30,12 @@ public class CommentController {
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "댓글 작성", description = "게시글에 댓글을 작성합니다.")
     public ResponseEntity<CommentDto.Response> createComment(
-            @CurrentUser UserPrincipal userPrincipal,
+            @AuthenticationPrincipal String userId,
             @PathVariable Long postId,
             @Valid @RequestBody CommentDto.CreateRequest request) {
 
         CommentDto.Response response = commentService.createComment(
-                userPrincipal.getId(), postId, request);
+                parseUserId(userId), postId, request);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -43,12 +43,12 @@ public class CommentController {
     @GetMapping("/posts/{postId}/comments")
     @Operation(summary = "댓글 목록 조회", description = "게시글의 댓글 목록을 조회합니다.")
     public ResponseEntity<CommentDto.CommentListResponse> getComments(
-            @CurrentUser @Parameter(hidden = true) UserPrincipal userPrincipal,
+            @AuthenticationPrincipal @Parameter(hidden = true) String principalUserId,
             @PathVariable Long postId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
 
-        Long userId = userPrincipal != null ? userPrincipal.getId() : null;
+        Long userId = principalUserId != null ? parseUserId(principalUserId) : null;
         Pageable pageable = PageRequest.of(page, size);
 
         CommentDto.CommentListResponse response = commentService.getCommentsByPostId(postId, userId, pageable);
@@ -60,12 +60,12 @@ public class CommentController {
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "댓글 수정", description = "댓글을 수정합니다.")
     public ResponseEntity<CommentDto.Response> updateComment(
-            @CurrentUser UserPrincipal userPrincipal,
+            @AuthenticationPrincipal String userId,
             @PathVariable Long commentId,
             @Valid @RequestBody CommentDto.UpdateRequest request) {
 
         CommentDto.Response response = commentService.updateComment(
-                userPrincipal.getId(), commentId, request);
+                parseUserId(userId), commentId, request);
 
         return ResponseEntity.ok(response);
     }
@@ -74,10 +74,10 @@ public class CommentController {
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "댓글 삭제", description = "댓글을 삭제합니다.")
     public ResponseEntity<Void> deleteComment(
-            @CurrentUser UserPrincipal userPrincipal,
+            @AuthenticationPrincipal String userId,
             @PathVariable Long commentId) {
 
-        commentService.deleteComment(userPrincipal.getId(), commentId);
+        commentService.deleteComment(parseUserId(userId), commentId);
 
         return ResponseEntity.noContent().build();
     }
@@ -86,11 +86,11 @@ public class CommentController {
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "댓글 좋아요", description = "댓글에 좋아요를 추가합니다.")
     public ResponseEntity<CommentDto.LikeResponse> likeComment(
-            @CurrentUser UserPrincipal userPrincipal,
+            @AuthenticationPrincipal String userId,
             @PathVariable Long commentId) {
 
         CommentDto.LikeResponse response = commentService.likeComment(
-                userPrincipal.getId(), commentId);
+                parseUserId(userId), commentId);
 
         return ResponseEntity.ok(response);
     }
@@ -99,11 +99,11 @@ public class CommentController {
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "댓글 좋아요 취소", description = "댓글의 좋아요를 취소합니다.")
     public ResponseEntity<CommentDto.LikeResponse> unlikeComment(
-            @CurrentUser UserPrincipal userPrincipal,
+            @AuthenticationPrincipal String userId,
             @PathVariable Long commentId) {
 
         CommentDto.LikeResponse response = commentService.unlikeComment(
-                userPrincipal.getId(), commentId);
+                parseUserId(userId), commentId);
 
         return ResponseEntity.ok(response);
     }
@@ -111,13 +111,17 @@ public class CommentController {
     @GetMapping("/comments/{commentId}/replies")
     @Operation(summary = "답글 목록 조회", description = "댓글의 답글 목록을 조회합니다.")
     public ResponseEntity<List<CommentDto.Response>> getReplies(
-            @CurrentUser @Parameter(hidden = true) UserPrincipal userPrincipal,
+            @AuthenticationPrincipal @Parameter(hidden = true) String principalUserId,
             @PathVariable Long commentId) {
 
-        Long userId = userPrincipal != null ? userPrincipal.getId() : null;
+        Long userId = principalUserId != null ? parseUserId(principalUserId) : null;
 
         List<CommentDto.Response> responses = commentService.getReplies(commentId, userId);
 
         return ResponseEntity.ok(responses);
+    }
+
+    private Long parseUserId(String userId) {
+        return AuthenticatedUserId.parse(userId);
     }
 }

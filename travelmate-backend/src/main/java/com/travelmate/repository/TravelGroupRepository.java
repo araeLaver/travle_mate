@@ -1,6 +1,9 @@
 package com.travelmate.repository;
 
 import com.travelmate.entity.TravelGroup;
+import com.travelmate.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -29,17 +32,44 @@ public interface TravelGroupRepository extends JpaRepository<TravelGroup, Long> 
            "WHERE tg.id = :id")
     Optional<TravelGroup> findByIdWithMembers(@Param("id") Long id);
     
+    // 위치 파라미터가 null이면 Hibernate가 radians(:param) 타입을 추론하지 못해 bytea로
+    // 바인딩되어 SQL 오류가 난다. 위치 필터 유무로 쿼리를 분리해 null 바인딩 자체를 없앤다.
+    @Query("SELECT tg FROM TravelGroup tg WHERE tg.status = 'RECRUITING' AND " +
+           "(:purpose IS NULL OR tg.purpose = :purpose) " +
+           "ORDER BY tg.createdAt DESC")
+    List<TravelGroup> findAvailableGroups(@Param("purpose") TravelGroup.Purpose purpose);
+
     @Query("SELECT tg FROM TravelGroup tg WHERE tg.status = 'RECRUITING' AND " +
            "(:purpose IS NULL OR tg.purpose = :purpose) AND " +
-           "(:latitude IS NULL OR :longitude IS NULL OR " +
            "(6371 * acos(cos(radians(:latitude)) * cos(radians(tg.meetingLatitude)) * " +
            "cos(radians(tg.meetingLongitude) - radians(:longitude)) + " +
-           "sin(radians(:latitude)) * sin(radians(tg.meetingLatitude)))) <= :radiusKm) " +
+           "sin(radians(:latitude)) * sin(radians(tg.meetingLatitude)))) <= :radiusKm " +
            "ORDER BY tg.createdAt DESC")
-    List<TravelGroup> findAvailableGroups(@Param("purpose") TravelGroup.Purpose purpose,
-                                         @Param("latitude") Double latitude,
-                                         @Param("longitude") Double longitude,
-                                         @Param("radiusKm") Double radiusKm);
+    List<TravelGroup> findAvailableGroupsNear(@Param("purpose") TravelGroup.Purpose purpose,
+                                         @Param("latitude") double latitude,
+                                         @Param("longitude") double longitude,
+                                         @Param("radiusKm") double radiusKm);
+
+    @Query("SELECT tg FROM TravelGroup tg " +
+           "WHERE tg.isActive = true AND tg.isPublic = true " +
+           "AND (:keyword IS NULL OR " +
+           "LOWER(tg.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(tg.description) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(tg.destination) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+           "AND (:destination IS NULL OR LOWER(tg.destination) LIKE LOWER(CONCAT('%', :destination, '%'))) " +
+           "AND (:travelStyle IS NULL OR tg.travelStyle = :travelStyle) " +
+           "AND (:minMembers IS NULL OR tg.currentMembers >= :minMembers) " +
+           "AND (:maxMembers IS NULL OR tg.maxMembers <= :maxMembers) " +
+           "AND (:startDate IS NULL OR tg.startDate >= :startDate) " +
+           "AND (:endDate IS NULL OR tg.endDate <= :endDate)")
+    Page<TravelGroup> searchGroups(@Param("keyword") String keyword,
+                                   @Param("destination") String destination,
+                                   @Param("travelStyle") User.TravelStyle travelStyle,
+                                   @Param("minMembers") Integer minMembers,
+                                   @Param("maxMembers") Integer maxMembers,
+                                   @Param("startDate") java.time.LocalDate startDate,
+                                   @Param("endDate") java.time.LocalDate endDate,
+                                   Pageable pageable);
     
     @Query("SELECT tg FROM TravelGroup tg JOIN tg.members gm WHERE gm.user.id = :userId " +
            "AND gm.status = 'ACCEPTED' ORDER BY tg.createdAt DESC")

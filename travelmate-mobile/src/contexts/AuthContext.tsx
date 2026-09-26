@@ -66,10 +66,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const loginWithGoogle = async (idToken?: string, accessToken?: string) => {
     let response: SocialAuthResponse;
-    if (idToken) {
-      response = await socialAuthService.authenticateWithGoogle(idToken);
-    } else if (accessToken) {
+    if (accessToken) {
       response = await socialAuthService.handleGoogleAccessToken(accessToken);
+    } else if (idToken) {
+      response = await socialAuthService.authenticateWithGoogle(idToken);
     } else {
       throw new Error('Google 인증 토큰이 없습니다.');
     }

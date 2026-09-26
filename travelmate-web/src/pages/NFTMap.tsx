@@ -21,10 +21,10 @@ const rarityConfig: Record<
   Rarity,
   { color: string; darkColor: string; label: string; emoji: string }
 > = {
-  COMMON: { color: '#9ca3af', darkColor: '#6b7280', label: '일반', emoji: '⚪' },
-  RARE: { color: '#3b82f6', darkColor: '#60a5fa', label: '레어', emoji: '🔵' },
-  EPIC: { color: '#8b5cf6', darkColor: '#a78bfa', label: '에픽', emoji: '🟣' },
-  LEGENDARY: { color: '#f59e0b', darkColor: '#fbbf24', label: '전설', emoji: '🟡' },
+  COMMON: { color: '#8A8A95', darkColor: '#8A8A95', label: '일반', emoji: '⚪' },
+  RARE: { color: '#2E7DF6', darkColor: '#2E7DF6', label: '레어', emoji: '🔵' },
+  EPIC: { color: '#8B45E8', darkColor: '#8B45E8', label: '에픽', emoji: '🟣' },
+  LEGENDARY: { color: '#E0952A', darkColor: '#E0952A', label: '전설', emoji: '🟡' },
 };
 
 const categoryLabels: Record<LocationCategory, { label: string; emoji: string }> = {
@@ -180,8 +180,8 @@ const NFTMap: React.FC = () => {
   // 로딩 상태
   if (geoLoading) {
     return (
-      <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] flex flex-col items-center justify-center">
-        <div className="w-16 h-16 border-4 border-violet-500 border-t-transparent rounded-full animate-spin mb-4" />
+      <div className="min-h-screen bg-sand-100 dark:bg-[#0a0a0b] flex flex-col items-center justify-center">
+        <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mb-4" />
         <p className="text-gray-600 dark:text-gray-400">위치 정보를 가져오는 중...</p>
       </div>
     );
@@ -190,13 +190,15 @@ const NFTMap: React.FC = () => {
   // 위치 오류 상태
   if (geoError) {
     return (
-      <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] flex flex-col items-center justify-center px-4">
+      <div className="min-h-screen bg-sand-100 dark:bg-[#0a0a0b] flex flex-col items-center justify-center px-4">
         <span className="text-6xl mb-4">📍</span>
-        <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-2">위치 정보 필요</h2>
+        <h2 className="text-xl font-extrabold tracking-tight text-ink dark:text-white mb-2">
+          위치 정보 필요
+        </h2>
         <p className="text-gray-500 dark:text-gray-400 text-center mb-6">{geoError}</p>
         <button
           onClick={refresh}
-          className="px-6 py-3 bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold rounded-xl flex items-center gap-2"
+          className="px-6 py-3 bg-primary-500 hover:bg-primary-700 text-white font-bold rounded-xl flex items-center gap-2 transition-colors"
         >
           🔄 다시 시도
         </button>
@@ -205,7 +207,7 @@ const NFTMap: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0b] relative overflow-hidden pb-20">
+    <div className="min-h-screen bg-sand-100 dark:bg-[#0a0a0b] relative overflow-hidden pb-20">
       <PageBackground />
 
       {/* Navigation */}
@@ -234,16 +236,16 @@ const NFTMap: React.FC = () => {
         {pointBalance && (
           <motion.div
             {...fadeInUp}
-            className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-2xl p-4 text-white shadow-lg flex items-center gap-3"
+            className="bg-ink rounded-2xl p-4 text-white shadow-[0_10px_30px_rgba(16,16,20,0.1)] flex items-center gap-3"
           >
             <span className="text-3xl">💰</span>
             <div>
-              <span className="text-2xl font-bold">
+              <span className="text-2xl font-extrabold font-display text-rarity-legendary">
                 {pointBalance.totalPoints.toLocaleString()}
               </span>
-              <span className="text-sm ml-1 opacity-80">P</span>
+              <span className="text-sm ml-1 text-[#A0A0AC]">P</span>
             </div>
-            <span className="ml-auto text-sm opacity-80">보유 포인트</span>
+            <span className="ml-auto text-sm text-[#A0A0AC]">보유 포인트</span>
           </motion.div>
         )}
 
@@ -251,7 +253,7 @@ const NFTMap: React.FC = () => {
         <motion.div
           {...fadeInUp}
           transition={{ delay: 0.1 }}
-          className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-4 border border-gray-200/50 dark:border-gray-700/50 flex items-center gap-4"
+          className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl p-4 border border-transparent dark:border-gray-700/50 flex items-center gap-4"
         >
           <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-2xl">
             📍
@@ -280,7 +282,7 @@ const NFTMap: React.FC = () => {
             <select
               value={searchRadius}
               onChange={e => setSearchRadius(Number(e.target.value))}
-              className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-gray-800 dark:text-white outline-none focus:ring-2 focus:ring-violet-500/50"
+              className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-gray-800 dark:text-white outline-none focus:ring-2 focus:ring-primary-500/50"
             >
               <option value={1}>1km</option>
               <option value={3}>3km</option>
@@ -294,7 +296,7 @@ const NFTMap: React.FC = () => {
             <select
               value={selectedCategory}
               onChange={e => setSelectedCategory(e.target.value as LocationCategory | 'ALL')}
-              className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-gray-800 dark:text-white outline-none focus:ring-2 focus:ring-violet-500/50"
+              className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-gray-800 dark:text-white outline-none focus:ring-2 focus:ring-primary-500/50"
             >
               <option value="ALL">전체</option>
               {Object.entries(categoryLabels).map(([key, { label, emoji }]) => (
@@ -312,8 +314,10 @@ const NFTMap: React.FC = () => {
           transition={{ delay: 0.2 }}
           className="flex items-center justify-between"
         >
-          <h2 className="text-lg font-semibold text-gray-800 dark:text-white">주변 수집 장소</h2>
-          <span className="px-3 py-1 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-full text-sm font-medium">
+          <h2 className="text-lg font-extrabold tracking-tight text-ink dark:text-white">
+            주변 수집 장소
+          </h2>
+          <span className="px-3 py-1 bg-primary-100 dark:bg-primary-900/30 text-primary-500 dark:text-primary-400 rounded-full text-sm font-bold">
             {filteredLocations.length}개
           </span>
         </motion.div>
@@ -321,7 +325,7 @@ const NFTMap: React.FC = () => {
         {/* 장소 목록 */}
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-16">
-            <div className="w-12 h-12 border-4 border-violet-500 border-t-transparent rounded-full animate-spin mb-4" />
+            <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mb-4" />
             <p className="text-gray-500 dark:text-gray-400">장소를 검색하는 중...</p>
           </div>
         ) : filteredLocations.length === 0 ? (
@@ -345,9 +349,9 @@ const NFTMap: React.FC = () => {
               <motion.article
                 key={location.id}
                 variants={fadeInUp}
-                className={`bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-gray-200/50 dark:border-gray-700/50 overflow-hidden ${
+                className={`bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-2xl border border-transparent dark:border-gray-700/50 overflow-hidden ${
                   location.isCollected ? 'opacity-60' : ''
-                } ${canCollect(location) ? 'ring-2 ring-green-500/50' : ''}`}
+                } ${canCollect(location) ? 'ring-2 ring-success/50' : ''}`}
               >
                 <div className="flex">
                   {/* 이미지 */}
@@ -359,18 +363,18 @@ const NFTMap: React.FC = () => {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-violet-400 to-pink-400 flex items-center justify-center text-4xl">
+                      <div className="w-full h-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-4xl">
                         📍
                       </div>
                     )}
                     <span
-                      className="absolute top-2 left-2 px-2 py-1 rounded-lg text-xs font-bold text-white"
+                      className="absolute top-2 left-2 px-2 py-1 rounded-[7px] text-[10px] font-extrabold uppercase tracking-wide text-white"
                       style={{ backgroundColor: rarityConfig[location.rarity].color }}
                     >
                       {rarityConfig[location.rarity].emoji} {rarityConfig[location.rarity].label}
                     </span>
                     {location.isCollected && (
-                      <span className="absolute top-2 right-2 px-2 py-1 bg-green-500 rounded-lg text-xs font-bold text-white">
+                      <span className="absolute top-2 right-2 px-2 py-1 bg-success rounded-[7px] text-[10px] font-extrabold text-white">
                         ✓ 수집완료
                       </span>
                     )}
@@ -398,16 +402,16 @@ const NFTMap: React.FC = () => {
                       <span className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
                         📍 {formatDistance(location.distance)}
                         {canCollect(location) && (
-                          <span className="text-green-500 font-medium">(수집 가능)</span>
+                          <span className="text-success font-bold">(수집 가능)</span>
                         )}
                       </span>
-                      <span className="flex items-center gap-1 text-yellow-600 dark:text-yellow-400">
+                      <span className="flex items-center gap-1 text-rarity-legendary font-bold">
                         ⭐ {location.pointReward}P
                       </span>
                     </div>
 
                     {location.isSeasonalEvent && (
-                      <div className="mt-2 px-2 py-1 bg-pink-100 dark:bg-pink-900/30 rounded-lg text-xs text-pink-600 dark:text-pink-400 inline-flex items-center gap-1 w-fit">
+                      <div className="mt-2 px-2 py-1 bg-primary-100 dark:bg-primary-900/30 rounded-lg text-xs text-primary-500 dark:text-primary-400 inline-flex items-center gap-1 w-fit">
                         ✨ 시즌 이벤트
                         {location.eventEndAt && (
                           <span> (~{new Date(location.eventEndAt).toLocaleDateString()})</span>
@@ -430,7 +434,7 @@ const NFTMap: React.FC = () => {
                     <button
                       onClick={() => handleCollect(location)}
                       disabled={isCollecting === location.id}
-                      className="w-full py-3 bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
+                      className="w-full py-3 bg-primary-500 hover:bg-primary-700 text-white font-bold rounded-xl shadow-[0_8px_22px_rgba(74,58,255,0.3)] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                       {isCollecting === location.id ? (
                         <>
@@ -459,7 +463,7 @@ const NFTMap: React.FC = () => {
       {/* 하단 네비게이션 */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border-t border-gray-200/50 dark:border-gray-700/50 z-50">
         <div className="max-w-4xl mx-auto flex">
-          <button className="flex-1 py-4 flex flex-col items-center gap-1 text-violet-600 dark:text-violet-400">
+          <button className="flex-1 py-4 flex flex-col items-center gap-1 text-primary-500 dark:text-primary-400">
             <span className="text-xl">📍</span>
             <span className="text-xs font-medium">수집</span>
           </button>

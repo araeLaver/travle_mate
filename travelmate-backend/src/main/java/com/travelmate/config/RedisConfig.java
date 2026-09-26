@@ -7,7 +7,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
+import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+
+import java.time.Duration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
@@ -35,14 +38,21 @@ public class RedisConfig {
         if (redisPassword != null && !redisPassword.isEmpty()) {
             config.setPassword(redisPassword);
         }
-        return new LettuceConnectionFactory(config);
+        // Redis 장애 시 Lettuce 기본 60초 커맨드 타임아웃이 요청을 통째로 붙잡는다 → 3초로 제한해 빠르게 실패
+        LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
+                .commandTimeout(Duration.ofSeconds(3))
+                .shutdownTimeout(Duration.ZERO)
+                .build();
+        return new LettuceConnectionFactory(config, clientConfig);
     }
 
     @Bean
     @Profile("!prod")
     public RedisConnectionFactory devRedisConnectionFactory() {
-        // 개발 환경에서는 로컬 Redis 사용
-        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration("localhost", 6379);
+        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(redisHost, redisPort);
+        if (redisPassword != null && !redisPassword.isEmpty()) {
+            config.setPassword(redisPassword);
+        }
         return new LettuceConnectionFactory(config);
     }
 

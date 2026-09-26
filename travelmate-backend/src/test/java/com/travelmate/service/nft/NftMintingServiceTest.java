@@ -24,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -97,6 +98,7 @@ class NftMintingServiceTest {
             String walletAddress = "0xabcdef1234567890abcdef1234567890abcdef12";
             when(userNftCollectionRepository.findById(1L)).thenReturn(Optional.of(collection));
             when(userNftCollectionRepository.save(any(UserNftCollection.class))).thenReturn(collection);
+            mockSuccessfulMinting();
 
             // When
             MintingDto.MintingResponse result = nftMintingService.requestMinting(1L, 1L, walletAddress);
@@ -116,6 +118,7 @@ class NftMintingServiceTest {
             // Given
             when(userNftCollectionRepository.findById(1L)).thenReturn(Optional.of(collection));
             when(userNftCollectionRepository.save(any(UserNftCollection.class))).thenReturn(collection);
+            mockSuccessfulMinting();
 
             // When - 지갑 주소 null로 전달
             MintingDto.MintingResponse result = nftMintingService.requestMinting(1L, 1L, null);
@@ -134,7 +137,8 @@ class NftMintingServiceTest {
             // When & Then
             assertThatThrownBy(() -> nftMintingService.requestMinting(1L, 1L, "0x123"))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("NFT 컬렉션을 찾을 수 없습니다");
+                    .hasMessageContaining("NFT 컬렉션을 찾을 수 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 404, "NOT_FOUND"));
         }
 
         @Test
@@ -146,7 +150,8 @@ class NftMintingServiceTest {
             // When & Then
             assertThatThrownBy(() -> nftMintingService.requestMinting(2L, 1L, "0x123"))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("권한이 없습니다");
+                    .hasMessageContaining("권한이 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 403, "FORBIDDEN"));
         }
 
         @Test
@@ -159,7 +164,8 @@ class NftMintingServiceTest {
             // When & Then
             assertThatThrownBy(() -> nftMintingService.requestMinting(1L, 1L, "0x123"))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("이미 민팅된 NFT입니다");
+                    .hasMessageContaining("이미 민팅된 NFT입니다")
+                    .satisfies(ex -> assertBusinessException(ex, 409, "CONFLICT"));
         }
 
         @Test
@@ -172,7 +178,8 @@ class NftMintingServiceTest {
             // When & Then
             assertThatThrownBy(() -> nftMintingService.requestMinting(1L, 1L, "0x123"))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("민팅이 진행 중입니다");
+                    .hasMessageContaining("민팅이 진행 중입니다")
+                    .satisfies(ex -> assertBusinessException(ex, 409, "CONFLICT"));
         }
 
         @Test
@@ -185,7 +192,8 @@ class NftMintingServiceTest {
             // When & Then
             assertThatThrownBy(() -> nftMintingService.requestMinting(1L, 1L, "0x123"))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("민팅이 진행 중입니다");
+                    .hasMessageContaining("민팅이 진행 중입니다")
+                    .satisfies(ex -> assertBusinessException(ex, 409, "CONFLICT"));
         }
 
         @Test
@@ -198,7 +206,8 @@ class NftMintingServiceTest {
             // When & Then
             assertThatThrownBy(() -> nftMintingService.requestMinting(1L, 1L, null))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("지갑 주소가 필요합니다");
+                    .hasMessageContaining("지갑 주소가 필요합니다")
+                    .satisfies(ex -> assertBusinessException(ex, 400, "BAD_REQUEST"));
         }
 
         @Test
@@ -211,7 +220,26 @@ class NftMintingServiceTest {
             // When & Then
             assertThatThrownBy(() -> nftMintingService.requestMinting(1L, 1L, ""))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("지갑 주소가 필요합니다");
+                    .hasMessageContaining("지갑 주소가 필요합니다")
+                    .satisfies(ex -> assertBusinessException(ex, 400, "BAD_REQUEST"));
+        }
+    }
+
+    @Nested
+    @DisplayName("비동기 민팅 처리 테스트")
+    class MintAsyncTest {
+
+        @Test
+        @DisplayName("실패 - 블록체인 서비스가 null future 반환")
+        void mintAsync_Fail_NullFuture() {
+            // Given
+            when(blockchainService.mintNftAsync(eq(1L), anyString(), anyString())).thenReturn(null);
+
+            // When
+            nftMintingService.mintAsync(collection);
+
+            // Then
+            verify(blockchainService).updateMintStatus(1L, MintStatus.FAILED, null, null);
         }
     }
 
@@ -251,7 +279,8 @@ class NftMintingServiceTest {
             // When & Then
             assertThatThrownBy(() -> nftMintingService.getMintingStatus(1L, 1L))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("NFT 컬렉션을 찾을 수 없습니다");
+                    .hasMessageContaining("NFT 컬렉션을 찾을 수 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 404, "NOT_FOUND"));
         }
 
         @Test
@@ -263,7 +292,8 @@ class NftMintingServiceTest {
             // When & Then
             assertThatThrownBy(() -> nftMintingService.getMintingStatus(2L, 1L))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("권한이 없습니다");
+                    .hasMessageContaining("권한이 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 403, "FORBIDDEN"));
         }
     }
 
@@ -332,6 +362,7 @@ class NftMintingServiceTest {
             collection.setMintStatus(MintStatus.FAILED);
             when(userNftCollectionRepository.findById(1L)).thenReturn(Optional.of(collection));
             when(userNftCollectionRepository.save(any(UserNftCollection.class))).thenReturn(collection);
+            mockSuccessfulMinting();
 
             // When
             MintingDto.MintingResponse result = nftMintingService.retryMinting(1L, 1L);
@@ -352,7 +383,8 @@ class NftMintingServiceTest {
             // When & Then
             assertThatThrownBy(() -> nftMintingService.retryMinting(1L, 1L))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("NFT 컬렉션을 찾을 수 없습니다");
+                    .hasMessageContaining("NFT 컬렉션을 찾을 수 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 404, "NOT_FOUND"));
         }
 
         @Test
@@ -365,7 +397,8 @@ class NftMintingServiceTest {
             // When & Then
             assertThatThrownBy(() -> nftMintingService.retryMinting(2L, 1L))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("권한이 없습니다");
+                    .hasMessageContaining("권한이 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 403, "FORBIDDEN"));
         }
 
         @Test
@@ -378,7 +411,8 @@ class NftMintingServiceTest {
             // When & Then
             assertThatThrownBy(() -> nftMintingService.retryMinting(1L, 1L))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("실패한 NFT만 재시도할 수 있습니다");
+                    .hasMessageContaining("실패한 NFT만 재시도할 수 있습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 400, "BAD_REQUEST"));
         }
 
         @Test
@@ -391,7 +425,8 @@ class NftMintingServiceTest {
             // When & Then
             assertThatThrownBy(() -> nftMintingService.retryMinting(1L, 1L))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("실패한 NFT만 재시도할 수 있습니다");
+                    .hasMessageContaining("실패한 NFT만 재시도할 수 있습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 400, "BAD_REQUEST"));
         }
 
         @Test
@@ -405,7 +440,8 @@ class NftMintingServiceTest {
             // When & Then
             assertThatThrownBy(() -> nftMintingService.retryMinting(1L, 1L))
                     .isInstanceOf(BusinessException.class)
-                    .hasMessageContaining("지갑 주소가 필요합니다");
+                    .hasMessageContaining("지갑 주소가 필요합니다")
+                    .satisfies(ex -> assertBusinessException(ex, 400, "BAD_REQUEST"));
         }
     }
 
@@ -453,5 +489,18 @@ class NftMintingServiceTest {
             assertThat(result.getMintingCount()).isZero();
             assertThat(result.getFailedCount()).isZero();
         }
+    }
+
+    private void mockSuccessfulMinting() {
+        PolygonBlockchainService.MintResult mintResult =
+                new PolygonBlockchainService.MintResult(true, "12345", "0xabc123", "NFT 민팅 성공");
+        when(blockchainService.mintNftAsync(eq(1L), anyString(), anyString()))
+                .thenReturn(CompletableFuture.completedFuture(mintResult));
+    }
+
+    private void assertBusinessException(Throwable throwable, int status, String errorCode) {
+        BusinessException exception = (BusinessException) throwable;
+        assertThat(exception.getStatus().value()).isEqualTo(status);
+        assertThat(exception.getErrorCodeStr()).isEqualTo(errorCode);
     }
 }

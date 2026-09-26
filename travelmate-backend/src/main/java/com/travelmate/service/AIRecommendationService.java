@@ -4,6 +4,7 @@ import com.travelmate.dto.AIRecommendationDto;
 import com.travelmate.dto.AIRecommendationDto.*;
 import com.travelmate.entity.User;
 import com.travelmate.entity.nft.UserNftCollection;
+import com.travelmate.exception.BusinessException;
 import com.travelmate.repository.UserRepository;
 import com.travelmate.repository.nft.UserNftCollectionRepository;
 import com.travelmate.service.ai.AiItineraryService;
@@ -68,7 +69,7 @@ public class AIRecommendationService {
         log.info("Getting personalized recommendations for user {}", userId);
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         UserAnalysis analysis = analyzeUser(userId);
 
@@ -99,7 +100,7 @@ public class AIRecommendationService {
     @Cacheable(value = "userAnalysis", key = "#userId")
     public UserAnalysis analyzeUser(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         List<UserNftCollection> collections = collectionRepository.findByUserId(userId);
 
@@ -274,7 +275,7 @@ public class AIRecommendationService {
         List<Map<String, String>> messages = new ArrayList<>();
         messages.add(Map.of(
             "role", "system",
-            "content", "You are Fryndo AI, a friendly and helpful Korean travel assistant. " +
+            "content", "You are Doorimate AI, a friendly and helpful Korean travel assistant. " +
                       "Always respond in Korean. Be concise but informative."
         ));
 
@@ -315,7 +316,7 @@ public class AIRecommendationService {
         } else if (message.contains("일정") || message.contains("계획")) {
             return "여행 일정을 도와드릴게요! 목적지와 여행 기간을 알려주세요.";
         } else if (message.contains("안녕") || message.contains("hello") || message.contains("hi")) {
-            return "안녕하세요! Fryndo AI입니다. 여행 계획, 장소 추천, 현지 정보 등 무엇이든 물어보세요!";
+            return "안녕하세요! 두리메이트 AI입니다. 여행 계획, 장소 추천, 현지 정보 등 무엇이든 물어보세요!";
         } else if (message.contains("고마") || message.contains("감사")) {
             return "도움이 되었다니 기뻐요! 더 궁금한 점이 있으시면 언제든 말씀해주세요.";
         }

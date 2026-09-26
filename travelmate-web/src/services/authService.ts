@@ -1,6 +1,5 @@
 import { logger } from '../lib/utils';
-
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+import { API_BASE_URL } from './apiConfig';
 
 export interface LoginRequest {
   email: string;
@@ -218,8 +217,8 @@ class AuthService {
       });
 
       if (!response.ok) {
-        // Refresh token도 만료된 경우 로그아웃
-        this.logout();
+        // Refresh token도 만료된 경우 로컬 인증 상태를 즉시 정리한다.
+        this.clearTokens();
         throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
       }
 
@@ -271,7 +270,17 @@ class AuthService {
   }
 
   async getValidToken(): Promise<string | null> {
-    if (!this.accessToken) return null;
+    if (!this.accessToken) {
+      if (!this.currentUser) return null;
+
+      try {
+        await this.refreshAccessToken();
+      } catch {
+        return null;
+      }
+
+      return this.accessToken;
+    }
 
     if (this.isTokenExpired()) {
       try {
@@ -354,8 +363,9 @@ class AuthService {
   }
 
   isAuthenticated(): boolean {
-    // Access Token이 있고 만료되지 않았거나, httpOnly 쿠키로 갱신 가능한 경우
-    return this.accessToken !== null && !this.isTokenExpired();
+    // 만료된 access token도 httpOnly refresh cookie로 갱신 가능하므로,
+    // 라우트 보호에서는 저장된 세션 존재 여부만 확인한다.
+    return this.accessToken !== null || this.currentUser !== null;
   }
 
   hasRefreshCapability(): boolean {

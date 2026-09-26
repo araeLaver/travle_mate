@@ -1,7 +1,9 @@
 package com.travelmate.controller;
 
+import com.travelmate.security.AuthenticatedUserId;
 import com.travelmate.dto.PostDto;
 import com.travelmate.entity.Post;
+import com.travelmate.exception.BusinessException;
 import com.travelmate.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -23,9 +25,9 @@ public class PostController {
 
     @PostMapping
     public ResponseEntity<PostDto.Response> createPost(
-            @AuthenticationPrincipal Long userId,
+            @AuthenticationPrincipal String userId,
             @Valid @RequestBody PostDto.CreateRequest request) {
-        PostDto.Response response = postService.createPost(userId, request);
+        PostDto.Response response = postService.createPost(AuthenticatedUserId.parse(userId), request);
         return ResponseEntity.ok(response);
     }
 
@@ -47,43 +49,43 @@ public class PostController {
 
     @PutMapping("/{id}")
     public ResponseEntity<PostDto.Response> updatePost(
-            @AuthenticationPrincipal Long userId,
+            @AuthenticationPrincipal String userId,
             @PathVariable Long id,
             @Valid @RequestBody PostDto.UpdateRequest request) {
-        PostDto.Response response = postService.updatePost(userId, id, request);
+        PostDto.Response response = postService.updatePost(AuthenticatedUserId.parse(userId), id, request);
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePost(
-            @AuthenticationPrincipal Long userId,
+            @AuthenticationPrincipal String userId,
             @PathVariable Long id) {
-        postService.deletePost(userId, id);
+        postService.deletePost(AuthenticatedUserId.parse(userId), id);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{id}/like")
     public ResponseEntity<Void> likePost(
-            @AuthenticationPrincipal Long userId,
+            @AuthenticationPrincipal String userId,
             @PathVariable Long id) {
-        postService.likePost(id, userId);
+        postService.likePost(id, AuthenticatedUserId.parse(userId));
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}/like")
     public ResponseEntity<Void> unlikePost(
-            @AuthenticationPrincipal Long userId,
+            @AuthenticationPrincipal String userId,
             @PathVariable Long id) {
-        postService.unlikePost(id, userId);
+        postService.unlikePost(id, AuthenticatedUserId.parse(userId));
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{id}/images")
     public ResponseEntity<List<String>> uploadImages(
-            @AuthenticationPrincipal Long userId,
+            @AuthenticationPrincipal String userId,
             @PathVariable Long id,
             @RequestParam("images") List<MultipartFile> images) {
-        List<String> imageUrls = postService.uploadImages(userId, id, images);
+        List<String> imageUrls = postService.uploadImages(AuthenticatedUserId.parse(userId), id, images);
         return ResponseEntity.ok(imageUrls);
     }
 
@@ -99,13 +101,13 @@ public class PostController {
             @RequestParam Double longitude,
             @RequestParam(defaultValue = "10.0") Double radiusKm) {
         if (latitude == null || latitude < -90 || latitude > 90) {
-            throw new IllegalArgumentException("위도는 -90에서 90 사이여야 합니다.");
+            throw BusinessException.badRequest("위도는 -90에서 90 사이여야 합니다.");
         }
         if (longitude == null || longitude < -180 || longitude > 180) {
-            throw new IllegalArgumentException("경도는 -180에서 180 사이여야 합니다.");
+            throw BusinessException.badRequest("경도는 -180에서 180 사이여야 합니다.");
         }
         if (radiusKm == null || radiusKm <= 0 || radiusKm > 100) {
-            throw new IllegalArgumentException("반경은 0~100km 이내여야 합니다.");
+            throw BusinessException.badRequest("반경은 0~100km 이내여야 합니다.");
         }
         List<PostDto.Response> nearbyPosts = postService.getNearbyPosts(latitude, longitude, radiusKm);
         return ResponseEntity.ok(nearbyPosts);

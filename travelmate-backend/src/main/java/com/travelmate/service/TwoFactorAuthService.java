@@ -2,6 +2,7 @@ package com.travelmate.service;
 
 import com.travelmate.entity.TwoFactorAuth;
 import com.travelmate.entity.User;
+import com.travelmate.exception.BusinessException;
 import com.travelmate.exception.UserException;
 import com.travelmate.repository.TwoFactorAuthRepository;
 import lombok.RequiredArgsConstructor;
@@ -70,7 +71,7 @@ public class TwoFactorAuthService {
             .orElseThrow(() -> new UserException.InvalidTokenException());
         
         if (twoFactorAuth.getIsEnabled()) {
-            throw new IllegalStateException("2FA가 이미 활성화되어 있습니다.");
+            throw BusinessException.conflict("2FA가 이미 활성화되어 있습니다.");
         }
         
         boolean isValid = verifyTotpCode(twoFactorAuth.getSecretKey(), verificationCode);

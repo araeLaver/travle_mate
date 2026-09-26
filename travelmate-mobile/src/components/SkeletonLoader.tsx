@@ -2,8 +2,10 @@
  * Skeleton Loading Components
  */
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { View, StyleSheet, Animated, ViewStyle } from 'react-native';
+import { ThemePalette, spacing, radii } from '../theme';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface SkeletonProps {
   width?: number | string;
@@ -12,12 +14,19 @@ interface SkeletonProps {
   style?: ViewStyle;
 }
 
+/** Memoized theme-aware styles shared by the skeleton subcomponents. */
+const useStyles = () => {
+  const { palette } = useTheme();
+  return useMemo(() => createStyles(palette), [palette]);
+};
+
 const SkeletonBlock: React.FC<SkeletonProps> = ({
   width = '100%',
   height = 16,
   borderRadius = 4,
   style,
 }) => {
+  const { palette } = useTheme();
   const opacity = useRef(new Animated.Value(0.3)).current;
 
   useEffect(() => {
@@ -46,7 +55,7 @@ const SkeletonBlock: React.FC<SkeletonProps> = ({
           width: width as any,
           height,
           borderRadius,
-          backgroundColor: '#E5E7EB',
+          backgroundColor: palette.surfaceAlt,
           opacity,
         },
         style,
@@ -56,7 +65,9 @@ const SkeletonBlock: React.FC<SkeletonProps> = ({
 };
 
 /** Card skeleton for lists (user cards, group cards) */
-export const CardSkeleton: React.FC = () => (
+export const CardSkeleton: React.FC = () => {
+  const styles = useStyles();
+  return (
   <View style={styles.card}>
     <SkeletonBlock width={48} height={48} borderRadius={24} />
     <View style={styles.cardContent}>
@@ -64,10 +75,13 @@ export const CardSkeleton: React.FC = () => (
       <SkeletonBlock width="40%" height={12} style={styles.mt6} />
     </View>
   </View>
-);
+  );
+};
 
 /** Full-width card skeleton for nearby locations */
-export const LocationCardSkeleton: React.FC = () => (
+export const LocationCardSkeleton: React.FC = () => {
+  const styles = useStyles();
+  return (
   <View style={styles.locationCard}>
     <SkeletonBlock width="100%" height={120} borderRadius={0} />
     <View style={styles.locationContent}>
@@ -76,10 +90,13 @@ export const LocationCardSkeleton: React.FC = () => (
       <SkeletonBlock width="30%" height={12} style={styles.mt6} />
     </View>
   </View>
-);
+  );
+};
 
 /** Grid card skeleton for collections */
-export const GridCardSkeleton: React.FC = () => (
+export const GridCardSkeleton: React.FC = () => {
+  const styles = useStyles();
+  return (
   <View style={styles.gridCard}>
     <SkeletonBlock width="100%" height={100} borderRadius={0} />
     <View style={styles.gridContent}>
@@ -87,10 +104,13 @@ export const GridCardSkeleton: React.FC = () => (
       <SkeletonBlock width="50%" height={10} style={styles.mt6} />
     </View>
   </View>
-);
+  );
+};
 
 /** Profile header skeleton */
-export const ProfileSkeleton: React.FC = () => (
+export const ProfileSkeleton: React.FC = () => {
+  const styles = useStyles();
+  return (
   <View style={styles.profile}>
     <SkeletonBlock width={72} height={72} borderRadius={36} />
     <View style={styles.profileInfo}>
@@ -98,10 +118,13 @@ export const ProfileSkeleton: React.FC = () => (
       <SkeletonBlock width={160} height={14} style={styles.mt6} />
     </View>
   </View>
-);
+  );
+};
 
 /** Stats row skeleton */
-export const StatsSkeleton: React.FC = () => (
+export const StatsSkeleton: React.FC = () => {
+  const styles = useStyles();
+  return (
   <View style={styles.statsRow}>
     {[1, 2, 3].map((i) => (
       <View key={i} style={styles.statItem}>
@@ -110,10 +133,13 @@ export const StatsSkeleton: React.FC = () => (
       </View>
     ))}
   </View>
-);
+  );
+};
 
 /** Home screen skeleton */
-export const HomeSkeleton: React.FC = () => (
+export const HomeSkeleton: React.FC = () => {
+  const styles = useStyles();
+  return (
   <View style={styles.container}>
     <View style={styles.homeHeader}>
       <SkeletonBlock width={180} height={20} />
@@ -140,106 +166,110 @@ export const HomeSkeleton: React.FC = () => (
       </View>
     </View>
   </View>
-);
+  );
+};
 
 /** List skeleton: renders N card skeletons */
-export const ListSkeleton: React.FC<{ count?: number }> = ({ count = 5 }) => (
+export const ListSkeleton: React.FC<{ count?: number }> = ({ count = 5 }) => {
+  const styles = useStyles();
+  return (
   <View style={styles.listContainer}>
     {Array.from({ length: count }, (_, i) => (
       <CardSkeleton key={i} />
     ))}
   </View>
-);
+  );
+};
 
 export { SkeletonBlock };
 export default SkeletonBlock;
 
-const styles = StyleSheet.create({
+const createStyles = (palette: ThemePalette) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: palette.background,
   },
   mt6: {
     marginTop: 6,
   },
   mt12: {
-    marginTop: 12,
+    marginTop: spacing.md,
   },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 8,
+    backgroundColor: palette.surface,
+    padding: spacing.lg,
+    borderRadius: radii.card,
+    marginBottom: spacing.sm,
   },
   cardContent: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: spacing.md,
   },
   locationCard: {
     width: 200,
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    backgroundColor: palette.surface,
+    borderRadius: radii.card,
     overflow: 'hidden',
-    marginRight: 12,
+    marginRight: spacing.md,
   },
   locationContent: {
-    padding: 12,
+    padding: spacing.md,
   },
   gridCard: {
     flex: 1,
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    backgroundColor: palette.surface,
+    borderRadius: radii.card,
     overflow: 'hidden',
-    margin: 4,
+    margin: spacing.xs,
   },
   gridContent: {
-    padding: 8,
+    padding: spacing.sm,
   },
   profile: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 24,
+    padding: spacing.xxl,
   },
   profileInfo: {
-    marginLeft: 16,
+    marginLeft: spacing.lg,
     flex: 1,
   },
   statsRow: {
     flexDirection: 'row',
-    paddingHorizontal: 24,
-    gap: 12,
-    marginTop: 16,
+    paddingHorizontal: spacing.xxl,
+    gap: spacing.md,
+    marginTop: spacing.lg,
   },
   statItem: {
     flex: 1,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: palette.surface,
+    borderRadius: radii.input,
+    padding: spacing.lg,
     alignItems: 'center',
   },
   homeHeader: {
-    padding: 24,
+    padding: spacing.xxl,
     paddingTop: 60,
   },
   section: {
-    marginTop: 24,
-    paddingHorizontal: 24,
+    marginTop: spacing.xxl,
+    paddingHorizontal: spacing.xxl,
   },
   quickRow: {
     flexDirection: 'row',
-    gap: 12,
-    marginTop: 12,
+    gap: spacing.md,
+    marginTop: spacing.md,
   },
   quickItem: {
     flex: 1,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: palette.surface,
+    borderRadius: radii.card,
+    padding: spacing.lg,
     alignItems: 'center',
   },
   listContainer: {
-    padding: 16,
+    padding: spacing.lg,
   },
 });

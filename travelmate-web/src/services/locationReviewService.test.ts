@@ -1,16 +1,16 @@
 import { locationReviewService, getSeasonLabel } from './locationReviewService';
+import { apiClient } from './apiClient';
 
-// Mock fetch
-global.fetch = jest.fn();
-
-// Mock authService
-jest.mock('./authService', () => ({
-  authService: {
-    getToken: jest.fn(() => 'mock-token'),
+jest.mock('./apiClient', () => ({
+  apiClient: {
+    get: jest.fn(),
+    post: jest.fn(),
+    put: jest.fn(),
+    delete: jest.fn(),
   },
 }));
 
-const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
+const mockApiClient = apiClient as jest.Mocked<typeof apiClient>;
 
 describe('LocationReviewService', () => {
   beforeEach(() => {
@@ -39,37 +39,25 @@ describe('LocationReviewService', () => {
 
   describe('createReview', () => {
     it('should create review successfully', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockReview,
-      } as Response);
+      mockApiClient.post.mockResolvedValueOnce(mockReview);
 
-      const result = await locationReviewService.createReview(1, {
+      const request = {
         rating: 5,
         comment: '좋은 장소입니다',
-        visitedSeason: 'SPRING',
-      });
+        visitedSeason: 'SPRING' as const,
+      };
+      const result = await locationReviewService.createReview(1, request);
 
       expect(result.rating).toBe(5);
       expect(result.comment).toBe('좋은 장소입니다');
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/locations/1/reviews'),
-        expect.objectContaining({
-          method: 'POST',
-          body: JSON.stringify({
-            rating: 5,
-            comment: '좋은 장소입니다',
-            visitedSeason: 'SPRING',
-          }),
-        })
-      );
+      expect(mockApiClient.post).toHaveBeenCalledWith('/locations/1/reviews', request);
     });
 
     it('should throw error when not collected', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        json: async () => ({ message: '수집한 후에 리뷰를 작성할 수 있습니다.' }),
-      } as Response);
+      mockApiClient.post.mockRejectedValueOnce({
+        message: '수집한 후에 리뷰를 작성할 수 있습니다.',
+        status: 400,
+      });
 
       await expect(locationReviewService.createReview(1, { rating: 5 })).rejects.toThrow(
         '수집한 후에 리뷰를 작성할 수 있습니다.'
@@ -77,10 +65,10 @@ describe('LocationReviewService', () => {
     });
 
     it('should throw error on duplicate review', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        json: async () => ({ message: '이미 리뷰를 작성한 장소입니다.' }),
-      } as Response);
+      mockApiClient.post.mockRejectedValueOnce({
+        message: '이미 리뷰를 작성한 장소입니다.',
+        status: 409,
+      });
 
       await expect(locationReviewService.createReview(1, { rating: 5 })).rejects.toThrow(
         '이미 리뷰를 작성한 장소입니다.'
@@ -91,29 +79,24 @@ describe('LocationReviewService', () => {
   describe('updateReview', () => {
     it('should update review successfully', async () => {
       const updatedReview = { ...mockReview, rating: 4, comment: '수정된 리뷰' };
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => updatedReview,
-      } as Response);
-
-      const result = await locationReviewService.updateReview(1, {
+      const request = {
         rating: 4,
         comment: '수정된 리뷰',
-      });
+      };
+      mockApiClient.put.mockResolvedValueOnce(updatedReview);
+
+      const result = await locationReviewService.updateReview(1, request);
 
       expect(result.rating).toBe(4);
       expect(result.comment).toBe('수정된 리뷰');
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/reviews/1'),
-        expect.objectContaining({ method: 'PUT' })
-      );
+      expect(mockApiClient.put).toHaveBeenCalledWith('/reviews/1', request);
     });
 
     it('should throw error when not owner', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        json: async () => ({ message: '본인이 작성한 리뷰만 수정할 수 있습니다.' }),
-      } as Response);
+      mockApiClient.put.mockRejectedValueOnce({
+        message: '본인이 작성한 리뷰만 수정할 수 있습니다.',
+        status: 403,
+      });
 
       await expect(locationReviewService.updateReview(1, { rating: 4 })).rejects.toThrow(
         '본인이 작성한 리뷰만 수정할 수 있습니다.'
@@ -123,23 +106,17 @@ describe('LocationReviewService', () => {
 
   describe('deleteReview', () => {
     it('should delete review successfully', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({}),
-      } as Response);
+      mockApiClient.delete.mockResolvedValueOnce(undefined);
 
       await expect(locationReviewService.deleteReview(1)).resolves.toBeUndefined();
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/reviews/1'),
-        expect.objectContaining({ method: 'DELETE' })
-      );
+      expect(mockApiClient.delete).toHaveBeenCalledWith('/reviews/1');
     });
 
     it('should throw error when not owner', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        json: async () => ({ message: '본인이 작성한 리뷰만 삭제할 수 있습니다.' }),
-      } as Response);
+      mockApiClient.delete.mockRejectedValueOnce({
+        message: '본인이 작성한 리뷰만 삭제할 수 있습니다.',
+        status: 403,
+      });
 
       await expect(locationReviewService.deleteReview(1)).rejects.toThrow(
         '본인이 작성한 리뷰만 삭제할 수 있습니다.'
@@ -159,17 +136,13 @@ describe('LocationReviewService', () => {
         last: true,
       };
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-      } as Response);
+      mockApiClient.get.mockResolvedValueOnce(mockResponse);
 
       const result = await locationReviewService.getLocationReviews(1, 'recent', 0, 10);
 
       expect(result.content).toHaveLength(1);
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/locations/1/reviews?sort=recent&page=0&size=10'),
-        expect.any(Object)
+      expect(mockApiClient.get).toHaveBeenCalledWith(
+        '/locations/1/reviews?sort=recent&page=0&size=10'
       );
     });
 
@@ -184,24 +157,18 @@ describe('LocationReviewService', () => {
         last: true,
       };
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-      } as Response);
+      mockApiClient.get.mockResolvedValueOnce(mockResponse);
 
       const result = await locationReviewService.getLocationReviews(1, 'helpful', 0, 10);
 
       expect(result.content).toHaveLength(1);
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('sort=helpful'),
-        expect.any(Object)
+      expect(mockApiClient.get).toHaveBeenCalledWith(
+        '/locations/1/reviews?sort=helpful&page=0&size=10'
       );
     });
 
-    it('should throw error on failure', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-      } as Response);
+    it('should throw fallback error on failure without server message', async () => {
+      mockApiClient.get.mockRejectedValueOnce({ status: 500 });
 
       await expect(locationReviewService.getLocationReviews(1)).rejects.toThrow(
         '리뷰 목록을 불러오는데 실패했습니다.'
@@ -221,38 +188,28 @@ describe('LocationReviewService', () => {
         last: true,
       };
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-      } as Response);
+      mockApiClient.get.mockResolvedValueOnce(mockResponse);
 
       const result = await locationReviewService.getUserReviews(1, 0, 10);
 
       expect(result.content).toHaveLength(1);
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/users/1/reviews'),
-        expect.any(Object)
-      );
+      expect(mockApiClient.get).toHaveBeenCalledWith('/users/1/reviews?page=0&size=10');
     });
   });
 
   describe('getReview', () => {
     it('should fetch review detail', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockReview,
-      } as Response);
+      mockApiClient.get.mockResolvedValueOnce(mockReview);
 
       const result = await locationReviewService.getReview(1);
 
       expect(result.id).toBe(1);
       expect(result.rating).toBe(5);
+      expect(mockApiClient.get).toHaveBeenCalledWith('/reviews/1');
     });
 
     it('should throw error when review not found', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-      } as Response);
+      mockApiClient.get.mockRejectedValueOnce({ status: 404 });
 
       await expect(locationReviewService.getReview(999)).rejects.toThrow(
         '리뷰를 불러오는데 실패했습니다.'
@@ -262,25 +219,16 @@ describe('LocationReviewService', () => {
 
   describe('toggleHelpful', () => {
     it('should add helpful', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ isHelpful: true }),
-      } as Response);
+      mockApiClient.post.mockResolvedValueOnce({ isHelpful: true });
 
       const result = await locationReviewService.toggleHelpful(1);
 
       expect(result.isHelpful).toBe(true);
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/reviews/1/helpful'),
-        expect.objectContaining({ method: 'POST' })
-      );
+      expect(mockApiClient.post).toHaveBeenCalledWith('/reviews/1/helpful');
     });
 
     it('should remove helpful', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ isHelpful: false }),
-      } as Response);
+      mockApiClient.post.mockResolvedValueOnce({ isHelpful: false });
 
       const result = await locationReviewService.toggleHelpful(1);
 
@@ -288,10 +236,10 @@ describe('LocationReviewService', () => {
     });
 
     it('should throw error on own review', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        json: async () => ({ message: '본인의 리뷰에는 도움됨을 표시할 수 없습니다.' }),
-      } as Response);
+      mockApiClient.post.mockRejectedValueOnce({
+        message: '본인의 리뷰에는 도움됨을 표시할 수 없습니다.',
+        status: 400,
+      });
 
       await expect(locationReviewService.toggleHelpful(1)).rejects.toThrow(
         '본인의 리뷰에는 도움됨을 표시할 수 없습니다.'
@@ -307,15 +255,13 @@ describe('LocationReviewService', () => {
         reviewCount: 100,
       };
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockStats,
-      } as Response);
+      mockApiClient.get.mockResolvedValueOnce(mockStats);
 
       const result = await locationReviewService.getLocationReviewStats(1);
 
       expect(result.averageRating).toBe(4.5);
       expect(result.reviewCount).toBe(100);
+      expect(mockApiClient.get).toHaveBeenCalledWith('/locations/1/reviews/stats');
     });
 
     it('should return zero stats for no reviews', async () => {
@@ -325,10 +271,7 @@ describe('LocationReviewService', () => {
         reviewCount: 0,
       };
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockStats,
-      } as Response);
+      mockApiClient.get.mockResolvedValueOnce(mockStats);
 
       const result = await locationReviewService.getLocationReviewStats(1);
 

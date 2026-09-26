@@ -1,5 +1,6 @@
 package com.travelmate.controller;
 
+import com.travelmate.security.AuthenticatedUserId;
 import com.travelmate.dto.UserReviewDto;
 import com.travelmate.service.UserReviewService;
 import jakarta.validation.Valid;
@@ -30,7 +31,7 @@ public class UserReviewController {
             @Valid @RequestBody UserReviewDto.CreateRequest request,
             @AuthenticationPrincipal String userId) {
 
-        Long reviewerId = Long.parseLong(userId);
+        Long reviewerId = AuthenticatedUserId.parse(userId);
         UserReviewDto.Response response = userReviewService.createReview(reviewerId, revieweeId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -68,7 +69,7 @@ public class UserReviewController {
             @PathVariable Long reviewId,
             @AuthenticationPrincipal String userId) {
 
-        Long reviewerId = Long.parseLong(userId);
+        Long reviewerId = AuthenticatedUserId.parse(userId);
         userReviewService.deleteReview(reviewerId, reviewId);
         return ResponseEntity.noContent().build();
     }

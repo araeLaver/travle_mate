@@ -157,7 +157,7 @@ public class IpfsService {
      */
     private String createDescription(CollectibleLocation location) {
         StringBuilder sb = new StringBuilder();
-        sb.append("Fryndo NFT - ").append(location.getName()).append("\n\n");
+        sb.append("Doorimate NFT - ").append(location.getName()).append("\n\n");
 
         if (location.getDescription() != null) {
             sb.append(location.getDescription()).append("\n\n");

@@ -1,5 +1,6 @@
 package com.travelmate.controller;
 
+import com.travelmate.security.AuthenticatedUserId;
 import com.travelmate.entity.EmergencyContact;
 import com.travelmate.service.EmergencyContactService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,7 +28,7 @@ public class EmergencyContactController {
     @Operation(summary = "긴급 연락처 목록", description = "내 긴급 연락처 목록을 조회합니다.")
     public ResponseEntity<List<ContactResponse>> getContacts(
             @AuthenticationPrincipal String userId) {
-        List<EmergencyContact> contacts = emergencyContactService.getContacts(Long.parseLong(userId));
+        List<EmergencyContact> contacts = emergencyContactService.getContacts(AuthenticatedUserId.parse(userId));
         List<ContactResponse> response = contacts.stream().map(ContactResponse::from).toList();
         return ResponseEntity.ok(response);
     }
@@ -38,7 +39,7 @@ public class EmergencyContactController {
             @AuthenticationPrincipal String userId,
             @Valid @RequestBody ContactRequest request) {
         EmergencyContact contact = emergencyContactService.addContact(
-                Long.parseLong(userId),
+                AuthenticatedUserId.parse(userId),
                 request.getName(),
                 request.getRelationship(),
                 request.getPhoneNumber(),
@@ -54,7 +55,7 @@ public class EmergencyContactController {
             @PathVariable Long contactId,
             @Valid @RequestBody ContactRequest request) {
         EmergencyContact contact = emergencyContactService.updateContact(
-                Long.parseLong(userId),
+                AuthenticatedUserId.parse(userId),
                 contactId,
                 request.getName(),
                 request.getRelationship(),
@@ -69,7 +70,7 @@ public class EmergencyContactController {
     public ResponseEntity<Void> deleteContact(
             @AuthenticationPrincipal String userId,
             @PathVariable Long contactId) {
-        emergencyContactService.deleteContact(Long.parseLong(userId), contactId);
+        emergencyContactService.deleteContact(AuthenticatedUserId.parse(userId), contactId);
         return ResponseEntity.noContent().build();
     }
 

@@ -1,5 +1,6 @@
 package com.travelmate.controller;
 
+import com.travelmate.security.AuthenticatedUserId;
 import com.travelmate.dto.PushNotificationDto;
 import com.travelmate.service.FcmService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,7 +27,7 @@ public class PushNotificationController {
     public ResponseEntity<PushNotificationDto.TokenResponse> registerToken(
             Authentication authentication,
             @Valid @RequestBody PushNotificationDto.RegisterTokenRequest request) {
-        Long userId = Long.parseLong(authentication.getName());
+        Long userId = AuthenticatedUserId.parse(authentication);
         return ResponseEntity.ok(fcmService.registerToken(userId, request));
     }
 
@@ -35,9 +36,26 @@ public class PushNotificationController {
     public ResponseEntity<Void> unregisterToken(
             Authentication authentication,
             @Valid @RequestBody PushNotificationDto.UnregisterTokenRequest request) {
-        Long userId = Long.parseLong(authentication.getName());
+        Long userId = AuthenticatedUserId.parse(authentication);
         fcmService.unregisterToken(userId, request.getToken());
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/preferences")
+    @Operation(summary = "알림 설정 조회", description = "사용자의 알림 설정을 조회합니다.")
+    public ResponseEntity<PushNotificationDto.NotificationPreferences> getPreferences(
+            Authentication authentication) {
+        Long userId = AuthenticatedUserId.parse(authentication);
+        return ResponseEntity.ok(fcmService.getPreferences(userId));
+    }
+
+    @PutMapping("/preferences")
+    @Operation(summary = "알림 설정 수정", description = "사용자의 알림 설정을 수정합니다.")
+    public ResponseEntity<PushNotificationDto.NotificationPreferences> updatePreferences(
+            Authentication authentication,
+            @RequestBody PushNotificationDto.UpdateNotificationPreferencesRequest request) {
+        Long userId = AuthenticatedUserId.parse(authentication);
+        return ResponseEntity.ok(fcmService.updatePreferences(userId, request));
     }
 
     @PostMapping("/subscribe/{topic}")
@@ -45,7 +63,7 @@ public class PushNotificationController {
     public ResponseEntity<Void> subscribeToTopic(
             Authentication authentication,
             @PathVariable String topic) {
-        Long userId = Long.parseLong(authentication.getName());
+        Long userId = AuthenticatedUserId.parse(authentication);
         fcmService.subscribeToTopic(userId, topic);
         return ResponseEntity.ok().build();
     }
@@ -55,7 +73,7 @@ public class PushNotificationController {
     public ResponseEntity<Void> unsubscribeFromTopic(
             Authentication authentication,
             @PathVariable String topic) {
-        Long userId = Long.parseLong(authentication.getName());
+        Long userId = AuthenticatedUserId.parse(authentication);
         fcmService.unsubscribeFromTopic(userId, topic);
         return ResponseEntity.ok().build();
     }

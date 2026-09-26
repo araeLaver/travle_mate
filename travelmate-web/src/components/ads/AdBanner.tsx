@@ -12,14 +12,31 @@ interface AdBannerProps {
   className?: string;
 }
 
+const ADSENSE_CLIENT = process.env.REACT_APP_ADSENSE_CLIENT || '';
+const ADSENSE_SCRIPT_ID = 'adsbygoogle-js';
+
+const ensureAdSenseScript = () => {
+  if (!ADSENSE_CLIENT || document.getElementById(ADSENSE_SCRIPT_ID)) {
+    return;
+  }
+  const script = document.createElement('script');
+  script.id = ADSENSE_SCRIPT_ID;
+  script.async = true;
+  script.crossOrigin = 'anonymous';
+  script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`;
+  document.head.appendChild(script);
+};
+
 const AdBanner: React.FC<AdBannerProps> = ({ adSlot, adFormat = 'auto', className = '' }) => {
   const adRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (!ADSENSE_CLIENT || !adRef.current) {
+      return;
+    }
     try {
-      if (window.adsbygoogle && adRef.current) {
-        window.adsbygoogle.push({});
-      }
+      ensureAdSenseScript();
+      (window.adsbygoogle = window.adsbygoogle || []).push({});
     } catch {
       // AdSense not loaded yet
     }
@@ -36,12 +53,16 @@ const AdBanner: React.FC<AdBannerProps> = ({ adSlot, adFormat = 'auto', classNam
     );
   }
 
+  if (!ADSENSE_CLIENT) {
+    return null;
+  }
+
   return (
     <div ref={adRef} className={className}>
       <ins
         className="adsbygoogle"
         style={{ display: 'block' }}
-        data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+        data-ad-client={ADSENSE_CLIENT}
         data-ad-slot={adSlot}
         data-ad-format={adFormat}
         data-full-width-responsive="true"

@@ -3,6 +3,7 @@ package com.travelmate.service.ai;
 import com.travelmate.dto.AIRecommendationDto.*;
 import com.travelmate.entity.User;
 import com.travelmate.entity.nft.CollectibleLocation;
+import com.travelmate.exception.BusinessException;
 import com.travelmate.repository.UserRepository;
 import com.travelmate.repository.nft.CollectibleLocationRepository;
 import com.travelmate.repository.nft.UserNftCollectionRepository;
@@ -47,7 +48,7 @@ public class PlaceRecommendationService {
                 userId, request.getLatitude(), request.getLongitude());
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> BusinessException.userNotFound(userId));
 
         List<Long> visitedLocationIds = collectionRepository.findCollectedLocationIdsByUserId(userId);
 

@@ -3,6 +3,7 @@ package com.travelmate.service.nft;
 import com.travelmate.dto.NftDto;
 import com.travelmate.entity.User;
 import com.travelmate.entity.nft.*;
+import com.travelmate.exception.BusinessException;
 import com.travelmate.repository.UserRepository;
 import com.travelmate.repository.nft.PointTransactionRepository;
 import com.travelmate.repository.nft.UserPointRepository;
@@ -153,8 +154,9 @@ class PointServiceTest {
             // When & Then
             assertThatThrownBy(() -> pointService.earnPoints(
                     1L, -100L, PointSource.NFT_COLLECT, "테스트", null, null))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("양수");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("양수")
+                    .satisfies(ex -> assertBusinessException(ex, 400, "BAD_REQUEST"));
         }
 
         @Test
@@ -163,8 +165,9 @@ class PointServiceTest {
             // When & Then
             assertThatThrownBy(() -> pointService.earnPoints(
                     1L, 0L, PointSource.NFT_COLLECT, "테스트", null, null))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("양수");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("양수")
+                    .satisfies(ex -> assertBusinessException(ex, 400, "BAD_REQUEST"));
         }
 
         @Test
@@ -177,8 +180,9 @@ class PointServiceTest {
             // When & Then
             assertThatThrownBy(() -> pointService.earnPoints(
                     1L, 100L, PointSource.NFT_COLLECT, "NFT 수집", 1L, "NFT_COLLECTION"))
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessageContaining("이미 포인트가 지급");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("이미 포인트가 지급")
+                    .satisfies(ex -> assertBusinessException(ex, 409, "CONFLICT"));
         }
     }
 
@@ -223,8 +227,9 @@ class PointServiceTest {
             // When & Then
             assertThatThrownBy(() -> pointService.spendPoints(
                     1L, 2000L, PointSource.MARKETPLACE_PURCHASE, "아이템 구매", null, null))
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessageContaining("포인트가 부족");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("포인트가 부족")
+                    .satisfies(ex -> assertBusinessException(ex, 400, "BAD_REQUEST"));
         }
 
         @Test
@@ -233,8 +238,9 @@ class PointServiceTest {
             // When & Then
             assertThatThrownBy(() -> pointService.spendPoints(
                     1L, -100L, PointSource.MARKETPLACE_PURCHASE, "테스트", null, null))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("양수");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("양수")
+                    .satisfies(ex -> assertBusinessException(ex, 400, "BAD_REQUEST"));
         }
     }
 
@@ -274,8 +280,9 @@ class PointServiceTest {
         void transferPoints_SameUser() {
             // When & Then
             assertThatThrownBy(() -> pointService.transferPoints(1L, 1L, 100L, null))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("자신에게");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("자신에게")
+                    .satisfies(ex -> assertBusinessException(ex, 400, "BAD_REQUEST"));
         }
 
         @Test
@@ -283,8 +290,9 @@ class PointServiceTest {
         void transferPoints_NegativeAmount() {
             // When & Then
             assertThatThrownBy(() -> pointService.transferPoints(1L, 2L, -100L, null))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("양수");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("양수")
+                    .satisfies(ex -> assertBusinessException(ex, 400, "BAD_REQUEST"));
         }
 
         @Test
@@ -295,8 +303,9 @@ class PointServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> pointService.transferPoints(1L, 2L, 5000L, null))
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessageContaining("포인트가 부족");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("포인트가 부족")
+                    .satisfies(ex -> assertBusinessException(ex, 400, "BAD_REQUEST"));
         }
     }
 
@@ -501,5 +510,11 @@ class PointServiceTest {
             // Then
             assertThat(result).isFalse();
         }
+    }
+
+    private void assertBusinessException(Throwable throwable, int status, String errorCode) {
+        BusinessException exception = (BusinessException) throwable;
+        assertThat(exception.getStatus().value()).isEqualTo(status);
+        assertThat(exception.getErrorCodeStr()).isEqualTo(errorCode);
     }
 }

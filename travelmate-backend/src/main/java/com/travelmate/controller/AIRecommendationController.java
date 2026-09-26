@@ -1,5 +1,6 @@
 package com.travelmate.controller;
 
+import com.travelmate.security.AuthenticatedUserId;
 import com.travelmate.dto.AIRecommendationDto;
 import com.travelmate.dto.AIRecommendationDto.*;
 import com.travelmate.service.AIRecommendationService;
@@ -9,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,13 +32,13 @@ public class AIRecommendationController {
     @Operation(summary = "AI 여행 일정 생성", description = "목적지, 기간, 여행 스타일에 맞는 AI 생성 일정")
     @PostMapping("/itinerary")
     public ResponseEntity<ItineraryResponse> generateItinerary(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal String userId,
             @RequestBody ItineraryRequest request) {
 
-        Long userId = Long.parseLong(userDetails.getUsername());
-        log.info("AI itinerary request from user {} for {}", userId, request.getDestination());
+        Long userIdLong = AuthenticatedUserId.parse(userId);
+        log.info("AI itinerary request from user {} for {}", userIdLong, request.getDestination());
 
-        ItineraryResponse response = aiService.generateItinerary(userId, request);
+        ItineraryResponse response = aiService.generateItinerary(userIdLong, request);
         return ResponseEntity.ok(response);
     }
 
@@ -48,14 +48,14 @@ public class AIRecommendationController {
     @Operation(summary = "AI 장소 추천", description = "현재 위치 기반 AI 장소 추천")
     @PostMapping("/places")
     public ResponseEntity<List<PlaceRecommendation>> getPlaceRecommendations(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal String userId,
             @RequestBody PlaceRecommendationRequest request) {
 
-        Long userId = Long.parseLong(userDetails.getUsername());
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         log.info("AI place recommendation request from user {} at ({}, {})",
-                userId, request.getLatitude(), request.getLongitude());
+                userIdLong, request.getLatitude(), request.getLongitude());
 
-        List<PlaceRecommendation> recommendations = aiService.getAIPlaceRecommendations(userId, request);
+        List<PlaceRecommendation> recommendations = aiService.getAIPlaceRecommendations(userIdLong, request);
         return ResponseEntity.ok(recommendations);
     }
 
@@ -65,15 +65,15 @@ public class AIRecommendationController {
     @Operation(summary = "개인화 추천", description = "사용자 히스토리 기반 개인화 추천")
     @PostMapping("/personalized")
     public ResponseEntity<PersonalizedResponse> getPersonalizedRecommendations(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal String userId,
             @RequestBody PersonalizedRequest request) {
 
-        Long userId = Long.parseLong(userDetails.getUsername());
-        request.setUserId(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
+        request.setUserId(userIdLong);
 
-        log.info("Personalized recommendation request from user {}", userId);
+        log.info("Personalized recommendation request from user {}", userIdLong);
 
-        PersonalizedResponse response = aiService.getPersonalizedRecommendations(userId, request);
+        PersonalizedResponse response = aiService.getPersonalizedRecommendations(userIdLong, request);
         return ResponseEntity.ok(response);
     }
 
@@ -83,12 +83,12 @@ public class AIRecommendationController {
     @Operation(summary = "사용자 여행 분석", description = "사용자의 여행 패턴 및 성향 분석")
     @GetMapping("/analysis")
     public ResponseEntity<UserAnalysis> getUserAnalysis(
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal String userId) {
 
-        Long userId = Long.parseLong(userDetails.getUsername());
-        log.info("User analysis request for user {}", userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
+        log.info("User analysis request for user {}", userIdLong);
 
-        UserAnalysis analysis = aiService.analyzeUser(userId);
+        UserAnalysis analysis = aiService.analyzeUser(userIdLong);
         return ResponseEntity.ok(analysis);
     }
 
@@ -112,13 +112,13 @@ public class AIRecommendationController {
     @Operation(summary = "AI 여행 어시스턴트", description = "AI와 대화하며 여행 정보 얻기")
     @PostMapping("/chat")
     public ResponseEntity<ChatResponse> chat(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal String userId,
             @RequestBody ChatRequest request) {
 
-        Long userId = Long.parseLong(userDetails.getUsername());
-        log.info("AI chat from user {}: {}", userId, request.getMessage());
+        Long userIdLong = AuthenticatedUserId.parse(userId);
+        log.info("AI chat from user {}: {}", userIdLong, request.getMessage());
 
-        ChatResponse response = aiService.chat(userId, request);
+        ChatResponse response = aiService.chat(userIdLong, request);
         return ResponseEntity.ok(response);
     }
 
@@ -128,12 +128,12 @@ public class AIRecommendationController {
     @Operation(summary = "빠른 추천", description = "현재 위치에서 빠르게 장소 추천받기")
     @GetMapping("/quick")
     public ResponseEntity<List<PlaceRecommendation>> getQuickRecommendations(
-            @AuthenticationPrincipal UserDetails userDetails,
+            @AuthenticationPrincipal String userId,
             @RequestParam Double latitude,
             @RequestParam Double longitude,
             @RequestParam(defaultValue = "5") Double radiusKm) {
 
-        Long userId = Long.parseLong(userDetails.getUsername());
+        Long userIdLong = AuthenticatedUserId.parse(userId);
 
         PlaceRecommendationRequest request = PlaceRecommendationRequest.builder()
                 .latitude(latitude)
@@ -141,7 +141,7 @@ public class AIRecommendationController {
                 .radiusKm(radiusKm)
                 .build();
 
-        List<PlaceRecommendation> recommendations = aiService.getAIPlaceRecommendations(userId, request);
+        List<PlaceRecommendation> recommendations = aiService.getAIPlaceRecommendations(userIdLong, request);
         return ResponseEntity.ok(recommendations);
     }
 }

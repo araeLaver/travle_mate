@@ -7,6 +7,7 @@ import com.travelmate.entity.Payment.*;
 import com.travelmate.entity.Subscription;
 import com.travelmate.entity.Subscription.*;
 import com.travelmate.entity.User;
+import com.travelmate.exception.BusinessException;
 import com.travelmate.repository.PaymentRepository;
 import com.travelmate.repository.SubscriptionRepository;
 import com.travelmate.repository.UserRepository;
@@ -66,6 +67,7 @@ class PaymentServiceTest {
         ReflectionTestUtils.setField(paymentService, "tossClientKey", "test_ck_12345");
         ReflectionTestUtils.setField(paymentService, "tossApiUrl", "https://api.tosspayments.com/v1");
         ReflectionTestUtils.setField(paymentService, "appBaseUrl", "http://localhost:3000");
+        ReflectionTestUtils.setField(paymentService, "activeProfiles", "");
 
         testUser = new User();
         testUser.setId(1L);
@@ -85,6 +87,48 @@ class PaymentServiceTest {
                 .pgProvider("TOSS")
                 .status(PaymentStatus.PENDING)
                 .build();
+    }
+
+    @Nested
+    @DisplayName("production configuration validation")
+    class ProductionConfigurationValidationTest {
+
+        @Test
+        @DisplayName("실패 - prod에서 Toss test key 사용")
+        void validateProductionConfiguration_TestKeysInProd() {
+            // Given
+            ReflectionTestUtils.setField(paymentService, "activeProfiles", "prod");
+
+            // When & Then
+            assertThatThrownBy(() -> paymentService.validateProductionConfiguration())
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("payment.toss.secret-key");
+        }
+
+        @Test
+        @DisplayName("실패 - prod에서 localhost app base URL 사용")
+        void validateProductionConfiguration_LocalhostBaseUrlInProd() {
+            // Given
+            ReflectionTestUtils.setField(paymentService, "activeProfiles", "prod");
+            ReflectionTestUtils.setField(paymentService, "tossSecretKey", "live_sk_12345");
+            ReflectionTestUtils.setField(paymentService, "tossClientKey", "live_ck_12345");
+
+            // When & Then
+            assertThatThrownBy(() -> paymentService.validateProductionConfiguration())
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("app.base-url");
+        }
+
+        @Test
+        @DisplayName("성공 - prod가 아니면 test key 허용")
+        void validateProductionConfiguration_TestKeysOutsideProd() {
+            // Given
+            ReflectionTestUtils.setField(paymentService, "activeProfiles", "dev");
+
+            // When & Then
+            assertThatCode(() -> paymentService.validateProductionConfiguration())
+                    .doesNotThrowAnyException();
+        }
     }
 
     @Nested
@@ -266,8 +310,9 @@ class PaymentServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> paymentService.preparePayment(1L, request))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("사용자를 찾을 수 없습니다");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("사용자를 찾을 수 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 404, "USER_NOT_FOUND"));
         }
 
         @Test
@@ -283,8 +328,9 @@ class PaymentServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> paymentService.preparePayment(1L, request))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("지원하지 않는 상품 유형");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("지원하지 않는 상품 유형")
+                    .satisfies(ex -> assertBusinessException(ex, 400, "BAD_REQUEST"));
         }
 
         @Test
@@ -300,8 +346,9 @@ class PaymentServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> paymentService.preparePayment(1L, request))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("포인트 상품을 찾을 수 없습니다");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("포인트 상품을 찾을 수 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 404, "C1002"));
         }
     }
 
@@ -349,8 +396,9 @@ class PaymentServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> paymentService.confirmPayment(1L, request))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("결제 정보를 찾을 수 없습니다");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("결제 정보를 찾을 수 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 404, "C1002"));
         }
 
         @Test
@@ -368,8 +416,9 @@ class PaymentServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> paymentService.confirmPayment(999L, request))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("결제 권한이 없습니다");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("결제 권한이 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 403, "C1004"));
         }
 
         @Test
@@ -387,8 +436,9 @@ class PaymentServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> paymentService.confirmPayment(1L, request))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("결제 금액이 일치하지 않습니다");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("결제 금액이 일치하지 않습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 400, "BAD_REQUEST"));
         }
     }
 
@@ -461,8 +511,9 @@ class PaymentServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> paymentService.requestRefund(999L, request))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("환불 권한이 없습니다");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("환불 권한이 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 403, "C1004"));
         }
 
         @Test
@@ -481,8 +532,9 @@ class PaymentServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> paymentService.requestRefund(1L, request))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("환불할 수 없는 결제");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("환불할 수 없는 결제")
+                    .satisfies(ex -> assertBusinessException(ex, 409, "CONFLICT"));
         }
     }
 
@@ -617,9 +669,16 @@ class PaymentServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> paymentService.cancelSubscription(1L, "취소"))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("활성 구독이 없습니다");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("활성 구독이 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 404, "C1002"));
         }
+    }
+
+    private void assertBusinessException(Throwable ex, int status, String code) {
+        BusinessException businessException = (BusinessException) ex;
+        assertThat(businessException.getStatus().value()).isEqualTo(status);
+        assertThat(businessException.getErrorCodeStr()).isEqualTo(code);
     }
 
     @Nested

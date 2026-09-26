@@ -4,6 +4,8 @@ import com.travelmate.dto.NftDto;
 import com.travelmate.entity.nft.CollectibleLocation;
 import com.travelmate.entity.nft.LocationCategory;
 import com.travelmate.entity.nft.Rarity;
+import com.travelmate.exception.BusinessException;
+import com.travelmate.exception.ErrorCode;
 import com.travelmate.repository.nft.CollectibleLocationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +42,7 @@ public class CollectibleLocationAdminService {
     @Transactional(readOnly = true)
     public NftDto.CollectibleLocationAdminResponse getLocation(Long id) {
         CollectibleLocation location = collectibleLocationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("장소를 찾을 수 없습니다: " + id));
+                .orElseThrow(() -> locationNotFound(id));
         return toAdminResponse(location);
     }
 
@@ -83,7 +85,7 @@ public class CollectibleLocationAdminService {
     @Transactional
     public NftDto.CollectibleLocationAdminResponse updateLocation(Long id, NftDto.UpdateLocationRequest request) {
         CollectibleLocation location = collectibleLocationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("장소를 찾을 수 없습니다: " + id));
+                .orElseThrow(() -> locationNotFound(id));
 
         if (request.getName() != null) location.setName(request.getName());
         if (request.getDescription() != null) location.setDescription(request.getDescription());
@@ -117,7 +119,7 @@ public class CollectibleLocationAdminService {
     @Transactional
     public void toggleActive(Long id) {
         CollectibleLocation location = collectibleLocationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("장소를 찾을 수 없습니다: " + id));
+                .orElseThrow(() -> locationNotFound(id));
 
         location.setIsActive(!location.getIsActive());
         collectibleLocationRepository.save(location);
@@ -131,7 +133,7 @@ public class CollectibleLocationAdminService {
     @Transactional
     public void deleteLocation(Long id) {
         CollectibleLocation location = collectibleLocationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("장소를 찾을 수 없습니다: " + id));
+                .orElseThrow(() -> locationNotFound(id));
 
         collectibleLocationRepository.delete(location);
 
@@ -218,5 +220,9 @@ public class CollectibleLocationAdminService {
                 .createdAt(loc.getCreatedAt())
                 .updatedAt(loc.getUpdatedAt())
                 .build();
+    }
+
+    private BusinessException locationNotFound(Long id) {
+        return new BusinessException(ErrorCode.RESOURCE_NOT_FOUND, "장소를 찾을 수 없습니다: " + id);
     }
 }

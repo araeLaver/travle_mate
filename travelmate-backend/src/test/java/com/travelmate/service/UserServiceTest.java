@@ -56,6 +56,12 @@ class UserServiceTest {
     @Mock
     private UserTrustScoreRepository trustScoreRepository;
 
+    @Mock
+    private com.travelmate.repository.nft.UserPointRepository userPointRepository;
+
+    @Mock
+    private com.travelmate.repository.RefreshTokenRepository refreshTokenRepository;
+
     @InjectMocks
     private UserService userService;
 
@@ -237,24 +243,25 @@ class UserServiceTest {
     class UpdateUserLocationTest {
 
         @Test
-        @DisplayName("성공 - 위치 업데이트")
+        @DisplayName("성공 - 인증 사용자 기준으로 위치 업데이트")
         void updateUserLocation_Success() {
             // Given
             UserDto.LocationUpdateRequest request = new UserDto.LocationUpdateRequest();
-            request.setUserId(1L);
+            request.setUserId(999L);
             request.setLatitude(37.5665);
             request.setLongitude(126.9780);
 
             when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
 
             // When
-            userService.updateUserLocation(request);
+            userService.updateUserLocation(1L, request);
 
             // Then
             assertThat(testUser.getCurrentLatitude()).isEqualTo(37.5665);
             assertThat(testUser.getCurrentLongitude()).isEqualTo(126.9780);
             assertThat(testUser.getIsLocationEnabled()).isTrue();
             verify(userRepository).save(testUser);
+            verify(userRepository, never()).findById(999L);
         }
     }
 
@@ -268,8 +275,13 @@ class UserServiceTest {
             // Given
             UserDto.UpdateProfileRequest request = new UserDto.UpdateProfileRequest();
             request.setNickname("새닉네임");
+            request.setFullName("새 이름");
+            request.setAge(31);
+            request.setGender(User.Gender.FEMALE);
             request.setBio("새 자기소개");
             request.setTravelStyle(TravelStyle.FOOD);
+            request.setInterests(List.of("사진촬영", "음식탐방"));
+            request.setLanguages(List.of("한국어", "영어"));
 
             when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
             when(userRepository.existsByNickname("새닉네임")).thenReturn(false);
@@ -280,8 +292,15 @@ class UserServiceTest {
 
             // Then
             assertThat(testUser.getNickname()).isEqualTo("새닉네임");
+            assertThat(testUser.getFullName()).isEqualTo("새 이름");
+            assertThat(testUser.getAge()).isEqualTo(31);
+            assertThat(testUser.getGender()).isEqualTo(User.Gender.FEMALE);
             assertThat(testUser.getBio()).isEqualTo("새 자기소개");
             assertThat(testUser.getTravelStyle()).isEqualTo(TravelStyle.FOOD);
+            assertThat(testUser.getInterests()).containsExactly("사진촬영", "음식탐방");
+            assertThat(testUser.getLanguages()).containsExactly("한국어", "영어");
+            assertThat(response.getInterests()).containsExactly("사진촬영", "음식탐방");
+            assertThat(response.getLanguages()).containsExactly("한국어", "영어");
         }
 
         @Test
@@ -441,7 +460,7 @@ class UserServiceTest {
         void findUsersOnShake_StrongShake() {
             // Given
             UserDto.ShakeRequest request = new UserDto.ShakeRequest();
-            request.setUserId(1L);
+            request.setUserId(999L);
             request.setLatitude(37.5665);
             request.setLongitude(126.9780);
             request.setAccelerationX(10.0);
@@ -456,7 +475,7 @@ class UserServiceTest {
                     .thenReturn(List.of(nearbyUser));
 
             // When
-            List<UserDto.Response> result = userService.findUsersOnShake(request);
+            List<UserDto.Response> result = userService.findUsersOnShake(1L, request);
 
             // Then
             assertThat(result).isNotEmpty();
@@ -473,7 +492,7 @@ class UserServiceTest {
             request.setAccelerationZ(3.0); // 강도 ≈ 5.2
 
             // When
-            List<UserDto.Response> result = userService.findUsersOnShake(request);
+            List<UserDto.Response> result = userService.findUsersOnShake(1L, request);
 
             // Then
             assertThat(result).isEmpty();
@@ -503,7 +522,7 @@ class UserServiceTest {
                     .thenReturn(manyUsers);
 
             // When
-            List<UserDto.Response> result = userService.findUsersOnShake(request);
+            List<UserDto.Response> result = userService.findUsersOnShake(1L, request);
 
             // Then
             assertThat(result).hasSize(10);
@@ -515,7 +534,7 @@ class UserServiceTest {
     class DeleteUserTest {
 
         @Test
-        @DisplayName("성공 - 사용자 비활성화")
+        @DisplayName("성공 - 개인정보가 지워지고 세션이 끊긴다")
         void deleteUser_Success() {
             // Given
             when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
@@ -525,7 +544,35 @@ class UserServiceTest {
 
             // Then
             assertThat(testUser.getIsActive()).isFalse();
+            assertThat(testUser.getDeletionRequestedAt()).isNotNull();
             verify(userRepository).save(testUser);
+            verify(refreshTokenRepository).revokeAllByUser(testUser);
+        }
+
+        @Test
+        @DisplayName("성공 - 식별 가능한 값이 남지 않는다")
+        void deleteUser_ScrubsIdentifiers() {
+            // Given
+            when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
+            String originalEmail = testUser.getEmail();
+            String originalNickname = testUser.getNickname();
+
+            // When
+            userService.deleteUser(1L);
+
+            // Then
+            assertThat(testUser.getEmail()).isNotEqualTo(originalEmail);
+            assertThat(testUser.getNickname()).isNotEqualTo(originalNickname);
+            assertThat(testUser.getFullName()).isNull();
+            assertThat(testUser.getAge()).isNull();
+            assertThat(testUser.getGender()).isNull();
+            assertThat(testUser.getBio()).isNull();
+            assertThat(testUser.getProfileImageUrl()).isNull();
+            assertThat(testUser.getPhoneNumber()).isNull();
+            assertThat(testUser.getFcmToken()).isNull();
+            assertThat(testUser.getProviderId()).isNull();
+            assertThat(testUser.getCurrentLatitude()).isNull();
+            assertThat(testUser.getCurrentLongitude()).isNull();
         }
     }
 

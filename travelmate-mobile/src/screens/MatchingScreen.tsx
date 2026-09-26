@@ -2,7 +2,7 @@
  * Matching Request Management Screen
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -17,6 +17,9 @@ import {
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { apiClient } from '../services/apiClient';
+import { ThemePalette, fonts, type, spacing, radii } from '../theme';
+import { useTheme } from '../contexts/ThemeContext';
+import Icon from '../components/icons/Icon';
 
 type MatchingScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -27,8 +30,43 @@ interface Props {
   navigation: MatchingScreenNavigationProp;
 }
 
-type MatchStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'COMPLETED' | 'CANCELLED';
+type MatchStatus =
+  | 'PENDING'
+  | 'ACCEPTED'
+  | 'REJECTED'
+  | 'COMPLETED'
+  | 'CANCELLED'
+  | 'EXPIRED'
+  | 'MATCHED';
 type TabType = 'received' | 'sent' | 'active';
+
+interface MatchUserSummary {
+  id: number;
+  nickname: string;
+  profileImageUrl?: string;
+  rating?: number;
+  reviewCount?: number;
+}
+
+interface BackendMatchRequest {
+  id: number;
+  requester: MatchUserSummary;
+  receiver: MatchUserSummary;
+  status: MatchStatus;
+  message?: string;
+  createdAt: string;
+}
+
+interface BackendMatchHistory {
+  matchRequestId: number;
+  partner: MatchUserSummary;
+  status?: MatchStatus;
+  matchedAt: string;
+}
+
+interface BackendPage<T> {
+  content: T[];
+}
 
 interface MatchRequest {
   id: number;
@@ -45,15 +83,22 @@ interface MatchRequest {
   reviewWritten?: boolean;
 }
 
-const STATUS_LABELS: Record<MatchStatus, { text: string; color: string }> = {
-  PENDING: { text: '대기중', color: '#F59E0B' },
-  ACCEPTED: { text: '수락됨', color: '#10B981' },
-  REJECTED: { text: '거절됨', color: '#EF4444' },
-  COMPLETED: { text: '완료', color: '#6B7280' },
-  CANCELLED: { text: '취소됨', color: '#9CA3AF' },
-};
+const statusLabelsFor = (
+  palette: ThemePalette
+): Record<MatchStatus, { text: string; color: string }> => ({
+  PENDING: { text: '대기중', color: palette.rarityLegendary },
+  ACCEPTED: { text: '수락됨', color: palette.primary },
+  REJECTED: { text: '거절됨', color: palette.error },
+  COMPLETED: { text: '완료', color: palette.textTertiary },
+  CANCELLED: { text: '취소됨', color: palette.textMuted },
+  EXPIRED: { text: '만료됨', color: palette.textMuted },
+  MATCHED: { text: '매칭됨', color: palette.primary },
+});
 
 const MatchingScreen: React.FC<Props> = ({ navigation }) => {
+  const { palette } = useTheme();
+  const styles = useMemo(() => createStyles(palette), [palette]);
+  const statusLabels = useMemo(() => statusLabelsFor(palette), [palette]);
   const [tab, setTab] = useState<TabType>('received');
   const [matches, setMatches] = useState<MatchRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,10 +106,21 @@ const MatchingScreen: React.FC<Props> = ({ navigation }) => {
 
   const loadMatches = useCallback(async () => {
     try {
-      const data = await apiClient.get<MatchRequest[]>(
-        `/matching?type=${tab}`
-      );
-      setMatches(data);
+      if (tab === 'active') {
+        const data = await apiClient.get<BackendMatchHistory[]>('/matching/history');
+        setMatches(data.map(toActiveMatchRequest));
+        return;
+      }
+
+      const page =
+        tab === 'received'
+          ? await apiClient.get<BackendPage<BackendMatchRequest>>(
+              '/matching/requests/received?page=0&size=50'
+            )
+          : await apiClient.get<BackendPage<BackendMatchRequest>>(
+              '/matching/requests/sent?page=0&size=50'
+            );
+      setMatches(page.content.map(request => toMatchRequest(request, tab)));
     } catch (error) {
       console.log('Failed to load matches:', error);
     } finally {
@@ -85,7 +141,7 @@ const MatchingScreen: React.FC<Props> = ({ navigation }) => {
 
   const handleAccept = async (matchId: number) => {
     try {
-      await apiClient.post(`/matching/${matchId}/accept`);
+      await apiClient.put(`/matching/requests/${matchId}/accept`);
       Alert.alert('완료', '매칭 요청을 수락했습니다.');
       loadMatches();
     } catch {
@@ -104,7 +160,7 @@ const MatchingScreen: React.FC<Props> = ({ navigation }) => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await apiClient.post(`/matching/${matchId}/reject`);
+              await apiClient.put(`/matching/requests/${matchId}/reject`);
               loadMatches();
             } catch {
               Alert.alert('오류', '요청 처리에 실패했습니다.');
@@ -116,13 +172,24 @@ const MatchingScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const handleComplete = async (matchId: number) => {
-    try {
-      await apiClient.post(`/matching/${matchId}/complete`);
-      Alert.alert('완료', '동행이 완료 처리되었습니다.');
-      loadMatches();
-    } catch {
-      Alert.alert('오류', '요청 처리에 실패했습니다.');
-    }
+    Alert.alert(
+      '동행 완료',
+      '이 매칭을 완료 처리하시겠습니까?',
+      [
+        { text: '취소', style: 'cancel' },
+        {
+          text: '완료',
+          onPress: async () => {
+            try {
+              await apiClient.put(`/matching/requests/${matchId}/complete`);
+              await loadMatches();
+            } catch {
+              Alert.alert('오류', '동행 완료 처리에 실패했습니다.');
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleCancel = async (matchId: number) => {
@@ -136,7 +203,7 @@ const MatchingScreen: React.FC<Props> = ({ navigation }) => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await apiClient.post(`/matching/${matchId}/cancel`);
+              await apiClient.delete(`/matching/requests/${matchId}`);
               loadMatches();
             } catch {
               Alert.alert('오류', '요청 처리에 실패했습니다.');
@@ -158,8 +225,34 @@ const MatchingScreen: React.FC<Props> = ({ navigation }) => {
     return date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
   };
 
+  const toMatchRequest = (request: BackendMatchRequest, requestTab: TabType): MatchRequest => {
+    const otherUser = requestTab === 'received' ? request.requester : request.receiver;
+    return {
+      id: request.id,
+      status: request.status,
+      otherUser: toOtherUser(otherUser),
+      message: request.message,
+      createdAt: request.createdAt,
+    };
+  };
+
+  const toActiveMatchRequest = (history: BackendMatchHistory): MatchRequest => ({
+    id: history.matchRequestId,
+    status: history.status || 'ACCEPTED',
+    otherUser: toOtherUser(history.partner),
+    createdAt: history.matchedAt,
+  });
+
+  const toOtherUser = (user: MatchUserSummary): MatchRequest['otherUser'] => ({
+    id: user.id,
+    nickname: user.nickname,
+    profileImageUrl: user.profileImageUrl,
+    isVerified: false,
+    averageRating: user.rating || 0,
+  });
+
   const renderMatchCard = ({ item }: { item: MatchRequest }) => {
-    const statusInfo = STATUS_LABELS[item.status];
+    const statusInfo = statusLabels[item.status];
     return (
       <TouchableOpacity
         style={styles.matchCard}
@@ -184,13 +277,18 @@ const MatchingScreen: React.FC<Props> = ({ navigation }) => {
             <View style={styles.nameRow}>
               <Text style={styles.nickname}>{item.otherUser.nickname}</Text>
               {item.otherUser.isVerified && (
-                <Text style={styles.verifiedBadge}>V</Text>
+                <View style={styles.verifiedBadge}>
+                  <Icon name="check" size={10} color={palette.onPrimary} strokeWidth={3} />
+                </View>
               )}
             </View>
             {item.otherUser.averageRating > 0 && (
-              <Text style={styles.ratingText}>
-                {'\u2605'} {item.otherUser.averageRating.toFixed(1)}
-              </Text>
+              <View style={styles.ratingRow}>
+                <Icon name="star-f" size={13} color={palette.rarityLegendary} />
+                <Text style={styles.ratingText}>
+                  {item.otherUser.averageRating.toFixed(1)}
+                </Text>
+              </View>
             )}
           </View>
           <View style={styles.statusSection}>
@@ -240,7 +338,7 @@ const MatchingScreen: React.FC<Props> = ({ navigation }) => {
               <Text style={styles.cancelButtonText}>취소</Text>
             </TouchableOpacity>
           )}
-          {tab === 'active' && item.status === 'ACCEPTED' && (
+          {tab === 'active' && (item.status === 'ACCEPTED' || item.status === 'MATCHED') && (
             <TouchableOpacity
               style={styles.completeButton}
               onPress={() => handleComplete(item.id)}
@@ -256,6 +354,7 @@ const MatchingScreen: React.FC<Props> = ({ navigation }) => {
                 onPress={() =>
                   navigation.navigate('Review', {
                     matchId: item.id,
+                    targetUserId: item.otherUser.id,
                     targetUserNickname: item.otherUser.nickname,
                   })
                 }
@@ -288,7 +387,7 @@ const MatchingScreen: React.FC<Props> = ({ navigation }) => {
       </View>
 
       {loading ? (
-        <ActivityIndicator size="large" color="#3B82F6" style={styles.loader} />
+        <ActivityIndicator size="large" color={palette.primary} style={styles.loader} />
       ) : (
         <FlatList
           data={matches}
@@ -313,16 +412,16 @@ const MatchingScreen: React.FC<Props> = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (palette: ThemePalette) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: palette.surface,
   },
   tabBar: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
+    backgroundColor: palette.background,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: palette.hairline,
   },
   tabItem: {
     flex: 1,
@@ -332,26 +431,28 @@ const styles = StyleSheet.create({
     borderBottomColor: 'transparent',
   },
   tabItemActive: {
-    borderBottomColor: '#3B82F6',
+    borderBottomColor: palette.ink,
   },
   tabText: {
+    fontFamily: fonts.bold,
     fontSize: 14,
-    fontWeight: '500',
-    color: '#9CA3AF',
+    color: palette.textMuted,
   },
   tabTextActive: {
-    color: '#3B82F6',
-    fontWeight: '600',
+    fontFamily: fonts.extrabold,
+    color: palette.ink,
   },
   listContent: {
-    padding: 16,
-    paddingBottom: 24,
+    padding: spacing.screenH,
+    paddingBottom: spacing.xxl,
   },
   matchCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 10,
+    backgroundColor: palette.background,
+    borderRadius: radii.card,
+    borderWidth: 1,
+    borderColor: palette.hairline,
+    padding: spacing.lg,
+    marginBottom: spacing.md,
   },
   cardTop: {
     flexDirection: 'row',
@@ -360,144 +461,147 @@ const styles = StyleSheet.create({
   avatar: {
     width: 48,
     height: 48,
-    borderRadius: 24,
+    borderRadius: radii.iconButton,
   },
   avatarPlaceholder: {
     width: 48,
     height: 48,
-    borderRadius: 24,
-    backgroundColor: '#3B82F6',
+    borderRadius: radii.iconButton,
+    backgroundColor: palette.primarySoft,
     justifyContent: 'center',
     alignItems: 'center',
   },
   avatarInitial: {
+    fontFamily: fonts.extrabold,
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
+    color: palette.primary,
   },
   cardInfo: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: spacing.md,
   },
   nameRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   nickname: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
+    ...type.cardTitle,
+    color: palette.ink,
   },
   verifiedBadge: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    color: '#fff',
-    backgroundColor: '#3B82F6',
+    width: 16,
+    height: 16,
     borderRadius: 8,
-    overflow: 'hidden',
-    paddingHorizontal: 4,
-    paddingVertical: 1,
+    backgroundColor: palette.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginLeft: 6,
   },
-  ratingText: {
-    fontSize: 13,
-    color: '#F59E0B',
+  ratingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
     marginTop: 2,
+  },
+  ratingText: {
+    ...type.bodySmall,
+    color: palette.textTertiary,
   },
   statusSection: {
     alignItems: 'flex-end',
   },
   statusBadge: {
-    paddingHorizontal: 8,
+    paddingHorizontal: spacing.sm,
     paddingVertical: 3,
-    borderRadius: 10,
+    borderRadius: radii.badge,
   },
   statusText: {
-    fontSize: 12,
-    fontWeight: '600',
+    ...type.caption,
+    fontFamily: fonts.bold,
   },
   dateText: {
-    fontSize: 11,
-    color: '#9CA3AF',
-    marginTop: 4,
+    ...type.meta,
+    color: palette.textMuted,
+    marginTop: spacing.xs,
   },
   message: {
+    fontFamily: fonts.medium,
     fontSize: 14,
-    color: '#6B7280',
+    color: palette.textSecondary,
     marginTop: 10,
-    lineHeight: 20,
+    lineHeight: 21,
   },
   actionRow: {
     flexDirection: 'row',
-    marginTop: 12,
-    gap: 8,
+    marginTop: spacing.md,
+    gap: spacing.sm,
   },
   acceptButton: {
     flex: 1,
-    backgroundColor: '#3B82F6',
-    paddingVertical: 10,
-    borderRadius: 8,
+    backgroundColor: palette.primary,
+    paddingVertical: 12,
+    borderRadius: radii.iconButton,
     alignItems: 'center',
   },
   acceptButtonText: {
+    fontFamily: fonts.extrabold,
     fontSize: 14,
-    fontWeight: '600',
-    color: '#fff',
+    color: palette.onPrimary,
   },
   rejectButton: {
     flex: 1,
-    backgroundColor: '#FEE2E2',
-    paddingVertical: 10,
-    borderRadius: 8,
+    backgroundColor: palette.errorBg,
+    paddingVertical: 12,
+    borderRadius: radii.iconButton,
     alignItems: 'center',
   },
   rejectButtonText: {
+    fontFamily: fonts.bold,
     fontSize: 14,
-    fontWeight: '600',
-    color: '#EF4444',
+    color: palette.error,
   },
   cancelButton: {
-    backgroundColor: '#F3F4F6',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
+    backgroundColor: palette.surfaceAlt,
+    paddingVertical: 12,
+    paddingHorizontal: spacing.xl,
+    borderRadius: radii.iconButton,
   },
   cancelButtonText: {
+    fontFamily: fonts.bold,
     fontSize: 14,
-    fontWeight: '500',
-    color: '#6B7280',
+    color: palette.textSecondary,
   },
   completeButton: {
     flex: 1,
-    backgroundColor: '#D1FAE5',
-    paddingVertical: 10,
-    borderRadius: 8,
+    backgroundColor: palette.ink,
+    paddingVertical: 12,
+    borderRadius: radii.iconButton,
     alignItems: 'center',
   },
   completeButtonText: {
+    fontFamily: fonts.extrabold,
     fontSize: 14,
-    fontWeight: '600',
-    color: '#059669',
+    color: palette.background,
   },
   reviewButton: {
     flex: 1,
-    backgroundColor: '#FEF3C7',
-    paddingVertical: 10,
-    borderRadius: 8,
+    backgroundColor: palette.warningBg,
+    paddingVertical: 12,
+    borderRadius: radii.iconButton,
     alignItems: 'center',
   },
   reviewButtonText: {
+    fontFamily: fonts.bold,
     fontSize: 14,
-    fontWeight: '600',
-    color: '#D97706',
+    color: palette.rarityLegendary,
   },
   loader: {
     marginTop: 40,
   },
   emptyText: {
+    ...type.bodySmall,
     textAlign: 'center',
-    color: '#9CA3AF',
-    fontSize: 14,
+    color: palette.textMuted,
     marginTop: 40,
   },
 });

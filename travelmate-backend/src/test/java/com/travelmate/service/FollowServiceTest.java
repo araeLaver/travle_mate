@@ -3,6 +3,7 @@ package com.travelmate.service;
 import com.travelmate.dto.FollowDto;
 import com.travelmate.entity.User;
 import com.travelmate.entity.UserFollow;
+import com.travelmate.exception.BusinessException;
 import com.travelmate.repository.UserFollowRepository;
 import com.travelmate.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -117,8 +118,9 @@ class FollowServiceTest {
         void follow_Fail_SelfFollow() {
             // When & Then
             assertThatThrownBy(() -> followService.follow(1L, 1L))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("자기 자신을 팔로우할 수 없습니다");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("자기 자신을 팔로우할 수 없습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 400, "BAD_REQUEST"));
         }
 
         @Test
@@ -129,8 +131,9 @@ class FollowServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> followService.follow(1L, 2L))
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessageContaining("이미 팔로우 중입니다");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("이미 팔로우 중입니다")
+                    .satisfies(ex -> assertBusinessException(ex, 409, "CONFLICT"));
         }
 
         @Test
@@ -142,8 +145,8 @@ class FollowServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> followService.follow(1L, 2L))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessageContaining("팔로워를 찾을 수 없습니다");
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(ex -> assertBusinessException(ex, 404, "USER_NOT_FOUND"));
         }
 
         @Test
@@ -156,8 +159,8 @@ class FollowServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> followService.follow(1L, 2L))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessageContaining("팔로우할 사용자를 찾을 수 없습니다");
+                    .isInstanceOf(BusinessException.class)
+                    .satisfies(ex -> assertBusinessException(ex, 404, "USER_NOT_FOUND"));
         }
     }
 
@@ -196,8 +199,9 @@ class FollowServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> followService.unfollow(1L, 2L))
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessageContaining("팔로우 관계가 존재하지 않습니다");
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining("팔로우 관계가 존재하지 않습니다")
+                    .satisfies(ex -> assertBusinessException(ex, 404, "NOT_FOUND"));
         }
     }
 
@@ -383,5 +387,11 @@ class FollowServiceTest {
             // Then
             assertThat(result).isFalse();
         }
+    }
+
+    private void assertBusinessException(Throwable throwable, int status, String errorCode) {
+        BusinessException exception = (BusinessException) throwable;
+        assertThat(exception.getStatus().value()).isEqualTo(status);
+        assertThat(exception.getErrorCodeStr()).isEqualTo(errorCode);
     }
 }

@@ -2,7 +2,8 @@
   "name": "travelmate",
   "private": true,
   "scripts": {
-    "prepare": "husky"
+    "prepare": "husky",
+    "verify:api-contract": "node scripts/verify-api-contract.js"
   },
   "devDependencies": {
     "husky": "^9.1.7",

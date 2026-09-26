@@ -1,6 +1,5 @@
-import { authService } from './authService';
-
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+import { apiClient } from './apiClient';
+import { appendQuery, withServiceError } from './apiRequestUtils';
 
 // ===== Types =====
 
@@ -60,14 +59,6 @@ export interface PageResponse<T> {
 
 // ===== API Methods =====
 
-const getAuthHeaders = () => {
-  const token = authService.getToken();
-  return {
-    'Content-Type': 'application/json',
-    ...(token && { Authorization: `Bearer ${token}` }),
-  };
-};
-
 /**
  * 장소에 리뷰 작성
  */
@@ -75,18 +66,13 @@ export const createReview = async (
   locationId: number,
   request: CreateReviewRequest
 ): Promise<LocationReviewResponse> => {
-  const response = await fetch(`${API_BASE_URL}/locations/${locationId}/reviews`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify(request),
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || '리뷰 작성에 실패했습니다.');
-  }
-
-  return response.json();
+  return withServiceError(
+    apiClient.post<LocationReviewResponse, CreateReviewRequest>(
+      `/locations/${locationId}/reviews`,
+      request
+    ),
+    '리뷰 작성에 실패했습니다.'
+  );
 };
 
 /**
@@ -96,33 +82,20 @@ export const updateReview = async (
   reviewId: number,
   request: UpdateReviewRequest
 ): Promise<LocationReviewResponse> => {
-  const response = await fetch(`${API_BASE_URL}/reviews/${reviewId}`, {
-    method: 'PUT',
-    headers: getAuthHeaders(),
-    body: JSON.stringify(request),
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || '리뷰 수정에 실패했습니다.');
-  }
-
-  return response.json();
+  return withServiceError(
+    apiClient.put<LocationReviewResponse, UpdateReviewRequest>(`/reviews/${reviewId}`, request),
+    '리뷰 수정에 실패했습니다.'
+  );
 };
 
 /**
  * 리뷰 삭제
  */
 export const deleteReview = async (reviewId: number): Promise<void> => {
-  const response = await fetch(`${API_BASE_URL}/reviews/${reviewId}`, {
-    method: 'DELETE',
-    headers: getAuthHeaders(),
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || '리뷰 삭제에 실패했습니다.');
-  }
+  await withServiceError(
+    apiClient.delete<void>(`/reviews/${reviewId}`),
+    '리뷰 삭제에 실패했습니다.'
+  );
 };
 
 /**
@@ -134,18 +107,12 @@ export const getLocationReviews = async (
   page: number = 0,
   size: number = 10
 ): Promise<PageResponse<LocationReviewResponse>> => {
-  const response = await fetch(
-    `${API_BASE_URL}/locations/${locationId}/reviews?sort=${sort}&page=${page}&size=${size}`,
-    {
-      headers: getAuthHeaders(),
-    }
+  return withServiceError(
+    apiClient.get<PageResponse<LocationReviewResponse>>(
+      appendQuery(`/locations/${locationId}/reviews`, { sort, page, size })
+    ),
+    '리뷰 목록을 불러오는데 실패했습니다.'
   );
-
-  if (!response.ok) {
-    throw new Error('리뷰 목록을 불러오는데 실패했습니다.');
-  }
-
-  return response.json();
 };
 
 /**
@@ -156,65 +123,42 @@ export const getUserReviews = async (
   page: number = 0,
   size: number = 10
 ): Promise<PageResponse<LocationReviewResponse>> => {
-  const response = await fetch(
-    `${API_BASE_URL}/users/${userId}/reviews?page=${page}&size=${size}`,
-    {
-      headers: getAuthHeaders(),
-    }
+  return withServiceError(
+    apiClient.get<PageResponse<LocationReviewResponse>>(
+      appendQuery(`/users/${userId}/reviews`, { page, size })
+    ),
+    '리뷰 목록을 불러오는데 실패했습니다.'
   );
-
-  if (!response.ok) {
-    throw new Error('리뷰 목록을 불러오는데 실패했습니다.');
-  }
-
-  return response.json();
 };
 
 /**
  * 리뷰 상세 조회
  */
 export const getReview = async (reviewId: number): Promise<LocationReviewResponse> => {
-  const response = await fetch(`${API_BASE_URL}/reviews/${reviewId}`, {
-    headers: getAuthHeaders(),
-  });
-
-  if (!response.ok) {
-    throw new Error('리뷰를 불러오는데 실패했습니다.');
-  }
-
-  return response.json();
+  return withServiceError(
+    apiClient.get<LocationReviewResponse>(`/reviews/${reviewId}`),
+    '리뷰를 불러오는데 실패했습니다.'
+  );
 };
 
 /**
  * 도움됨 토글
  */
 export const toggleHelpful = async (reviewId: number): Promise<{ isHelpful: boolean }> => {
-  const response = await fetch(`${API_BASE_URL}/reviews/${reviewId}/helpful`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || '도움됨 표시에 실패했습니다.');
-  }
-
-  return response.json();
+  return withServiceError(
+    apiClient.post<{ isHelpful: boolean }>(`/reviews/${reviewId}/helpful`),
+    '도움됨 표시에 실패했습니다.'
+  );
 };
 
 /**
  * 장소 리뷰 통계 조회
  */
 export const getLocationReviewStats = async (locationId: number): Promise<LocationReviewStats> => {
-  const response = await fetch(`${API_BASE_URL}/locations/${locationId}/reviews/stats`, {
-    headers: getAuthHeaders(),
-  });
-
-  if (!response.ok) {
-    throw new Error('리뷰 통계를 불러오는데 실패했습니다.');
-  }
-
-  return response.json();
+  return withServiceError(
+    apiClient.get<LocationReviewStats>(`/locations/${locationId}/reviews/stats`),
+    '리뷰 통계를 불러오는데 실패했습니다.'
+  );
 };
 
 /**

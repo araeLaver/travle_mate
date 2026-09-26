@@ -37,7 +37,7 @@ class PointService {
     page: number = 0,
     size: number = 20
   ): Promise<PaginatedResponse<PointTransactionResponse>> {
-    return apiClient.get(`/points/transactions/type/${type}?page=${page}&size=${size}`);
+    return apiClient.get(`/points/transactions?type=${type}&page=${page}&size=${size}`);
   }
 
   /**
@@ -65,7 +65,7 @@ class PointService {
    * 내 랭킹 조회
    */
   async getMyRank(): Promise<number> {
-    return apiClient.get('/points/my-rank');
+    return apiClient.get('/points/rank');
   }
 }
 

@@ -1,5 +1,6 @@
 package com.travelmate.controller;
 
+import com.travelmate.security.AuthenticatedUserId;
 import com.travelmate.dto.AuthDto;
 import com.travelmate.dto.UserDto;
 import com.travelmate.service.AuthService;
@@ -83,8 +84,11 @@ public class UserController {
     }
     
     @PutMapping("/location")
-    public ResponseEntity<Void> updateLocation(@Valid @RequestBody UserDto.LocationUpdateRequest request) {
-        userService.updateUserLocation(request);
+    public ResponseEntity<Void> updateLocation(
+            @AuthenticationPrincipal String userId,
+            @Valid @RequestBody UserDto.LocationUpdateRequest request) {
+        Long userIdLong = AuthenticatedUserId.parse(userId);
+        userService.updateUserLocation(userIdLong, request);
         return ResponseEntity.ok().build();
     }
     
@@ -103,8 +107,10 @@ public class UserController {
     
     @PostMapping("/shake")
     public ResponseEntity<List<UserDto.Response>> findUsersOnShake(
+            @AuthenticationPrincipal String userId,
             @Valid @RequestBody UserDto.ShakeRequest request) {
-        List<UserDto.Response> users = userService.findUsersOnShake(request);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
+        List<UserDto.Response> users = userService.findUsersOnShake(userIdLong, request);
         return ResponseEntity.ok(users);
     }
     
@@ -112,7 +118,7 @@ public class UserController {
     public ResponseEntity<UserDto.Response> updateProfile(
             @AuthenticationPrincipal String userId,
             @Valid @RequestBody UserDto.UpdateProfileRequest request) {
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         UserDto.Response response = userService.updateUserProfile(userIdLong, request);
         return ResponseEntity.ok(response);
     }
@@ -125,7 +131,7 @@ public class UserController {
     @GetMapping("/me")
     public ResponseEntity<UserDto.Response> getMyProfile(
             @AuthenticationPrincipal String userId) {
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         UserDto.Response response = userService.getUserProfile(userIdLong);
         return ResponseEntity.ok(response);
     }
@@ -134,7 +140,7 @@ public class UserController {
     public ResponseEntity<Void> updateFcmToken(
             @AuthenticationPrincipal String userId,
             @RequestBody Map<String, String> request) {
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         String fcmToken = request.get("fcmToken");
         userService.updateFcmToken(userIdLong, fcmToken);
         return ResponseEntity.ok().build();
@@ -143,7 +149,7 @@ public class UserController {
     @DeleteMapping("/account")
     public ResponseEntity<Void> deleteAccount(
             @AuthenticationPrincipal String userId) {
-        Long userIdLong = Long.parseLong(userId);
+        Long userIdLong = AuthenticatedUserId.parse(userId);
         userService.deleteUser(userIdLong);
         return ResponseEntity.noContent().build();
     }
@@ -152,7 +158,7 @@ public class UserController {
     public ResponseEntity<Void> reportUser(
             @AuthenticationPrincipal String userId,
             @Valid @RequestBody UserDto.ReportRequest request) {
-        Long reporterId = Long.parseLong(userId);
+        Long reporterId = AuthenticatedUserId.parse(userId);
         userService.reportUser(reporterId, request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
@@ -167,7 +173,7 @@ public class UserController {
     public ResponseEntity<UserDto.ReviewResponse> writeReview(
             @AuthenticationPrincipal String userId,
             @Valid @RequestBody UserDto.WriteReviewRequest request) {
-        Long reviewerId = Long.parseLong(userId);
+        Long reviewerId = AuthenticatedUserId.parse(userId);
         UserDto.ReviewResponse response = userService.writeReview(reviewerId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

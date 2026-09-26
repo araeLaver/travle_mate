@@ -26,7 +26,7 @@ public class HealthController {
         Map<String, Object> health = new HashMap<>();
         health.put("status", "UP");
         health.put("timestamp", LocalDateTime.now().toString());
-        health.put("service", "Fryndo API");
+        health.put("service", "Doorimate API");
         health.put("version", "1.0.0");
         
         // Check database connection
